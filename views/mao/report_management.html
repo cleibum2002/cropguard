@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Management | CropGuard MAO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        // Check session
+        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            if (data.status !== 'active' || data.role.toUpperCase() !== 'MAO') {
+                window.location.href = '../../auth.html';
+            }
+        }).catch(() => window.location.href = '../../auth.html');
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .tab-btn { border-bottom: 2px solid transparent; }
+        .tab-active { border-bottom: 2px solid #11542e; color: #11542e; font-weight: 700; }
+        .report-card.selected { border: 2px solid #11542e; background-color: #f0fdf4; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<div id="sidebar-container"></div>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-100 flex-shrink-0 z-20">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-black text-gray-800 uppercase">Report Management</span>
+                <div class="h-4 w-px bg-gray-200"></div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-gray-300 text-xs"></i>
+                    <input type="text" id="searchInput" oninput="filterReports()" placeholder="Search farmer or ID..." class="bg-transparent border-none text-xs w-64 focus:ring-0 outline-none">
+                </div>
+            </div>
+        </header>
+
+        <div class="bg-white px-8 flex-shrink-0 flex gap-8 border-b border-gray-100">
+            <button onclick="setTab('Pending')" id="tabPending" class="tab-btn tab-active py-4 text-[10px] font-black uppercase transition-all">Pending Approval</button>
+            <button onclick="setTab('Validated')" id="tabValidated" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all">Validated</button>
+            <button onclick="setTab('All')" id="tabAll" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all">All Reports</button>
+        </div>
+
+        <main class="flex-1 flex overflow-hidden">
+            <div class="w-[400px] border-r border-gray-100 bg-gray-50/50 flex flex-col flex-shrink-0">
+                <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4" id="reportsList"></div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto bg-white p-10 custom-scrollbar" id="detailPanel">
+                <div class="h-full flex flex-col items-center justify-center text-gray-300">
+                    <i class="fa-solid fa-file-circle-question text-6xl mb-4 opacity-20"></i>
+                    <p class="font-bold text-sm text-gray-400">Select a report to view details</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+    let currentReports = [];
+    let activeTab = 'Pending';
+
+    document.addEventListener("DOMContentLoaded", fetchReports);
+
+    async function fetchReports() {
+        try {
+            const res = await fetch('../../api/masterfile/damage_report/get_all.php');
+            const data = await res.json();
+            if (data.status === 'success') {
+                currentReports = data.data.map(r => ({
+                    ...r,
+                    // Normalize the ID just in case PHP aliases it differently
+                    normalizedId: r.Damage_Report_ID || r.id, 
+                    displayStatus: r.status ? (r.status.charAt(0).toUpperCase() + r.status.slice(1).toLowerCase()) : 'Pending'
+                })).filter(r => r.displayStatus !== 'Archived');
+                filterReports(); 
+            }
+        } catch (err) { console.error("Fetch Error:", err); }
+    }
+
+    function clearDetailPanel() {
+        document.getElementById('detailPanel').innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-gray-300">
+                <i class="fa-solid fa-file-circle-question text-6xl mb-4 opacity-20"></i>
+                <p class="font-bold text-sm text-gray-400">Select a report to view details</p>
+            </div>`;
+    }
+
+    function setTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('tab-active', 'text-gray-800');
+            btn.classList.add('text-gray-400');
+        });
+        document.getElementById('tab' + tab).classList.add('tab-active');
+        document.getElementById('tab' + tab).classList.remove('text-gray-400');
+        clearDetailPanel();
+        filterReports();
+    }
+
+    function filterReports() {
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = currentReports.filter(r => {
+            const matchesTab = (activeTab === 'All') || (r.displayStatus === activeTab);
+            const idStr = (r.normalizedId || "").toString();
+            const name = (r.farmer || r.FarmerName || "").toLowerCase();
+            return matchesTab && (idStr.includes(query) || name.includes(query));
+        });
+        if (filtered.length === 0) clearDetailPanel();
+        renderList(filtered);
+    }
+
+    function renderList(reports) {
+        const listContainer = document.getElementById('reportsList');
+        if (reports.length === 0) {
+            listContainer.innerHTML = '<p class="text-center text-gray-400 py-10 italic text-xs uppercase font-black">No matching records</p>';
+            return;
+        }
+        listContainer.innerHTML = reports.map(r => `
+            <div onclick="viewReport(${r.normalizedId})" id="card-${r.normalizedId}" class="report-card bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">#REP-${r.normalizedId}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${getStatusStyle(r.displayStatus)}">${r.displayStatus}</span>
+                </div>
+                <h4 class="text-sm font-black text-gray-800 mb-1 group-hover:text-[#11542e]">${r.crop_name || "Crop Report"}</h4>
+                <p class="text-[10px] font-bold text-gray-400">${r.farmer || r.FarmerName} • Area: ${r.area || 'N/A'} Ha</p>
+            </div>`).join('');
+    }
+
+    async function viewReport(id) {
+        // Prevent passing undefined IDs
+        if (!id) return;
+
+        document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
+        const selectedCard = document.getElementById(`card-${id}`);
+        if(selectedCard) selectedCard.classList.add('selected');
+
+        const baseReport = currentReports.find(report => report.normalizedId == id);
+        
+        document.getElementById('detailPanel').innerHTML = `
+            <div class="h-full flex flex-col items-center justify-center text-gray-300">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-[#11542e]"></i>
+                <p class="font-bold text-sm text-gray-400">Loading validation details...</p>
+            </div>`;
+
+        try {
+            const res = await fetch(`../../api/masterfile/damage_report/get_report_details.php?id=${id}`);
+            const data = await res.json();
+            
+            if (data.status !== 'success') throw new Error("Could not load details");
+            
+            const detail = data.report;
+            const images = data.images || [];
+            
+            let galleryHTML = '';
+            if (images.length > 0) {
+                galleryHTML = `
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">Initial Evidence</h4>
+                    <div class="flex flex-wrap gap-4 mb-8">
+                        ${images.map(src => `
+                            <a href="${src}" target="_blank" class="block w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
+                                <img src="${src}" class="w-full h-full object-cover hover:scale-110 transition-transform">
+                            </a>`).join('')}
+                    </div>`;
+            } else {
+                galleryHTML = `
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">Initial Evidence</h4>
+                    <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl mb-8">
+                        <p class="text-xs text-gray-400 italic">No photographic evidence was attached to this report.</p>
+                    </div>`;
+            }
+
+            let decisionPanel = "";
+            if (baseReport.displayStatus === 'Pending') {
+                decisionPanel = `
+                    <div class="bg-amber-50/50 p-8 rounded-[2rem] border border-amber-100 mt-8">
+                        <h4 class="text-lg font-black text-gray-800 mb-2">MAO Identity Verification</h4>
+                        <p class="text-xs text-gray-500 mb-6">Verify if this farmer is a legitimate resident (check RSBA) and actually operates in the reported location.</p>
+                        <div class="flex gap-4">
+                            <button onclick="updateStatus(${id}, 'Validated')" class="flex-1 bg-[#11542e] text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-check"></i> Approve Verification</button>
+                            <button onclick="updateStatus(${id}, 'Rejected')" class="flex-1 bg-red-50 text-red-600 border border-red-200 py-4 rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-xmark"></i> Reject Report</button>
+                        </div>
+                    </div>`;
+            } else {
+                decisionPanel = `
+                    <div class="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100 mt-8 flex items-center justify-center">
+                        <p class="text-xs font-black text-blue-500 uppercase tracking-widest">
+                            <i class="fa-solid fa-lock mr-2"></i> Report is currently locked as ${baseReport.displayStatus}
+                        </p>
+                    </div>`;
+            }
+
+            const farmLocation = detail.Barangay ? detail.Barangay : 'Location data missing';
+            // Smart lookup for RSBA Number based on exact schema spelling
+            const rsbaDisplay = detail.RSBA_No || baseReport.RSBA_No || detail.rsba_no || 'UNREGISTERED';
+
+            document.getElementById('detailPanel').innerHTML = `
+                <div class="max-w-4xl mx-auto pb-10">
+                    <div class="flex justify-between items-center mb-8 pb-6 border-b border-gray-100">
+                        <div>
+                            <h3 class="text-3xl font-black text-gray-800 tracking-tighter">Validation Profile #REP-${id}</h3>
+                            <p class="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">Submitted: ${baseReport.date || 'N/A'}</p>
+                        </div>
+                        <span class="px-5 py-2 rounded-full text-[10px] font-black uppercase ${getStatusStyle(baseReport.displayStatus)}">${baseReport.displayStatus}</span>
+                    </div>
+
+                    <!-- Farmer Identity Block -->
+                    <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 mb-6">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-l-2 border-[#11542e] pl-2">Farmer Identification</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Full Name</p>
+                                <p class="text-sm font-black text-gray-800">${detail.FarmerName || baseReport.farmer}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">RSBSA Number</p>
+                                <p class="text-sm font-black text-gray-800 font-mono tracking-widest">${rsbaDisplay}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Declared Farm Location</p>
+                                <p class="text-sm font-bold text-gray-700 break-words">${farmLocation}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Farm & Damage Details -->
+                    <div class="grid grid-cols-3 gap-4 mb-8">
+                        <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Crop Type</p>
+                            <p class="text-sm font-bold text-[#11542e]">${detail.Crop_Name || baseReport.crop_name}</p>
+                        </div>
+                        <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Reported Damage</p>
+                            <p class="text-sm font-bold text-red-600">${detail.Damage_Type || baseReport.damage_type}</p>
+                        </div>
+                        <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Affected Area</p>
+                            <p class="text-sm font-bold text-gray-800">${baseReport.area || detail.Area_Size || '0.00'} Ha</p>
+                        </div>
+                    </div>
+                    
+                    ${galleryHTML}
+                    
+                    <!-- Farmer Remarks -->
+                    <div class="mb-6">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Farmer's Initial Remarks</h4>
+                        <div class="bg-blue-50/30 border border-blue-100 p-5 rounded-2xl">
+                            <p class="text-sm text-gray-600 leading-relaxed italic">${detail.Description || "No additional remarks provided by the farmer."}</p>
+                        </div>
+                    </div>
+
+                    ${decisionPanel}
+                </div>`;
+
+        } catch (error) {
+            document.getElementById('detailPanel').innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center text-red-400">
+                    <i class="fa-solid fa-triangle-exclamation text-4xl mb-4"></i>
+                    <p class="font-bold text-sm">Failed to load detailed profile.</p>
+                </div>`;
+        }
+    }
+
+    function getStatusStyle(s) {
+        if (s === 'Pending') return 'bg-amber-100 text-amber-700';
+        if (s === 'Validated') return 'bg-blue-100 text-blue-700';
+        if (s === 'Inspected') return 'bg-purple-100 text-purple-700';
+        if (s === 'Approved') return 'bg-green-100 text-green-700';
+        return 'bg-red-100 text-red-700';
+    }
+
+    function updateStatus(id, status) {
+        // Double check ID exists
+        if (!id) {
+            return Swal.fire('Error', 'Invalid Report ID. Cannot update.', 'error');
+        }
+
+        Swal.fire({
+            title: status === 'Validated' ? 'Confirm Validation?' : 'Reject Report?',
+            text: status === 'Validated' ? 'The Admin will be notified to assign a technician.' : 'This will permanently close the report.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: status === 'Rejected' ? '#d33' : '#11542e',
+            confirmButtonText: 'Yes, Confirm'
+        }).then((res) => {
+            if (res.isConfirmed) {
+                fetch('../../api/masterfile/damage_report/update_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id, status: status })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.status === 'success') {
+                        Swal.fire('Updated!', 'Workflow updated successfully.', 'success');
+                        fetchReports();
+                        clearDetailPanel();
+                    } else {
+                        Swal.fire('Error', data.message || 'Update failed', 'error');
+                    }
+                })
+                .catch(() => Swal.fire('Error', 'Server failed to respond', 'error'));
+            }
+        });
+    }
+
+    function confirmLogout() {
+        fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
+    }
+</script>
+
+<script src="../../assets/js/navbar_mao.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMaoNavbar('reports'); 
+        });
+    </script>
+</body>
+</html>

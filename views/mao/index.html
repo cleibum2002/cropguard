@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAO Dashboard | CropGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.05); }
+        .stat-card { transition: all 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<div id="sidebar-container"></div>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
+            <span class="text-base font-black text-gray-800 tracking-tight">Municipal Operations Overview</span>
+            <div class="flex items-center gap-4">
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs border border-blue-200 shadow-sm">MA</div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-black text-gray-800 tracking-tight">Workflow Status</h2>
+                    <p class="text-gray-500 text-sm mt-1">Real-time overview of incoming reports and validation progress.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Total Reports -->
+                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-xs font-bold text-gray-500">Total Reports</p>
+                            <div class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center"><i class="fa-regular fa-file-lines"></i></div>
+                        </div>
+                        <h3 class="text-3xl font-black text-gray-800" id="statTotal">0</h3>
+                    </div>
+
+                    <!-- Awaiting MAO Validation -->
+                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-xs font-bold text-gray-500">Awaiting Validation</p>
+                            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
+                        </div>
+                        <h3 class="text-3xl font-black text-amber-600" id="statPending">0</h3>
+                    </div>
+
+                    <!-- Validated by MAO -->
+                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-xs font-bold text-gray-500">Validated Reports</p>
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-check-double"></i></div>
+                        </div>
+                        <h3 class="text-3xl font-black text-blue-600" id="statValidated">0</h3>
+                    </div>
+
+                    <!-- Approved Claims -->
+                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-4">
+                            <p class="text-xs font-bold text-gray-500">Approved Claims</p>
+                            <div class="w-8 h-8 rounded-lg bg-green-50 text-green-500 flex items-center justify-center"><i class="fa-solid fa-hand-holding-heart"></i></div>
+                        </div>
+                        <h3 class="text-3xl font-black text-green-600" id="statApproved">0</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-black text-gray-800">Seed Distribution Queue</h4>
+                            <p class="text-xs text-gray-500 mt-1">Approved seed requests waiting for MAO pickup coordination.</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-widest">
+                                <tr>
+                                    <th class="px-3 py-3">Request</th>
+                                    <th class="px-3 py-3">Farmer</th>
+                                    <th class="px-3 py-3">Seed</th>
+                                    <th class="px-3 py-3">Status</th>
+                                    <th class="px-3 py-3 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="seedRequestTableBody" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                    <!-- Map (Placeholder for future update) -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-2 relative min-h-[450px]">
+                        <div id="damageMap" class="w-full h-full min-h-[450px] rounded-xl z-10"></div>
+                        <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-white z-[1000]">
+                            <h4 id="mapModeLabel" class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Damage Density Map</h4>
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-1 rounded-xl shadow-lg border border-white z-[1000] flex gap-1">
+                            <button id="pinViewBtn" onclick="setMapMode('pin')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors bg-[#11542e] text-white">Pin View</button>
+                            <button id="regionViewBtn" onclick="setMapMode('region')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors text-gray-500 hover:bg-gray-100">Region View</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Activity Feed -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
+                        <h4 class="text-sm font-black text-gray-800 mb-6">Recent Reports</h4>
+                        <div id="recentActivityList" class="flex-1 flex flex-col gap-4 overflow-y-auto">
+                            <p class="text-xs text-gray-400 italic text-center py-10">Loading activity...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+                if (data.status === 'active' && data.role.toUpperCase() === 'MAO') {
+                    document.getElementById('maoNameSidebar').innerText = data.user.fullname;
+                } else {
+                    window.location.href = '../../auth.html';
+                }
+            });
+            loadDynamicDashboard();
+            loadSeedRequests();
+            initMap();
+        });
+
+        // DYNAMIC DASHBOARD LOADER
+        async function loadDynamicDashboard() {
+            try {
+                // Fetch directly from the unified Masterfile API
+                const res = await fetch('../../api/masterfile/damage_report/get_all.php');
+                const result = await res.json();
+                
+                if (result.status === 'success') {
+                    const data = result.data || [];
+                    
+                    // Filter out archived
+                    const activeReports = data.filter(r => r.status.toUpperCase() !== 'ARCHIVED');
+                    
+                    // Count exactly what we need
+                    const pendingCount = activeReports.filter(r => r.status.toUpperCase() === 'PENDING').length;
+                    const validatedCount = activeReports.filter(r => r.status.toUpperCase() === 'VALIDATED').length;
+                    const approvedCount = activeReports.filter(r => r.status.toUpperCase() === 'APPROVED').length;
+
+                    // Update UI Counters
+                    document.getElementById('statTotal').innerText = activeReports.length;
+                    document.getElementById('statPending').innerText = pendingCount;
+                    document.getElementById('statValidated').innerText = validatedCount;
+                    document.getElementById('statApproved').innerText = approvedCount;
+
+                    // Populate Recent Activity (Top 6 latest)
+                    const recent = activeReports.slice(0, 6);
+                    const activityContainer = document.getElementById('recentActivityList');
+                    
+                    activityContainer.innerHTML = recent.map(r => {
+                        let colorClass = 'text-gray-500';
+                        if(r.status.toUpperCase() === 'PENDING') colorClass = 'text-amber-500';
+                        if(r.status.toUpperCase() === 'VALIDATED') colorClass = 'text-blue-500';
+                        if(r.status.toUpperCase() === 'APPROVED') colorClass = 'text-green-500';
+
+                        return `
+                        <div class="flex items-center gap-4 p-3 border border-gray-50 rounded-xl hover:bg-gray-50 transition-colors">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 ${colorClass} flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-contract text-[10px]"></i>
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <p class="text-xs font-bold text-gray-800 truncate">${r.farmer}</p>
+                                <p class="text-[9px] ${colorClass} font-bold uppercase tracking-widest">${r.status}</p>
+                            </div>
+                        </div>`;
+                    }).join('') || '<p class="text-xs text-gray-400 italic text-center">No reports available.</p>';
+                }
+            } catch (err) {
+                console.error("Dashboard error:", err);
+            }
+        }
+
+        async function loadSeedRequests() {
+            const tbody = document.getElementById('seedRequestTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">Loading seed requests...</td></tr>';
+
+            try {
+                const res = await fetch('../../api/mao/get_seed_requests.php');
+                const result = await res.json();
+
+                if (result.status !== 'success') {
+                    throw new Error(result.message || 'Unable to load seed requests.');
+                }
+
+                const rows = result.data || [];
+                if (!rows.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">No seed requests are waiting for MAO action.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = rows.map(item => {
+                    const statusBadge = item.Status === 'Ready for Pickup'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-emerald-100 text-emerald-700';
+                    const actionText = item.Status === 'Ready for Pickup' ? 'Mark as Claimed' : 'Notify Farmer for Pickup';
+                    const actionClass = item.Status === 'Ready for Pickup'
+                        ? 'bg-[#11542e] hover:bg-[#0c3d22]'
+                        : 'bg-amber-600 hover:bg-amber-700';
+
+                    return `
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-3 py-3 text-xs font-black text-gray-700">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
+                            <td class="px-3 py-3 text-xs text-gray-600">${item.Farmer_Name || 'Farmer'}</td>
+                            <td class="px-3 py-3 text-xs text-gray-600">${item.Requested_Seed}</td>
+                            <td class="px-3 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusBadge}">${item.Status}</span></td>
+                            <td class="px-3 py-3 text-right">
+                                <button onclick="handleSeedRequestAction(${item.Request_ID}, ${item.Farmer_ID}, '${item.Status === 'Ready for Pickup' ? 'mark_claimed' : 'notify_farmer'}')"
+                                    class="px-3 py-2 ${actionClass} text-white rounded-lg text-[10px] font-black uppercase tracking-wide transition-all">
+                                    ${actionText}
+                                </button>
+                            </td>
+                        </tr>`;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-red-500">Unable to load seed requests.</td></tr>';
+            }
+        }
+
+        async function handleSeedRequestAction(requestId, farmerId, action) {
+            const actionLabel = action === 'mark_claimed' ? 'mark as claimed' : 'notify the farmer';
+            const confirmResult = await Swal.fire({
+                title: 'Continue?',
+                text: `This will ${actionLabel} for request #REQ-${String(requestId).padStart(3, '0')}.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Proceed'
+            });
+
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const res = await fetch('../../api/mao/update_seed_request_status.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request_id: requestId, farmer_id: farmerId, action })
+                });
+                const result = await res.json();
+
+                if (result.status !== 'success') {
+                    throw new Error(result.message || 'Action failed.');
+                }
+
+                Swal.fire({ icon: 'success', title: 'Done!', text: result.message, timer: 2200, showConfirmButton: false });
+                loadSeedRequests();
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Action failed', text: err.message });
+            }
+        }
+
+// ── MAP STATE (shared between Pin View and Region View) ──────────
+        let map;                               // the single Leaflet map instance
+        let pinLayerGroup = L.layerGroup();    // holds the original heat-blob + pin markers
+        let regionLayerGroup = null;           // holds the barangay-colored polygons (built on first use)
+        let regionDataLoaded = false;          // prevents re-fetching every time the user toggles
+        let currentMapMode = 'pin';
+
+        function initMap() {
+            map = L.map('damageMap').setView([8.7405, 124.7758], 7);
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+            pinLayerGroup.addTo(map);
+
+            // Fetch real heatmap data from the database (unchanged from the original Pin View)
+            fetch('../../api/dashboard/heatmap_data.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data.length > 0) {
+                        const heatPoints = data.data.map(p => [p[0], p[1], p[2]]);
+                        L.heatLayer(heatPoints, {
+                            radius: 50, blur: 35, max: 1.0, minOpacity: 0.6,
+                            gradient: {0.3: '#00aaff', 0.5: '#00ff00', 0.7: '#ffff00', 1.0: '#ff0000'}
+                        }).addTo(pinLayerGroup);
+
+                        // Add markers for each report location
+                        const markers = [];
+                        data.data.forEach(p => {
+                            if (p[0] && p[1] && p[0] > 0 && p[1] > 0) {
+                                const marker = L.marker([p[0], p[1]]).addTo(pinLayerGroup);
+                                marker.bindPopup(`<b>Damage Report</b><br>Intensity: ${(p[2] * 100).toFixed(0)}%`);
+                                markers.push([p[0], p[1]]);
+                            }
+                        });
+
+                        // Auto-zoom to fit all markers if we have valid coordinates
+                        if (markers.length > 0) {
+                            const group = L.featureGroup(markers.map(m => L.marker(m)));
+                            map.fitBounds(group.getBounds().pad(0.2));
+                        } else {
+                            // Fallback to Region X center
+                            map.setView([8.7405, 124.7758], 12);
+                        }
+                    } else {
+                        // No data - show default view with a message
+                        map.setView([8.7405, 124.7758], 12);
+                        L.heatLayer([[8.7405, 124.7758, 0.1]], {
+                            radius: 50, blur: 35, max: 1.0, minOpacity: 0.6,
+                            gradient: {0.3: '#00aaff', 0.5: '#00ff00', 0.7: '#ffff00', 1.0: '#ff0000'}
+                        }).addTo(pinLayerGroup);
+                    }
+                })
+                .catch(() => {
+                    // Fallback on error
+                    map.setView([8.7405, 124.7758], 12);
+                    L.heatLayer([[8.7405, 124.7758, 0.8]], {
+                        radius: 50, blur: 35, max: 1.0, minOpacity: 0.6,
+                        gradient: {0.3: '#00aaff', 0.5: '#00ff00', 0.7: '#ffff00', 1.0: '#ff0000'}
+                    }).addTo(pinLayerGroup);
+                });
+        }
+
+        // ── REGION VIEW (barangay-colored map) ────────────────────────────
+        // Colors a whole barangay shape based on the average severity of reports
+        // located inside it (via point-in-polygon matching with Turf.js), instead
+        // of just glowing at exact coordinates. Gray = no reports in that barangay.
+        function severityColor(avgIntensity, count) {
+            if (count === 0) return '#e5e7eb';       // gray  - no reports
+            if (avgIntensity < 0.25) return '#22c55e'; // green  - minimal/low
+            if (avgIntensity < 0.45) return '#a3e635'; // yellow-green - light
+            if (avgIntensity < 0.65) return '#eab308'; // yellow - moderate
+            if (avgIntensity < 0.85) return '#f97316'; // orange - severe/high
+            return '#dc2626';                          // red    - total loss
+        }
+
+        function loadRegionView() {
+            if (regionDataLoaded) return; // already built once this session - just re-show it
+            regionDataLoaded = true;
+
+            Promise.all([
+                fetch('../../assets/geo/balingasag_barangays.json').then(r => r.json()),
+                fetch('../../api/dashboard/barangay_heatmap_data.php').then(r => r.json())
+            ]).then(([boundaries, pointsRes]) => {
+                const points = (pointsRes.status === 'success') ? pointsRes.points : [];
+
+                // Tally severity intensity per barangay by checking which polygon
+                // each report's real GPS point falls inside.
+                const tally = {};
+                boundaries.features.forEach(f => { tally[f.properties.adm4_en] = { sum: 0, count: 0 }; });
+
+                points.forEach(p => {
+                    const pt = turf.point([p.lng, p.lat]);
+                    for (const feature of boundaries.features) {
+                        if (turf.booleanPointInPolygon(pt, feature)) {
+                            const key = feature.properties.adm4_en;
+                            tally[key].sum += p.intensity;
+                            tally[key].count += 1;
+                            break;
+                        }
+                    }
+                    // Note: points outside all 30 Balingasag barangays (e.g. test data
+                    // from another municipality) simply won't match anything here -
+                    // Region View is scoped to Balingasag only, by design.
+                });
+
+                regionLayerGroup = L.geoJSON(boundaries, {
+                    style: (feature) => {
+                        const t = tally[feature.properties.adm4_en];
+                        const avg = t.count > 0 ? (t.sum / t.count) : 0;
+                        return { fillColor: severityColor(avg, t.count), fillOpacity: 0.65, color: '#ffffff', weight: 1.5 };
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const name = feature.properties.adm4_en;
+                        const t = tally[name];
+                        const avgPct = t.count > 0 ? Math.round((t.sum / t.count) * 100) : 0;
+                        layer.bindPopup(
+                            `<b>Brgy. ${name}</b><br>Reports: ${t.count}` +
+                            (t.count > 0 ? `<br>Avg. Severity: ${avgPct}%` : '<br>No reports on file')
+                        );
+                    }
+                });
+
+                if (currentMapMode === 'region') {
+                    regionLayerGroup.addTo(map);
+                    map.fitBounds(regionLayerGroup.getBounds());
+                }
+            }).catch(() => {
+                regionDataLoaded = false; // allow retry on next toggle
+                Swal.fire({ icon: 'error', title: 'Could not load Region View', text: 'Please try again.' });
+            });
+        }
+
+        function setMapMode(mode) {
+            currentMapMode = mode;
+            const pinBtn = document.getElementById('pinViewBtn');
+            const regionBtn = document.getElementById('regionViewBtn');
+            const label = document.getElementById('mapModeLabel');
+            const activeClasses = ['bg-[#11542e]', 'text-white'];
+            const inactiveClasses = ['text-gray-500', 'hover:bg-gray-100'];
+
+            if (mode === 'pin') {
+                if (regionLayerGroup && map.hasLayer(regionLayerGroup)) map.removeLayer(regionLayerGroup);
+                if (!map.hasLayer(pinLayerGroup)) pinLayerGroup.addTo(map);
+                pinBtn.classList.add(...activeClasses); pinBtn.classList.remove(...inactiveClasses);
+                regionBtn.classList.remove(...activeClasses); regionBtn.classList.add(...inactiveClasses);
+                label.innerText = 'Damage Density Map';
+            } else {
+                if (map.hasLayer(pinLayerGroup)) map.removeLayer(pinLayerGroup);
+                loadRegionView();
+                if (regionLayerGroup) {
+                    if (!map.hasLayer(regionLayerGroup)) regionLayerGroup.addTo(map);
+                    map.fitBounds(regionLayerGroup.getBounds());
+                }
+                regionBtn.classList.add(...activeClasses); regionBtn.classList.remove(...inactiveClasses);
+                pinBtn.classList.remove(...activeClasses); pinBtn.classList.add(...inactiveClasses);
+                label.innerText = 'Barangay Severity Map (Balingasag)';
+            }
+        }
+
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+            }, 5 * 60 * 1000);
+        }
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+
+        function confirmLogout() {
+            fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
+        }
+    </script>
+
+    <script src="../../assets/js/navbar_mao.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMaoNavbar('dashboard'); 
+        });
+    </script>
+
+</body>
+</html>

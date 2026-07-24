@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmer Dashboard | CropGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+        .sidebar-link { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .sidebar-link.active { background: rgba(255,255,255,0.12); border-left-color: #f1c40f; }
+        .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.06); }
+        .stat-card { transition: all 0.2s ease; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); }
+        .step-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.5rem; height: 1.5rem; border-radius: 9999px;
+            font-size: 0.65rem; font-weight: 900;
+            background: #11542e; color: white; flex-shrink: 0;
+        }
+        .step-badge.inactive { background: #e5e7eb; color: #9ca3af; }
+
+        /* ── Per-photo thumbnail with geo badge ── */
+        .img-thumb { position: relative; width: 5rem; height: 5rem; border-radius: 0.5rem; overflow: visible; border: 2px solid #bbf7d0; flex-shrink: 0; }
+        .img-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 0.375rem; display: block; }
+        .img-thumb .remove-btn {
+            position: absolute; top: -6px; right: -6px;
+            width: 18px; height: 18px;
+            background: #ef4444; color: white;
+            border-radius: 9999px; border: 2px solid white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 900; cursor: pointer; z-index: 10;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2); transition: background 0.15s;
+        }
+        .img-thumb .remove-btn:hover { background: #b91c1c; }
+        .img-thumb .geo-badge {
+            position: absolute; bottom: -18px; left: 0; right: 0;
+            text-align: center; font-size: 8px; font-weight: 800;
+            line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            padding: 0 2px;
+        }
+        .img-thumb .geo-badge.success { color: #16a34a; }
+        .img-thumb .geo-badge.loading { color: #d97706; }
+        .img-thumb .geo-badge.failed  { color: #dc2626; }
+
+        #imagePreviewContainer { padding-bottom: 1.5rem; }
+
+        /* ── BIG NOTIFICATIONS BANNER ── */
+        .alert-banner {
+            background: linear-gradient(135deg, #1e3a5f 0%, #11542e 100%);
+            border: 3px solid #f1c40f;
+            box-shadow: 0 8px 32px rgba(17, 84, 46, 0.3);
+        }
+        .alert-item {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(4px);
+            border-left: 4px solid #f1c40f;
+            transition: all 0.2s ease;
+        }
+        .alert-item:hover {
+            background: rgba(255,255,255,0.18);
+            transform: translateX(4px);
+        }
+        .alert-item .alert-message {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        /* ── SHOPEE-STYLE SEED TRACKER ── */
+        .tracker-step {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        .tracker-step:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: 1.5rem;
+            top: 3rem;
+            bottom: 0;
+            width: 3px;
+            background: #d1d5db;
+        }
+        .tracker-step.completed:not(:last-child)::before {
+            background: #11542e;
+        }
+        .tracker-step .step-circle {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+            font-weight: 900;
+            border: 3px solid #d1d5db;
+            background: white;
+            color: #9ca3af;
+            transition: all 0.3s ease;
+        }
+        .tracker-step.completed .step-circle {
+            background: #11542e;
+            border-color: #11542e;
+            color: white;
+        }
+        .tracker-step.active .step-circle {
+            border-color: #f1c40f;
+            background: #fef9c3;
+            color: #11542e;
+            box-shadow: 0 0 0 4px rgba(241, 196, 15, 0.3);
+        }
+        .tracker-step .step-label {
+            margin-left: 1rem;
+            padding-top: 0.5rem;
+        }
+        .tracker-step .step-label .label-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #374151;
+        }
+        .tracker-step .step-label .label-sub {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-top: 0.15rem;
+        }
+        .tracker-step.completed .step-label .label-text { color: #11542e; }
+        .tracker-step.active .step-label .label-text { color: #92400e; font-weight: 900; }
+        .tracker-step.active .step-label .label-sub { color: #b45309; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
+        <div class="p-6 border-b border-white/10 flex flex-col items-center gap-3">
+            <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
+                <i class="fa-solid fa-seedling text-2xl text-[#f1c40f]"></i>
+            </div>
+            <div class="text-center">
+                <h1 class="text-white text-base font-black tracking-tight">CropGuard</h1>
+                <p class="text-white/40 text-[8px] uppercase tracking-[0.2em]">Farmer Portal</p>
+            </div>
+        </div>
+        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+            <a href="../profile/profile.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
+                <i class="fa-solid fa-user-circle mr-3 w-4"></i> My Profile
+            </a>
+            <a href="index.html" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-xl font-semibold text-sm transition-all">
+                <i class="fa-solid fa-table-columns mr-3 w-4 text-[#f1c40f]"></i> My Dashboard
+            </a>
+            <a href="my_farms.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
+                <i class="fa-solid fa-map-location-dot mr-3 w-4"></i> My Farms
+            </a>
+            <a href="request_seeds.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
+                <i class="fa-solid fa-leaf mr-3 w-4"></i> Request Seeds
+            </a>
+            <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
+                <i class="fa-solid fa-message mr-3 w-4"></i> Communication
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <div class="flex items-center gap-3 bg-white/5 px-3 py-3 rounded-2xl">
+                <div id="farmerInitial" class="w-9 h-9 bg-green-100 text-green-700 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0">
+                    <i class="fa-solid fa-user text-xs"></i>
+                </div>
+                <div class="overflow-hidden flex-1">
+                    <p id="farmerNameDisplay" class="text-white text-xs font-bold truncate">Loading...</p>
+                    <p class="text-white/40 text-[10px]">Farmer</p>
+                </div>
+                <button onclick="confirmLogout()" class="text-white/30 hover:text-red-400 transition-all">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <span class="text-base font-black text-gray-800">My Dashboard</span>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Farmer Mode</span>
+            </div>
+            <div class="flex items-center gap-3 relative">
+                <button onclick="toggleNotifications()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span id="notifBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div id="notifDropdown" class="hidden absolute top-12 right-0 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                    <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
+                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider">Notifications</h4>
+                    </div>
+                    <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                        <div class="px-4 py-6 text-center text-gray-400 text-xs italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">Welcome back!</h2>
+                        <p class="text-gray-400 text-sm">Track your filed reports and monitor their validation status.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openFarmModal()" class="bg-white border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-map-location-dot text-[#11542e]"></i> Manage Farms
+                        </button>
+                        <button onclick="openReportModal()" class="bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-plus"></i> File New Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ═══ FEATURE 1: ELDER-FRIENDLY BIG NOTIFICATIONS BANNER ═══ -->
+                <div id="bigAlertBanner" class="hidden alert-banner rounded-2xl p-5 mb-6 text-white">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-bullhorn text-2xl text-[#f1c40f]"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black tracking-tight" style="font-size:1.4rem;">🔔 Important Alerts</h3>
+                            <p class="text-white/70 text-sm font-medium">Recent notifications that need your attention</p>
+                        </div>
+                        <button onclick="dismissAllAlerts()" class="ml-auto text-white/50 hover:text-white text-sm font-bold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all">
+                            <i class="fa-solid fa-check-double mr-1"></i> Dismiss All
+                        </button>
+                    </div>
+                    <div id="bigAlertList" class="space-y-2">
+                        <div class="text-white/70 text-sm font-medium py-2 text-center">No recent alerts</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Reports Filed</p>
+                        <h3 id="statTotal" class="text-3xl font-black text-gray-800">0</h3>
+                    </div>
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pending Validation</p>
+                        <h3 id="statPending" class="text-3xl font-black text-amber-600">0</h3>
+                    </div>
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Resolved / Approved</p>
+                        <h3 id="statResolved" class="text-3xl font-black text-green-600">0</h3>
+                    </div>
+                </div>
+
+                <!-- ═══ FEATURE 2: SHOPEE-STYLE SEED REQUEST TRACKER ═══ -->
+                <div id="seedTrackerSection" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i class="fa-solid fa-truck-fast text-2xl text-[#11542e]"></i>
+                        <div>
+                            <h3 class="text-lg font-black text-gray-800">📦 Seed Request Tracker</h3>
+                            <p class="text-sm text-gray-500">Track the real-time status of your seed requests</p>
+                        </div>
+                        <a href="request_seeds.html" class="ml-auto text-sm font-bold text-[#11542e] hover:underline flex items-center gap-1">
+                            View All <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+                    <div id="seedTrackerContainer" class="max-w-2xl mx-auto py-2">
+                        <p class="text-center text-gray-400 text-sm py-6">Loading your seed requests...</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-50">
+                        <h3 class="font-black text-gray-800">My Recent Reports</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50/60">
+                                <tr>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date Filed</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Crop Details</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Incident</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Est. Loss</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-gray-50">
+                                <tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">Loading reports...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ─── REPORT MODAL ─────────────────────────────────────────────────── -->
+    <div id="modal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-file-invoice text-[#11542e] text-xl"></i>
+                    <h3 id="modalTitle" class="text-lg font-black text-gray-800">File Crop Damage Report</h3>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition-colors">&times;</button>
+            </div>
+            
+            <form id="reportForm" onsubmit="submitReport(event)" class="overflow-y-auto">
+                <input type="hidden" id="reportId" value="">
+                
+                <div class="p-6 space-y-5">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Farm Location</label>
+                        <select id="farmLocation" required onchange="updateMaxArea()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
+                            <option value="">Loading locations...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Which Crop Was Damaged?</label>
+                        <select id="cropPicker" required onchange="onCropPickerChange()"
+                            class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
+                            <option value="">Loading your crops...</option>
+                        </select>
+                        <p id="cropPickerHint" class="text-[10px] text-gray-400 mt-1 hidden"></p>
+                        <input type="hidden" id="cropName">
+                        <input type="hidden" id="cropType">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Planting Date</label>
+                            <input type="date" id="plantingDate" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Affected Area (Ha)</label>
+                            <input type="number" step="0.01" id="landArea" required oninput="validateArea()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700" placeholder="0.00">
+                            <small id="areaWarning" class="text-red-500 font-bold hidden text-[10px] mt-1">Cannot exceed total farm size!</small>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Damage Type</label>
+                            <select id="damageType" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
+                                <option value="Flood">Flood</option>
+                                <option value="Typhoon">Typhoon</option>
+                                <option value="Pest Infestation">Pest Infestation</option>
+                                <option value="Drought">Drought</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Severity</label>
+                            <select id="severity" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
+                                <option value="Low">Low</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="High">High</option>
+                                <option value="Total Loss">Total Loss</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description of Damage</label>
+                        <textarea id="description" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700 resize-y" placeholder="Describe what happened..."></textarea>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-4">
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Photographic Evidence</label>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3 flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info text-blue-400 text-xs mt-0.5 flex-shrink-0"></i>
+                            <p class="text-[10px] text-blue-600 font-semibold leading-relaxed">Each photo will automatically capture your GPS location when taken. This helps admins verify the photo was taken at the declared farm location.</p>
+                        </div>
+                        
+                        <input type="file" id="damageImages" accept="image/*" multiple class="hidden" onchange="handleImageSelection(event)">
+                        
+                        <button type="button" onclick="document.getElementById('damageImages').click()" class="w-full py-4 border-2 border-dashed border-green-200 rounded-xl bg-green-50 text-green-700 font-bold text-sm hover:bg-green-100 hover:border-green-400 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-camera text-lg"></i> Take Photo or Upload from Gallery
+                        </button>
+
+                        <p id="photoCount" class="text-[10px] text-gray-400 mt-1.5 hidden"></p>
+                        
+                        <div id="imagePreviewContainer" class="flex flex-wrap gap-5 mt-3"></div>
+                    </div>
+                    
+                </div>
+                
+                <div class="px-6 py-4 flex justify-end items-center gap-3 bg-gray-50 border-t border-gray-100 sticky bottom-0">
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">Cancel</button>
+                    <button type="submit" id="submitReportBtn" class="px-6 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-black uppercase tracking-wide rounded-xl shadow-lg shadow-green-900/20 transition-all">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ─── FARM MODAL ────────────────────────────────────────────────────── -->
+    <div id="farmModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xl rounded-xl shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-[#11542e]">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-map-location-dot text-[#f1c40f] text-lg"></i>
+                    <h3 class="text-base font-bold text-white">Add Farm Location</h3>
+                </div>
+                <button onclick="closeFarmModal()" class="text-white/70 hover:text-white text-xl font-medium">&times;</button>
+            </div>
+
+            <form id="farmForm" onsubmit="submitFarm(event)">
+                <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-location-dot text-[#11542e] text-sm"></i>
+                            <h4 class="text-xs font-black text-gray-700 uppercase tracking-widest">Farm Address</h4>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge" id="badge-region">A</span>
+                                <label class="text-sm font-semibold text-gray-700">Region</label>
+                            </div>
+                            <div class="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-[#11542e] font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-lock text-xs text-green-400"></i>
+                                Region X &ndash; Northern Mindanao
+                            </div>
+                            <select id="addrRegion" class="hidden">
+                                <option value="100000000" selected>Region X</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge inactive" id="badge-province">B</span>
+                                <label class="text-sm font-semibold text-gray-500" id="label-province">
+                                    Province <span class="text-[10px] font-normal text-gray-400">(loading...)</span>
+                                </label>
+                            </div>
+                            <select id="addrProvince" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-400 cursor-not-allowed">
+                                <option value="">— Select Province —</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge inactive" id="badge-city">C</span>
+                                <label class="text-sm font-semibold text-gray-500" id="label-city">
+                                    City / Municipality <span class="text-[10px] font-normal text-gray-400">(select province first)</span>
+                                </label>
+                            </div>
+                            <select id="addrCity" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-400 cursor-not-allowed">
+                                <option value="">— Select City / Municipality —</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge inactive" id="badge-brgy">D</span>
+                                <label class="text-sm font-semibold text-gray-500" id="label-brgy">
+                                    Barangay <span class="text-[10px] font-normal text-gray-400">(select city first)</span>
+                                </label>
+                            </div>
+                            <select id="addrBarangay" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-400 cursor-not-allowed">
+                                <option value="">— Select Barangay —</option>
+                            </select>
+                        </div>
+
+                        <div id="manualAddressFields" class="hidden space-y-3 mt-4 pt-4 border-t border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Specific Location Details</p>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Street / Sitio / Purok / House No.</label>
+                                <input type="text" id="addrStreet"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
+                                       placeholder="e.g. Zone 2, Purok Sampaguita, Lot 12">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Postal / ZIP Code</label>
+                                    <input type="text" id="addrZip" maxlength="4" pattern="[0-9]{4}"
+                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
+                                           placeholder="e.g. 9000">
+                                    <p class="text-[10px] text-gray-400 mt-0.5">Auto-filled when available</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Landmark <span class="text-gray-400 font-normal">(optional)</span></label>
+                                    <input type="text" id="addrLandmark"
+                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
+                                           placeholder="e.g. Near school, yellow gate">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-px bg-gray-100"></div>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Farm Details</span>
+                        <div class="flex-1 h-px bg-gray-100"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Main Crop Type</label>
+                            <select id="farmCropType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
+                                <option value="">Select Type...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cropping Period</label>
+                            <input type="text" id="farmCroppingPeriod" required
+                                   class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                                   placeholder="e.g. May - October">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Area Size (Ha)</label>
+                            <input type="number" step="0.01" id="farmArea" required
+                                   class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                                   placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Land Type</label>
+                            <select id="farmLandType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
+                                <option value="Irrigated">Irrigated</option>
+                                <option value="Rainfed">Rainfed</option>
+                                <option value="Upland">Upland</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">GPS Coordinates <span class="font-normal normal-case">(optional)</span></p>
+                            <button type="button" onclick="detectGPS()" class="text-[10px] font-bold text-[#11542e] hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-location-crosshairs text-xs"></i> Use My Location
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Latitude</label>
+                                <input type="number" step="any" id="farmLat"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                                       placeholder="8.74154200">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Longitude</label>
+                                <input type="number" step="any" id="farmLng"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                                       placeholder="124.77421500">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="px-6 py-4 flex justify-end items-center gap-4 bg-gray-50 border-t border-gray-100">
+                    <button type="button" onclick="closeFarmModal()" class="text-sm font-semibold text-gray-600 hover:text-gray-800">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Farm Location
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const PSGC = 'https://psgc.cloud/api';
+        const REGION_X_CODE = '1000000000';
+        const REGION_X_NAME = 'Region X \u2013 Northern Mindanao';
+
+        let selectedFiles = [];
+        let photoGeoTags  = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadDashboardData();
+            fetchNotifications();
+            loadCropOptions();
+            loadFarmLocations();
+            loadSeedTracker();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('plantingDate').setAttribute('max', today);
+        });
+
+        // ═══ FEATURE 2: SEED REQUEST TRACKER ═══
+        async function loadSeedTracker() {
+            const container = document.getElementById('seedTrackerContainer');
+            const section = document.getElementById('seedTrackerSection');
+            try {
+                const res = await fetch('../../api/farmer/get_seed_requests.php');
+                const data = await res.json();
+                if (data.status !== 'success' || !data.data.length) {
+                    section.classList.add('hidden');
+                    return;
+                }
+                section.classList.remove('hidden');
+                // Take the most recent seed request for tracking
+                const latest = data.data.sort((a, b) => new Date(b.DateStr) - new Date(a.DateStr))[0];
+                renderTracker(container, latest);
+            } catch (e) {
+                section.classList.add('hidden');
+            }
+        }
+
+        function renderTracker(container, req) {
+            const steps = [
+                { key: 'Pending', label: 'Pending Review', sub: 'Your request has been submitted', icon: 'fa-paper-plane' },
+                { key: 'Approved by Admin', label: 'Approved by Admin', sub: 'Request has been reviewed and approved', icon: 'fa-check-circle' },
+                { key: 'Ready for Pickup', label: 'Ready for Pickup', sub: 'Your seeds are ready — claim at the MAO office', icon: 'fa-box-open' },
+                { key: 'Claimed', label: 'Claimed', sub: 'You have received your requested seeds', icon: 'fa-hand-holding-heart' }
+            ];
+
+            const statusOrder = ['Pending', 'Approved by Admin', 'Ready for Pickup', 'Claimed'];
+            const currentIndex = statusOrder.indexOf(req.Status);
+            const isClaimed = req.Status === 'Claimed';
+
+            let html = `<div class="text-center mb-4">
+                <p class="text-lg font-black text-gray-800">#REQ-${String(req.Request_ID).padStart(3, '0')}</p>
+                <p class="text-sm text-gray-500">${req.Requested_Seed}</p>
+            </div>
+            <div class="relative">`;
+
+            steps.forEach((step, i) => {
+                let cls = 'tracker-step';
+                if (i < currentIndex || (i === currentIndex && isClaimed)) cls += ' completed';
+                else if (i === currentIndex && !isClaimed) cls += ' active';
+
+                let iconHtml = `<i class="fa-solid ${step.icon}"></i>`;
+                if (cls.includes('completed')) iconHtml = `<i class="fa-solid fa-check"></i>`;
+
+                const dateStr = req.DateStr ? `<span class="text-xs text-gray-400 ml-1">(${req.DateStr})</span>` : '';
+
+                html += `<div class="${cls}">
+                    <div class="step-circle">${iconHtml}</div>
+                    <div class="step-label">
+                        <p class="label-text">${step.label} ${dateStr}</p>
+                        <p class="label-sub">${step.sub}</p>
+                    </div>
+                </div>`;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // ═══ FEATURE 1: BIG NOTIFICATIONS ═══
+        let bigAlertIds = [];
+
+        function fetchAndShowBigAlerts() {
+            fetch('../../api/dashboard/farmer_notifications.php?action=fetch').then(res => res.json()).then(data => {
+                const banner = document.getElementById('bigAlertBanner');
+                const list = document.getElementById('bigAlertList');
+                if (data.status === 'success' && data.data.length > 0) {
+                    // Show only unread notifications
+                    const unread = data.data.filter(n => n.Is_Read == 0);
+                    if (unread.length === 0) {
+                        banner.classList.add('hidden');
+                        return;
+                    }
+                    bigAlertIds = unread.map(n => n.Notification_ID);
+                    banner.classList.remove('hidden');
+                    list.innerHTML = '';
+                    unread.forEach(n => {
+                        const item = document.createElement('div');
+                        item.className = 'alert-item rounded-xl px-5 py-4 flex items-start gap-4';
+                        item.innerHTML = `
+                            <div class="w-10 h-10 rounded-full bg-[#f1c40f]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i class="fa-solid fa-circle-exclamation text-xl text-[#f1c40f]"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="alert-message">${n.Message}</p>
+                                <p class="text-white/60 text-sm font-medium mt-1">${n.DateStr || 'Just now'}</p>
+                            </div>
+                            <button onclick="dismissAlert(${n.Notification_ID}, this)" class="text-white/40 hover:text-white text-sm px-2 py-1 rounded-lg hover:bg-white/10 transition-all flex-shrink-0">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        `;
+                        list.appendChild(item);
+                    });
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }).catch(() => {});
+        }
+
+        function dismissAlert(id, btn) {
+            btn.closest('.alert-item').remove();
+            const list = document.getElementById('bigAlertList');
+            if (list.children.length === 0) {
+                document.getElementById('bigAlertBanner').classList.add('hidden');
+            }
+            bigAlertIds = bigAlertIds.filter(a => a !== id);
+            // Mark as read
+            fetch('../../api/dashboard/farmer_notifications.php?action=read').catch(() => {});
+        }
+
+        function dismissAllAlerts() {
+            document.getElementById('bigAlertBanner').classList.add('hidden');
+            document.getElementById('bigAlertList').innerHTML = '';
+            bigAlertIds = [];
+            fetch('../../api/dashboard/farmer_notifications.php?action=read').catch(() => {});
+        }
+
+        // ── Per-photo geo state ──────────────────────────────────────────────
+        function handleImageSelection(event) {
+            const newFiles = Array.from(event.target.files);
+            if (!newFiles.length) return;
+
+            newFiles.forEach(f => {
+                const isDupe = selectedFiles.some(s => s.name === f.name && s.size === f.size);
+                if (!isDupe) {
+                    selectedFiles.push(f);
+                    photoGeoTags.push({ lat: null, lng: null, status: 'loading' });
+                    captureGeoForPhoto(selectedFiles.length - 1);
+                }
+            });
+
+            event.target.value = '';
+            renderPreviews();
+        }
+
+        function captureGeoForPhoto(index) {
+            if (!navigator.geolocation) {
+                photoGeoTags[index].status = 'failed';
+                renderPreviews();
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    if (!photoGeoTags[index]) return;
+                    photoGeoTags[index].lat    = pos.coords.latitude;
+                    photoGeoTags[index].lng    = pos.coords.longitude;
+                    photoGeoTags[index].status = 'success';
+                    renderPreviews();
+                },
+                () => {
+                    if (!photoGeoTags[index]) return;
+                    photoGeoTags[index].status = 'failed';
+                    renderPreviews();
+                },
+                { timeout: 10000, maximumAge: 30000 }
+            );
+        }
+
+        function removePhoto(index) {
+            selectedFiles.splice(index, 1);
+            photoGeoTags.splice(index, 1);
+            renderPreviews();
+        }
+
+        function renderPreviews() {
+            const container  = document.getElementById('imagePreviewContainer');
+            const countLabel = document.getElementById('photoCount');
+            container.innerHTML = '';
+
+            if (!selectedFiles.length) {
+                countLabel.classList.add('hidden');
+                return;
+            }
+
+            countLabel.textContent = selectedFiles.length + ' photo' + (selectedFiles.length > 1 ? 's' : '') + ' selected — tap × to remove';
+            countLabel.classList.remove('hidden');
+
+            selectedFiles.forEach((file, i) => {
+                const geo  = photoGeoTags[i];
+                const url  = URL.createObjectURL(file);
+
+                let badgeHtml = '';
+                if (geo.status === 'loading') {
+                    badgeHtml = `<div class="geo-badge loading"><i class="fa-solid fa-spinner fa-spin"></i> Locating...</div>`;
+                } else if (geo.status === 'success') {
+                    const mapUrl = `https://www.google.com/maps?q=${geo.lat},${geo.lng}`;
+                    badgeHtml = `<div class="geo-badge success" title="${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}">
+                        <a href="${mapUrl}" target="_blank" style="color:inherit;text-decoration:none;">
+                            <i class="fa-solid fa-location-dot"></i> ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}
+                        </a></div>`;
+                } else {
+                    badgeHtml = `<div class="geo-badge failed"><i class="fa-solid fa-triangle-exclamation"></i> No GPS</div>`;
+                }
+
+                const wrap = document.createElement('div');
+                wrap.className = 'img-thumb';
+                wrap.innerHTML = `
+                    <img src="${url}" alt="Photo ${i + 1}">
+                    <button type="button" class="remove-btn" onclick="removePhoto(${i})" title="Remove photo">&times;</button>
+                    ${badgeHtml}
+                `;
+                container.appendChild(wrap);
+            });
+        }
+
+        // ─── CASCADING ADDRESS ────────────────────────────────────────────────
+        async function loadRegions() {
+            document.getElementById('addrRegion').value = REGION_X_CODE;
+            await loadProvincesForRegionX();
+        }
+
+        async function loadProvincesForRegionX() {
+            resetFrom('province');
+            const sel = document.getElementById('addrProvince');
+            setSelectLoading(sel, 'Loading provinces...');
+            try {
+                const res  = await fetch(`${PSGC}/regions/${REGION_X_CODE}/provinces`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">— Select Province —</option>';
+                data.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(p => sel.appendChild(new Option(p.name, p.code)));
+                enableSelect('addrProvince', 'badge-province', 'label-province', 'Province');
+                sel.addEventListener('change', onProvinceChange);
+            } catch (e) {
+                sel.innerHTML = '<option value="">Failed to load provinces</option>';
+                enableSelect('addrProvince', 'badge-province', 'label-province', 'Province');
+            }
+        }
+
+        async function onProvinceChange() {
+            const provinceCode = document.getElementById('addrProvince').value;
+            resetFrom('city');
+            if (!provinceCode) return;
+            const sel = document.getElementById('addrCity');
+            setSelectLoading(sel, 'Loading cities/municipalities...');
+            try {
+                const res  = await fetch(`${PSGC}/provinces/${provinceCode}/cities-municipalities`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">— Select City / Municipality —</option>';
+                data.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(c => sel.appendChild(new Option(c.name, c.code)));
+                enableSelect('addrCity', 'badge-city', 'label-city', 'City / Municipality');
+                sel.addEventListener('change', onCityChange);
+            } catch (e) {
+                sel.innerHTML = '<option value="">Failed to load cities</option>';
+                enableSelect('addrCity', 'badge-city', 'label-city', 'City / Municipality');
+            }
+        }
+
+        async function onCityChange() {
+            const cityCode = document.getElementById('addrCity').value;
+            resetFrom('barangay');
+            if (!cityCode) return;
+            const sel = document.getElementById('addrBarangay');
+            setSelectLoading(sel, 'Loading barangays...');
+            try {
+                const res  = await fetch(`${PSGC}/cities-municipalities/${cityCode}/barangays`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">— Select Barangay —</option>';
+                data.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(b => sel.appendChild(new Option(b.name, b.code)));
+                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', 'Barangay');
+                sel.addEventListener('change', () => {
+                    if (sel.value) {
+                        document.getElementById('manualAddressFields').classList.remove('hidden');
+                        const chosen = data.find(b => b.code === sel.value);
+                        if (chosen && chosen.zipCode) document.getElementById('addrZip').value = chosen.zipCode;
+                    } else {
+                        document.getElementById('manualAddressFields').classList.add('hidden');
+                    }
+                });
+            } catch (e) {
+                sel.innerHTML = '<option value="">Failed to load barangays</option>';
+                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', 'Barangay');
+            }
+        }
+
+        function enableSelect(selectId, badgeId, labelId, labelText) {
+            const sel = document.getElementById(selectId);
+            sel.disabled = false;
+            sel.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+            sel.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+            const badge = document.getElementById(badgeId);
+            if (badge) badge.classList.remove('inactive');
+            const label = document.getElementById(labelId);
+            if (label) label.innerHTML = labelText;
+        }
+
+        function setSelectLoading(sel, placeholder) {
+            sel.innerHTML = '<option>' + placeholder + '</option>';
+            sel.disabled = true;
+            sel.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+            sel.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+        }
+
+        function resetFrom(level) {
+            const levels   = ['province', 'city', 'barangay'];
+            const idMap    = { province: 'addrProvince', city: 'addrCity', barangay: 'addrBarangay' };
+            const badgeMap = { province: 'badge-province', city: 'badge-city', barangay: 'badge-brgy' };
+            const labelMap = {
+                province: ['label-province', 'Province',            'region'],
+                city:     ['label-city',     'City / Municipality', 'province'],
+                barangay: ['label-brgy',     'Barangay',            'city']
+            };
+            levels.slice(levels.indexOf(level)).forEach(l => {
+                const oldSel = document.getElementById(idMap[l]);
+                const newSel = oldSel.cloneNode(false);
+                newSel.innerHTML = '<option value="">\u2014 Select ' + labelMap[l][1] + ' \u2014</option>';
+                newSel.disabled = true;
+                newSel.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                newSel.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                oldSel.parentNode.replaceChild(newSel, oldSel);
+                const badge = document.getElementById(badgeMap[l]);
+                if (badge) badge.classList.add('inactive');
+                const lbl = document.getElementById(labelMap[l][0]);
+                if (lbl) lbl.innerHTML = labelMap[l][1] + ' <span class="text-[10px] font-normal text-gray-400">(select ' + labelMap[l][2] + ' first)</span>';
+            });
+            document.getElementById('manualAddressFields').classList.add('hidden');
+            document.getElementById('addrStreet').value   = '';
+            document.getElementById('addrZip').value      = '';
+            document.getElementById('addrLandmark').value = '';
+        }
+
+        function detectGPS() {
+            if (!navigator.geolocation) { Swal.fire('Not Supported', 'Your browser does not support geolocation.', 'warning'); return; }
+            Swal.fire({ title: 'Detecting location...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    document.getElementById('farmLat').value = pos.coords.latitude.toFixed(8);
+                    document.getElementById('farmLng').value = pos.coords.longitude.toFixed(8);
+                    Swal.fire({ icon: 'success', title: 'Location detected!', timer: 1200, showConfirmButton: false });
+                },
+                () => Swal.fire('Error', 'Could not detect your location. Please enter coordinates manually.', 'error')
+            );
+        }
+
+        // ─── FARM MODAL ───────────────────────────────────────────────────────
+        function openFarmModal() {
+            document.getElementById("farmForm").reset();
+            resetFrom('province');
+            document.getElementById('manualAddressFields').classList.add('hidden');
+            loadRegions();
+            document.getElementById("farmModal").classList.remove("hidden");
+        }
+        function closeFarmModal() { document.getElementById("farmModal").classList.add("hidden"); }
+
+        function submitFarm(e) {
+            e.preventDefault();
+            const getSelectedText = id => {
+                const s = document.getElementById(id);
+                return s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : '';
+            };
+            const barangayText = getSelectedText('addrBarangay');
+            if (!barangayText || barangayText.startsWith('\u2014')) {
+                Swal.fire('Required', 'Please complete the address up to Barangay level.', 'warning'); return;
+            }
+            const province = getSelectedText('addrProvince');
+            const city     = getSelectedText('addrCity');
+            const street   = document.getElementById('addrStreet').value.trim();
+            const zip      = document.getElementById('addrZip').value.trim();
+            const landmark = document.getElementById('addrLandmark').value.trim();
+            const addressParts = [barangayText, city, province, REGION_X_NAME].filter(Boolean).join(', ');
+            const detailParts  = [street, zip ? 'ZIP: ' + zip : '', landmark ? 'Landmark: ' + landmark : ''].filter(Boolean).join(' | ');
+            let fullAddress = addressParts;
+            if (detailParts) fullAddress += ' | ' + detailParts;
+            if (fullAddress.length > 100) fullAddress = fullAddress.substring(0, 97) + '...';
+            const payload = {
+                barangay: fullAddress,
+                type_id: document.getElementById('farmCropType').value,
+                cropping_period: document.getElementById('farmCroppingPeriod').value,
+                area_size: document.getElementById('farmArea').value,
+                land_type: document.getElementById('farmLandType').value,
+                latitude: document.getElementById('farmLat').value || null,
+                longitude: document.getElementById('farmLng').value || null
+            };
+            fetch('../../api/dashboard/submit_farm.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            }).then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({ icon: 'success', title: 'Farm Saved!', timer: 1500, showConfirmButton: false });
+                    closeFarmModal(); loadFarmLocations();
+                } else { Swal.fire('Error', data.message, 'error'); }
+            }).catch(() => Swal.fire('Error', 'Could not connect to server.', 'error'));
+        }
+
+        // ─── DASHBOARD DATA ───────────────────────────────────────────────────
+        function loadDashboardData() {
+            fetch('../../api/dashboard/farmer_dashboard_data.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (data.farmer_name) {
+                            document.getElementById('farmerNameDisplay').innerText = data.farmer_name;
+                            document.getElementById('farmerInitial').innerText = data.farmer_name.charAt(0).toUpperCase();
+                        }
+                        document.getElementById('statTotal').innerText    = data.stats.total;
+                        document.getElementById('statPending').innerText  = data.stats.pending;
+                        document.getElementById('statResolved').innerText = data.stats.resolved;
+
+                        const tbody = document.getElementById("tableBody");
+                        if (!data.reports.length) {
+                            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">You have not submitted any reports yet.</td></tr>';
+                            return;
+                        }
+                        tbody.innerHTML = "";
+                        data.reports.forEach(r => {
+                            let statusBadge = '', actionButtons = '';
+                            if (r.status === 'Pending') {
+                                statusBadge = 'bg-amber-100 text-amber-700';
+                                actionButtons = '<div class="flex items-center justify-end gap-3"><button onclick="editReport(' + r.id + ')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 hover:text-red-700" title="Delete"><i class="fa-solid fa-trash"></i></button></div>';
+                            } else {
+                                if (r.status === 'Validated')                                 statusBadge = 'bg-blue-100 text-blue-700';
+                                else if (r.status === 'Approved' || r.status === 'Completed') statusBadge = 'bg-green-100 text-green-700';
+                                else                                                           statusBadge = 'bg-red-100 text-red-700';
+                                actionButtons = '<span class="text-gray-300" title="Locked"><i class="fa-solid fa-lock"></i></span>';
+                            }
+                            tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || 'N/A') + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || 'N/A') + '</p><p class="text-[10px] text-gray-500">Area: ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + (r.damage_type || 'N/A') + '</span><p class="text-[10px] mt-1 font-bold ' + (r.severity === 'High' || r.severity === 'Total Loss' ? 'text-red-500' : 'text-amber-500') + '">Sev: ' + (r.severity || 'N/A') + '</p></td><td class="px-6 py-4"><p id="cost-' + r.id + '" class="text-sm font-black text-red-600">...</p><p class="text-[10px] text-gray-400">Est. loss</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + (r.status || 'Pending') + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
+                        });
+                        data.reports.forEach(r => {
+                            fetch('../../api/dashboard/calculate_cost.php?report_id=' + r.id)
+                                .then(res => res.json())
+                                .then(cost => {
+                                    const cell = document.getElementById('cost-' + r.id);
+                                    if (cell) cell.innerText = cost.status === 'success' ? '\u20b1' + cost.estimated_loss : 'N/A';
+                                }).catch(() => { const cell = document.getElementById('cost-' + r.id); if (cell) cell.innerText = 'N/A'; });
+                        });
+                    }
+                }).catch(err => console.error("Error loading dashboard:", err));
+        }
+
+        // ─── DROPDOWNS ────────────────────────────────────────────────────────
+        let farmerCropsData = [];
+
+        function loadCropOptions() {
+            fetch('../../api/dashboard/get_crop_options.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        farmerCropsData = data.crops || [];
+                        const picker = document.getElementById('cropPicker');
+                        picker.innerHTML = '<option value="">— Select your crop —</option>';
+                        farmerCropsData.forEach(c => {
+                            picker.innerHTML += '<option value="' + c.Crop_ID + '">' + c.Crop_Name + '</option>';
+                        });
+                        if (!farmerCropsData.length) {
+                            picker.innerHTML = '<option value="" disabled>No crops registered yet</option>';
+                        }
+                        const farmCropType = document.getElementById('farmCropType');
+                        (data.types || []).forEach(t => {
+                            farmCropType.innerHTML += '<option value="' + t.Type_ID + '">' + t.Commodity_Type + ' \u2013 ' + t.Crop_Name + '</option>';
+                        });
+                    }
+                });
+        }
+
+        function onCropPickerChange() {
+            const picker = document.getElementById('cropPicker');
+            const cropId = picker.value;
+            const hint   = document.getElementById('cropPickerHint');
+            const crop   = farmerCropsData.find(c => String(c.Crop_ID) === String(cropId));
+            document.getElementById('cropName').value = cropId;
+            document.getElementById('cropType').value = crop ? (crop.Type_ID || '') : '';
+            if (crop && crop.Type_ID) {
+                hint.textContent = 'Type ID ' + crop.Type_ID + ' auto-selected';
+                hint.classList.remove('hidden');
+            } else { hint.classList.add('hidden'); }
+        }
+
+        function loadFarmLocations() {
+            fetch('../../api/dashboard/get_farm_locations.php')
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById('farmLocation');
+                    select.innerHTML = '<option value="">Select a Location...</option>';
+                    if (data.status === 'success' && data.locations.length > 0) {
+                        data.locations.forEach(loc => {
+                            select.innerHTML += '<option value="' + loc.Location_ID + '" data-max-area="' + loc.Area_Size + '">' + loc.Barangay + ' - ' + loc.Area_Size + ' Ha</option>';
+                        });
+                    } else {
+                        select.innerHTML = '<option value="" disabled>No locations found. Add one first.</option>';
+                    }
+                }).catch(() => {
+                    document.getElementById('farmLocation').innerHTML = '<option value="" disabled>Could not load locations</option>';
+                });
+        }
+
+        // ─── AREA VALIDATION ──────────────────────────────────────────────────
+        let currentMaxArea = 0;
+
+        function updateMaxArea() {
+            const select   = document.getElementById("farmLocation");
+            const opt      = select.options[select.selectedIndex];
+            currentMaxArea = (opt && opt.value) ? parseFloat(opt.getAttribute("data-max-area")) : 0;
+            document.getElementById("landArea").max = currentMaxArea;
+            validateArea();
+        }
+
+        function validateArea() {
+            const input     = document.getElementById("landArea");
+            const warning   = document.getElementById("areaWarning");
+            const submitBtn = document.getElementById("submitReportBtn");
+            const val       = parseFloat(input.value);
+            if (currentMaxArea > 0 && val > currentMaxArea) {
+                warning.classList.remove("hidden"); input.classList.add("border-red-500");
+                submitBtn.disabled = true; submitBtn.classList.add("opacity-50", "cursor-not-allowed");
+            } else {
+                warning.classList.add("hidden"); input.classList.remove("border-red-500");
+                submitBtn.disabled = false; submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
+            }
+        }
+
+        // ─── REPORT MODAL ─────────────────────────────────────────────────────
+        function openReportModal(editId) {
+            document.getElementById("reportForm").reset();
+            selectedFiles = [];
+            photoGeoTags  = [];
+            document.getElementById('imagePreviewContainer').innerHTML = '';
+            document.getElementById('photoCount').classList.add('hidden');
+
+            const locationSelect = document.getElementById('farmLocation');
+            if (locationSelect.options.length <= 1 && locationSelect.options[0] && locationSelect.options[0].disabled) {
+                Swal.fire('No Farm Locations', 'You need to add a Farm Location before you can file a report.', 'warning'); return;
+            }
+            document.getElementById("reportId").value       = editId || "";
+            document.getElementById("modalTitle").innerText = editId ? "Edit Damage Report" : "File Crop Damage Report";
+            currentMaxArea = 0;
+            validateArea();
+            document.getElementById("modal").classList.remove("hidden");
+        }
+
+        function closeModal() { document.getElementById("modal").classList.add("hidden"); }
+
+        async function submitReport(e) {
+            e.preventDefault();
+
+            const rsbsaCheck = await fetch('../../api/farmer/check_rsbsa.php').then(r => r.json());
+            if (rsbsaCheck.status !== 'valid') {
+                Swal.fire({ icon: 'warning', title: 'RSBSA Required', text: rsbsaCheck.message, confirmButtonColor: '#11542e', confirmButtonText: 'Go to Profile' })
+                    .then(() => window.location.href = '../profile/profile.html');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('id',            document.getElementById('reportId').value);
+            formData.append('location_id',   document.getElementById('farmLocation').value);
+            formData.append('crop_id',       document.getElementById('cropName').value);
+            formData.append('type_id',       document.getElementById('cropType').value);
+            formData.append('planting_date', document.getElementById('plantingDate').value);
+            formData.append('area',          document.getElementById('landArea').value);
+            formData.append('damage_type',   document.getElementById('damageType').value);
+            formData.append('severity',      document.getElementById('severity').value);
+            formData.append('description',   document.getElementById('description').value);
+
+            selectedFiles.forEach((file, i) => {
+                formData.append('images[]', file);
+                const geo = photoGeoTags[i];
+                if (geo && geo.lat && geo.lng) {
+                    formData.append(`geo_lat_${i}`, geo.lat);
+                    formData.append(`geo_lng_${i}`, geo.lng);
+                } else {
+                    formData.append(`geo_lat_${i}`, '');
+                    formData.append(`geo_lng_${i}`, '');
+                }
+            });
+
+            Swal.fire({ title: 'Submitting...', text: 'Uploading your report and photos.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            fetch('../../api/dashboard/submit_report.php', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 1500, showConfirmButton: false });
+                    closeModal(); loadDashboardData();
+                } else { Swal.fire('Error', data.message, 'error'); }
+            })
+            .catch(() => Swal.fire('Error', 'Failed to submit report due to server error.', 'error'));
+        }
+
+        function editReport(id) {
+            Swal.fire({ title: 'Loading...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            fetch('../../api/dashboard/get_report.php?id=' + id).then(res => res.json()).then(data => {
+                Swal.close();
+                if (data.status === 'success') {
+                    const r = data.data;
+                    selectedFiles = []; photoGeoTags = [];
+                    document.getElementById('imagePreviewContainer').innerHTML = '';
+                    document.getElementById('photoCount').classList.add('hidden');
+                    document.getElementById('reportId').value     = r.Damage_Report_ID;
+                    document.getElementById('farmLocation').value = r.Location_ID || '';
+                    updateMaxArea();
+                    document.getElementById('cropPicker').value = r.Crop_ID || '';
+                    document.getElementById('cropName').value   = r.Crop_ID || '';
+                    document.getElementById('cropType').value   = r.Type_ID || '';
+                    const hint = document.getElementById('cropPickerHint');
+                    if (r.Type_ID) { hint.textContent = 'Type ID ' + r.Type_ID + ' auto-selected'; hint.classList.remove('hidden'); }
+                    else { hint.classList.add('hidden'); }
+                    document.getElementById('plantingDate').value = r.Planting_Date   || '';
+                    document.getElementById('landArea').value     = r.Area_Hectares   || '';
+                    document.getElementById('damageType').value   = r.Damage_Type     || 'Flood';
+                    document.getElementById('severity').value     = r.Damage_Severity || 'Low';
+                    document.getElementById('description').value  = r.Description     || '';
+                    document.getElementById('modalTitle').innerText = "Edit Damage Report";
+                    document.getElementById('modal').classList.remove('hidden');
+                } else { Swal.fire('Error', data.message, 'error'); }
+            }).catch(() => Swal.fire('Error', 'Failed to load report data.', 'error'));
+        }
+        function deleteReport(id) {
+            Swal.fire({
+                title: 'Archive Report?',
+                text: "This will remove the report from your active view.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, Archive It'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('../../api/masterfile/damage_report/soft_delete.php', { 
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire('Archived!', 'The report has been archived.', 'success');
+                            loadDashboardData();
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire('Error', 'Server connection failed. Check file path.', 'error');
+                    });
+                }
+            });
+        }
+
+        // ─── NOTIFICATIONS & AUTH ─────────────────────────────────────────────
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                fetch('../../api/dashboard/farmer_notifications.php?action=read')
+                    .then(() => { document.getElementById('notifBadge').classList.add('hidden'); setTimeout(fetchNotifications, 1000); });
+            }
+        }
+
+        function fetchNotifications() {
+            fetch('../../api/dashboard/farmer_notifications.php?action=fetch').then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    data.unread > 0 ? document.getElementById('notifBadge').classList.remove('hidden') : document.getElementById('notifBadge').classList.add('hidden');
+                    const list = document.getElementById('notifList');
+                    if (!data.data.length) { list.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 text-xs italic">No new notifications</div>'; return; }
+                    list.innerHTML = '';
+                    data.data.forEach(n => {
+                        const bg  = n.Is_Read == 0 ? 'bg-green-50/30' : '';
+                        const dot = n.Is_Read == 0 ? '<div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>' : '';
+                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || 'Just now') + '</p></div></div>';
+                    });
+                    // Also update the big alert banner
+                    fetchAndShowBigAlerts();
+                }
+            }).catch(err => console.error("Notifications error:", err));
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notifDropdown');
+            const bell     = dropdown ? dropdown.previousElementSibling : null;
+            if (dropdown && bell && !dropdown.contains(event.target) && !bell.contains(event.target))
+                dropdown.classList.add('hidden');
+        });
+
+        function confirmLogout() {
+            Swal.fire({ title: 'Sign Out?', icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
+                .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html').catch(() => window.location.href = '../../auth.html'); });
+        }
+
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+            }, 5 * 60 * 1000);
+        }
+        // Also listen for touch events for mobile users
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+
+        // Poll for new big alerts every 30 seconds
+        setInterval(fetchAndShowBigAlerts, 30000);
+    </script>
+</body>
+</html>

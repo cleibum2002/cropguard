@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CropGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            if (data.status !== 'active' || data.role.toLowerCase() !== 'admin') window.location.href = '../../auth.html';
+            else {
+                window.addEventListener('load', () => {
+                    document.getElementById('adminName').innerText = data.user.fullname;
+                    document.getElementById('adminNameSidebar').innerText = data.user.fullname;
+                    document.getElementById('welcomeName').innerText = data.user.fullname.split(' ')[0];
+                });
+            }
+        }).catch(() => window.location.href = '../../auth.html');
+    </script>
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    #sidebar-container { width: 16rem; flex-shrink: 0; }
+    #sidebar-container aside { background-color: #11542e; height: 100vh; display: flex; flex-direction: column; }
+    #sidebar-container nav { flex: 1; overflow-y: auto; scrollbar-width: thin; }
+    .sidebar-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: rgba(255, 255, 255, 0.6); border-radius: 0.75rem; font-size: 0.875rem; transition: all 0.2s ease; border-left: 3px solid transparent; }
+    .sidebar-link.active { background: rgba(255,255,255,0.12); border-left-color: #f1c40f; color: white; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.06); color: white; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+
+    /* ── Geotagged photo card in admin gallery ── */
+    .geo-photo-card { position: relative; width: 9rem; flex-shrink: 0; }
+    .geo-photo-card img { width: 9rem; height: 9rem; object-fit: cover; border-radius: 0.75rem; display: block; border: 2px solid #e5e7eb; transition: border-color 0.15s; }
+    .geo-photo-card:hover img { border-color: #3b82f6; }
+    .geo-photo-card .geo-info {
+        margin-top: 4px; font-size: 9px; font-weight: 700; text-align: center;
+        line-height: 1.3; color: #6b7280;
+    }
+    .geo-photo-card .geo-info.geotagged { color: #16a34a; }
+    .geo-photo-card .geo-info.no-geo    { color: #dc2626; }
+    .geo-photo-card .geo-info a { color: inherit; text-decoration: none; }
+    .geo-photo-card .geo-info a:hover { text-decoration: underline; }
+    /* Status dot overlay on photo */
+    .geo-dot {
+        position: absolute; top: 6px; left: 6px;
+        width: 18px; height: 18px; border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 8px; border: 2px solid white;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    }
+    .geo-dot.ok     { background: #16a34a; color: white; }
+    .geo-dot.none   { background: #dc2626; color: white; }
+</style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<div id="sidebar-container"></div>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <div>
+                    <span class="text-base font-black text-gray-800">Admin Dashboard</span>
+                </div>
+                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
+                    <input type="text" placeholder="Search reports, farmers, or locations..."
+                           class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
+                </div>
+                <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                    <span class="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-wifi text-gray-300"></i> Offline Mode Ready
+                    </span>
+                    <button class="text-xs font-bold text-gray-500">EN / <span class="text-[#11542e]">FIL</span></button>
+                    <div class="relative">
+                        <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100">
+                            <i class="fa-regular fa-bell text-sm"></i>
+                            <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                        </button>
+                        <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest">Notifications</h4>
+                            </div>
+                            <div id="notifList" class="divide-y divide-gray-50">
+                                <p class="text-xs text-gray-400 italic text-center py-8">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
+            <div class="max-w-7xl mx-auto">
+
+                <div class="mb-6">
+                    <h2 class="text-2xl font-black text-gray-800 tracking-tight">Admin Dashboard</h2>
+                    <p class="text-gray-400 text-sm">DA Region X — Northern Mindanao Operations Center</p>
+                </div>
+
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Reports</p>
+                            <div class="w-9 h-9 bg-blue-50 text-blue-500 rounded-xl flex items-center justify-center text-sm">
+                                <i class="fa-regular fa-file-lines"></i>
+                            </div>
+                        </div>
+                        <h3 id="statItems" class="text-3xl font-black text-gray-800 mb-1">--</h3>
+                        <p class="text-[11px] text-green-500 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-up text-[9px]"></i> <span>12%</span>
+                            <span class="text-gray-400 font-normal ml-1">from last month</span>
+                        </p>
+                    </div>
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pending Validation</p>
+                            <div class="w-9 h-9 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-sm">
+                                <i class="fa-regular fa-clock"></i>
+                            </div>
+                        </div>
+                        <h3 id="statPending" class="text-3xl font-black text-gray-800 mb-1">--</h3>
+                        <p class="text-[11px] text-gray-400 font-normal">Awaiting review</p>
+                    </div>
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Avg Response Time</p>
+                            <div class="w-9 h-9 bg-green-50 text-green-600 rounded-xl flex items-center justify-center text-sm">
+                                <i class="fa-regular fa-clock"></i>
+                            </div>
+                        </div>
+                        <h3 id="statFarmers" class="text-3xl font-black text-gray-800 mb-1">--</h3>
+                        <p class="text-[11px] text-red-400 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-down text-[9px]"></i> <span>0.5%</span>
+                            <span class="text-gray-400 font-normal ml-1">from last month</span>
+                        </p>
+                    </div>
+                    <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <div class="flex justify-between items-start mb-3">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Technicians</p>
+                            <div class="w-9 h-9 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center text-sm">
+                                <i class="fa-solid fa-user-doctor"></i>
+                            </div>
+                        </div>
+                        <h3 id="statTechs" class="text-3xl font-black text-gray-800 mb-1">--</h3>
+                        <p class="text-[11px] text-gray-400 font-normal">Field technicians</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
+                                <h3 class="font-black text-gray-800 flex items-center gap-2">
+                                    <i class="fa-regular fa-clock text-amber-500"></i> Validation Queue
+                                </h3>
+                                <a href="damage_reports.html" class="text-[11px] font-black text-[#11542e] uppercase tracking-widest hover:underline">View All</a>
+                            </div>
+                            <div class="divide-y divide-gray-50" id="queueTable">
+                                <div class="px-6 py-8 text-center text-gray-400 italic text-sm">Loading queue...</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-green-500"></i>
+                                <h3 class="font-black text-gray-800">Recent Certifications</h3>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="bg-gray-50/50">
+                                            <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Report ID</th>
+                                            <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer</th>
+                                            <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Crop</th>
+                                            <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                                            <th class="px-6 py-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="certTable" class="divide-y divide-gray-50">
+                                        <tr><td colspan="5" class="px-6 py-6 text-center text-gray-400 italic text-sm">Loading...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-50 flex items-center gap-2">
+                                <i class="fa-solid fa-user-doctor text-blue-500"></i>
+                                <h3 class="font-black text-gray-800">Technician Status</h3>
+                            </div>
+                            <div class="p-4 space-y-3" id="techList">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2 h-2 bg-amber-400 rounded-full"></span>
+                                        <div><p class="text-sm font-bold text-gray-700">Loading Techs...</p></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="px-6 py-4 border-b border-gray-50 flex items-center justify-between">
+                                <h3 class="font-black text-gray-800 text-sm">Avg Response Time</h3>
+                                <div class="flex gap-1 bg-gray-100 p-1 rounded-xl">
+                                    <button onclick="loadResponseChart('daily')" id="btnDaily"
+                                        class="response-tab bg-white text-[#11542e] shadow-sm px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all">Daily</button>
+                                    <button onclick="loadResponseChart('monthly')" id="btnMonthly"
+                                        class="response-tab px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all text-gray-400">Monthly</button>
+                                    <button onclick="loadResponseChart('yearly')" id="btnYearly"
+                                        class="response-tab px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all text-gray-400">Yearly</button>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <canvas id="responseChart" height="180"></canvas>
+                                <p id="responseEmpty" class="text-center text-xs text-gray-400 italic hidden py-6">No data available.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ─── REVIEW MODAL ─────────────────────────────────────────────────── -->
+    <div id="reviewModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 bg-blue-50 border-b border-blue-100 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-magnifying-glass-chart text-blue-600 text-xl"></i>
+                    <div>
+                        <h3 class="text-base font-black text-blue-900" id="reviewModalTitle">Review Report Details</h3>
+                        <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Validation & Evidence Data</p>
+                    </div>
+                </div>
+                <button onclick="closeReviewModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-400 hover:bg-blue-100 hover:text-blue-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <div id="adminReviewProfile" class="mb-6 grid grid-cols-2 md:grid-cols-3 gap-3 border-b border-gray-100 pb-6">
+                    <p class="text-xs italic text-gray-400 col-span-3">Loading profile...</p>
+                </div>
+
+                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Field Notes / Description</h4>
+                <div class="bg-gray-50 border-l-4 border-blue-500 p-5 rounded-r-xl mb-6">
+                    <p id="reviewNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">Loading field notes...</p>
+                </div>
+                
+                <!-- ── PHOTO EVIDENCE + GEOTAGS ──────────────────────────── -->
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Photographic Evidence</h4>
+                    <!-- Geo summary badge -->
+                    <span id="geoSummaryBadge" class="hidden text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"></span>
+                </div>
+                <!-- Legend -->
+                <div class="flex items-center gap-4 mb-3">
+                    <span class="flex items-center gap-1 text-[9px] font-bold text-green-600">
+                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> GPS captured
+                    </span>
+                    <span class="flex items-center gap-1 text-[9px] font-bold text-red-500">
+                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> No GPS data
+                    </span>
+                    <span class="text-[9px] text-gray-400 italic">Click photo to open full size · Click coordinates to view on map</span>
+                </div>
+                <div id="reviewGallery" class="flex flex-wrap gap-4"></div>
+
+                <!-- ── RELIEF CALCULATION ────────────────────────────────── -->
+                <div id="reliefCalculationSection" class="mt-6 pt-6 border-t border-gray-100">
+                    <h4 class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-seedling"></i> Automated Relief Calculation
+                    </h4>
+                    <div id="calcLoading" class="text-xs text-gray-400 italic">Calculating recommended seeds...</div>
+                    <div id="calcDetails" class="hidden">
+                        <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
+                            <div>
+                                <p class="text-[10px] font-black text-green-600 uppercase tracking-widest">Base Requirement</p>
+                                <p id="calcBase" class="text-lg font-black text-gray-800 mt-1">2 Bags/Ha</p>
+                            </div>
+                            <div class="text-center border-l border-green-200 pl-4">
+                                <p class="text-[10px] font-black text-green-600 uppercase tracking-widest">Damage Severity</p>
+                                <p id="calcMultiplier" class="text-lg font-black text-red-600 mt-1">0%</p>
+                            </div>
+                            <div class="text-right border-l border-green-200 pl-4">
+                                <p class="text-[10px] font-black text-[#11542e] uppercase tracking-widest">Recommended Relief</p>
+                                <p id="calcRecommended" class="text-2xl font-black text-[#11542e] mt-1">0 Bags</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── AID ALLOCATION ────────────────────────────────────── -->
+                <div id="aidAllocationSection" class="mt-8 pt-6 border-t border-gray-100 hidden">
+                    <h4 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4">Direct Allocate Relief Assistance</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-3">
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Agricultural Input</label>
+                            <select id="adminAidItem" onchange="updateAidDetails()" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500 font-semibold">
+                                <option value="">Loading items...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Quantity</label>
+                            <input type="number" id="adminAidQty" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500" placeholder="e.g. 2">
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-4 text-xs bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                        <p class="text-gray-500">Unit: <span id="adminAidUnitDisplay" class="font-black text-gray-800">—</span></p>
+                        <p class="text-gray-500">Current Stock: <span id="adminAidStockDisplay" class="font-black text-blue-600">—</span></p>
+                    </div>
+                </div>
+            </div>
+            
+            <input type="hidden" id="reviewReportId">
+            <div id="reviewModalFooter" class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3"></div>
+        </div>
+    </div>
+
+    <script>
+        let aidInventory = [];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadData();
+            loadMasterfileItems();
+            loadAdminNotifications();
+        });
+
+        // ─── NOTIFICATIONS ─────────────────────────────────────────────────
+        async function loadAdminNotifications() {
+            try {
+                const res = await fetch('../../api/dashboard/admin_notifications.php?action=fetch');
+                const result = await res.json();
+                if (result.status === 'success') {
+                    renderNotificationList(result.data);
+                    const badge = document.getElementById('notifBadge');
+                    if (result.unread > 0) {
+                        badge.textContent = result.unread > 9 ? '9+' : result.unread;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load notifications:', e);
+            }
+        }
+
+        function renderNotificationList(items) {
+            const list = document.getElementById('notifList');
+            if (!items || items.length === 0) {
+                list.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-8">No notifications yet.</p>';
+                return;
+            }
+            list.innerHTML = items.map(n => `
+                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors">
+                    <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
+                    <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                </div>
+            `).join('');
+        }
+
+        function toggleNotificationPanel() {
+            const panel = document.getElementById('notifPanel');
+            const isHidden = panel.classList.contains('hidden');
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                fetch('../../api/dashboard/admin_notifications.php?action=read')
+                    .then(() => { document.getElementById('notifBadge').classList.add('hidden'); });
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('notifPanel');
+            const btn = document.getElementById('notifBellBtn');
+            if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) {
+                panel.classList.add('hidden');
+            }
+        });
+
+        // ─── MASTERFILE INVENTORY ─────────────────────────────────────────────
+        async function loadMasterfileItems() {
+            try {
+                const res = await fetch("../../api/masterfile/items/get_all.php");
+                const result = await res.json();
+                if (result.status === 'success') {
+                    aidInventory = result.data.filter(item => item.status === 'Active');
+                    const select = document.getElementById('adminAidItem');
+                    select.innerHTML = '<option value="">-- Select Relief Item --</option>';
+                    aidInventory.forEach(item => {
+                        select.innerHTML += `<option value="${item.id}">${item.item_name} (${item.category})</option>`;
+                    });
+                }
+            } catch (e) { console.error("Failed to load inventory items."); }
+        }
+
+        function updateAidDetails() {
+            const select     = document.getElementById('adminAidItem');
+            const item       = aidInventory.find(i => i.id == select.value);
+            const stockEl    = document.getElementById('adminAidStockDisplay');
+            if (item) {
+                document.getElementById('adminAidUnitDisplay').innerText = item.unit;
+                stockEl.innerText   = item.current_stock;
+                stockEl.className   = parseFloat(item.current_stock) < 10 ? "font-black text-red-600" : "font-black text-blue-600";
+            } else {
+                document.getElementById('adminAidUnitDisplay').innerText = '—';
+                stockEl.innerText = '—'; stockEl.className = "font-black text-gray-400";
+            }
+        }
+
+        // ─── GEOTAGGED GALLERY RENDERER ───────────────────────────────────────
+        // Used by both admin dashboard and damage_reports pages
+        function renderGeoGallery(containerId, images, summaryBadgeId) {
+            const gallery = document.getElementById(containerId);
+            gallery.innerHTML = '';
+
+            if (!images || !images.length) {
+                gallery.innerHTML = '<p class="text-sm text-gray-400 italic bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">No photographic evidence is attached to this report.</p>';
+                if (summaryBadgeId) document.getElementById(summaryBadgeId).classList.add('hidden');
+                return;
+            }
+
+            let geoCount = 0;
+            images.forEach((img, idx) => {
+                const hasGeo = img.geo_lat && img.geo_lng;
+                if (hasGeo) geoCount++;
+
+                const mapUrl  = hasGeo ? `https://www.google.com/maps?q=${img.geo_lat},${img.geo_lng}` : null;
+                const latText = hasGeo ? parseFloat(img.geo_lat).toFixed(5)  : null;
+                const lngText = hasGeo ? parseFloat(img.geo_lng).toFixed(5) : null;
+
+                const card = document.createElement('div');
+                card.className = 'geo-photo-card';
+                card.innerHTML = `
+                    <a href="${img.path || img}" target="_blank">
+                        <img src="${img.path || img}" alt="Evidence photo ${idx + 1}" loading="lazy">
+                    </a>
+                    <div class="geo-dot ${hasGeo ? 'ok' : 'none'}" title="${hasGeo ? 'GPS location captured' : 'No GPS data'}">
+                        <i class="fa-solid ${hasGeo ? 'fa-location-dot' : 'fa-location-slash'}" style="font-size:7px;"></i>
+                    </div>
+                    <div class="geo-info ${hasGeo ? 'geotagged' : 'no-geo'}">
+                        ${hasGeo
+                            ? `<a href="${mapUrl}" target="_blank" title="Open in Google Maps">
+                                <i class="fa-solid fa-location-dot"></i> ${latText}, ${lngText}
+                               </a>`
+                            : '<i class="fa-solid fa-triangle-exclamation"></i> No GPS data'}
+                    </div>
+                `;
+                gallery.appendChild(card);
+            });
+
+            // Update the summary badge
+            if (summaryBadgeId) {
+                const badge = document.getElementById(summaryBadgeId);
+                badge.classList.remove('hidden');
+                if (geoCount === images.length) {
+                    badge.textContent = `✓ All ${geoCount} photos geotagged`;
+                    badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700';
+                } else if (geoCount === 0) {
+                    badge.textContent = 'No photos geotagged';
+                    badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700';
+                } else {
+                    badge.textContent = `${geoCount}/${images.length} photos geotagged`;
+                    badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700';
+                }
+            }
+        }
+
+        // ─── DASHBOARD DATA LOAD ──────────────────────────────────────────────
+        async function loadData() {
+            try {
+                const res  = await fetch('../../api/dashboard/stats.php');
+                const data = await res.json();
+
+                document.getElementById('statItems').innerText   = data.total_items ?? '--';
+                document.getElementById('statFarmers').innerText = (data.avg_response ?? '--') + (data.avg_response ? ' days' : '');
+                document.getElementById('statPending').innerText = data.total_pending ?? '--';
+                document.getElementById('statTechs').innerText   = (data.total_techs ?? '--') + (data.total_techs ? '/12' : '');
+
+                const queue = document.getElementById('queueTable');
+                if (data.queue && data.queue.length) {
+                    queue.innerHTML = '';
+                    data.queue.forEach(q => {
+                        queue.innerHTML += `
+                        <div class="px-6 py-4 flex items-center justify-between gap-4 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-black text-gray-400 uppercase">#REP-${q.Damage_Report_ID}</span>
+                                    <span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black uppercase">Pending</span>
+                                </div>
+                                <p class="text-sm font-black text-gray-800">${q.Farmer_Name} — <span class="text-gray-500 font-normal">${q.Damage_Type}</span></p>
+                                <div class="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
+                                    <span><i class="fa-solid fa-location-dot mr-1"></i>${q.barangay || 'Brgy.'}</span>
+                                    <span><i class="fa-regular fa-calendar mr-1"></i>${q.date || ''}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-shrink-0">
+                                <button onclick="reviewInspection(${q.Damage_Report_ID}, 'PENDING')" class="px-3 py-2 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase hover:bg-blue-100 transition-all">View Details</button>
+                                <button onclick="updateStatus(${q.Damage_Report_ID}, 'Validated')" class="px-4 py-2 bg-[#11542e] text-white rounded-xl text-[10px] font-black uppercase hover:bg-[#0c3d22] transition-all">Validate</button>
+                            </div>
+                        </div>`;
+                    });
+                } else {
+                    queue.innerHTML = '<div class="px-6 py-8 text-center text-gray-400 italic text-sm">Queue is currently empty.</div>';
+                }
+
+                const certTable = document.getElementById('certTable');
+                if (data.certified && data.certified.length) {
+                    certTable.innerHTML = '';
+                    data.certified.forEach(c => {
+                        certTable.innerHTML += `
+                        <tr class="hover:bg-gray-50/60 transition-all">
+                            <td class="px-6 py-3 text-sm font-bold text-gray-600">#REP-${c.report_id || '---'}</td>
+                            <td class="px-6 py-3 text-sm text-gray-700">${c.farmer_name || c.Farmer_Name}</td>
+                            <td class="px-6 py-3 text-sm text-gray-500">${c.crop || 'Crop'}</td>
+                            <td class="px-6 py-3 text-sm text-gray-400">${c.date || ''}</td>
+                            <td class="px-6 py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[9px] font-black uppercase">Approved</span></td>
+                        </tr>`;
+                    });
+                } else {
+                    certTable.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-400 italic text-sm">No recent approvals.</td></tr>`;
+                }
+
+                const techList = document.getElementById('techList');
+                if (data.technicians && data.technicians.length) {
+                    techList.innerHTML = '';
+                    data.technicians.forEach(t => {
+                        techList.innerHTML += `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <span class="w-2 h-2 bg-green-400 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.6)]"></span>
+                                <div>
+                                    <p class="text-sm font-bold text-gray-700">${t.Fullname}</p>
+                                    <p class="text-[10px] text-gray-400">${t.Assigned_Area || 'No area assigned'} • ${t.active_reports} Active Task(s)</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] font-black text-green-600 uppercase tracking-widest bg-green-100 px-2 py-1 rounded-full">Active</span>
+                        </div>`;
+                    });
+                } else {
+                    techList.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-4">No active technicians.</p>';
+                }
+
+            } catch (e) { console.error('Dashboard load error', e); }
+        }
+
+        // ─── REVIEW MODAL ─────────────────────────────────────────────────────
+        async function reviewInspection(id, status) {
+            document.getElementById('reviewReportId').value = id;
+            document.getElementById('reviewModalTitle').innerText = `Report Details #REP-${id}`;
+            document.getElementById('reviewNotes').innerText = "Loading data...";
+            document.getElementById('reviewGallery').innerHTML = "";
+            document.getElementById('adminReviewProfile').innerHTML = '<p class="text-xs italic text-gray-400 col-span-3">Loading profile...</p>';
+            document.getElementById('adminAidQty').value  = "";
+            document.getElementById('adminAidItem').value = "";
+            document.getElementById('geoSummaryBadge').classList.add('hidden');
+            updateAidDetails();
+
+            const footer     = document.getElementById('reviewModalFooter');
+            const aidSection = document.getElementById('aidAllocationSection');
+
+            if (status === 'INSPECTED' || status === 'PENDING' || status === 'VALIDATED') {
+                aidSection.classList.remove('hidden');
+                const btnText = status === 'INSPECTED' ? 'Approve & Allocate Aid' : 'Direct Approve & Allocate Aid';
+                const btnIcon = status === 'INSPECTED' ? 'fa-check' : 'fa-bolt';
+                footer.innerHTML = `
+                    <button onclick="closeReviewModal()" class="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">Close</button>
+                    <button onclick="updateStatus(${id}, 'Rejected')" class="px-6 py-2.5 bg-red-50 text-red-600 border border-red-200 text-sm font-bold rounded-xl shadow-sm hover:bg-red-500 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-xmark"></i> Reject Claim
+                    </button>
+                    <button onclick="approveWithAid()" class="px-6 py-2.5 bg-green-600 text-white text-sm font-black rounded-xl shadow-lg shadow-green-900/20 hover:bg-green-700 transition-all flex items-center gap-2">
+                        <i class="fa-solid ${btnIcon}"></i> ${btnText}
+                    </button>`;
+            } else {
+                aidSection.classList.add('hidden');
+                footer.innerHTML = `<button onclick="closeReviewModal()" class="px-6 py-2.5 bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 rounded-xl transition-colors">Close Viewer</button>`;
+            }
+
+            document.getElementById('reviewModal').classList.remove('hidden');
+
+            // Load relief calculation
+            document.getElementById('calcLoading').classList.remove('hidden');
+            document.getElementById('calcDetails').classList.add('hidden');
+            fetch(`../../api/dashboard/calculate_cost.php?report_id=${id}`)
+                .then(r => r.json())
+                .then(cost => {
+                    document.getElementById('calcLoading').classList.add('hidden');
+                    if (cost.status === 'success') {
+                        document.getElementById('calcDetails').classList.remove('hidden');
+                        const area   = parseFloat(cost.area_hectares) || 0;
+                        const mult   = parseFloat(cost.severity_multiplier) || 0;
+                        const bags   = Math.ceil(area * 2 * (mult / 100));
+                        document.getElementById('calcBase').innerText        = '2 Bags / Ha';
+                        document.getElementById('calcMultiplier').innerText  = cost.severity_multiplier;
+                        document.getElementById('calcRecommended').innerText = `${bags} Bag(s)`;
+                        document.getElementById('adminAidQty').value         = bags || 1;
+                    }
+                })
+                .catch(() => { document.getElementById('calcLoading').innerText = 'Could not calculate relief.'; });
+
+            // Load report details — NOW expects images with geo_lat/geo_lng
+            fetch(`../../api/masterfile/damage_report/get_report_details.php?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const detail = data.report;
+                        const rsbsa  = detail.RSBA_No || detail.rsbsa_no || 'UNREGISTERED';
+
+                        document.getElementById('adminReviewProfile').innerHTML = `
+                            <div class="bg-gray-50 rounded-xl p-3">
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Farmer Name</p>
+                                <p class="text-xs font-bold text-gray-800">${detail.FarmerName || 'Unknown'}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-3">
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">RSBSA No.</p>
+                                <p class="text-xs font-bold text-gray-800 font-mono tracking-widest">${rsbsa}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-3">
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Declared Location</p>
+                                <p class="text-[11px] font-bold text-gray-800 truncate" title="${detail.Barangay}">${detail.Barangay || 'Missing'}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-3">
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Crop Type</p>
+                                <p class="text-xs font-bold text-[#11542e]">${detail.Crop_Name || 'Unknown'}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-3">
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Reported Damage</p>
+                                <p class="text-xs font-bold text-red-600">${detail.Damage_Type || 'Unknown'}</p>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-3">
+                                <p class="text-[10px] font-black text-gray-400 uppercase mb-1">Affected Area</p>
+                                <p class="text-xs font-bold text-gray-800">${detail.Affected_Area || detail.Area_Size || '0.00'} Ha</p>
+                            </div>
+                        `;
+
+                        document.getElementById('reviewNotes').innerText = detail.Description || "No notes provided.";
+
+                        // ── Render gallery with geotags ───────────────────────
+                        // data.images should now be array of { path, geo_lat, geo_lng }
+                        // For backwards compat, handle both plain strings and objects
+                        const imagesNormalized = (data.images || []).map(img =>
+                            typeof img === 'string' ? { path: img, geo_lat: null, geo_lng: null } : img
+                        );
+                        renderGeoGallery('reviewGallery', imagesNormalized, 'geoSummaryBadge');
+                    } else {
+                        document.getElementById('reviewNotes').innerText = "Error loading details.";
+                    }
+                })
+                .catch(() => { document.getElementById('reviewNotes').innerText = "Failed to connect to server."; });
+        }
+
+        function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
+
+        async function approveWithAid() {
+            const reportId = document.getElementById('reviewReportId').value;
+            const itemId   = document.getElementById('adminAidItem').value;
+            const qty      = document.getElementById('adminAidQty').value;
+            if (!itemId) return Swal.fire("Required", "Please select a relief item from the Masterfile.", "warning");
+            if (!qty || parseFloat(qty) <= 0) return Swal.fire("Required", "Please enter a valid quantity.", "warning");
+            const selectedItem = aidInventory.find(i => i.id == itemId);
+            if (parseFloat(qty) > parseFloat(selectedItem.current_stock)) {
+                return Swal.fire({ icon: 'error', title: 'Not Enough Stock', text: `You are trying to give ${qty} ${selectedItem.unit}, but there are only ${selectedItem.current_stock} available.` });
+            }
+            Swal.fire({ title: 'Direct Approve & Allocate Aid?', text: `Allocate ${qty} ${selectedItem.unit} of ${selectedItem.item_name}.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#16a34a', confirmButtonText: 'Yes, Direct Approve' })
+                .then(async (result) => {
+                    if (result.isConfirmed) {
+                        try {
+                            const res  = await fetch("../../api/masterfile/damage_report/approve_with_aid.php", {
+                                method: "POST", headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ report_id: reportId, category: selectedItem.item_name, quantity: qty, unit: selectedItem.unit })
+                            });
+                            const data = await res.json();
+                            if (data.status === 'success') { Swal.fire('Approved!', 'Report has been approved and aid allocated.', 'success'); closeReviewModal(); loadData(); loadMasterfileItems(); }
+                            else { Swal.fire('Error', data.message, 'error'); }
+                        } catch (err) { Swal.fire('Error', 'Server connection failed.', 'error'); }
+                    }
+                });
+        }
+
+        async function updateStatus(id, newStatus) {
+            const result = await Swal.fire({
+                title: 'Are you sure?', text: `You are about to ${newStatus === 'Rejected' ? 'reject' : 'validate'} this report.`, icon: 'warning',
+                showCancelButton: true, confirmButtonColor: newStatus === 'Rejected' ? '#dc2626' : '#11542e', confirmButtonText: `Yes, ${newStatus}`
+            });
+            if (result.isConfirmed) {
+                try {
+                    const r = await fetch('../../api/dashboard/validate.php', {
+                        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: newStatus })
+                    });
+                    const resData = await r.json();
+                    if (resData.status === 'success') { Swal.fire({ title: 'Success!', text: `Report updated to ${newStatus}`, icon: 'success', timer: 1500, showConfirmButton: false }); loadData(); closeReviewModal(); }
+                    else { Swal.fire('Error', 'Update failed', 'error'); }
+                } catch (e) { Swal.fire('Error', 'Server connection failed.', 'error'); }
+            }
+        }
+
+        // ─── AUTH ─────────────────────────────────────────────────────────────
+        function confirmLogout() {
+            Swal.fire({ title: 'Logout?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: 'Yes, logout' })
+                .then((result) => {
+                    if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.href = '../../auth.html'; }).catch(() => window.location.href = '../../auth.html');
+                });
+        }
+
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => { fetch('../../api/auth/logout.php').then(() => { window.location.href = '../../auth.html'; }); });
+            }, 5 * 60 * 1000);
+        }
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+
+        // ─── RESPONSE CHART ───────────────────────────────────────────────────
+        let responseChartInstance = null;
+
+        async function loadResponseChart(period = 'daily') {
+            document.querySelectorAll('.response-tab').forEach(btn => { btn.classList.remove('bg-white', 'text-[#11542e]', 'shadow-sm'); btn.classList.add('text-gray-400'); });
+            const activeBtn = document.getElementById(period === 'daily' ? 'btnDaily' : period === 'monthly' ? 'btnMonthly' : 'btnYearly');
+            activeBtn.classList.add('bg-white', 'text-[#11542e]', 'shadow-sm'); activeBtn.classList.remove('text-gray-400');
+            try {
+                const res  = await fetch(`../../api/dashboard/avg_response.php?period=${period}`);
+                const data = await res.json();
+                const empty  = document.getElementById('responseEmpty');
+                const canvas = document.getElementById('responseChart');
+                if (!data.labels || data.labels.length === 0) { canvas.classList.add('hidden'); empty.classList.remove('hidden'); return; }
+                canvas.classList.remove('hidden'); empty.classList.add('hidden');
+                if (responseChartInstance) responseChartInstance.destroy();
+                responseChartInstance = new Chart(canvas, {
+                    type: 'bar',
+                    data: { labels: data.labels, datasets: [{ label: 'Avg Response (Days)', data: data.values, backgroundColor: '#11542e', borderRadius: 8, borderSkipped: false, hoverBackgroundColor: '#f1c40f' }] },
+                    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y} days` } } }, scales: { x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' }, color: '#94a3b8' } }, y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 }, color: '#94a3b8', callback: val => val + 'd' } } } }
+                });
+            } catch (e) { console.error('Chart load failed', e); }
+        }
+
+        loadResponseChart('daily');
+    </script>
+
+<script src="../../assets/js/navbar_admin.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('dashboard'); });
+</script>
+</body>
+</html>

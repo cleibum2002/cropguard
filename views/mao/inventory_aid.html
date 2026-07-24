@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory & Aid | CropGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.05); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<div id="sidebar-container"></div>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
+        <header class="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
+            <span class="text-base font-black text-gray-800 tracking-tight">Relief Distribution (MAO Center)</span>
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Beneficiary..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#11542e]/20">
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div class="max-w-7xl mx-auto">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Ayuda Distribution Ledger</h2>
+                    <p class="text-gray-500 text-sm mt-1">Verify farmer identification and mark agricultural inputs as claimed.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50/50 border-b border-gray-100">
+                                <tr>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Distribution ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer Name</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Allocated Aid</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Approved By</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="aidTableBody" class="divide-y divide-gray-50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. Session Check
+        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            if (data.status !== 'active' || (data.role.toLowerCase() !== 'mao' && data.role.toLowerCase() !== 'admin')) {
+                window.location.href = '../../auth.html'; 
+            } else {
+                document.getElementById('maoNameSidebar').innerText = data.user.fullname;
+            }
+        }).catch(() => { window.location.href = '../../auth.html'; });
+
+        let aidData = [];
+
+        document.addEventListener("DOMContentLoaded", loadAidList);
+
+        // 2. Fetch the newly created Aid Ledger from the database
+        async function loadAidList() {
+            try {
+                const res = await fetch('../../api/mao/get_aid_ledger.php');
+                const response = await res.json();
+                if (response.status === 'success') {
+                    aidData = response.data;
+                    renderTable(aidData);
+                }
+            } catch (e) { 
+                console.error("Load failed", e); 
+            }
+        }
+
+        // 3. Render the Table
+        function renderTable(data) {
+            const tbody = document.getElementById("aidTableBody");
+            tbody.innerHTML = data.length ? "" : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">No aid allocations found.</td></tr>';
+
+            data.forEach(item => {
+                const isClaimed = item.status === 'Claimed';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/50 transition-colors">
+                        <td class="px-6 py-4 font-black text-gray-400 text-xs">#AID-${item.dist_id}</td>
+                        <td class="px-6 py-4 font-black text-gray-800 text-sm">${item.farmer_name}</td>
+                        <td class="px-6 py-4">
+                            <span class="text-xs font-bold text-indigo-600">${item.quantity} ${item.unit}</span>
+                            <p class="text-[9px] text-gray-400 uppercase">${item.category}</p>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-gray-500">${item.admin_name}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isClaimed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                                ${item.status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            ${isClaimed ? 
+                                `<button disabled class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold cursor-not-allowed">Released</button>` : 
+                                `<button onclick="confirmClaim(${item.dist_id})" class="px-4 py-2 bg-[#11542e] text-white rounded-lg text-xs font-bold shadow-md shadow-green-900/20 hover:bg-green-800 transition-all">Mark as Claimed</button>`
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 4. Handle the Distribution Action
+        function confirmClaim(id) {
+            Swal.fire({
+                title: 'Confirm Distribution?',
+                text: "Has the farmer presented valid ID and received the physical items?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                confirmButtonText: 'Yes, Distributed'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch('../../api/mao/mark_as_claimed.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ dist_id: id })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            Swal.fire('Distributed!', 'Beneficiary claim recorded successfully.', 'success');
+                            loadAidList(); // Refresh the table
+                        } else {
+                            Swal.fire('Error', data.message || 'Failed to update record.', 'error');
+                        }
+                    } catch (e) {
+                        Swal.fire('Error', 'Server connection failed.', 'error');
+                    }
+                }
+            });
+        }
+
+        // 5. Simple Search Filter
+        function filterTable() {
+            const q = document.getElementById("searchInput").value.toLowerCase();
+            const filtered = aidData.filter(i => i.farmer_name.toLowerCase().includes(q) || `aid-${i.dist_id}`.includes(q));
+            renderTable(filtered);
+        }
+
+        // 6. Secure Logout
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Sign Out?',
+                text: "You will be returned to the login screen.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                confirmButtonText: 'Yes, sign out'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    fetch('../../api/auth/logout.php')
+                    .then(() => window.location.href = '../../auth.html')
+                    .catch(() => window.location.href = '../../auth.html');
+                }
+            });
+        }
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+            }, 5 * 60 * 1000);
+        }
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+    </script>
+
+    <script src="../../assets/js/navbar_mao.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMaoNavbar('inventory'); 
+        });
+    </script>
+
+</body>
+</html>

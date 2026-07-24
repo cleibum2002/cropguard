@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication | CropGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            if (data.status !== 'active') {
+                window.location.href = '../../auth.html';
+            } else {
+                currentUserName = data.user.fullname;
+                currentRole     = data.role;
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => {
+                        document.getElementById('currentUserName').innerText = data.user.fullname;
+                        document.getElementById('currentUserRole').innerText = data.role;
+                        loadUsers();
+                    });
+                } else {
+                    document.getElementById('currentUserName').innerText = data.user.fullname;
+                    document.getElementById('currentUserRole').innerText = data.role;
+                    loadUsers();
+                }
+            }
+        }).catch(() => window.location.href = '../../auth.html');
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+        .user-item:hover { background-color: rgba(17,84,46,0.08); }
+        .user-item.active { background-color: rgba(17,84,46,0.15); border-left: 3px solid #11542e; }
+        .message-bubble { max-width: 70%; }
+        .chat-area { height: calc(100vh - 180px); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden bg-[#f0f2f0]">
+
+    <div class="flex w-full h-screen">
+
+        <!-- LEFT PANEL: User List -->
+        <div class="w-80 bg-white border-r border-gray-100 flex flex-col flex-shrink-0 shadow-sm">
+            
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-100 bg-[#11542e]">
+                <div class="flex items-center gap-3">
+                    <button onclick="goBack()" class="text-white/60 hover:text-white transition-all">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-white font-black text-sm">Messages</h2>
+                        <p id="currentUserName" class="text-white/50 text-[10px]">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="p-3 border-b border-gray-50">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
+                    <input type="text" id="searchUser" onkeyup="filterUsers()" placeholder="Search users..."
+                        class="w-full bg-gray-50 rounded-xl py-2 pl-8 pr-3 text-xs outline-none focus:ring-2 focus:ring-[#11542e]">
+                </div>
+            </div>
+
+            <!-- User List -->
+            <div id="userList" class="flex-1 overflow-y-auto custom-scrollbar">
+                <div class="p-4 text-center text-gray-400 text-xs italic">Loading users...</div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL: Chat Window -->
+        <div class="flex-1 flex flex-col">
+
+            <!-- No conversation selected -->
+            <div id="noChatSelected" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <i class="fa-solid fa-message text-gray-300 text-3xl"></i>
+                </div>
+                <h3 class="text-gray-600 font-black text-lg mb-2">Select a conversation</h3>
+                <p class="text-gray-400 text-sm">Choose a user from the left to start messaging</p>
+            </div>
+
+            <!-- Chat Window -->
+            <div id="chatWindow" class="flex-1 flex flex-col hidden">
+
+                <!-- Chat Header -->
+                <div class="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4 flex-shrink-0 shadow-sm">
+                    <div class="w-9 h-9 bg-[#11542e] text-white rounded-full flex items-center justify-center font-black text-sm flex-shrink-0" id="chatAvatar">?</div>
+                    <div>
+                        <p id="chatName" class="text-sm font-black text-gray-800">Select a user</p>
+                        <p id="chatRole" class="text-[10px] text-gray-400 uppercase font-bold"></p>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div id="messagesArea" class="flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar bg-[#f0f2f0]">
+                </div>
+
+                <!-- Message Input -->
+                <div class="bg-white border-t border-gray-100 p-4 flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <input type="text" id="messageInput" placeholder="Type a message..."
+                            onkeydown="if(event.key==='Enter') sendMessage()"
+                            class="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e] border border-gray-100">
+                        <button onclick="sendMessage()" class="w-11 h-11 bg-[#11542e] text-white rounded-full flex items-center justify-center hover:bg-green-800 transition-all shadow-md">
+                            <i class="fa-solid fa-paper-plane text-sm"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden elements -->
+    <span id="currentUserRole" class="hidden"></span>
+
+    <script>
+        let currentUserName = '';
+        let currentRole     = '';
+        let selectedUserId  = null;
+        let selectedUserName = '';
+        let allUsers        = [];
+        let refreshInterval = null;
+
+        async function loadUsers() {
+            try {
+                const res  = await fetch('../../api/messages/get_users.php');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    allUsers = data.data;
+                    renderUsers(allUsers);
+                }
+            } catch(e) { console.error('Failed to load users', e); }
+        }
+
+        function renderUsers(users) {
+            const list = document.getElementById('userList');
+            if (!users.length) {
+                list.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs italic">No users found.</div>';
+                return;
+            }
+
+            const roleColors = {
+                'Admin':      'bg-amber-100 text-amber-700',
+                'Farmer':     'bg-green-100 text-green-700',
+                'Technician': 'bg-blue-100 text-blue-700',
+                'MAO':        'bg-purple-100 text-purple-700',
+                'Encoder':    'bg-gray-100 text-gray-600',
+            };
+
+            list.innerHTML = users.map(u => {
+                const initials = u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                const roleBadge = roleColors[u.role] || 'bg-gray-100 text-gray-600';
+                const unreadBadge = u.unread > 0 ? `<span class="w-5 h-5 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center">${u.unread}</span>` : '';
+                return `
+                <div class="user-item p-3 cursor-pointer flex items-center gap-3 border-b border-gray-50 transition-all ${selectedUserId == u.id ? 'active' : ''}"
+                     onclick="selectUser(${u.id}, '${u.name.replace(/'/g, "\\'")}', '${u.role}')">
+                    <div class="w-10 h-10 bg-[#11542e] text-white rounded-full flex items-center justify-center font-black text-sm flex-shrink-0">${initials}</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-black text-gray-800 truncate">${u.name}</p>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${roleBadge}">${u.role}</span>
+                    </div>
+                    ${unreadBadge}
+                </div>`;
+            }).join('');
+        }
+
+        function filterUsers() {
+            const q = document.getElementById('searchUser').value.toLowerCase();
+            renderUsers(allUsers.filter(u => u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)));
+        }
+
+        function selectUser(id, name, role) {
+            selectedUserId   = id;
+            selectedUserName = name;
+
+            // Update chat header
+            document.getElementById('chatName').innerText   = name;
+            document.getElementById('chatRole').innerText   = role;
+            document.getElementById('chatAvatar').innerText = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            // Show chat window
+            document.getElementById('noChatSelected').classList.add('hidden');
+            document.getElementById('chatWindow').classList.remove('hidden');
+
+            // Load messages
+            loadMessages();
+
+            // Refresh user list to clear unread badge
+            loadUsers();
+
+            // Start auto refresh
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(loadMessages, 3000);
+        }
+
+        async function loadMessages() {
+            if (!selectedUserId) return;
+            try {
+                const res  = await fetch(`../../api/messages/get_messages.php?user_id=${selectedUserId}`);
+                const data = await res.json();
+                if (data.status === 'success') {
+                    renderMessages(data.data, data.current_user);
+                }
+            } catch(e) { console.error('Failed to load messages', e); }
+        }
+
+        function renderMessages(messages, currentUserId) {
+            const area = document.getElementById('messagesArea');
+            const wasAtBottom = area.scrollHeight - area.clientHeight <= area.scrollTop + 50;
+
+            if (!messages.length) {
+                area.innerHTML = '<div class="text-center text-gray-400 text-xs italic py-8">No messages yet. Say hello! 👋</div>';
+                return;
+            }
+
+            area.innerHTML = messages.map(m => {
+                const isMe   = m.Sender_ID == currentUserId;
+                const time   = new Date(m.Created_At).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const date   = new Date(m.Created_At).toLocaleDateString();
+
+                return `
+                <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+                    <div class="message-bubble">
+                        ${!isMe ? `<p class="text-[10px] text-gray-400 font-bold mb-1 ml-1">${m.sender_name}</p>` : ''}
+                        <div class="px-4 py-2.5 rounded-2xl ${isMe ? 'bg-[#11542e] text-white rounded-br-sm' : 'bg-white text-gray-800 rounded-bl-sm shadow-sm'}">
+                            <p class="text-sm">${m.Message}</p>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}">${time}</p>
+                    </div>
+                </div>`;
+            }).join('');
+
+            // Auto scroll to bottom
+            if (wasAtBottom) area.scrollTop = area.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input   = document.getElementById('messageInput');
+            const message = input.value.trim();
+            if (!message || !selectedUserId) return;
+
+            input.value = '';
+
+            try {
+                await fetch('../../api/messages/send_message.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ receiver_id: selectedUserId, message })
+                });
+                loadMessages();
+            } catch(e) { console.error('Failed to send message', e); }
+        }
+
+        function goBack() {
+            const role = currentRole.toLowerCase();
+            const routes = {
+                'admin':      '../masterfile/dashboard.html',
+                'farmer':     '../farmers/index.html',
+                'technician': '../technician/dashboard.html',
+                'mao':        '../mao/index.html',
+                'encoder':    '../encoder/dashboard.html',
+        };
+        window.location.href = routes[role] || '../../auth.html';
+        }
+
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+            }, 5 * 60 * 1000);
+        }
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+    </script>
+</body>
+</html>

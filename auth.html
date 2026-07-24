@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Department of Agriculture - Authentication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-green: #1b4d3e; --light-green: #d5e8d4; --button-hover: #143a2f; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background-image: url('https://images.unsplash.com/photo-1625246333195-58f21a408358?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover; background-position: center; height: 100vh;
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+        }
+        .container { display: flex; width: 900px; min-height: 600px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 25px rgba(0,0,0,0.5); transition: all 0.3s ease; }
+        .left-panel { flex: 1; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
+        .logo-img { width: 150px; height: 150px; background: url('assets/images/DA.png') no-repeat center; background-size: contain; margin-bottom: 20px; }
+        .left-panel h2 { color: #333; font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
+        
+        .right-panel { flex: 1; background: var(--light-green); padding: 40px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        h1 { text-align: center; color: var(--primary-green); margin-bottom: 20px; }
+        
+        .input-group { position: relative; margin-bottom: 15px; }
+        input { width: 100%; padding: 12px 40px 12px 15px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
+        input:focus { border-color: var(--primary-green); }
+        
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #666; }
+        .toggle-password:hover { color: var(--primary-green); }
+
+        .btn-submit { width: 100%; padding: 12px; background: var(--primary-green); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
+        .btn-submit:hover { background: var(--button-hover); }
+        
+        .toggle-link { text-align: center; margin-top: 15px; font-size: 0.9rem; color: #555; }
+        .toggle-link a { color: var(--primary-green); font-weight: bold; text-decoration: none; cursor: pointer; transition: color 0.2s; }
+        .toggle-link a:hover { text-decoration: underline; }
+        
+        .hidden { display: none !important; }
+        .msg-box { font-size: 0.85rem; text-align: center; margin-bottom: 15px; font-weight: bold; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="left-panel">
+        <div class="logo-img"></div>
+        <h2>Department of Agriculture</h2>
+        <p>Crop Damage Reporting System</p>
+    </div>
+
+    <div class="right-panel">
+        
+        <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+            <h1>System Login</h1>
+            <div class="msg-box error" id="loginError"></div>
+            
+            <div class="input-group">
+                <input type="email" id="loginEmail" placeholder="Email Address" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="loginPass" placeholder="Password" required>
+                <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('loginPass', this)"></i>
+            </div>
+
+            <button type="submit" class="btn-submit">Login</button>
+            <div class="toggle-link">
+                Don't have an account? <a onclick="switchForm('register')">Register here</a>
+            </div>
+        </form>
+
+        <form id="registerForm" class="hidden" onsubmit="event.preventDefault(); handleRegister();">
+            <h1>Farmer Registration</h1>
+            <div class="msg-box" id="regMsg"></div>
+            
+            <div class="input-group">
+                <input type="text" id="regName" placeholder="Full Name" required>
+            </div>
+            
+            <div class="input-group">
+                <input type="tel" id="regContact" placeholder="Contact Number (e.g. 09123456789)" required>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="regEmail" placeholder="Email Address" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="regPass" placeholder="Password" required>
+                <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('regPass', this)"></i>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="regPassConfirm" placeholder="Repeat Password" required>
+                <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('regPassConfirm', this)"></i>
+            </div>
+
+            <button type="submit" class="btn-submit">Register</button>
+            <div class="toggle-link">
+                Already have an account? <a onclick="switchForm('login')">Login here</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script>
+    function switchForm(formType) {
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        document.getElementById('loginError').innerText = '';
+        document.getElementById('regMsg').innerText = '';
+        document.getElementById('regMsg').className = 'msg-box';
+
+        if (formType === 'register') {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        } else {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        }
+    }
+
+    function toggleVisibility(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    async function handleLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPass').value;
+        const errorBox = document.getElementById('loginError');
+        
+        errorBox.innerText = 'Authenticating...';
+        
+        try {
+            const res = await fetch('api/auth/login.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if(data.status === 'success') {
+                window.location.href = data.redirect;
+            } else {
+                errorBox.innerText = data.message;
+            }
+        } catch(e) { 
+            errorBox.innerText = "Server Error. Check console.";
+        }
+    }
+
+    async function handleRegister() {
+        const name = document.getElementById('regName').value;
+        const contact = document.getElementById('regContact').value;
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
+        const passConfirm = document.getElementById('regPassConfirm').value;
+        
+        const msgBox = document.getElementById('regMsg');
+
+        if (pass !== passConfirm) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = "Passwords do not match!";
+            return;
+        }
+
+        msgBox.className = 'msg-box';
+        msgBox.innerText = 'Registering...';
+
+        try {
+            const res = await fetch('api/auth/register.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // Notice we dropped the farm_location field here entirely!
+                body: JSON.stringify({
+                    full_name: name,
+                    contact_number: contact,
+                    email: email,
+                    password: pass
+                })
+            });
+            const data = await res.json();
+            
+            if(data.status === 'success') {
+                msgBox.className = 'msg-box success';
+                msgBox.innerText = "Registration successful! You can now login.";
+                document.getElementById('registerForm').reset();
+                setTimeout(() => switchForm('login'), 2000); 
+            } else {
+                msgBox.className = 'msg-box error';
+                msgBox.innerText = data.message;
+            }
+        } catch(e) { 
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = "Server Error. Check console.";
+        }
+    }
+</script>
+</body>
+</html>

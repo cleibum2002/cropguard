@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs | CropGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            if (data.status !== 'active' || data.role.toLowerCase() !== 'admin') {
+                window.location.href = '../../auth.html';
+            } else {
+                window.addEventListener('load', () => {
+                    document.getElementById('adminNameSidebar').innerText = data.user.fullname;
+                });
+            }
+        }).catch(() => window.location.href = '../../auth.html');
+    </script>
+
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    
+    /* This CSS handles the injected sidebar */
+    #sidebar-container { width: 16rem; flex-shrink: 0; }
+    #sidebar-container aside { 
+        background-color: #11542e; 
+        height: 100vh; 
+        display: flex; 
+        flex-direction: column; 
+    }
+    #sidebar-container nav { 
+        flex: 1; 
+        overflow-y: auto; 
+        scrollbar-width: thin; 
+    }
+    
+    .sidebar-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: rgba(255, 255, 255, 0.6); border-radius: 0.75rem; font-size: 0.875rem; transition: all 0.2s ease; border-left: 3px solid transparent; }
+    .sidebar-link.active { background: rgba(255,255,255,0.12); border-left-color: #f1c40f; color: white; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.06); color: white; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+</style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<div id="sidebar-container"></div>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <span class="text-base font-black text-gray-800">Audit Logs</span>
+                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Only</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <select id="moduleFilter" onchange="loadLogs()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                    <option value="">All Modules</option>
+                    <option value="Authentication">Authentication</option>
+                    <option value="Reports">Reports</option>
+                    <option value="Damage Reports">Damage Reports</option>
+                    <option value="Aid Distribution">Aid Distribution</option>
+                </select>
+                <button onclick="loadLogs()" class="bg-[#11542e] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-800 transition-all">
+                    <i class="fa-solid fa-sync mr-1"></i> Refresh
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
+            <div class="max-w-7xl mx-auto">
+
+                <!-- Stats -->
+                <div class="grid grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Total Actions</p>
+                        <p id="statTotal" class="text-3xl font-black text-gray-800">0</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Logins Today</p>
+                        <p id="statLogins" class="text-3xl font-black text-blue-600">0</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Reports Submitted</p>
+                        <p id="statReports" class="text-3xl font-black text-green-600">0</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Aid Actions</p>
+                        <p id="statAid" class="text-3xl font-black text-amber-600">0</p>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">User</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Action</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Module</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logTableBody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadLogs);
+
+        async function loadLogs() {
+            const module = document.getElementById('moduleFilter').value;
+            const url    = `../../api/audit/get_logs.php?limit=200${module ? '&module=' + module : ''}`;
+
+            try {
+                const res  = await fetch(url);
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    renderLogs(data.data);
+                    updateStats(data.data);
+                }
+            } catch(e) { console.error('Failed to load logs', e); }
+        }
+
+        function updateStats(data) {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('statTotal').innerText   = data.length;
+            document.getElementById('statLogins').innerText  = data.filter(l => l.Action === 'Login' && l.Created_At?.startsWith(today)).length;
+            document.getElementById('statReports').innerText = data.filter(l => l.Action === 'Submit Report' || l.Action === 'Edit Report').length;
+            document.getElementById('statAid').innerText     = data.filter(l => l.Action === 'Mark as Claimed' || l.Action === 'Approve Report').length;
+        }
+
+        function renderLogs(data) {
+            const tbody = document.getElementById('logTableBody');
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 italic">No logs found.</td></tr>';
+                return;
+            }
+
+            const actionColors = {
+                'Login':           'bg-blue-100 text-blue-700',
+                'Submit Report':   'bg-green-100 text-green-700',
+                'Edit Report':     'bg-amber-100 text-amber-700',
+                'Validate Report': 'bg-purple-100 text-purple-700',
+                'Approve Report':  'bg-green-100 text-green-700',
+                'Mark as Claimed': 'bg-indigo-100 text-indigo-700',
+            };
+
+            tbody.innerHTML = data.map(log => {
+                const badge = actionColors[log.Action] || 'bg-gray-100 text-gray-600';
+                const date  = new Date(log.Created_At).toLocaleString();
+                return `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
+                    <td class="px-6 py-3 text-xs font-bold text-gray-800">${log.user_name || 'System'}</td>
+                    <td class="px-6 py-3">
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase">${log.user_role}</span>
+                    </td>
+                    <td class="px-6 py-3">
+                        <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${log.Action}</span>
+                    </td>
+                    <td class="px-6 py-3 text-xs text-gray-600 max-w-xs truncate">${log.Description}</td>
+                    <td class="px-6 py-3 text-xs text-gray-500">${log.Module}</td>
+                    <td class="px-6 py-3 text-xs font-mono text-gray-400">${log.IP_Address}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function confirmLogout() {
+            Swal.fire({ title: 'Logout?', icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
+            .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'); });
+        }
+
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+            }, 5 * 60 * 1000);
+        }
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+
+
+    </script>
+<script src="../../assets/js/navbar_admin.js"></script>
+<script>
+    // This is the cleanest way to initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAdminNavbar('logs'); 
+    });
+</script>
+
+</body>
+</html>

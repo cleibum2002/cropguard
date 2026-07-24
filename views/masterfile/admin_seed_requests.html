@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seed Requests | CropGuard Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            if (data.status !== 'active' || data.role.toLowerCase() !== 'admin') {
+                window.location.href = '../../auth.html';
+            } else {
+                window.addEventListener('load', () => {
+                    document.getElementById('adminName').innerText = data.user.fullname;
+                    document.getElementById('adminNameSidebar').innerText = data.user.fullname;
+                });
+            }
+        }).catch(() => window.location.href = '../../auth.html');
+    </script>
+
+<style>
+    body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    #sidebar-container { width: 16rem; flex-shrink: 0; }
+    #sidebar-container aside { background-color: #11542e; height: 100vh; display: flex; flex-direction: column; }
+    #sidebar-container nav { flex: 1; overflow-y: auto; scrollbar-width: thin; }
+    .sidebar-link { display: flex; align-items: center; padding: 0.75rem 1rem; color: rgba(255, 255, 255, 0.6); border-radius: 0.75rem; font-size: 0.875rem; transition: all 0.2s ease; border-left: 3px solid transparent; }
+    .sidebar-link.active { background: rgba(255,255,255,0.12); border-left-color: #f1c40f; color: white; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.06); color: white; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    #cropDetailsPanel { transition: all 0.3s ease; }
+</style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+<div id="sidebar-container"></div>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <span class="text-base font-black text-gray-800">Seed Requests Management</span>
+                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
+                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or seed..."
+                        class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
+                </div>
+                <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                    <div class="text-right">
+                        <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
+                        <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                    </div>
+                    <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">Review Seed Requests</h2>
+                        <p class="text-gray-400 text-sm">Approve pending seed varieties to add them to the system masterlist.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50/60">
+                                <tr>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Req ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer Info</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Requested Seed</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                    <div class="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="pageInfo">Showing entries...</p>
+                        <div class="flex gap-2">
+                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Previous</button>
+                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ── Process Modal ──────────────────────────────────────────────────── -->
+    <div id="processModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden">
+
+            <!-- Header -->
+            <div class="px-6 py-4 bg-[#11542e] border-b border-[#11542e] flex justify-between items-center text-white">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-clipboard-check text-xl text-[#f1c40f]"></i>
+                    <h3 class="text-base font-bold">Process Request</h3>
+                </div>
+                <span id="cropRegistrationBadge"
+                      class="hidden bg-[#f1c40f] text-[#11542e] px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1 mr-auto ml-3">
+                    <i class="fa-solid fa-plus-circle"></i> New Crop
+                </span>
+                <button onclick="closeProcessModal()" class="text-white/70 hover:text-white text-xl ml-3">&times;</button>
+            </div>
+
+            <form id="processForm" onsubmit="submitProcess(event)">
+                <input type="hidden" id="reqId">
+                <input type="hidden" id="farmerId">
+
+                <!-- Scrollable body -->
+                <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+
+                    <!-- Seed name display -->
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Requested Seed</p>
+                        <p id="displaySeed" class="text-lg font-black text-gray-800"></p>
+                    </div>
+
+                    <!-- Action selector -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Action <span class="text-red-500">*</span>
+                        </label>
+                        <select id="actionStatus" required onchange="handleActionChange()"
+                                class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm font-medium text-gray-700">
+                            <option value="">-- Select Action --</option>
+                            <option value="Approved by Admin">Approve</option>
+                            <option value="Rejected">Reject</option>
+                        </select>
+                        <p class="text-[10px] text-gray-400 mt-1 italic">
+                            If approving a new variety, crop registration details will appear below.
+                        </p>
+                    </div>
+
+                    <!-- ── Reject Reason (only shown when Rejected is selected) ── -->
+                    <div id="rejectReasonSection" class="hidden">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Reason for Rejection <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="rejectReason" rows="2"
+                                  class="w-full px-3 py-2 bg-white border border-red-200 rounded-md outline-none focus:ring-1 focus:ring-red-400 text-sm resize-y"
+                                  placeholder="e.g. Variety not suitable for Region X conditions, not yet available for distribution..."></textarea>
+                        <p class="text-[10px] text-gray-400 mt-1 italic">This reason will be included in the farmer's notification.</p>
+                    </div>
+
+                    <!-- Notification message -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Notification Message <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="adminMessage" required rows="3"
+                                  class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm resize-y"
+                                  placeholder="Select an action above to generate the message..."></textarea>
+                        <p class="text-[10px] text-gray-400 mt-1 italic">This message will be sent to the farmer as a notification.</p>
+                    </div>
+
+                    <!-- ── NEW CROP DETAILS PANEL (hidden until needed) ────── -->
+                    <div id="cropDetailsPanel" class="hidden">
+
+                        <div class="flex items-center gap-3 pt-1">
+                            <div class="flex-1 h-px bg-gray-200"></div>
+                            <span class="text-[10px] font-black text-[#11542e] uppercase tracking-widest whitespace-nowrap flex items-center gap-1.5">
+                                <i class="fa-solid fa-seedling"></i> Crops Masterlist Registration
+                            </span>
+                            <div class="flex-1 h-px bg-gray-200"></div>
+                        </div>
+
+                        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 font-medium leading-relaxed mt-3">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                            This seed variety is <strong>not yet</strong> in the Crops Masterlist.
+                            Fill in the details below — they will be saved automatically when you approve.
+                        </p>
+
+                        <!-- Commodity Type -->
+                        <div class="mt-3">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                Commodity Type <span class="text-red-500">*</span>
+                            </label>
+                            <select id="newCropType"
+                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm font-medium text-gray-700">
+                                <option value="">-- Select Type --</option>
+                                <option value="Rice">Rice</option>
+                                <option value="Corn">Corn</option>
+                                <option value="Banana">Banana</option>
+                                <option value="Vegetables">Vegetables</option>
+                                <option value="Eggplant">Eggplant</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Growth Period + Production Cost -->
+                        <div class="grid grid-cols-2 gap-3 mt-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    Growth Duration <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="newGrowthPeriod" placeholder="e.g. 115 Days"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    Std. Production Cost (₱)
+                                </label>
+                                <input type="number" id="newProdCost" placeholder="e.g. 45000" min="0" step="0.01"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mt-3">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
+                            <textarea id="newDescription" rows="2"
+                                      placeholder="Short description of this variety..."
+                                      class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm resize-y"></textarea>
+                        </div>
+                    </div>
+                    <!-- ── END CROP DETAILS PANEL ──────────────────────────── -->
+
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 flex justify-end gap-3 bg-gray-50 border-t border-gray-100">
+                    <button type="button" onclick="closeProcessModal()"
+                            class="px-5 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submitDecisionBtn"
+                            class="px-6 py-2 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-green-900/20">
+                        Submit Decision
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- ── End Process Modal ─────────────────────────────────────────────── -->
+
+    <script>
+        let allData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
+
+        document.addEventListener("DOMContentLoaded", () => { loadTable(); });
+
+        // ── Table ─────────────────────────────────────────────────────────────
+
+        async function loadTable() {
+            try {
+                const res = await fetch("../../api/masterfile/admin/get_seed_requests.php");
+                const response = await res.json();
+                if (response.status === 'success') {
+                    allData = response.data || [];
+                    filteredData = [...allData];
+                    renderTable();
+                } else {
+                    Swal.fire('Error', response.message, 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'Database connection failed.', 'error');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("tableBody");
+            const start = (currentPage - 1) * rowsPerPage;
+            const end   = start + rowsPerPage;
+            const items = filteredData.slice(start, end);
+
+            tbody.innerHTML = items.length
+                ? ""
+                : '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">No seed requests found.</td></tr>';
+
+            items.forEach(item => {
+                let statusBadge = '', actionButtons = '';
+
+                if (item.Status === 'Pending') {
+                    statusBadge = 'bg-amber-100 text-amber-700';
+                    actionButtons = `
+                        <div class="flex flex-col gap-2 items-end">
+                            <button onclick="openProcessModal(${item.Request_ID}, ${item.Farmer_ID}, '${item.Requested_Seed.replace(/'/g, "\\'")}')"
+                                class="px-3 py-1.5 bg-[#11542e] hover:bg-[#0c3d22] text-white rounded-lg text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-1 w-24 justify-center">
+                                <i class="fa-solid fa-list-check"></i> Process
+                            </button>
+                            <button onclick="viewFullDescription('${item.Description.replace(/'/g, "\\'")}')"
+                                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-1 w-24 justify-center">
+                                <i class="fa-solid fa-eye"></i> View
+                            </button>
+                        </div>`;
+                } else if (item.Status === 'Approved by Admin' || item.Status === 'Ready for Pickup' || item.Status === 'Claimed' || item.Status === 'Approved') {
+                    statusBadge   = 'bg-green-100 text-green-700';
+                    actionButtons = `<span class="text-gray-400 italic text-[10px] font-bold uppercase"><i class="fa-solid fa-check text-green-500 mr-1"></i> In Progress</span>`;
+                } else {
+                    statusBadge   = 'bg-red-100 text-red-700';
+                    actionButtons = `<span class="text-gray-400 italic text-[10px] font-bold uppercase"><i class="fa-solid fa-xmark text-red-500 mr-1"></i> Rejected</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/60 transition-all border-b border-gray-50">
+                        <td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-black text-gray-800">${item.Farmer_Name}</p>
+                            <p class="text-[10px] text-gray-400">Date: ${item.DateStr}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-bold text-[#11542e]">${item.Requested_Seed}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-[11px] text-gray-500 max-w-[200px] truncate">${item.Description}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">
+                                ${item.Status}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">${actionButtons}</td>
+                    </tr>`;
+            });
+
+            document.getElementById("pageInfo").innerText =
+                `SHOWING ${filteredData.length ? start + 1 : 0} TO ${Math.min(end, filteredData.length)} OF ${filteredData.length}`;
+            document.getElementById("prevBtn").disabled = currentPage === 1;
+            document.getElementById("nextBtn").disabled = end >= filteredData.length;
+        }
+
+        function filterTable() {
+            const q = document.getElementById("searchInput").value.toLowerCase();
+            filteredData = allData.filter(i =>
+                (i.Farmer_Name    && i.Farmer_Name.toLowerCase().includes(q)) ||
+                (i.Requested_Seed && i.Requested_Seed.toLowerCase().includes(q))
+            );
+            currentPage = 1;
+            renderTable();
+        }
+
+        function changePage(dir) { currentPage += dir; renderTable(); }
+
+        // ── Action change handler ─────────────────────────────────────────────
+
+        function handleActionChange() {
+            const status   = document.getElementById("actionStatus").value;
+            const seed     = document.getElementById("displaySeed").innerText.trim();
+            const msgBox   = document.getElementById("adminMessage");
+            const rejectSection = document.getElementById("rejectReasonSection");
+            const cropPanel     = document.getElementById("cropDetailsPanel");
+            const cropBadge     = document.getElementById("cropRegistrationBadge");
+
+            if (status === 'Approved by Admin' || status === 'Approved') {
+                msgBox.value = `Your request for "${seed}" has been reviewed and approved.`;
+                rejectSection.classList.add("hidden");
+                document.getElementById("rejectReason").value = "";
+            } else if (status === 'Rejected') {
+                msgBox.value = `Your request for "${seed}" has been reviewed and rejected.`;
+                rejectSection.classList.remove("hidden");
+                // Hide crop panel if admin switches to reject after approval flow
+                cropPanel.classList.add("hidden");
+                cropBadge.classList.add("hidden");
+            } else {
+                msgBox.value = "";
+                rejectSection.classList.add("hidden");
+                cropPanel.classList.add("hidden");
+                cropBadge.classList.add("hidden");
+            }
+        }
+
+        // ── Modal helpers ─────────────────────────────────────────────────────
+
+        function openProcessModal(reqId, farmerId, seedName) {
+            document.getElementById("processForm").reset();
+            document.getElementById("reqId").value    = reqId;
+            document.getElementById("farmerId").value = farmerId;
+            document.getElementById("displaySeed").innerText = seedName;
+
+            // Reset all dynamic sections
+            document.getElementById("adminMessage").value = "";
+            document.getElementById("cropDetailsPanel").classList.add("hidden");
+            document.getElementById("cropRegistrationBadge").classList.add("hidden");
+            document.getElementById("rejectReasonSection").classList.add("hidden");
+            document.getElementById("rejectReason").value = "";
+
+            document.getElementById("processModal").classList.remove("hidden");
+        }
+
+        function closeProcessModal() {
+            document.getElementById("processModal").classList.add("hidden");
+            document.getElementById("cropDetailsPanel").classList.add("hidden");
+            document.getElementById("cropRegistrationBadge").classList.add("hidden");
+            document.getElementById("rejectReasonSection").classList.add("hidden");
+            document.getElementById("rejectReason").value = "";
+        }
+
+        // ── Submit handler ────────────────────────────────────────────────────
+
+        async function submitProcess(e) {
+            e.preventDefault();
+
+            const reqId    = document.getElementById('reqId').value;
+            const farmerId = document.getElementById('farmerId').value;
+            const status   = document.getElementById('actionStatus').value;
+            const message  = document.getElementById('adminMessage').value.trim();
+            const seedName = document.getElementById('displaySeed').innerText.trim();
+
+            if (!status) {
+                Swal.fire('Required', 'Please select an action.', 'warning');
+                return;
+            }
+
+            // ── REJECTION ────────────────────────────────────────────────────
+            if (status === 'Rejected') {
+                const reason = document.getElementById('rejectReason').value.trim();
+                if (!reason) {
+                    Swal.fire('Required', 'Please provide a reason for rejection.', 'warning');
+                    return;
+                }
+                const fullMessage = `Your request for "${seedName}" has been reviewed and rejected. Reason: ${reason}`;
+                await finalSubmit({ request_id: reqId, farmer_id: farmerId, status, message: fullMessage, requested_seed: seedName });
+                return;
+            }
+
+            // ── APPROVAL ─────────────────────────────────────────────────────
+            const panelVisible = !document.getElementById("cropDetailsPanel").classList.contains("hidden");
+
+            if (!panelVisible) {
+                // Step 1 — check if crop already exists in masterlist
+                setSubmitLoading(true, 'Checking...');
+                try {
+                    const res = await fetch('../../api/masterfile/admin/process_seed_request.php', {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body:    JSON.stringify({ action: 'check_crop', requested_seed: seedName, request_id: reqId, farmer_id: farmerId, status, message })
+                    });
+
+                    const raw = await res.text();
+                    let data;
+                    try {
+                        data = JSON.parse(raw);
+                    } catch (parseErr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Server Error',
+                            html: `<pre class="text-left text-xs bg-gray-100 p-2 rounded overflow-auto max-h-48">${raw.replace(/</g,'&lt;')}</pre>`,
+                            confirmButtonColor: '#11542e'
+                        });
+                        return;
+                    }
+
+                    if (data.status === 'error') {
+                        Swal.fire('Error', data.message, 'error');
+                        return;
+                    }
+
+                    if (data.exists) {
+                        // ── Crop already in masterlist ────────────────────────
+                        const confirmResult = await Swal.fire({
+                            icon: 'info',
+                            title: 'Crop Already in Masterlist',
+                            html: `<span class="text-sm text-gray-600">
+                                       <strong>"${seedName}"</strong> is already registered in the Crops Masterlist.<br><br>
+                                       Approving this request will notify the farmer that their requested variety is already available.
+                                   </span>`,
+                            showCancelButton:    true,
+                            confirmButtonColor:  '#11542e',
+                            cancelButtonColor:   '#6b7280',
+                            confirmButtonText:   'Proceed & Notify Farmer',
+                            cancelButtonText:    'Cancel'
+                        });
+
+                        if (confirmResult.isConfirmed) {
+                            const updatedMessage = `Your request for "${seedName}" has been reviewed and approved. This variety is already available in our Crops Masterlist.`;
+                            document.getElementById("adminMessage").value = updatedMessage;
+                            await finalSubmit({ request_id: reqId, farmer_id: farmerId, status, message: updatedMessage, requested_seed: seedName });
+                        }
+
+                    } else {
+                        // ── New crop — reveal registration form ───────────────
+                        document.getElementById("cropDetailsPanel").classList.remove("hidden");
+                        document.getElementById("cropRegistrationBadge").classList.remove("hidden");
+                        Swal.fire({
+                            icon:               'info',
+                            title:              'New Crop Detected',
+                            html:               `<span class="text-sm text-gray-600"><strong>"${seedName}"</strong> is not yet in the Crops Masterlist.<br>Fill in the registration details below, then click <strong>Submit Decision</strong> again.</span>`,
+                            confirmButtonColor: '#11542e',
+                            confirmButtonText:  'Got it'
+                        });
+                    }
+
+                } catch (err) {
+                    Swal.fire('Error', 'Network error: ' + err.message, 'error');
+                } finally {
+                    setSubmitLoading(false, 'Submit Decision');
+                }
+
+            } else {
+                // Step 2 — new crop form is visible, collect and submit
+                const cropType     = document.getElementById('newCropType').value;
+                const growthPeriod = document.getElementById('newGrowthPeriod').value.trim();
+                const description  = document.getElementById('newDescription').value.trim();
+                const prodCost     = parseFloat(document.getElementById('newProdCost').value) || 0;
+
+                if (!cropType || !growthPeriod) {
+                    Swal.fire('Required', 'Please fill in Commodity Type and Growth Duration.', 'warning');
+                    return;
+                }
+
+                await finalSubmit({
+                    request_id:     reqId,
+                    farmer_id:      farmerId,
+                    status,
+                    message,
+                    requested_seed: seedName,
+                    crop_type:      cropType,
+                    growth_period:  growthPeriod,
+                    description,
+                    prod_cost:      prodCost
+                });
+            }
+        }
+
+        // ── Shared final API call ─────────────────────────────────────────────
+
+        async function finalSubmit(payload) {
+            setSubmitLoading(true, 'Processing...');
+            try {
+                const res = await fetch('../../api/masterfile/admin/process_seed_request.php', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(payload)
+                });
+
+                const raw = await res.text();
+                let data;
+                try {
+                    data = JSON.parse(raw);
+                } catch (parseErr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Server Error',
+                        html: `<pre class="text-left text-xs bg-gray-100 p-2 rounded overflow-auto max-h-48">${raw.replace(/</g,'&lt;')}</pre>`,
+                        confirmButtonColor: '#11542e'
+                    });
+                    return;
+                }
+
+                if (data.status === 'success') {
+                    const text = data.crop_registered
+                        ? 'Request approved and new crop registered to the Masterlist.'
+                        : 'The farmer has been notified.';
+                    Swal.fire({ icon: 'success', title: 'Processed!', text, timer: 2500, showConfirmButton: false });
+                    closeProcessModal();
+                    loadTable();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Network error: ' + err.message, 'error');
+            } finally {
+                setSubmitLoading(false, 'Submit Decision');
+            }
+        }
+
+        function setSubmitLoading(loading, label) {
+            const btn = document.getElementById("submitDecisionBtn");
+            btn.disabled = loading;
+            btn.innerHTML = loading
+                ? `<i class="fa-solid fa-spinner fa-spin mr-1.5"></i>${label}`
+                : label;
+        }
+
+        // ── Utilities ─────────────────────────────────────────────────────────
+
+        function viewFullDescription(text) {
+            Swal.fire({
+                title: 'Full Description', text,
+                icon: 'info', confirmButtonColor: '#11542e', confirmButtonText: 'Close'
+            });
+        }
+
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Logout?', text: "Are you sure you want to exit?",
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#11542e', confirmButtonText: 'Yes, logout'
+            }).then(result => {
+                if (result.isConfirmed)
+                    fetch('../../api/auth/logout.php')
+                        .then(() => window.location.href = '../../auth.html')
+                        .catch(() => window.location.href = '../../auth.html');
+            });
+        }
+
+        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
+        let idleTimer;
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+            }, 5 * 60 * 1000);
+        }
+        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        resetIdleTimer();
+    </script>
+
+<script src="../../assets/js/navbar_admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAdminNavbar('seed_requests');
+        });
+    </script>
+
+</body>
+</html>
