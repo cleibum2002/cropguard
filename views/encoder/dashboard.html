@@ -58,7 +58,7 @@
                 <i class="fa-solid fa-keyboard mr-3 w-5 text-[#f1c40f]"></i> Encode Reports
             </a>
             <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication
+                <i class="fa-solid fa-message mr-3 w-4"></i> Communication<span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
 
@@ -360,6 +360,18 @@
         }
         ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
         resetIdleTimer();
+    </script>
+    <script>
+        function checkUnreadMessages() {
+            fetch('../../api/messages/get_unread.php')
+                .then(res => res.json())
+                .then(data => {
+                    const dot = document.getElementById('commRedDot');
+                    if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+                })
+                .catch(() => {});
+        }
+        document.addEventListener('DOMContentLoaded', checkUnreadMessages);
     </script>
 </body>
 </html>

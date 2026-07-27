@@ -37,6 +37,7 @@ function loadMaoNavbar(currentPage) {
             
             <a href="../communication/index.html" class="flex items-center px-4 py-3 rounded-xl transition-all ${currentPage === 'communication' ? 'bg-white/10 border-l-4 border-[#f1c40f] text-white font-bold' : 'text-white/60 hover:bg-white/5 hover:text-white border-l-4 border-transparent'}">
                 <i class="fa-solid fa-message mr-3 w-5 text-center ${currentPage === 'communication' ? 'text-[#f1c40f]' : ''}"></i> Communication
+                <span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
         
@@ -57,5 +58,12 @@ function loadMaoNavbar(currentPage) {
     const container = document.getElementById('sidebar-container');
     if (container) {
         container.innerHTML = sidebarHTML;
+        fetch('../../api/messages/get_unread.php')
+            .then(res => res.json())
+            .then(data => {
+                const dot = document.getElementById('commRedDot');
+                if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+            })
+            .catch(() => {});
     }
 }

@@ -18,6 +18,15 @@
     </script>
 
     <style>
+        .geo-badge {
+            position: absolute; top: 4px; left: 4px; right: 4px;
+            text-align: center; font-size: 8px; font-weight: 800;
+            line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            padding: 2px 4px; border-radius: 6px; background: rgba(255,255,255,0.92);
+        }
+        .geo-badge.success { color: #16a34a; }
+        .geo-badge.loading { color: #d97706; }
+        .geo-badge.failed  { color: #dc2626; }
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .tab-btn.active { border-bottom: 3px solid #11542e; color: #11542e; font-weight: 800; }
         .sidebar-link.active { background: rgba(255,255,255,0.1); border-left: 4px solid #f1c40f; }
@@ -54,7 +63,7 @@
                 <i class="fa-solid fa-file-signature mr-3 w-4"></i> Inspection Reports
             </a>
             <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication
+                <i class="fa-solid fa-message mr-3 w-4"></i> Communication<span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
 
@@ -175,6 +184,10 @@
 
                             <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Attach Field Evidence (Photos)</label>
+                                <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3 flex items-start gap-2">
+                                    <i class="fa-solid fa-circle-info text-blue-400 text-xs mt-0.5 flex-shrink-0"></i>
+                                    <p class="text-[10px] text-blue-600 font-semibold leading-relaxed">Each photo will automatically capture your GPS location when taken, confirming you physically visited the farm.</p>
+                                </div>
                                 <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:bg-blue-50 hover:border-blue-300 transition-all">
                                     <div class="file-upload-wrapper w-full">
                                         <div class="pointer-events-none">
@@ -227,6 +240,7 @@
 
 <script>
     let selectedFiles = [];
+    let photoGeoTags  = [];
 
     document.addEventListener('DOMContentLoaded', loadData);
 
@@ -421,15 +435,44 @@
 
         document.getElementById('inspectionForm').reset();
         selectedFiles = [];
+        photoGeoTags  = [];
         renderPreviews();
         switchTab('validation');
     }
 
     // ── File Handling ────────────────────────────────────────────────
     function handleFileSelection(event) {
-        selectedFiles = selectedFiles.concat(Array.from(event.target.files));
+        const newFiles = Array.from(event.target.files);
+        newFiles.forEach(f => {
+            selectedFiles.push(f);
+            photoGeoTags.push({ lat: null, lng: null, status: 'loading' });
+            captureGeoForPhoto(selectedFiles.length - 1);
+        });
         event.target.value = '';
         renderPreviews();
+    }
+
+    function captureGeoForPhoto(index) {
+        if (!navigator.geolocation) {
+            photoGeoTags[index].status = 'failed';
+            renderPreviews();
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                if (!photoGeoTags[index]) return;
+                photoGeoTags[index].lat    = pos.coords.latitude;
+                photoGeoTags[index].lng    = pos.coords.longitude;
+                photoGeoTags[index].status = 'success';
+                renderPreviews();
+            },
+            () => {
+                if (!photoGeoTags[index]) return;
+                photoGeoTags[index].status = 'failed';
+                renderPreviews();
+            },
+            { timeout: 10000, maximumAge: 30000 }
+        );
     }
 
     function renderPreviews() {
@@ -439,12 +482,23 @@
         if (selectedFiles.length > 0) {
             container.classList.remove('hidden');
             selectedFiles.forEach((file, index) => {
+                const geo = photoGeoTags[index];
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    let badgeHtml = '';
+                    if (geo.status === 'loading') {
+                        badgeHtml = `<div class="geo-badge loading"><i class="fa-solid fa-spinner fa-spin"></i> Locating...</div>`;
+                    } else if (geo.status === 'success') {
+                        badgeHtml = `<div class="geo-badge success" title="${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}"><i class="fa-solid fa-location-dot"></i> ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}</div>`;
+                    } else {
+                        badgeHtml = `<div class="geo-badge failed"><i class="fa-solid fa-triangle-exclamation"></i> No GPS</div>`;
+                    }
+
                     const imgDiv = document.createElement('div');
                     imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
                     imgDiv.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover">
+                        ${badgeHtml}
                         <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
                             <button type="button" onclick="removeFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
@@ -462,6 +516,7 @@
 
     function removeFile(index) {
         selectedFiles.splice(index, 1);
+        photoGeoTags.splice(index, 1);
         renderPreviews();
     }
 
@@ -470,7 +525,17 @@
         e.preventDefault();
 
         const formData = new FormData(document.getElementById('inspectionForm'));
-        selectedFiles.forEach(file => formData.append('evidencePhotos[]', file));
+        selectedFiles.forEach((file, i) => {
+            formData.append('evidencePhotos[]', file);
+            const geo = photoGeoTags[i];
+            if (geo && geo.lat && geo.lng) {
+                formData.append(`geo_lat_${i}`, geo.lat);
+                formData.append(`geo_lng_${i}`, geo.lng);
+            } else {
+                formData.append(`geo_lat_${i}`, '');
+                formData.append(`geo_lng_${i}`, '');
+            }
+        });
 
         Swal.fire({ title: 'Uploading Data...', text: 'Submitting your report and evidence photos.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -482,6 +547,7 @@
                 Swal.fire({ icon: 'success', title: 'Inspection Submitted', text: 'Admin notified and photos uploaded.', showConfirmButton: false, timer: 1500 });
                 document.getElementById('inspectionForm').reset();
                 selectedFiles = [];
+                photoGeoTags  = [];
                 document.getElementById('reportIdField').value = '';
                 renderPreviews();
                 loadData();
@@ -522,5 +588,17 @@
     ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(evt => document.addEventListener(evt, resetIdleTimer));
     resetIdleTimer();
 </script>
+<script>
+        function checkUnreadMessages() {
+            fetch('../../api/messages/get_unread.php')
+                .then(res => res.json())
+                .then(data => {
+                    const dot = document.getElementById('commRedDot');
+                    if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+                })
+                .catch(() => {});
+        }
+        document.addEventListener('DOMContentLoaded', checkUnreadMessages);
+    </script>
 </body>
 </html>
