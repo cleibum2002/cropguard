@@ -19,9 +19,10 @@ try {
     $email = $conn->real_escape_string($data->email);
     // Hash the password securely!
     $hashed_pass = password_hash($data->password, PASSWORD_DEFAULT);
+    $role = 'Farmer';
 
-    // 4. Check if the email is already registered
-    $check_stmt = $conn->prepare("SELECT Farmer_ID FROM Farmer WHERE Email = ?");
+    // 4. Check if the email is already registered (users table, not Farmer)
+    $check_stmt = $conn->prepare("SELECT User_ID FROM users WHERE Email = ?");
     $check_stmt->bind_param("s", $email);
     $check_stmt->execute();
     $result = $check_stmt->get_result();
@@ -33,11 +34,9 @@ try {
     }
     $check_stmt->close();
 
-    // 5. Insert the new Farmer
-    // Since we removed Farm_Location and RSBA_No, we only insert the human details
-    $insert_stmt = $conn->prepare("INSERT INTO Farmer (Full_Name, Contact_Number, Email, Password) VALUES (?, ?, ?, ?)");
-    // Bind the hashed password instead
-    $insert_stmt->bind_param("ssss", $name, $contact, $email, $hashed_pass);
+    // 5. Insert the new Farmer into the users table with Role = 'Farmer'
+    $insert_stmt = $conn->prepare("INSERT INTO users (Role, Fullname, Contact_Number, Email, Password, STATUS) VALUES (?, ?, ?, ?, ?, 'Active')");
+    $insert_stmt->bind_param("sssss", $role, $name, $contact, $email, $hashed_pass);
 
     if ($insert_stmt->execute()) {
         echo json_encode(['status' => 'success', 'message' => 'Registration successful']);

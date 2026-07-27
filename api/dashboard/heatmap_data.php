@@ -19,7 +19,7 @@ try {
                 END) as Total_Intensity
             FROM damage_report dr
             JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
-            WHERE dr.Status IN ('Inspected', 'Approved', 'Claimed') 
+            WHERE dr.Status NOT IN ('Rejected', 'Archived') 
             AND fl.Latitude IS NOT NULL
             AND fl.Latitude BETWEEN -90 AND 90
             AND fl.Longitude IS NOT NULL
