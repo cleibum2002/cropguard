@@ -6,6 +6,7 @@
     <title>Farmer Dashboard | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -132,6 +133,8 @@
         .tracker-step.completed .step-label .label-text { color: #11542e; }
         .tracker-step.active .step-label .label-text { color: #92400e; font-weight: 900; }
         .tracker-step.active .step-label .label-sub { color: #b45309; }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -148,19 +151,19 @@
         </div>
         <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             <a href="../profile/profile.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-user-circle mr-3 w-4"></i> My Profile
+                <i class="fa-solid fa-user-circle mr-3 w-4"></i> <span data-i18n="nav_profile">My Profile</span>
             </a>
             <a href="index.html" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-xl font-semibold text-sm transition-all">
-                <i class="fa-solid fa-table-columns mr-3 w-4 text-[#f1c40f]"></i> My Dashboard
+                <i class="fa-solid fa-table-columns mr-3 w-4 text-[#f1c40f]"></i> <span data-i18n="nav_dashboard">My Dashboard</span>
             </a>
             <a href="my_farms.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-map-location-dot mr-3 w-4"></i> My Farms
+                <i class="fa-solid fa-map-location-dot mr-3 w-4"></i> <span data-i18n="nav_farms">My Farms</span>
             </a>
             <a href="request_seeds.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-leaf mr-3 w-4"></i> Request Seeds
+                <i class="fa-solid fa-leaf mr-3 w-4"></i> <span data-i18n="nav_seeds">Request Seeds</span>
             </a>
             <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication<span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                <i class="fa-solid fa-message mr-3 w-4"></i> <span data-i18n="nav_comm">Communication</span><span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
         <div class="p-4 border-t border-white/10">
@@ -170,7 +173,7 @@
                 </div>
                 <div class="overflow-hidden flex-1">
                     <p id="farmerNameDisplay" class="text-white text-xs font-bold truncate">Loading...</p>
-                    <p class="text-white/40 text-[10px]">Farmer</p>
+                    <p class="text-white/40 text-[10px]" data-i18n="sidebar_role">Farmer</p>
                 </div>
                 <button onclick="confirmLogout()" class="text-white/30 hover:text-red-400 transition-all">
                     <i class="fa-solid fa-right-from-bracket text-sm"></i>
@@ -182,17 +185,24 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">My Dashboard</span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Farmer Mode</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">My Dashboard</span>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="header_badge">Farmer Mode</span>
             </div>
             <div class="flex items-center gap-3 relative">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                </div>
                 <button onclick="toggleNotifications()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
                     <i class="fa-regular fa-bell text-sm"></i>
                     <span id="notifBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
                 <div id="notifDropdown" class="hidden absolute top-12 right-0 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
                     <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
-                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider">Notifications</h4>
+                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider" data-i18n="notif_title">Notifications</h4>
                     </div>
                     <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-gray-50">
                         <div class="px-4 py-6 text-center text-gray-400 text-xs italic">Loading...</div>
@@ -205,15 +215,15 @@
             <div class="max-w-6xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">Welcome back!</h2>
-                        <p class="text-gray-400 text-sm">Track your filed reports and monitor their validation status.</p>
+                        <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="welcome_title">Welcome back!</h2>
+                        <p class="text-gray-400 text-sm" data-i18n="welcome_sub">Track your filed reports and monitor their validation status.</p>
                     </div>
                     <div class="flex gap-2">
                         <button onclick="openFarmModal()" class="bg-white border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 text-sm">
-                            <i class="fa-solid fa-map-location-dot text-[#11542e]"></i> Manage Farms
+                            <i class="fa-solid fa-map-location-dot text-[#11542e]"></i> <span data-i18n="btn_manage_farms">Manage Farms</span>
                         </button>
                         <button onclick="openReportModal()" class="bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
-                            <i class="fa-solid fa-plus"></i> File New Report
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_report">File New Report</span>
                         </button>
                     </div>
                 </div>
@@ -225,29 +235,29 @@
                             <i class="fa-solid fa-bullhorn text-2xl text-[#f1c40f]"></i>
                         </div>
                         <div>
-                            <h3 class="text-xl font-black tracking-tight" style="font-size:1.4rem;">🔔 Important Alerts</h3>
-                            <p class="text-white/70 text-sm font-medium">Recent notifications that need your attention</p>
+                            <h3 class="text-xl font-black tracking-tight" style="font-size:1.4rem;">🔔 <span data-i18n="alert_title">Important Alerts</span></h3>
+                            <p class="text-white/70 text-sm font-medium" data-i18n="alert_sub">Recent notifications that need your attention</p>
                         </div>
                         <button onclick="dismissAllAlerts()" class="ml-auto text-white/50 hover:text-white text-sm font-bold px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all">
-                            <i class="fa-solid fa-check-double mr-1"></i> Dismiss All
+                            <i class="fa-solid fa-check-double mr-1"></i> <span data-i18n="btn_dismiss_all">Dismiss All</span>
                         </button>
                     </div>
                     <div id="bigAlertList" class="space-y-2">
-                        <div class="text-white/70 text-sm font-medium py-2 text-center">No recent alerts</div>
+                        <div class="text-white/70 text-sm font-medium py-2 text-center" data-i18n="alert_none">No recent alerts</div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Reports Filed</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_total">Total Reports Filed</p>
                         <h3 id="statTotal" class="text-3xl font-black text-gray-800">0</h3>
                     </div>
                     <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Pending Validation</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_pending">Pending Validation</p>
                         <h3 id="statPending" class="text-3xl font-black text-amber-600">0</h3>
                     </div>
                     <div class="stat-card bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Resolved / Approved</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_resolved">Resolved / Approved</p>
                         <h3 id="statResolved" class="text-3xl font-black text-green-600">0</h3>
                     </div>
                 </div>
@@ -257,11 +267,11 @@
                     <div class="flex items-center gap-3 mb-4">
                         <i class="fa-solid fa-truck-fast text-2xl text-[#11542e]"></i>
                         <div>
-                            <h3 class="text-lg font-black text-gray-800">📦 Seed Request Tracker</h3>
-                            <p class="text-sm text-gray-500">Track the real-time status of your seed requests</p>
+                            <h3 class="text-lg font-black text-gray-800">📦 <span data-i18n="tracker_title">Seed Request Tracker</span></h3>
+                            <p class="text-sm text-gray-500" data-i18n="tracker_sub">Track the real-time status of your seed requests</p>
                         </div>
                         <a href="request_seeds.html" class="ml-auto text-sm font-bold text-[#11542e] hover:underline flex items-center gap-1">
-                            View All <i class="fa-solid fa-arrow-right text-xs"></i>
+                            <span data-i18n="tracker_viewall">View All</span> <i class="fa-solid fa-arrow-right text-xs"></i>
                         </a>
                     </div>
                     <div id="seedTrackerContainer" class="max-w-2xl mx-auto py-2">
@@ -271,19 +281,19 @@
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-50">
-                        <h3 class="font-black text-gray-800">My Recent Reports</h3>
+                        <h3 class="font-black text-gray-800" data-i18n="reports_title">My Recent Reports</h3>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date Filed</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Crop Details</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Incident</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Est. Loss</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_date">Date Filed</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_crop">Crop Details</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_incident">Incident</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_loss">Est. Loss</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50">
@@ -302,7 +312,7 @@
             <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-gray-50">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-file-invoice text-[#11542e] text-xl"></i>
-                    <h3 id="modalTitle" class="text-lg font-black text-gray-800">File Crop Damage Report</h3>
+                    <h3 id="modalTitle" class="text-lg font-black text-gray-800" data-i18n="modal_report_title">File Crop Damage Report</h3>
                 </div>
                 <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition-colors">&times;</button>
             </div>
@@ -312,14 +322,14 @@
                 
                 <div class="p-6 space-y-5">
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Farm Location</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_farm_location">Farm Location</label>
                         <select id="farmLocation" required onchange="updateMaxArea()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
                             <option value="">Loading locations...</option>
                         </select>
                     </div>
                     
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Which Crop Was Damaged?</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_crop_picker">Which Crop Was Damaged?</label>
                         <select id="cropPicker" required onchange="onCropPickerChange()"
                             class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
                             <option value="">Loading your crops...</option>
@@ -331,56 +341,56 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Planting Date</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_planting_date">Planting Date</label>
                             <input type="date" id="plantingDate" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Affected Area (Ha)</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_affected_area">Affected Area (Ha)</label>
                             <input type="number" step="0.01" id="landArea" required oninput="validateArea()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700" placeholder="0.00">
-                            <small id="areaWarning" class="text-red-500 font-bold hidden text-[10px] mt-1">Cannot exceed total farm size!</small>
+                            <small id="areaWarning" class="text-red-500 font-bold hidden text-[10px] mt-1" data-i18n="area_warning">Cannot exceed total farm size!</small>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Damage Type</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_damage_type">Damage Type</label>
                             <select id="damageType" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
-                                <option value="Flood">Flood</option>
-                                <option value="Typhoon">Typhoon</option>
-                                <option value="Pest Infestation">Pest Infestation</option>
-                                <option value="Drought">Drought</option>
+                                <option value="Flood" data-i18n="opt_flood">Flood</option>
+                                <option value="Typhoon" data-i18n="opt_typhoon">Typhoon</option>
+                                <option value="Pest Infestation" data-i18n="opt_pest">Pest Infestation</option>
+                                <option value="Drought" data-i18n="opt_drought">Drought</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Severity</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_severity">Severity</label>
                             <select id="severity" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
-                                <option value="Low">Low</option>
-                                <option value="Moderate">Moderate</option>
-                                <option value="High">High</option>
-                                <option value="Total Loss">Total Loss</option>
+                                <option value="Low" data-i18n="opt_low">Low</option>
+                                <option value="Moderate" data-i18n="opt_moderate">Moderate</option>
+                                <option value="High" data-i18n="opt_high">High</option>
+                                <option value="Total Loss" data-i18n="opt_total_loss">Total Loss</option>
                             </select>
                         </div>
                     </div>
                     
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description of Damage</label>
-                        <textarea id="description" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700 resize-y" placeholder="Describe what happened..."></textarea>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_description">Description of Damage</label>
+                        <textarea id="description" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700 resize-y" placeholder="Describe what happened..." data-i18n-placeholder="desc_placeholder"></textarea>
                     </div>
 
                     <div class="border-t border-gray-100 pt-4">
                         <div class="flex justify-between items-end mb-2">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Photographic Evidence</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_photos">Photographic Evidence</label>
                         </div>
 
                         <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3 flex items-start gap-2">
                             <i class="fa-solid fa-circle-info text-blue-400 text-xs mt-0.5 flex-shrink-0"></i>
-                            <p class="text-[10px] text-blue-600 font-semibold leading-relaxed">Each photo will automatically capture your GPS location when taken. This helps admins verify the photo was taken at the declared farm location.</p>
+                            <p class="text-[10px] text-blue-600 font-semibold leading-relaxed" data-i18n="photo_info">Each photo will automatically capture your GPS location when taken. This helps admins verify the photo was taken at the declared farm location.</p>
                         </div>
                         
                         <input type="file" id="damageImages" accept="image/*" multiple class="hidden" onchange="handleImageSelection(event)">
                         
                         <button type="button" onclick="document.getElementById('damageImages').click()" class="w-full py-4 border-2 border-dashed border-green-200 rounded-xl bg-green-50 text-green-700 font-bold text-sm hover:bg-green-100 hover:border-green-400 transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-camera text-lg"></i> Take Photo or Upload from Gallery
+                            <i class="fa-solid fa-camera text-lg"></i> <span data-i18n="btn_take_photo">Take Photo or Upload from Gallery</span>
                         </button>
 
                         <p id="photoCount" class="text-[10px] text-gray-400 mt-1.5 hidden"></p>
@@ -391,8 +401,8 @@
                 </div>
                 
                 <div class="px-6 py-4 flex justify-end items-center gap-3 bg-gray-50 border-t border-gray-100 sticky bottom-0">
-                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">Cancel</button>
-                    <button type="submit" id="submitReportBtn" class="px-6 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-black uppercase tracking-wide rounded-xl shadow-lg shadow-green-900/20 transition-all">Submit Report</button>
+                    <button type="button" onclick="closeModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors" data-i18n="btn_cancel">Cancel</button>
+                    <button type="submit" id="submitReportBtn" class="px-6 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-black uppercase tracking-wide rounded-xl shadow-lg shadow-green-900/20 transition-all" data-i18n="btn_submit_report">Submit Report</button>
                 </div>
             </form>
         </div>
@@ -404,7 +414,7 @@
             <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-[#11542e]">
                 <div class="flex items-center gap-3">
                     <i class="fa-solid fa-map-location-dot text-[#f1c40f] text-lg"></i>
-                    <h3 class="text-base font-bold text-white">Add Farm Location</h3>
+                    <h3 class="text-base font-bold text-white" data-i18n="modal_farm_title">Add Farm Location</h3>
                 </div>
                 <button onclick="closeFarmModal()" class="text-white/70 hover:text-white text-xl font-medium">&times;</button>
             </div>
@@ -415,13 +425,13 @@
                     <div>
                         <div class="flex items-center gap-2 mb-4">
                             <i class="fa-solid fa-location-dot text-[#11542e] text-sm"></i>
-                            <h4 class="text-xs font-black text-gray-700 uppercase tracking-widest">Farm Address</h4>
+                            <h4 class="text-xs font-black text-gray-700 uppercase tracking-widest" data-i18n="label_farm_address">Farm Address</h4>
                         </div>
 
                         <div class="mb-3">
                             <div class="flex items-center gap-2 mb-1.5">
                                 <span class="step-badge" id="badge-region">A</span>
-                                <label class="text-sm font-semibold text-gray-700">Region</label>
+                                <label class="text-sm font-semibold text-gray-700" data-i18n="label_region">Region</label>
                             </div>
                             <div class="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-[#11542e] font-semibold flex items-center gap-2">
                                 <i class="fa-solid fa-lock text-xs text-green-400"></i>
@@ -472,23 +482,23 @@
                         </div>
 
                         <div id="manualAddressFields" class="hidden space-y-3 mt-4 pt-4 border-t border-gray-100">
-                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Specific Location Details</p>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest" data-i18n="label_specific_location">Specific Location Details</p>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Street / Sitio / Purok / House No.</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_street">Street / Sitio / Purok / House No.</label>
                                 <input type="text" id="addrStreet"
                                        class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
                                        placeholder="e.g. Zone 2, Purok Sampaguita, Lot 12">
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Postal / ZIP Code</label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_zip">Postal / ZIP Code</label>
                                     <input type="text" id="addrZip" maxlength="4" pattern="[0-9]{4}"
                                            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
                                            placeholder="e.g. 9000">
-                                    <p class="text-[10px] text-gray-400 mt-0.5">Auto-filled when available</p>
+                                    <p class="text-[10px] text-gray-400 mt-0.5" data-i18n="zip_hint">Auto-filled when available</p>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-1">Landmark <span class="text-gray-400 font-normal">(optional)</span></label>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1"><span data-i18n="label_landmark">Landmark</span> <span class="text-gray-400 font-normal" data-i18n="label_optional">(optional)</span></label>
                                     <input type="text" id="addrLandmark"
                                            class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
                                            placeholder="e.g. Near school, yellow gate">
@@ -505,13 +515,13 @@
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Main Crop Type</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_main_crop">Main Crop Type</label>
                             <select id="farmCropType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
-                                <option value="">Select Type...</option>
+                                <option value="" data-i18n="opt_select_type">Select Type...</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Cropping Period</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Period</label>
                             <input type="text" id="farmCroppingPeriod" required
                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
                                    placeholder="e.g. May - October">
@@ -519,17 +529,17 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Area Size (Ha)</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_area_size">Area Size (Ha)</label>
                             <input type="number" step="0.01" id="farmArea" required
                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
                                    placeholder="0.00">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Land Type</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_land_type">Land Type</label>
                             <select id="farmLandType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
-                                <option value="Irrigated">Irrigated</option>
-                                <option value="Rainfed">Rainfed</option>
-                                <option value="Upland">Upland</option>
+                                <option value="Irrigated" data-i18n="opt_irrigated">Irrigated</option>
+                                <option value="Rainfed" data-i18n="opt_rainfed">Rainfed</option>
+                                <option value="Upland" data-i18n="opt_upland">Upland</option>
                             </select>
                         </div>
                     </div>
@@ -538,18 +548,18 @@
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">GPS Coordinates <span class="font-normal normal-case">(optional)</span></p>
                             <button type="button" onclick="detectGPS()" class="text-[10px] font-bold text-[#11542e] hover:underline flex items-center gap-1">
-                                <i class="fa-solid fa-location-crosshairs text-xs"></i> Use My Location
+                                <i class="fa-solid fa-location-crosshairs text-xs"></i> <span data-i18n="btn_use_location">Use My Location</span>
                             </button>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Latitude</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_latitude">Latitude</label>
                                 <input type="number" step="any" id="farmLat"
                                        class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
                                        placeholder="8.74154200">
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Longitude</label>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_longitude">Longitude</label>
                                 <input type="number" step="any" id="farmLng"
                                        class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
                                        placeholder="124.77421500">
@@ -560,9 +570,9 @@
                 </div>
 
                 <div class="px-6 py-4 flex justify-end items-center gap-4 bg-gray-50 border-t border-gray-100">
-                    <button type="button" onclick="closeFarmModal()" class="text-sm font-semibold text-gray-600 hover:text-gray-800">Cancel</button>
+                    <button type="button" onclick="closeFarmModal()" class="text-sm font-semibold text-gray-600 hover:text-gray-800" data-i18n="btn_cancel">Cancel</button>
                     <button type="submit" class="px-5 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Save Farm Location
+                        <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_farm">Save Farm Location</span>
                     </button>
                 </div>
             </form>
@@ -570,6 +580,211 @@
     </div>
 
     <script>
+        
+        const translations = {
+            en: {
+                nav_profile: "My Profile", nav_dashboard: "My Dashboard", nav_farms: "My Farms",
+                nav_seeds: "Request Seeds", nav_comm: "Communication", sidebar_role: "Farmer",
+                header_title: "My Dashboard", header_badge: "Farmer Mode", notif_title: "Notifications",
+                welcome_title: "Welcome back!", welcome_sub: "Track your filed reports and monitor their validation status.",
+                btn_manage_farms: "Manage Farms", btn_new_report: "File New Report",
+                alert_title: "Important Alerts", alert_sub: "Recent notifications that need your attention", btn_dismiss_all: "Dismiss All",
+                stat_total: "Total Reports Filed", stat_pending: "Pending Validation", stat_resolved: "Resolved / Approved",
+                tracker_title: "Seed Request Tracker", tracker_sub: "Track the real-time status of your seed requests", tracker_viewall: "View All",
+                reports_title: "My Recent Reports",
+                th_date: "Date Filed", th_crop: "Crop Details", th_incident: "Incident", th_loss: "Est. Loss", th_status: "Status", th_actions: "Actions",
+                modal_report_title: "File Crop Damage Report",
+                label_farm_location: "Farm Location", label_crop_picker: "Which Crop Was Damaged?",
+                label_planting_date: "Planting Date", label_affected_area: "Affected Area (Ha)", area_warning: "Cannot exceed total farm size!",
+                label_damage_type: "Damage Type", opt_flood: "Flood", opt_typhoon: "Typhoon", opt_pest: "Pest Infestation", opt_drought: "Drought",
+                label_severity: "Severity", opt_low: "Low", opt_moderate: "Moderate", opt_high: "High", opt_total_loss: "Total Loss",
+                label_description: "Description of Damage", desc_placeholder: "Describe what happened...",
+                label_photos: "Photographic Evidence",
+                photo_info: "Each photo will automatically capture your GPS location when taken. This helps admins verify the photo was taken at the declared farm location.",
+                btn_take_photo: "Take Photo or Upload from Gallery", btn_cancel: "Cancel", btn_submit_report: "Submit Report",
+                modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
+                label_specific_location: "Specific Location Details", label_street: "Street / Sitio / Purok / House No.",
+                label_zip: "Postal / ZIP Code", zip_hint: "Auto-filled when available",
+                label_landmark: "Landmark", label_optional: "(optional)",
+                label_main_crop: "Main Crop Type", opt_select_type: "Select Type...",
+                label_cropping_period: "Cropping Period", label_area_size: "Area Size (Ha)",
+                label_land_type: "Land Type", opt_irrigated: "Irrigated", opt_rainfed: "Rainfed", opt_upland: "Upland",
+                btn_use_location: "Use My Location", label_latitude: "Latitude", label_longitude: "Longitude",
+                btn_save_farm: "Save Farm Location",
+                modal_edit_title: "Edit Damage Report",
+                step_pending_label: "Pending Review", step_pending_sub: "Your request has been submitted",
+                step_approved_label: "Approved by Admin", step_approved_sub: "Request has been reviewed and approved",
+                step_ready_label: "Ready for Pickup", step_ready_sub: "Your seeds are ready — claim at the MAO office",
+                step_claimed_label: "Claimed", step_claimed_sub: "You have received your requested seeds",
+                table_empty: "You have not submitted any reports yet.",
+                label_area_short: "Area:", label_sev_short: "Sev:", label_est_loss: "Est. loss", na_text: "N/A",
+                action_edit: "Edit", action_delete: "Delete", action_locked: "Locked",
+                status_pending: "Pending", status_validated: "Validated", status_approved: "Approved", status_completed: "Completed", status_rejected: "Rejected", status_archived: "Archived",
+                opt_select_location: "Select a Location...", opt_no_locations: "No locations found. Add one first.", opt_locations_error: "Could not load locations",
+                opt_select_crop: "— Select your crop —", opt_no_crops: "No crops registered yet", crop_type_auto: "Type ID {id} auto-selected",
+                opt_select_province: "— Select Province —", opt_select_city: "— Select City / Municipality —", opt_select_barangay: "— Select Barangay —",
+                loading_provinces: "Loading provinces...", loading_cities: "Loading cities/municipalities...", loading_barangays: "Loading barangays...",
+                failed_provinces: "Failed to load provinces", failed_cities: "Failed to load cities", failed_barangays: "Failed to load barangays",
+                label_region: "Region",
+                suffix_select_province_first: "(select province first)", suffix_select_city_first: "(select city first)", suffix_loading: "(loading...)",
+                notif_empty: "No new notifications", just_now: "Just now", alert_none: "No recent alerts",
+                sw_not_supported_title: "Not Supported", sw_not_supported_text: "Your browser does not support geolocation.",
+                sw_detecting_title: "Detecting location...",
+                sw_location_detected_title: "Location detected!",
+                sw_gps_error_title: "Error", sw_gps_error_text: "Could not detect your location. Please enter coordinates manually.",
+                sw_required_title: "Required", sw_required_text: "Please complete the address up to Barangay level.",
+                sw_farm_saved_title: "Farm Saved!",
+                sw_generic_error_title: "Error",
+                sw_connect_error_text: "Could not connect to server.",
+                sw_no_locations_title: "No Farm Locations", sw_no_locations_text: "You need to add a Farm Location before you can file a report.",
+                sw_rsbsa_title: "RSBSA Required", sw_go_to_profile: "Go to Profile",
+                sw_submitting_title: "Submitting...", sw_submitting_text: "Uploading your report and photos.",
+                sw_success_title: "Success!",
+                sw_submit_failed_text: "Failed to submit report due to server error.",
+                sw_loading_title: "Loading...",
+                sw_load_report_failed_text: "Failed to load report data.",
+                sw_archive_title: "Archive Report?", sw_archive_text: "This will remove the report from your active view.", sw_archive_confirm: "Yes, Archive It",
+                sw_archived_title: "Archived!", sw_archived_text: "The report has been archived.",
+                sw_server_error_text: "Server connection failed. Check file path.",
+                sw_signout_title: "Sign Out?",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
+                nav_seeds: "Humiling ng Binhi", nav_comm: "Komunikasyon", sidebar_role: "Magsasaka",
+                header_title: "Aking Dashboard", header_badge: "Mode ng Magsasaka", notif_title: "Mga Abiso",
+                welcome_title: "Maligayang pagbabalik!", welcome_sub: "Subaybayan ang iyong mga isinumiteng ulat at ang katayuan ng pag-validate ng mga ito.",
+                btn_manage_farms: "Pamahalaan ang mga Sakahan", btn_new_report: "Maghain ng Bagong Ulat",
+                alert_title: "Mahahalagang Abiso", alert_sub: "Kamakailang mga abiso na nangangailangan ng iyong pansin", btn_dismiss_all: "Isara Lahat",
+                stat_total: "Kabuuang Isinumiteng Ulat", stat_pending: "Naghihintay ng Validation", stat_resolved: "Naresolba / Naaprubahan",
+                tracker_title: "Tagasubaybay ng Kahilingan sa Binhi", tracker_sub: "Subaybayan ang real-time na katayuan ng iyong mga kahilingan sa binhi", tracker_viewall: "Tingnan Lahat",
+                reports_title: "Ang Aking mga Kamakailang Ulat",
+                th_date: "Petsa ng Pagsumite", th_crop: "Detalye ng Pananim", th_incident: "Insidente", th_loss: "Tinatayang Pagkalugi", th_status: "Katayuan", th_actions: "Aksyon",
+                modal_report_title: "Maghain ng Ulat ng Pinsala sa Pananim",
+                label_farm_location: "Lokasyon ng Sakahan", label_crop_picker: "Aling Pananim ang Nasira?",
+                label_planting_date: "Petsa ng Pagtatanim", label_affected_area: "Apektadong Lugar (Ha)", area_warning: "Hindi maaaring lumampas sa kabuuang sukat ng sakahan!",
+                label_damage_type: "Uri ng Pinsala", opt_flood: "Baha", opt_typhoon: "Bagyo", opt_pest: "Peste", opt_drought: "Tagtuyot",
+                label_severity: "Kalubhaan", opt_low: "Mababa", opt_moderate: "Katamtaman", opt_high: "Mataas", opt_total_loss: "Kumpletong Pagkalugi",
+                label_description: "Paglalarawan ng Pinsala", desc_placeholder: "Ilarawan kung ano ang nangyari...",
+                label_photos: "Larawan bilang Ebidensya",
+                photo_info: "Awtomatikong makukuha ng bawat larawan ang iyong lokasyon sa GPS kapag kinuha. Nakakatulong ito sa mga admin na i-verify na ang larawan ay kinuha sa idineklarang lokasyon ng sakahan.",
+                btn_take_photo: "Kumuha ng Larawan o Mag-upload mula sa Gallery", btn_cancel: "Kanselahin", btn_submit_report: "Isumite ang Ulat",
+                modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
+                label_specific_location: "Detalye ng Tiyak na Lokasyon", label_street: "Kalye / Sitio / Purok / Numero ng Bahay",
+                label_zip: "Postal / ZIP Code", zip_hint: "Awtomatikong nalalagay kapag available",
+                label_landmark: "Palatandaan", label_optional: "(opsyonal)",
+                label_main_crop: "Pangunahing Uri ng Pananim", opt_select_type: "Pumili ng Uri...",
+                label_cropping_period: "Panahon ng Pagtatanim", label_area_size: "Sukat ng Lugar (Ha)",
+                label_land_type: "Uri ng Lupa", opt_irrigated: "May Patubig", opt_rainfed: "Umaasa sa Ulan", opt_upland: "Kabundukan",
+                btn_use_location: "Gamitin ang Aking Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
+                btn_save_farm: "I-save ang Lokasyon ng Sakahan",
+                modal_edit_title: "I-edit ang Ulat ng Pinsala",
+                step_pending_label: "Naghihintay ng Review", step_pending_sub: "Naisumite na ang iyong kahilingan",
+                step_approved_label: "Inaprubahan ng Admin", step_approved_sub: "Nasuri at naaprubahan na ang kahilingan",
+                step_ready_label: "Handa nang Kunin", step_ready_sub: "Handa na ang iyong mga binhi — kunin sa opisina ng MAO",
+                step_claimed_label: "Nakuha na", step_claimed_sub: "Natanggap mo na ang iyong hiniling na binhi",
+                table_empty: "Wala ka pang naisusumiteng ulat.",
+                label_area_short: "Lugar:", label_sev_short: "Lubha:", label_est_loss: "Tinatayang pagkalugi", na_text: "N/A",
+                action_edit: "I-edit", action_delete: "Burahin", action_locked: "Naka-lock",
+                status_pending: "Naghihintay", status_validated: "Na-validate", status_approved: "Naaprubahan", status_completed: "Nakumpleto", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
+                opt_select_location: "Pumili ng Lokasyon...", opt_no_locations: "Walang nahanap na lokasyon. Magdagdag muna.", opt_locations_error: "Hindi na-load ang mga lokasyon",
+                opt_select_crop: "— Pumili ng iyong pananim —", opt_no_crops: "Wala pang nakarehistrong pananim", crop_type_auto: "Type ID {id} awtomatikong napili",
+                opt_select_province: "— Pumili ng Probinsya —", opt_select_city: "— Pumili ng Lungsod / Munisipalidad —", opt_select_barangay: "— Pumili ng Barangay —",
+                loading_provinces: "Nilo-load ang mga probinsya...", loading_cities: "Nilo-load ang mga lungsod/munisipalidad...", loading_barangays: "Nilo-load ang mga barangay...",
+                failed_provinces: "Hindi na-load ang mga probinsya", failed_cities: "Hindi na-load ang mga lungsod", failed_barangays: "Hindi na-load ang mga barangay",
+                label_region: "Rehiyon",
+                suffix_select_province_first: "(pumili muna ng probinsya)", suffix_select_city_first: "(pumili muna ng lungsod)", suffix_loading: "(naglo-load...)",
+                notif_empty: "Walang bagong abiso", just_now: "Ngayon lang", alert_none: "Walang kamakailang abiso",
+                sw_not_supported_title: "Hindi Suportado", sw_not_supported_text: "Hindi sinusuportahan ng iyong browser ang geolocation.",
+                sw_detecting_title: "Kinukuha ang lokasyon...",
+                sw_location_detected_title: "Nakuha ang lokasyon!",
+                sw_gps_error_title: "Error", sw_gps_error_text: "Hindi makuha ang iyong lokasyon. Pakilagay ang coordinates nang manu-mano.",
+                sw_required_title: "Kailangan", sw_required_text: "Pakikumpleto ang address hanggang antas ng Barangay.",
+                sw_farm_saved_title: "Na-save ang Sakahan!",
+                sw_generic_error_title: "Error",
+                sw_connect_error_text: "Hindi makakonekta sa server.",
+                sw_no_locations_title: "Walang Lokasyon ng Sakahan", sw_no_locations_text: "Kailangan mong magdagdag ng Lokasyon ng Sakahan bago maghain ng ulat.",
+                sw_rsbsa_title: "Kailangan ang RSBSA", sw_go_to_profile: "Pumunta sa Profile",
+                sw_submitting_title: "Isinusumite...", sw_submitting_text: "Ina-upload ang iyong ulat at mga larawan.",
+                sw_success_title: "Tagumpay!",
+                sw_submit_failed_text: "Hindi naisumite ang ulat dahil sa server error.",
+                sw_loading_title: "Naglo-load...",
+                sw_load_report_failed_text: "Hindi na-load ang datos ng ulat.",
+                sw_archive_title: "I-archive ang Ulat?", sw_archive_text: "Aalisin nito ang ulat sa iyong aktibong view.", sw_archive_confirm: "Oo, I-archive",
+                sw_archived_title: "Na-archive na!", sw_archived_text: "Na-archive na ang ulat.",
+                sw_server_error_text: "Nabigo ang koneksyon sa server. Suriin ang file path.",
+                sw_signout_title: "Mag-sign Out?",
+                sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit."
+            },
+            ceb: {
+                nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
+                nav_seeds: "Pangayo og Binhi", nav_comm: "Komunikasyon", sidebar_role: "Mag-uuma",
+                header_title: "Akong Dashboard", header_badge: "Mode sa Mag-uuma", notif_title: "Mga Pahibalo",
+                welcome_title: "Maayong pagbalik!", welcome_sub: "Subaya ang imong gi-file nga mga report ug tan-awa ang status sa validation niini.",
+                btn_manage_farms: "Dumalahi ang mga Uma", btn_new_report: "Pag-file og Bag-ong Report",
+                alert_title: "Importanteng mga Pahibalo", alert_sub: "Bag-ohay nga mga pahibalo nga kinahanglan nimong tan-awon", btn_dismiss_all: "I-dismiss Tanan",
+                stat_total: "Total nga Na-file nga Report", stat_pending: "Naghulat og Validation", stat_resolved: "Na-resolve / Na-aprubahan",
+                tracker_title: "Tigsubay sa Pangayo og Binhi", tracker_sub: "Subaya ang real-time nga status sa imong pangayo og binhi", tracker_viewall: "Tan-awa Tanan",
+                reports_title: "Bag-ohay nga mga Report",
+                th_date: "Petsa sa Pag-file", th_crop: "Detalye sa Tanom", th_incident: "Insidente", th_loss: "Gibanabana nga Kadaot", th_status: "Status", th_actions: "Aksyon",
+                modal_report_title: "Pag-file og Report sa Kadaot sa Tanom",
+                label_farm_location: "Lokasyon sa Uma", label_crop_picker: "Unsa nga Tanom ang Naguba?",
+                label_planting_date: "Petsa sa Pagtanom", label_affected_area: "Naapektuhan nga Sukod (Ha)", area_warning: "Dili pwede molapas sa total nga sukod sa uma!",
+                label_damage_type: "Klase sa Kadaot", opt_flood: "Baha", opt_typhoon: "Bagyo", opt_pest: "Peste", opt_drought: "Hulaw",
+                label_severity: "Grabe sa Kadaot", opt_low: "Gamay", opt_moderate: "Kasarangan", opt_high: "Grabe", opt_total_loss: "Total nga Kadaot",
+                label_description: "Deskripsyon sa Kadaot", desc_placeholder: "Isaysay kung unsa ang nahitabo...",
+                label_photos: "Litrato nga Ebidensya",
+                photo_info: "Awtomatik nga makuha sa matag litrato ang imong GPS location kung kuhaan. Makatabang ni para ma-verify sa mga admin nga ang litrato gikuha sa gideklarar nga lokasyon sa uma.",
+                btn_take_photo: "Pagkuha og Litrato o Pag-upload gikan sa Gallery", btn_cancel: "Kanselahon", btn_submit_report: "I-submit ang Report",
+                modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
+                label_specific_location: "Detalyado nga Lokasyon", label_street: "Dalan / Sitio / Purok / Numero sa Balay",
+                label_zip: "Postal / ZIP Code", zip_hint: "Awtomatik ma-fill kung naa",
+                label_landmark: "Landmark", label_optional: "(opsyonal)",
+                label_main_crop: "Pangunang Klase sa Tanom", opt_select_type: "Pilia ang Klase...",
+                label_cropping_period: "Panahon sa Pagtanom", label_area_size: "Sukod sa Uma (Ha)",
+                label_land_type: "Klase sa Yuta", opt_irrigated: "May Tubig", opt_rainfed: "Nagsalig sa Ulan", opt_upland: "Bungtod",
+                btn_use_location: "Gamiton ang Akong Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
+                btn_save_farm: "I-save ang Lokasyon sa Uma",
+                modal_edit_title: "I-edit ang Report sa Kadaot",
+                step_pending_label: "Naghulat og Review", step_pending_sub: "Na-submit na ang imong pangayo",
+                step_approved_label: "Gi-aprubahan sa Admin", step_approved_sub: "Na-review ug na-aprubahan na ang pangayo",
+                step_ready_label: "Andam na Kuhaon", step_ready_sub: "Andam na ang imong binhi — kuhaa sa opisina sa MAO",
+                step_claimed_label: "Nakuha na", step_claimed_sub: "Nadawat na nimo ang imong gipangayo nga binhi",
+                table_empty: "Wala ka pay na-submit nga report.",
+                label_area_short: "Sukod:", label_sev_short: "Grabe:", label_est_loss: "Gibanabana nga kadaot", na_text: "N/A",
+                action_edit: "I-edit", action_delete: "Papasa", action_locked: "Naka-lock",
+                status_pending: "Naghulat", status_validated: "Na-validate", status_approved: "Na-aprubahan", status_completed: "Nahuman", status_rejected: "Gibalibaran", status_archived: "Naka-archive",
+                opt_select_location: "Pilia ang Lokasyon...", opt_no_locations: "Walay nakit-an nga lokasyon. Pagdugang una.", opt_locations_error: "Wala ma-load ang mga lokasyon",
+                opt_select_crop: "— Pilia ang imong tanom —", opt_no_crops: "Wala pay narehistro nga tanom", crop_type_auto: "Type ID {id} awtomatik napili",
+                opt_select_province: "— Pilia ang Probinsya —", opt_select_city: "— Pilia ang Siyudad / Munisipyo —", opt_select_barangay: "— Pilia ang Barangay —",
+                loading_provinces: "Ginaload ang mga probinsya...", loading_cities: "Ginaload ang mga siyudad/munisipyo...", loading_barangays: "Ginaload ang mga barangay...",
+                failed_provinces: "Wala ma-load ang mga probinsya", failed_cities: "Wala ma-load ang mga siyudad", failed_barangays: "Wala ma-load ang mga barangay",
+                label_region: "Rehiyon",
+                suffix_select_province_first: "(pilia una ang probinsya)", suffix_select_city_first: "(pilia una ang siyudad)", suffix_loading: "(nagaload...)",
+                notif_empty: "Walay bag-ong pahibalo", just_now: "Karon lang", alert_none: "Walay bag-ohay nga pahibalo",
+                sw_not_supported_title: "Wala Ma-support", sw_not_supported_text: "Ang imong browser dili mo-support sa geolocation.",
+                sw_detecting_title: "Ginakuha ang lokasyon...",
+                sw_location_detected_title: "Nakuha ang lokasyon!",
+                sw_gps_error_title: "Error", sw_gps_error_text: "Dili makuha ang imong lokasyon. Palihug i-type ang coordinates manually.",
+                sw_required_title: "Gikinahanglan", sw_required_text: "Palihug kompletoha ang address hangtod sa Barangay.",
+                sw_farm_saved_title: "Na-save ang Uma!",
+                sw_generic_error_title: "Error",
+                sw_connect_error_text: "Dili maka-connect sa server.",
+                sw_no_locations_title: "Walay Lokasyon sa Uma", sw_no_locations_text: "Kinahanglan ka mag-dugang og Lokasyon sa Uma una ka makahimo og report.",
+                sw_rsbsa_title: "Gikinahanglan ang RSBSA", sw_go_to_profile: "Adto sa Profile",
+                sw_submitting_title: "Gina-submit...", sw_submitting_text: "Gina-upload ang imong report ug mga litrato.",
+                sw_success_title: "Malampuson!",
+                sw_submit_failed_text: "Wala ma-submit ang report tungod sa server error.",
+                sw_loading_title: "Ginaload...",
+                sw_load_report_failed_text: "Wala ma-load ang datos sa report.",
+                sw_archive_title: "I-archive ang Report?", sw_archive_text: "Kuhaon ni ang report gikan sa imong active view.", sw_archive_confirm: "Oo, I-archive",
+                sw_archived_title: "Na-archive na!", sw_archived_text: "Na-archive na ang report.",
+                sw_server_error_text: "Napakyas ang koneksyon sa server. Susiha ang file path.",
+                sw_signout_title: "Mo-sign Out?",
+                sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan."
+            }
+        };
+
         const PSGC = 'https://psgc.cloud/api';
         const REGION_X_CODE = '1000000000';
         const REGION_X_NAME = 'Region X \u2013 Northern Mindanao';
@@ -586,6 +801,15 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('plantingDate').setAttribute('max', today);
         });
+
+        // Called automatically by i18n.js whenever the user picks a new language —
+        // re-renders anything that was built dynamically with JS (tables, dropdowns, tracker)
+        function onLanguageChange() {
+            loadDashboardData();
+            loadFarmLocations();
+            loadCropOptions();
+            loadSeedTracker();
+        }
 
         // ═══ FEATURE 2: SEED REQUEST TRACKER ═══
         async function loadSeedTracker() {
@@ -609,10 +833,10 @@
 
         function renderTracker(container, req) {
             const steps = [
-                { key: 'Pending', label: 'Pending Review', sub: 'Your request has been submitted', icon: 'fa-paper-plane' },
-                { key: 'Approved by Admin', label: 'Approved by Admin', sub: 'Request has been reviewed and approved', icon: 'fa-check-circle' },
-                { key: 'Ready for Pickup', label: 'Ready for Pickup', sub: 'Your seeds are ready — claim at the MAO office', icon: 'fa-box-open' },
-                { key: 'Claimed', label: 'Claimed', sub: 'You have received your requested seeds', icon: 'fa-hand-holding-heart' }
+                { key: 'Pending', label: t('step_pending_label'), sub: t('step_pending_sub'), icon: 'fa-paper-plane' },
+                { key: 'Approved by Admin', label: t('step_approved_label'), sub: t('step_approved_sub'), icon: 'fa-check-circle' },
+                { key: 'Ready for Pickup', label: t('step_ready_label'), sub: t('step_ready_sub'), icon: 'fa-box-open' },
+                { key: 'Claimed', label: t('step_claimed_label'), sub: t('step_claimed_sub'), icon: 'fa-hand-holding-heart' }
             ];
 
             const statusOrder = ['Pending', 'Approved by Admin', 'Ready for Pickup', 'Claimed'];
@@ -803,18 +1027,18 @@
         async function loadProvincesForRegionX() {
             resetFrom('province');
             const sel = document.getElementById('addrProvince');
-            setSelectLoading(sel, 'Loading provinces...');
+            setSelectLoading(sel, t('loading_provinces'));
             try {
                 const res  = await fetch(`${PSGC}/regions/${REGION_X_CODE}/provinces`);
                 const data = await res.json();
-                sel.innerHTML = '<option value="">— Select Province —</option>';
+                sel.innerHTML = '<option value="">' + t('opt_select_province') + '</option>';
                 data.sort((a, b) => a.name.localeCompare(b.name))
                     .forEach(p => sel.appendChild(new Option(p.name, p.code)));
-                enableSelect('addrProvince', 'badge-province', 'label-province', 'Province');
+                enableSelect('addrProvince', 'badge-province', 'label-province', t('label_province') || 'Province');
                 sel.addEventListener('change', onProvinceChange);
             } catch (e) {
-                sel.innerHTML = '<option value="">Failed to load provinces</option>';
-                enableSelect('addrProvince', 'badge-province', 'label-province', 'Province');
+                sel.innerHTML = '<option value="">' + t('failed_provinces') + '</option>';
+                enableSelect('addrProvince', 'badge-province', 'label-province', t('label_province') || 'Province');
             }
         }
 
@@ -823,18 +1047,18 @@
             resetFrom('city');
             if (!provinceCode) return;
             const sel = document.getElementById('addrCity');
-            setSelectLoading(sel, 'Loading cities/municipalities...');
+            setSelectLoading(sel, t('loading_cities'));
             try {
                 const res  = await fetch(`${PSGC}/provinces/${provinceCode}/cities-municipalities`);
                 const data = await res.json();
-                sel.innerHTML = '<option value="">— Select City / Municipality —</option>';
+                sel.innerHTML = '<option value="">' + t('opt_select_city') + '</option>';
                 data.sort((a, b) => a.name.localeCompare(b.name))
                     .forEach(c => sel.appendChild(new Option(c.name, c.code)));
-                enableSelect('addrCity', 'badge-city', 'label-city', 'City / Municipality');
+                enableSelect('addrCity', 'badge-city', 'label-city', t('label_city'));
                 sel.addEventListener('change', onCityChange);
             } catch (e) {
-                sel.innerHTML = '<option value="">Failed to load cities</option>';
-                enableSelect('addrCity', 'badge-city', 'label-city', 'City / Municipality');
+                sel.innerHTML = '<option value="">' + t('failed_cities') + '</option>';
+                enableSelect('addrCity', 'badge-city', 'label-city', t('label_city'));
             }
         }
 
@@ -843,14 +1067,14 @@
             resetFrom('barangay');
             if (!cityCode) return;
             const sel = document.getElementById('addrBarangay');
-            setSelectLoading(sel, 'Loading barangays...');
+            setSelectLoading(sel, t('loading_barangays'));
             try {
                 const res  = await fetch(`${PSGC}/cities-municipalities/${cityCode}/barangays`);
                 const data = await res.json();
-                sel.innerHTML = '<option value="">— Select Barangay —</option>';
+                sel.innerHTML = '<option value="">' + t('opt_select_barangay') + '</option>';
                 data.sort((a, b) => a.name.localeCompare(b.name))
                     .forEach(b => sel.appendChild(new Option(b.name, b.code)));
-                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', 'Barangay');
+                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', t('label_barangay') || 'Barangay');
                 sel.addEventListener('change', () => {
                     if (sel.value) {
                         document.getElementById('manualAddressFields').classList.remove('hidden');
@@ -861,8 +1085,8 @@
                     }
                 });
             } catch (e) {
-                sel.innerHTML = '<option value="">Failed to load barangays</option>';
-                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', 'Barangay');
+                sel.innerHTML = '<option value="">' + t('failed_barangays') + '</option>';
+                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', t('label_barangay') || 'Barangay');
             }
         }
 
@@ -889,14 +1113,15 @@
             const idMap    = { province: 'addrProvince', city: 'addrCity', barangay: 'addrBarangay' };
             const badgeMap = { province: 'badge-province', city: 'badge-city', barangay: 'badge-brgy' };
             const labelMap = {
-                province: ['label-province', 'Province',            'region'],
-                city:     ['label-city',     'City / Municipality', 'province'],
-                barangay: ['label-brgy',     'Barangay',            'city']
+                province: ['label-province', t('label_province') || 'Province',            'suffix_select_province_first_placeholder'],
+                city:     ['label-city',     t('label_city'), 'suffix_select_city_first_placeholder'],
+                barangay: ['label-brgy',     t('label_barangay') || 'Barangay',            'suffix_select_city_first_placeholder2']
             };
+            const suffixMap = { province: t('suffix_loading'), city: t('suffix_select_province_first'), barangay: t('suffix_select_city_first') };
             levels.slice(levels.indexOf(level)).forEach(l => {
                 const oldSel = document.getElementById(idMap[l]);
                 const newSel = oldSel.cloneNode(false);
-                newSel.innerHTML = '<option value="">\u2014 Select ' + labelMap[l][1] + ' \u2014</option>';
+                newSel.innerHTML = '<option value="">\u2014 ' + labelMap[l][1] + ' \u2014</option>';
                 newSel.disabled = true;
                 newSel.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
                 newSel.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
@@ -904,7 +1129,7 @@
                 const badge = document.getElementById(badgeMap[l]);
                 if (badge) badge.classList.add('inactive');
                 const lbl = document.getElementById(labelMap[l][0]);
-                if (lbl) lbl.innerHTML = labelMap[l][1] + ' <span class="text-[10px] font-normal text-gray-400">(select ' + labelMap[l][2] + ' first)</span>';
+                if (lbl) lbl.innerHTML = labelMap[l][1] + ' <span class="text-[10px] font-normal text-gray-400">' + suffixMap[l] + '</span>';
             });
             document.getElementById('manualAddressFields').classList.add('hidden');
             document.getElementById('addrStreet').value   = '';
@@ -913,15 +1138,15 @@
         }
 
         function detectGPS() {
-            if (!navigator.geolocation) { Swal.fire('Not Supported', 'Your browser does not support geolocation.', 'warning'); return; }
-            Swal.fire({ title: 'Detecting location...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            if (!navigator.geolocation) { Swal.fire(t('sw_not_supported_title'), t('sw_not_supported_text'), 'warning'); return; }
+            Swal.fire({ title: t('sw_detecting_title'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             navigator.geolocation.getCurrentPosition(
                 pos => {
                     document.getElementById('farmLat').value = pos.coords.latitude.toFixed(8);
                     document.getElementById('farmLng').value = pos.coords.longitude.toFixed(8);
-                    Swal.fire({ icon: 'success', title: 'Location detected!', timer: 1200, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: t('sw_location_detected_title'), timer: 1200, showConfirmButton: false });
                 },
-                () => Swal.fire('Error', 'Could not detect your location. Please enter coordinates manually.', 'error')
+                () => Swal.fire(t('sw_gps_error_title'), t('sw_gps_error_text'), 'error')
             );
         }
 
@@ -943,7 +1168,7 @@
             };
             const barangayText = getSelectedText('addrBarangay');
             if (!barangayText || barangayText.startsWith('\u2014')) {
-                Swal.fire('Required', 'Please complete the address up to Barangay level.', 'warning'); return;
+                Swal.fire(t('sw_required_title'), t('sw_required_text'), 'warning'); return;
             }
             const province = getSelectedText('addrProvince');
             const city     = getSelectedText('addrCity');
@@ -968,10 +1193,24 @@
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
             }).then(res => res.json()).then(data => {
                 if (data.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Farm Saved!', timer: 1500, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: t('sw_farm_saved_title'), timer: 1500, showConfirmButton: false });
                     closeFarmModal(); loadFarmLocations();
-                } else { Swal.fire('Error', data.message, 'error'); }
-            }).catch(() => Swal.fire('Error', 'Could not connect to server.', 'error'));
+                } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
+            }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
+        }
+
+        // ─── LABEL HELPERS (translate DB values for display only — the underlying value stays in English) ───
+        function damageTypeLabel(val) {
+            const map = { 'Flood': 'opt_flood', 'Typhoon': 'opt_typhoon', 'Pest Infestation': 'opt_pest', 'Drought': 'opt_drought' };
+            return map[val] ? t(map[val]) : (val || t('na_text'));
+        }
+        function severityLabel(val) {
+            const map = { 'Low': 'opt_low', 'Moderate': 'opt_moderate', 'High': 'opt_high', 'Total Loss': 'opt_total_loss' };
+            return map[val] ? t(map[val]) : (val || t('na_text'));
+        }
+        function statusLabel(val) {
+            const map = { 'Pending': 'status_pending', 'Validated': 'status_validated', 'Approved': 'status_approved', 'Completed': 'status_completed', 'Rejected': 'status_rejected', 'Archived': 'status_archived' };
+            return map[val] ? t(map[val]) : (val || t('status_pending'));
         }
 
         // ─── DASHBOARD DATA ───────────────────────────────────────────────────
@@ -990,7 +1229,7 @@
 
                         const tbody = document.getElementById("tableBody");
                         if (!data.reports.length) {
-                            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">You have not submitted any reports yet.</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('table_empty') + '</td></tr>';
                             return;
                         }
                         tbody.innerHTML = "";
@@ -998,14 +1237,14 @@
                             let statusBadge = '', actionButtons = '';
                             if (r.status === 'Pending') {
                                 statusBadge = 'bg-amber-100 text-amber-700';
-                                actionButtons = '<div class="flex items-center justify-end gap-3"><button onclick="editReport(' + r.id + ')" class="text-blue-500 hover:text-blue-700" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 hover:text-red-700" title="Delete"><i class="fa-solid fa-trash"></i></button></div>';
+                                actionButtons = '<div class="flex items-center justify-end gap-3"><button onclick="editReport(' + r.id + ')" class="text-blue-500 hover:text-blue-700" title="' + t('action_edit') + '"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 hover:text-red-700" title="' + t('action_delete') + '"><i class="fa-solid fa-trash"></i></button></div>';
                             } else {
                                 if (r.status === 'Validated')                                 statusBadge = 'bg-blue-100 text-blue-700';
                                 else if (r.status === 'Approved' || r.status === 'Completed') statusBadge = 'bg-green-100 text-green-700';
                                 else                                                           statusBadge = 'bg-red-100 text-red-700';
-                                actionButtons = '<span class="text-gray-300" title="Locked"><i class="fa-solid fa-lock"></i></span>';
+                                actionButtons = '<span class="text-gray-300" title="' + t('action_locked') + '"><i class="fa-solid fa-lock"></i></span>';
                             }
-                            tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || 'N/A') + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || 'N/A') + '</p><p class="text-[10px] text-gray-500">Area: ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + (r.damage_type || 'N/A') + '</span><p class="text-[10px] mt-1 font-bold ' + (r.severity === 'High' || r.severity === 'Total Loss' ? 'text-red-500' : 'text-amber-500') + '">Sev: ' + (r.severity || 'N/A') + '</p></td><td class="px-6 py-4"><p id="cost-' + r.id + '" class="text-sm font-black text-red-600">...</p><p class="text-[10px] text-gray-400">Est. loss</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + (r.status || 'Pending') + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
+                            tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + (r.severity === 'High' || r.severity === 'Total Loss' ? 'text-red-500' : 'text-amber-500') + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4"><p id="cost-' + r.id + '" class="text-sm font-black text-red-600">...</p><p class="text-[10px] text-gray-400">' + t('label_est_loss') + '</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
                         });
                         data.reports.forEach(r => {
                             fetch('../../api/dashboard/calculate_cost.php?report_id=' + r.id)
@@ -1029,12 +1268,12 @@
                     if (data.status === 'success') {
                         farmerCropsData = data.crops || [];
                         const picker = document.getElementById('cropPicker');
-                        picker.innerHTML = '<option value="">— Select your crop —</option>';
+                        picker.innerHTML = '<option value="">' + t('opt_select_crop') + '</option>';
                         farmerCropsData.forEach(c => {
                             picker.innerHTML += '<option value="' + c.Crop_ID + '">' + c.Crop_Name + '</option>';
                         });
                         if (!farmerCropsData.length) {
-                            picker.innerHTML = '<option value="" disabled>No crops registered yet</option>';
+                            picker.innerHTML = '<option value="" disabled>' + t('opt_no_crops') + '</option>';
                         }
                         const farmCropType = document.getElementById('farmCropType');
                         (data.types || []).forEach(t => {
@@ -1052,7 +1291,7 @@
             document.getElementById('cropName').value = cropId;
             document.getElementById('cropType').value = crop ? (crop.Type_ID || '') : '';
             if (crop && crop.Type_ID) {
-                hint.textContent = 'Type ID ' + crop.Type_ID + ' auto-selected';
+                hint.textContent = t('crop_type_auto').replace('{id}', crop.Type_ID);
                 hint.classList.remove('hidden');
             } else { hint.classList.add('hidden'); }
         }
@@ -1062,16 +1301,16 @@
                 .then(res => res.json())
                 .then(data => {
                     const select = document.getElementById('farmLocation');
-                    select.innerHTML = '<option value="">Select a Location...</option>';
+                    select.innerHTML = '<option value="">' + t('opt_select_location') + '</option>';
                     if (data.status === 'success' && data.locations.length > 0) {
                         data.locations.forEach(loc => {
                             select.innerHTML += '<option value="' + loc.Location_ID + '" data-max-area="' + loc.Area_Size + '">' + loc.Barangay + ' - ' + loc.Area_Size + ' Ha</option>';
                         });
                     } else {
-                        select.innerHTML = '<option value="" disabled>No locations found. Add one first.</option>';
+                        select.innerHTML = '<option value="" disabled>' + t('opt_no_locations') + '</option>';
                     }
                 }).catch(() => {
-                    document.getElementById('farmLocation').innerHTML = '<option value="" disabled>Could not load locations</option>';
+                    document.getElementById('farmLocation').innerHTML = '<option value="" disabled>' + t('opt_locations_error') + '</option>';
                 });
         }
 
@@ -1110,10 +1349,10 @@
 
             const locationSelect = document.getElementById('farmLocation');
             if (locationSelect.options.length <= 1 && locationSelect.options[0] && locationSelect.options[0].disabled) {
-                Swal.fire('No Farm Locations', 'You need to add a Farm Location before you can file a report.', 'warning'); return;
+                Swal.fire(t('sw_no_locations_title'), t('sw_no_locations_text'), 'warning'); return;
             }
             document.getElementById("reportId").value       = editId || "";
-            document.getElementById("modalTitle").innerText = editId ? "Edit Damage Report" : "File Crop Damage Report";
+            document.getElementById("modalTitle").innerText = editId ? t('modal_edit_title') : t('modal_report_title');
             currentMaxArea = 0;
             validateArea();
             document.getElementById("modal").classList.remove("hidden");
@@ -1126,7 +1365,7 @@
 
             const rsbsaCheck = await fetch('../../api/farmer/check_rsbsa.php').then(r => r.json());
             if (rsbsaCheck.status !== 'valid') {
-                Swal.fire({ icon: 'warning', title: 'RSBSA Required', text: rsbsaCheck.message, confirmButtonColor: '#11542e', confirmButtonText: 'Go to Profile' })
+                Swal.fire({ icon: 'warning', title: t('sw_rsbsa_title'), text: rsbsaCheck.message, confirmButtonColor: '#11542e', confirmButtonText: t('sw_go_to_profile') })
                     .then(() => window.location.href = '../profile/profile.html');
                 return;
             }
@@ -1154,21 +1393,21 @@
                 }
             });
 
-            Swal.fire({ title: 'Submitting...', text: 'Uploading your report and photos.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: t('sw_submitting_title'), text: t('sw_submitting_text'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
             fetch('../../api/dashboard/submit_report.php', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Success!', text: data.message, timer: 1500, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: t('sw_success_title'), text: data.message, timer: 1500, showConfirmButton: false });
                     closeModal(); loadDashboardData();
-                } else { Swal.fire('Error', data.message, 'error'); }
+                } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
             })
-            .catch(() => Swal.fire('Error', 'Failed to submit report due to server error.', 'error'));
+            .catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_submit_failed_text'), 'error'));
         }
 
         function editReport(id) {
-            Swal.fire({ title: 'Loading...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            Swal.fire({ title: t('sw_loading_title'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             fetch('../../api/dashboard/get_report.php?id=' + id).then(res => res.json()).then(data => {
                 Swal.close();
                 if (data.status === 'success') {
@@ -1190,20 +1429,20 @@
                     document.getElementById('damageType').value   = r.Damage_Type     || 'Flood';
                     document.getElementById('severity').value     = r.Damage_Severity || 'Low';
                     document.getElementById('description').value  = r.Description     || '';
-                    document.getElementById('modalTitle').innerText = "Edit Damage Report";
+                    document.getElementById('modalTitle').innerText = t('modal_edit_title');
                     document.getElementById('modal').classList.remove('hidden');
-                } else { Swal.fire('Error', data.message, 'error'); }
-            }).catch(() => Swal.fire('Error', 'Failed to load report data.', 'error'));
+                } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
+            }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_load_report_failed_text'), 'error'));
         }
         function deleteReport(id) {
             Swal.fire({
-                title: 'Archive Report?',
-                text: "This will remove the report from your active view.",
+                title: t('sw_archive_title'),
+                text: t('sw_archive_text'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, Archive It'
+                confirmButtonText: t('sw_archive_confirm')
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch('../../api/masterfile/damage_report/soft_delete.php', { 
@@ -1214,15 +1453,15 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            Swal.fire('Archived!', 'The report has been archived.', 'success');
+                            Swal.fire(t('sw_archived_title'), t('sw_archived_text'), 'success');
                             loadDashboardData();
                         } else {
-                            Swal.fire('Error', data.message, 'error');
+                            Swal.fire(t('sw_generic_error_title'), data.message, 'error');
                         }
                     })
                     .catch(err => {
                         console.error(err);
-                        Swal.fire('Error', 'Server connection failed. Check file path.', 'error');
+                        Swal.fire(t('sw_generic_error_title'), t('sw_server_error_text'), 'error');
                     });
                 }
             });
@@ -1243,12 +1482,12 @@
                 if (data.status === 'success') {
                     data.unread > 0 ? document.getElementById('notifBadge').classList.remove('hidden') : document.getElementById('notifBadge').classList.add('hidden');
                     const list = document.getElementById('notifList');
-                    if (!data.data.length) { list.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 text-xs italic">No new notifications</div>'; return; }
+                    if (!data.data.length) { list.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 text-xs italic">' + t('notif_empty') + '</div>'; return; }
                     list.innerHTML = '';
                     data.data.forEach(n => {
                         const bg  = n.Is_Read == 0 ? 'bg-green-50/30' : '';
                         const dot = n.Is_Read == 0 ? '<div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>' : '';
-                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || 'Just now') + '</p></div></div>';
+                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div></div>';
                     });
                     // Also update the big alert banner
                     fetchAndShowBigAlerts();
@@ -1264,7 +1503,7 @@
         });
 
         function confirmLogout() {
-            Swal.fire({ title: 'Sign Out?', icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
+            Swal.fire({ title: t('sw_signout_title'), icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
                 .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html').catch(() => window.location.href = '../../auth.html'); });
         }
 
@@ -1273,7 +1512,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }
