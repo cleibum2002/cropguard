@@ -164,9 +164,9 @@
                 galleryHTML = `
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">Initial Evidence</h4>
                     <div class="flex flex-wrap gap-4 mb-8">
-                        ${images.map(src => `
-                            <a href="${src}" target="_blank" class="block w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
-                                <img src="${src}" class="w-full h-full object-cover hover:scale-110 transition-transform">
+                        ${images.map(img => `
+                            <a href="${img.path || img}" target="_blank" class="block w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
+                                <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
                             </a>`).join('')}
                     </div>`;
             } else {
