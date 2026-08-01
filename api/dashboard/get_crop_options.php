@@ -1,7 +1,14 @@
 <?php
 // File Location: api/dashboard/get_crop_options.php
 // Description: This API endpoint retrieves the list of crops and their types from the database. This data is essential for populating dropdown menus or selection fields in the frontend when users are creating or updating damage reports, allowing them to specify which crop was affected and its type.
+session_start();
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['User_ID'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+    exit;
+}
+
 require_once '../config/db_connection.php';
 
 try {

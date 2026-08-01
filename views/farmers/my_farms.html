@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Farms | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -12,6 +14,8 @@
         .sidebar-link { transition: all 0.2s ease; border-left: 3px solid transparent; }
         .sidebar-link.active { background: rgba(255,255,255,0.12); border-left-color: #f1c40f; }
         .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.06); }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -29,34 +33,41 @@
         
 <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             <a href="../profile/profile.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-user-circle mr-3 w-4"></i> My Profile
+                <i class="fa-solid fa-user-circle mr-3 w-4"></i> <span data-i18n="nav_profile">My Profile</span>
             </a>
             <a href="index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-table-columns mr-3 w-4"></i> My Dashboard
+                <i class="fa-solid fa-table-columns mr-3 w-4"></i> <span data-i18n="nav_dashboard">My Dashboard</span>
             </a>
             <a href="my_farms.html" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-xl font-semibold text-sm transition-all">
-                <i class="fa-solid fa-map-location-dot mr-3 w-4 text-[#f1c40f]"></i> My Farms
+                <i class="fa-solid fa-map-location-dot mr-3 w-4 text-[#f1c40f]"></i> <span data-i18n="nav_farms">My Farms</span>
             </a>
             <a href="request_seeds.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-leaf mr-3 w-4"></i> Request Seeds
+                <i class="fa-solid fa-leaf mr-3 w-4"></i> <span data-i18n="nav_seeds">Request Seeds</span>
             </a>
             <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication<span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                <i class="fa-solid fa-message mr-3 w-4"></i> <span data-i18n="nav_comm">Communication</span><span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
     </aside>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center px-6 bg-white border-b border-gray-100 flex-shrink-0">
-            <span class="text-base font-black text-gray-800">Registered Farm Locations</span>
+        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <span class="text-base font-black text-gray-800" data-i18n="header_title">Registered Farm Locations</span>
+            <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                <span>|</span>
+                <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                <span>|</span>
+                <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+            </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
             <div class="max-w-6xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">Farm Directory</h2>
-                        <p class="text-gray-400 text-sm">View and manage the exact coordinates and details of your registered land.</p>
+                        <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Farm Directory</h2>
+                        <p class="text-gray-400 text-sm" data-i18n="page_sub">View and manage the exact coordinates and details of your registered land.</p>
                     </div>
                 </div>
 
@@ -65,10 +76,10 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Location Details</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Land Info</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Main Crop</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Coordinates</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_location">Location Details</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_land_info">Land Info</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_main_crop">Main Crop</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_coordinates">Coordinates</th>
                                 </tr>
                             </thead>
                             <tbody id="farmTableBody" class="divide-y divide-gray-50">
@@ -82,14 +93,64 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
+        const translations = {
+            en: {
+                nav_profile: "My Profile", nav_dashboard: "My Dashboard", nav_farms: "My Farms",
+                nav_seeds: "Request Seeds", nav_comm: "Communication",
+                header_title: "Registered Farm Locations",
+                page_title: "Farm Directory", page_sub: "View and manage the exact coordinates and details of your registered land.",
+                th_location: "Location Details", th_land_info: "Land Info", th_main_crop: "Main Crop", th_coordinates: "Coordinates",
+                loading_farms: "Loading farms...",
+                no_farms: "You have no registered farm locations yet. Add one on your Dashboard!",
+                view_on_map: "View on Map", no_coords: "No coordinates set",
+                brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Unregistered",
+                hectares_label: "Hectares", not_set: "Not Set", cycle_label: "Cycle:", na_text: "N/A",
+                opt_irrigated: "Irrigated", opt_rainfed: "Rainfed", opt_upland: "Upland",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
+                nav_seeds: "Humiling ng Binhi", nav_comm: "Komunikasyon",
+                header_title: "Mga Nakarehistrong Lokasyon ng Sakahan",
+                page_title: "Direktoryo ng Sakahan", page_sub: "Tingnan at pamahalaan ang eksaktong coordinates at detalye ng iyong nakarehistrong lupa.",
+                th_location: "Detalye ng Lokasyon", th_land_info: "Impormasyon ng Lupa", th_main_crop: "Pangunahing Pananim", th_coordinates: "Coordinates",
+                loading_farms: "Nilo-load ang mga sakahan...",
+                no_farms: "Wala ka pang nakarehistrong lokasyon ng sakahan. Magdagdag sa iyong Dashboard!",
+                view_on_map: "Tingnan sa Mapa", no_coords: "Walang nakatakdang coordinates",
+                brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Hindi Nakarehistro",
+                hectares_label: "Ektarya", not_set: "Hindi Nakatakda", cycle_label: "Ikot:", na_text: "N/A",
+                opt_irrigated: "May Patubig", opt_rainfed: "Umaasa sa Ulan", opt_upland: "Kabundukan",
+                sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit."
+            },
+            ceb: {
+                nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
+                nav_seeds: "Pangayo og Binhi", nav_comm: "Komunikasyon",
+                header_title: "Nakarehistro nga mga Lokasyon sa Uma",
+                page_title: "Direktoryo sa Uma", page_sub: "Tan-awa ug dumalahi ang eksaktong coordinates ug detalye sa imong narehistro nga yuta.",
+                th_location: "Detalye sa Lokasyon", th_land_info: "Impormasyon sa Yuta", th_main_crop: "Pangunang Tanom", th_coordinates: "Coordinates",
+                loading_farms: "Ginaload ang mga uma...",
+                no_farms: "Wala ka pay narehistro nga lokasyon sa uma. Pagdugang sa imong Dashboard!",
+                view_on_map: "Tan-awa sa Mapa", no_coords: "Walay gitakda nga coordinates",
+                brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Wala Marehistro",
+                hectares_label: "Ektarya", not_set: "Wala Gitakda", cycle_label: "Ikot:", na_text: "N/A",
+                opt_irrigated: "May Tubig", opt_rainfed: "Nagsalig sa Ulan", opt_upland: "Bungtod",
+                sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan."
+            }
+        };
+
+        function landTypeLabel(val) {
+            const map = { 'Irrigated': 'opt_irrigated', 'Rainfed': 'opt_rainfed', 'Upland': 'opt_upland' };
+            return map[val] ? t(map[val]) : (val || t('na_text'));
+        }
+
+        function loadFarms() {
             fetch('../../api/dashboard/get_farm_locations.php')
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById('farmTableBody');
                     if (data.status === 'success') {
                         if (data.locations.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic text-sm">You have no registered farm locations yet. Add one on your Dashboard!</td></tr>';
+                            tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</td></tr>';
                             return;
                         }
                         
@@ -97,22 +158,22 @@
                         data.locations.forEach(loc => {
                             // Format coordinates or show N/A
                             let coords = (loc.Latitude && loc.Longitude) 
-                                ? `<a href="https://www.google.com/maps?q=${loc.Latitude},${loc.Longitude}" target="_blank" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-location-crosshairs mr-1"></i> View on Map</a><br><span class="text-[10px] text-gray-400">${loc.Latitude}, ${loc.Longitude}</span>` 
-                                : `<span class="text-[10px] text-gray-400 italic">No coordinates set</span>`;
+                                ? `<a href="https://www.google.com/maps?q=${loc.Latitude},${loc.Longitude}" target="_blank" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-location-crosshairs mr-1"></i> ${t('view_on_map')}</a><br><span class="text-[10px] text-gray-400">${loc.Latitude}, ${loc.Longitude}</span>` 
+                                : `<span class="text-[10px] text-gray-400 italic">${t('no_coords')}</span>`;
 
                             tbody.innerHTML += `
                                 <tr class="hover:bg-gray-50/60 transition-all">
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-2"></i>Brgy. ${loc.Barangay || 'N/A'}</p>
-                                        <p class="text-[10px] text-gray-500 mt-1">RSBA: ${loc.RSBA_Reference_No || 'Unregistered'}</p>
+                                        <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-2"></i>${t('brgy_prefix')} ${loc.Barangay || t('na_text')}</p>
+                                        <p class="text-[10px] text-gray-500 mt-1">${t('rsba_label')} ${loc.RSBA_Reference_No || t('unregistered')}</p>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-700">${loc.Area_Size || '0.00'} Hectares</p>
-                                        <span class="px-2 py-1 mt-1 inline-block bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${loc.Land_Type || 'N/A'}</span>
+                                        <p class="text-sm font-bold text-gray-700">${loc.Area_Size || '0.00'} ${t('hectares_label')}</p>
+                                        <span class="px-2 py-1 mt-1 inline-block bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landTypeLabel(loc.Land_Type)}</span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-700">${loc.Crop_Name || 'Not Set'}</p>
-                                        <p class="text-[10px] text-gray-500">Cycle: ${loc.Cropping_Period || 'N/A'}</p>
+                                        <p class="text-sm font-bold text-gray-700">${loc.Crop_Name || t('not_set')}</p>
+                                        <p class="text-[10px] text-gray-500">${t('cycle_label')} ${loc.Cropping_Period || t('na_text')}</p>
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         ${coords}
@@ -123,13 +184,21 @@
                     }
                 })
                 .catch(err => console.error("Could not fetch farms:", err));
-        });
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            loadFarms();
+        }
+
+        document.addEventListener("DOMContentLoaded", loadFarms);
+
 // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
 let idleTimer;
 function resetIdleTimer() {
     clearTimeout(idleTimer);
     idleTimer = setTimeout(() => {
-        Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+        Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
             .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
     }, 5 * 60 * 1000);
 }

@@ -2,6 +2,12 @@
 // api/dashboard/stats.php (ADMIN VERSION)
 session_start();
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['User_ID']) || $_SESSION['Role'] !== 'Admin') {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+    exit;
+}
+
 require_once '../config/db_connection.php';
 
 try {

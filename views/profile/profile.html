@@ -6,10 +6,74 @@
     <title>My Profile | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 <script>
+    const translations = {
+        en: {
+            nav_back: "Back to Dashboard", nav_profile: "My Profile",
+            header_title: "My Profile", header_sub: "Account Settings",
+            section_basic_info: "Basic Information",
+            label_fullname: "Full Name", ph_fullname: "Your full name",
+            label_email: "Email Address", label_contact: "Contact Number", label_role: "Role",
+            label_rsba: "RSBA Number", ph_rsba: "Not yet assigned", rsba_hint: "RSBSA number is assigned by the Administrator.",
+            label_area: "Assigned Area",
+            section_password: "Change Password", password_hint: "\u2014 leave blank to keep current",
+            label_new_password: "New Password", ph_new_password: "Enter new password",
+            label_confirm_password: "Confirm Password", ph_confirm_password: "Confirm new password",
+            btn_save: "Save Changes",
+            sw_missing_title: "Missing Fields", sw_missing_text: "Full name and email are required.",
+            sw_mismatch_title: "Password Mismatch", sw_mismatch_text: "Passwords do not match.",
+            sw_weak_title: "Weak Password", sw_weak_text: "Password must be at least 6 characters.",
+            sw_updated_title: "Profile Updated!", sw_updated_text: "Your changes have been saved.",
+            sw_error_title: "Error", sw_update_failed: "Update failed.", sw_server_error: "Server connection failed.",
+            sw_signout_title: "Sign Out?", sw_signout_text: "Return to login screen.", sw_signout_confirm: "Logout",
+            sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+        },
+        tl: {
+            nav_back: "Bumalik sa Dashboard", nav_profile: "Aking Profile",
+            header_title: "Aking Profile", header_sub: "Mga Setting ng Account",
+            section_basic_info: "Pangunahing Impormasyon",
+            label_fullname: "Buong Pangalan", ph_fullname: "Ang iyong buong pangalan",
+            label_email: "Email Address", label_contact: "Numero ng Contact", label_role: "Tungkulin",
+            label_rsba: "Numero ng RSBA", ph_rsba: "Hindi pa naitalaga", rsba_hint: "Ang RSBSA number ay itinatalaga ng Administrator.",
+            label_area: "Nakatalagang Lugar",
+            section_password: "Palitan ang Password", password_hint: "\u2014 iwanang blangko para panatilihin ang kasalukuyan",
+            label_new_password: "Bagong Password", ph_new_password: "Ilagay ang bagong password",
+            label_confirm_password: "Kumpirmahin ang Password", ph_confirm_password: "Kumpirmahin ang bagong password",
+            btn_save: "I-save ang mga Pagbabago",
+            sw_missing_title: "Kulang na Impormasyon", sw_missing_text: "Kailangan ang buong pangalan at email.",
+            sw_mismatch_title: "Hindi Tugma ang Password", sw_mismatch_text: "Hindi magkatugma ang mga password.",
+            sw_weak_title: "Mahinang Password", sw_weak_text: "Dapat hindi bababa sa 6 na karakter ang password.",
+            sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang iyong mga pagbabago.",
+            sw_error_title: "Error", sw_update_failed: "Nabigo ang pag-update.", sw_server_error: "Nabigo ang koneksyon sa server.",
+            sw_signout_title: "Mag-sign Out?", sw_signout_text: "Babalik sa login screen.", sw_signout_confirm: "Mag-logout",
+            sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit."
+        },
+        ceb: {
+            nav_back: "Balik sa Dashboard", nav_profile: "Akong Profile",
+            header_title: "Akong Profile", header_sub: "Mga Setting sa Account",
+            section_basic_info: "Batakang Impormasyon",
+            label_fullname: "Tibuok Ngalan", ph_fullname: "Ang imong tibuok ngalan",
+            label_email: "Email Address", label_contact: "Numero sa Contact", label_role: "Tahas",
+            label_rsba: "Numero sa RSBA", ph_rsba: "Wala pa gitakda", rsba_hint: "Ang RSBSA number gitakda sa Administrator.",
+            label_area: "Gitakdang Lugar",
+            section_password: "Ilisi ang Password", password_hint: "\u2014 biyai og blangko para magpabilin ang karon",
+            label_new_password: "Bag-ong Password", ph_new_password: "Isulod ang bag-ong password",
+            label_confirm_password: "Kumpirmaha ang Password", ph_confirm_password: "Kumpirmaha ang bag-ong password",
+            btn_save: "I-save ang mga Kausaban",
+            sw_missing_title: "Kulang nga Impormasyon", sw_missing_text: "Gikinahanglan ang tibuok ngalan ug email.",
+            sw_mismatch_title: "Dili Tugma ang Password", sw_mismatch_text: "Dili magkatugma ang mga password.",
+            sw_weak_title: "Huyang nga Password", sw_weak_text: "Dapat dili ubos sa 6 ka karakter ang password.",
+            sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang imong mga kausaban.",
+            sw_error_title: "Error", sw_update_failed: "Napakyas ang pag-update.", sw_server_error: "Napakyas ang koneksyon sa server.",
+            sw_signout_title: "Mo-sign Out?", sw_signout_text: "Mobalik sa login screen.", sw_signout_confirm: "Mag-logout",
+            sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan."
+        }
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
             if (data.status !== 'active') {
@@ -20,6 +84,13 @@
                 document.getElementById('sidebarInitial').innerText = data.user.fullname.charAt(0).toUpperCase();
                 setupBackButton(data.role);
                 loadProfile(data.user.id);
+                // Only Farmer accounts get the language switcher for now
+                if (data.role === 'Farmer') {
+                    document.getElementById('langSwitcher').classList.remove('hidden');
+                } else {
+                    localStorage.removeItem('cropguard_lang');
+                    applyTranslations('en');
+                }
             }
         }).catch(() => window.location.href = '../../auth.html');
     });
@@ -40,6 +111,8 @@
         }
         .input-field:focus { border-color: #11542e; box-shadow: 0 0 0 3px rgba(17,84,46,0.08); }
         .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -57,10 +130,10 @@
 
         <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             <a id="backBtn" href="#" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-arrow-left mr-3 w-4"></i> Back to Dashboard
+                <i class="fa-solid fa-arrow-left mr-3 w-4"></i> <span data-i18n="nav_back">Back to Dashboard</span>
             </a>
             <a href="#" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-xl font-semibold text-sm">
-                <i class="fa-solid fa-user-circle mr-3 w-4 text-[#f1c40f]"></i> My Profile
+                <i class="fa-solid fa-user-circle mr-3 w-4 text-[#f1c40f]"></i> <span data-i18n="nav_profile">My Profile</span>
             </a>
         </nav>
 
@@ -82,9 +155,18 @@
         <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-user-circle text-[#11542e] text-lg"></i>
-                <span class="text-base font-black text-gray-800 tracking-tight">My Profile</span>
+                <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">My Profile</span>
             </div>
-            <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">Account Settings</span>
+            <div class="flex items-center gap-4">
+                <div id="langSwitcher" class="hidden flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                </div>
+                <span class="text-xs text-gray-400 font-bold uppercase tracking-widest" data-i18n="header_sub">Account Settings</span>
+            </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
@@ -111,32 +193,32 @@
                     <div class="p-8 space-y-6">
                         <div>
                             <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <i class="fa-solid fa-id-card text-[#11542e]"></i> Basic Information
+                                <i class="fa-solid fa-id-card text-[#11542e]"></i> <span data-i18n="section_basic_info">Basic Information</span>
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">Full Name</label>
-                                    <input type="text" id="inputFullname" class="input-field" placeholder="Your full name">
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_fullname">Full Name</label>
+                                    <input type="text" id="inputFullname" class="input-field" placeholder="Your full name" data-i18n-placeholder="ph_fullname">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">Email Address</label>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_email">Email Address</label>
                                     <input type="email" id="inputEmail" class="input-field" placeholder="your@email.com">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">Contact Number</label>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_contact">Contact Number</label>
                                     <input type="text" id="inputContact" class="input-field" placeholder="09xxxxxxxxx">
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">Role</label>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_role">Role</label>
                                     <input type="text" id="inputRole" class="input-field" disabled>
                                 </div>
                                 <div id="rsbaField" class="hidden">
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">RSBA Number</label>
-                                    <input type="text" id="inputRSBA" class="input-field" placeholder="Not yet assigned" disabled>
-                                    <p class="text-[10px] text-gray-400 mt-1">RSBSA number is assigned by the Administrator.</p>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_rsba">RSBA Number</label>
+                                    <input type="text" id="inputRSBA" class="input-field" placeholder="Not yet assigned" disabled data-i18n-placeholder="ph_rsba">
+                                    <p class="text-[10px] text-gray-400 mt-1" data-i18n="rsba_hint">RSBSA number is assigned by the Administrator.</p>
                                 </div>
                                 <div id="areaField" class="hidden">
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">Assigned Area</label>
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_area">Assigned Area</label>
                                     <input type="text" id="inputArea" class="input-field" placeholder="e.g. Balingasag">
                                 </div>
                             </div>
@@ -144,20 +226,20 @@
 
                         <div class="border-t border-gray-100 pt-6">
                             <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                <i class="fa-solid fa-lock text-[#11542e]"></i> Change Password
-                                <span class="text-gray-300 font-normal normal-case tracking-normal text-[10px]">— leave blank to keep current</span>
+                                <i class="fa-solid fa-lock text-[#11542e]"></i> <span data-i18n="section_password">Change Password</span>
+                                <span class="text-gray-300 font-normal normal-case tracking-normal text-[10px]" data-i18n="password_hint">— leave blank to keep current</span>
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="relative">
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">New Password</label>
-                                    <input type="password" id="inputPassword" class="input-field pr-10" placeholder="Enter new password">
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_new_password">New Password</label>
+                                    <input type="password" id="inputPassword" class="input-field pr-10" placeholder="Enter new password" data-i18n-placeholder="ph_new_password">
                                     <button type="button" onclick="togglePassword('inputPassword','eyeIcon1')" class="absolute right-3 top-9 text-gray-400 hover:text-gray-600">
                                         <i id="eyeIcon1" class="fa-solid fa-eye text-sm"></i>
                                     </button>
                                 </div>
                                 <div class="relative">
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">Confirm Password</label>
-                                    <input type="password" id="inputConfirmPassword" class="input-field pr-10" placeholder="Confirm new password">
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_confirm_password">Confirm Password</label>
+                                    <input type="password" id="inputConfirmPassword" class="input-field pr-10" placeholder="Confirm new password" data-i18n-placeholder="ph_confirm_password">
                                     <button type="button" onclick="togglePassword('inputConfirmPassword','eyeIcon2')" class="absolute right-3 top-9 text-gray-400 hover:text-gray-600">
                                         <i id="eyeIcon2" class="fa-solid fa-eye text-sm"></i>
                                     </button>
@@ -167,7 +249,7 @@
 
                         <div class="flex justify-end pt-2">
                             <button onclick="saveProfile()" class="bg-[#11542e] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-green-800 transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                                <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">Save Changes</span>
                             </button>
                         </div>
                     </div>
@@ -229,15 +311,15 @@
             const confirm  = document.getElementById('inputConfirmPassword').value;
 
             if (!fullname || !email) {
-                Swal.fire('Missing Fields', 'Full name and email are required.', 'warning');
+                Swal.fire(t('sw_missing_title'), t('sw_missing_text'), 'warning');
                 return;
             }
             if (password && password !== confirm) {
-                Swal.fire('Password Mismatch', 'Passwords do not match.', 'error');
+                Swal.fire(t('sw_mismatch_title'), t('sw_mismatch_text'), 'error');
                 return;
             }
             if (password && password.length < 6) {
-                Swal.fire('Weak Password', 'Password must be at least 6 characters.', 'warning');
+                Swal.fire(t('sw_weak_title'), t('sw_weak_text'), 'warning');
                 return;
             }
 
@@ -249,13 +331,13 @@
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Profile Updated!', text: 'Your changes have been saved.', confirmButtonColor: '#11542e' })
+                    Swal.fire({ icon: 'success', title: t('sw_updated_title'), text: t('sw_updated_text'), confirmButtonColor: '#11542e' })
                         .then(() => location.reload());
                 } else {
-                    Swal.fire('Error', data.message || 'Update failed.', 'error');
+                    Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
                 }
             } catch (e) {
-                Swal.fire('Error', 'Server connection failed.', 'error');
+                Swal.fire(t('sw_error_title'), t('sw_server_error'), 'error');
             }
         }
 
@@ -273,9 +355,9 @@
 
         function confirmLogout() {
             Swal.fire({
-                title: 'Sign Out?', text: 'Return to login screen.',
+                title: t('sw_signout_title'), text: t('sw_signout_text'),
                 icon: 'question', showCancelButton: true,
-                confirmButtonColor: '#11542e', confirmButtonText: 'Logout'
+                confirmButtonColor: '#11542e', confirmButtonText: t('sw_signout_confirm')
             }).then(r => {
                 if (r.isConfirmed)
                     fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
@@ -286,7 +368,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }

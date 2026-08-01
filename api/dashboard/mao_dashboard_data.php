@@ -2,6 +2,12 @@
 // File Location: api/dashboard/mao_dashboard_data.php
 session_start();
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+    exit;
+}
+
 require_once '../config/db_connection.php';
 
 try {

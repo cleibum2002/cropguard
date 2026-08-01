@@ -6,26 +6,61 @@
     <title>Communication | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
+        const translations = {
+            en: {
+                title_messages: "Messages", search_placeholder: "Search users...",
+                loading_users: "Loading users...", no_users: "No users found.",
+                select_convo: "Select a conversation", select_convo_sub: "Choose a user from the left to start messaging",
+                select_user_default: "Select a user", message_placeholder: "Type a message...",
+                no_messages: "No messages yet. Say hello!",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                title_messages: "Mga Mensahe", search_placeholder: "Maghanap ng users...",
+                loading_users: "Nilo-load ang mga users...", no_users: "Walang nahanap na users.",
+                select_convo: "Pumili ng usapan", select_convo_sub: "Pumili ng user sa kaliwa para magsimulang mag-message",
+                select_user_default: "Pumili ng user", message_placeholder: "Mag-type ng mensahe...",
+                no_messages: "Wala pang mensahe. Kumusta!",
+                sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit."
+            },
+            ceb: {
+                title_messages: "Mga Mensahe", search_placeholder: "Pangitaa ang mga users...",
+                loading_users: "Ginaload ang mga users...", no_users: "Walay nakit-an nga users.",
+                select_convo: "Pilia ang panag-istoryahanay", select_convo_sub: "Pilia og user sa wala para magsugod og message",
+                select_user_default: "Pilia og user", message_placeholder: "Pag-type og mensahe...",
+                no_messages: "Wala pay mensahe. Kumusta!",
+                sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan."
+            }
+        };
+
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
             if (data.status !== 'active') {
                 window.location.href = '../../auth.html';
             } else {
                 currentUserName = data.user.fullname;
                 currentRole     = data.role;
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', () => {
-                        document.getElementById('currentUserName').innerText = data.user.fullname;
-                        document.getElementById('currentUserRole').innerText = data.role;
-                        loadUsers();
-                    });
-                } else {
+
+                const initPage = () => {
                     document.getElementById('currentUserName').innerText = data.user.fullname;
                     document.getElementById('currentUserRole').innerText = data.role;
                     loadUsers();
+                    if (data.role === 'Farmer') {
+                        document.getElementById('langSwitcher').classList.remove('hidden');
+                    } else {
+                        localStorage.removeItem('cropguard_lang');
+                        applyTranslations('en');
+                    }
+                };
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initPage);
+                } else {
+                    initPage();
                 }
             }
         }).catch(() => window.location.href = '../../auth.html');
@@ -39,6 +74,8 @@
         .chat-area { height: calc(100vh - 180px); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #f1c40f; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden bg-[#f0f2f0]">
@@ -50,13 +87,20 @@
             
             <!-- Header -->
             <div class="p-4 border-b border-gray-100 bg-[#11542e]">
-                <div class="flex items-center gap-3">
-                    <button onclick="goBack()" class="text-white/60 hover:text-white transition-all">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
-                    <div>
-                        <h2 class="text-white font-black text-sm">Messages</h2>
-                        <p id="currentUserName" class="text-white/50 text-[10px]">Loading...</p>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button onclick="goBack()" class="text-white/60 hover:text-white transition-all">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-white font-black text-sm" data-i18n="title_messages">Messages</h2>
+                            <p id="currentUserName" class="text-white/50 text-[10px]">Loading...</p>
+                        </div>
+                    </div>
+                    <div id="langSwitcher" class="hidden flex flex-col items-end gap-0.5 text-[10px] font-bold text-white/50">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">EN</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">TL</span>
+                        <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
                     </div>
                 </div>
             </div>
@@ -66,13 +110,13 @@
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 text-xs"></i>
                     <input type="text" id="searchUser" onkeyup="filterUsers()" placeholder="Search users..."
-                        class="w-full bg-gray-50 rounded-xl py-2 pl-8 pr-3 text-xs outline-none focus:ring-2 focus:ring-[#11542e]">
+                        class="w-full bg-gray-50 rounded-xl py-2 pl-8 pr-3 text-xs outline-none focus:ring-2 focus:ring-[#11542e]" data-i18n-placeholder="search_placeholder">
                 </div>
             </div>
 
             <!-- User List -->
             <div id="userList" class="flex-1 overflow-y-auto custom-scrollbar">
-                <div class="p-4 text-center text-gray-400 text-xs italic">Loading users...</div>
+                <div class="p-4 text-center text-gray-400 text-xs italic" data-i18n="loading_users">Loading users...</div>
             </div>
 
         </div>
@@ -85,8 +129,8 @@
                 <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                     <i class="fa-solid fa-message text-gray-300 text-3xl"></i>
                 </div>
-                <h3 class="text-gray-600 font-black text-lg mb-2">Select a conversation</h3>
-                <p class="text-gray-400 text-sm">Choose a user from the left to start messaging</p>
+                <h3 class="text-gray-600 font-black text-lg mb-2" data-i18n="select_convo">Select a conversation</h3>
+                <p class="text-gray-400 text-sm" data-i18n="select_convo_sub">Choose a user from the left to start messaging</p>
             </div>
 
             <!-- Chat Window -->
@@ -96,7 +140,7 @@
                 <div class="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4 flex-shrink-0 shadow-sm">
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-full flex items-center justify-center font-black text-sm flex-shrink-0" id="chatAvatar">?</div>
                     <div>
-                        <p id="chatName" class="text-sm font-black text-gray-800">Select a user</p>
+                        <p id="chatName" class="text-sm font-black text-gray-800" data-i18n="select_user_default">Select a user</p>
                         <p id="chatRole" class="text-[10px] text-gray-400 uppercase font-bold"></p>
                     </div>
                 </div>
@@ -110,7 +154,7 @@
                     <div class="flex items-center gap-3">
                         <input type="text" id="messageInput" placeholder="Type a message..."
                             onkeydown="if(event.key==='Enter') sendMessage()"
-                            class="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e] border border-gray-100">
+                            class="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e] border border-gray-100" data-i18n-placeholder="message_placeholder">
                         <button onclick="sendMessage()" class="w-11 h-11 bg-[#11542e] text-white rounded-full flex items-center justify-center hover:bg-green-800 transition-all shadow-md">
                             <i class="fa-solid fa-paper-plane text-sm"></i>
                         </button>
@@ -146,7 +190,7 @@
         function renderUsers(users) {
             const list = document.getElementById('userList');
             if (!users.length) {
-                list.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs italic">No users found.</div>';
+                list.innerHTML = '<div class="p-4 text-center text-gray-400 text-xs italic">' + t('no_users') + '</div>';
                 return;
             }
 
@@ -220,7 +264,7 @@
             const wasAtBottom = area.scrollHeight - area.clientHeight <= area.scrollTop + 50;
 
             if (!messages.length) {
-                area.innerHTML = '<div class="text-center text-gray-400 text-xs italic py-8">No messages yet. Say hello! 👋</div>';
+                area.innerHTML = '<div class="text-center text-gray-400 text-xs italic py-8">' + t('no_messages') + ' 👋</div>';
                 return;
             }
 
@@ -279,7 +323,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }

@@ -1,6 +1,12 @@
 <?php
 ini_set('display_errors', 0);
+session_start();
 header('Content-Type: application/json');
+
+if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+    exit;
+}
 
 try {
     include_once '../../config/db_connection.php';
