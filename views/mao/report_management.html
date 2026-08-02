@@ -6,6 +6,8 @@
     <title>Report Management | CropGuard MAO</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/mao_notifications.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -25,6 +27,8 @@
         .tab-btn { border-bottom: 2px solid transparent; }
         .tab-active { border-bottom: 2px solid #11542e; color: #11542e; font-weight: 700; }
         .report-card.selected { border: 2px solid #11542e; background-color: #f0fdf4; }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -34,19 +38,72 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-100 flex-shrink-0 z-20">
             <div class="flex items-center gap-4">
-                <span class="text-sm font-black text-gray-800 uppercase">Report Management</span>
+                <span class="text-sm font-black text-gray-800 uppercase" data-i18n="header_title">Report Management</span>
                 <div class="h-4 w-px bg-gray-200"></div>
                 <div class="flex items-center gap-2">
                     <i class="fa-solid fa-magnifying-glass text-gray-300 text-xs"></i>
-                    <input type="text" id="searchInput" oninput="filterReports()" placeholder="Search farmer or ID..." class="bg-transparent border-none text-xs w-64 focus:ring-0 outline-none">
+                    <input type="text" id="searchInput" oninput="filterReports()" placeholder="Search farmer or ID..." class="bg-transparent border-none text-xs w-64 focus:ring-0 outline-none" data-i18n-placeholder="search_placeholder">
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
+                <div class="relative">
+                    <button id="maoNotifBellBtn" onclick="toggleMaoNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span id="maoNotifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                    </button>
+                    <div id="maoNotifPanel" class="hidden absolute right-0 top-12 w-[480px] max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100]">
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h4 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                        </div>
+                        <div id="maoNotifList" class="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
+                            <p class="text-sm text-gray-400 italic text-center py-10" data-i18n="notif_loading">Loading...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
 
         <div class="bg-white px-8 flex-shrink-0 flex gap-8 border-b border-gray-100">
-            <button onclick="setTab('Pending')" id="tabPending" class="tab-btn tab-active py-4 text-[10px] font-black uppercase transition-all">Pending Approval</button>
-            <button onclick="setTab('Validated')" id="tabValidated" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all">Validated</button>
-            <button onclick="setTab('All')" id="tabAll" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all">All Reports</button>
+            <button onclick="setTab('Pending')" id="tabPending" class="tab-btn tab-active py-4 text-[10px] font-black uppercase transition-all" data-i18n="tab_pending">Pending Approval</button>
+            <button onclick="setTab('Validated')" id="tabValidated" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all" data-i18n="tab_validated">Validated</button>
+            <button onclick="setTab('All')" id="tabAll" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all" data-i18n="tab_all">All Reports</button>
+        </div>
+
+        <div class="bg-white px-8 py-3 flex-shrink-0 flex flex-wrap items-end gap-3 border-b border-gray-100">
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_damage_type_label">Damage Type</label>
+                <select id="filterDamageType" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                    <option value="">All Types</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_severity_label">Severity</label>
+                <select id="filterSeverity" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                    <option value="">All Severities</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_barangay_label">Barangay</label>
+                <select id="filterBarangay" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                    <option value="">All Barangays</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_from_label">From</label>
+                <input type="date" id="filterDateFrom" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+            </div>
+            <div>
+                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_to_label">To</label>
+                <input type="date" id="filterDateTo" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+            </div>
+            <button onclick="clearFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear Filters</span>
+            </button>
         </div>
 
         <main class="flex-1 flex overflow-hidden">
@@ -57,17 +114,122 @@
             <div class="flex-1 overflow-y-auto bg-white p-10 custom-scrollbar" id="detailPanel">
                 <div class="h-full flex flex-col items-center justify-center text-gray-300">
                     <i class="fa-solid fa-file-circle-question text-6xl mb-4 opacity-20"></i>
-                    <p class="font-bold text-sm text-gray-400">Select a report to view details</p>
+                    <p class="font-bold text-sm text-gray-400" data-i18n="empty_state_text">Select a report to view details</p>
                 </div>
             </div>
         </main>
     </div>
 
 <script>
+    // Reusable EN / TL switcher (see assets/js/i18n.js). Nav keys (nav_*, sidebar_role)
+    // must stay word-for-word identical across every MAO page since they translate
+    // the one shared sidebar injected by navbar_mao.js.
+    const translations = {
+        en: {
+            nav_profile: "My Profile", nav_dashboard: "MAO Dashboard", nav_reports: "Report Management",
+            nav_inventory: "Inventory & Aid", nav_analytics: "Distribution Reports", nav_comm: "Communication",
+            sidebar_role: "MAO Officer",
+            header_title: "Report Management", search_placeholder: "Search farmer or ID...",
+            tab_pending: "Pending Approval", tab_validated: "Validated", tab_all: "All Reports",
+            empty_state_text: "Select a report to view details", loading_details: "Loading validation details...",
+            no_matching_records: "No matching records", crop_report_fallback: "Crop Report",
+            area_label: "Area", na_fallback: "N/A",
+            initial_evidence: "Initial Evidence", no_evidence: "No photographic evidence was attached to this report.",
+            mao_verification_title: "MAO Identity Verification",
+            mao_verification_desc: "Verify if this farmer is a legitimate resident (check RSBA) and actually operates in the reported location.",
+            btn_approve_verification: "Approve Verification", btn_reject_report: "Reject Report",
+            report_locked_prefix: "Report is currently locked as",
+            validation_profile_title: "Validation Profile", submitted_label: "Submitted",
+            farmer_id_section: "Farmer Identification", full_name_label: "Full Name",
+            rsbsa_number_label: "RSBSA Number", declared_location_label: "Declared Farm Location",
+            location_missing: "Location data missing", unregistered: "UNREGISTERED",
+            crop_type_label: "Crop Type", reported_damage_label: "Reported Damage", affected_area_label: "Affected Area",
+            farmer_remarks_title: "Farmer's Initial Remarks", no_remarks: "No additional remarks provided by the farmer.",
+            failed_load_profile: "Failed to load detailed profile.",
+            status_pending: "Pending", status_validated: "Validated", status_inspected: "Inspected",
+            status_approved: "Approved", status_rejected: "Rejected",
+            sw_error_title: "Error", sw_invalid_id: "Invalid Report ID. Cannot update.",
+            sw_confirm_validation_title: "Confirm Validation?", sw_reject_title: "Reject Report?",
+            sw_validation_text: "The Admin will be notified to assign a technician.",
+            sw_reject_text: "This will permanently close the report.", sw_yes_confirm: "Yes, Confirm",
+            sw_updated_title: "Updated!", sw_updated_text: "Workflow updated successfully.",
+            sw_update_failed: "Update failed", sw_server_error: "Server failed to respond",
+            notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
+            filter_damage_type_label: "Damage Type", filter_severity_label: "Severity", filter_barangay_label: "Barangay",
+            filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear Filters",
+            filter_all_types: "All Types", filter_all_severities: "All Severities", filter_all_barangays: "All Barangays"
+        },
+        tl: {
+            nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
+            nav_inventory: "Imbentaryo at Tulong", nav_analytics: "Ulat ng Pamamahagi", nav_comm: "Komunikasyon",
+            sidebar_role: "Opisyal ng MAO",
+            header_title: "Pamamahala ng Ulat", search_placeholder: "Maghanap ng magsasaka o ID...",
+            tab_pending: "Naghihintay ng Pag-apruba", tab_validated: "Napatunayan", tab_all: "Lahat ng Ulat",
+            empty_state_text: "Pumili ng ulat para makita ang detalye", loading_details: "Nilo-load ang mga detalye ng pagpapatunay...",
+            no_matching_records: "Walang tumugmang record", crop_report_fallback: "Ulat ng Pananim",
+            area_label: "Sukat", na_fallback: "N/A",
+            initial_evidence: "Paunang Ebidensya", no_evidence: "Walang larawang ebidensya na kalakip sa ulat na ito.",
+            mao_verification_title: "Pagpapatunay ng Pagkakakilanlan ng MAO",
+            mao_verification_desc: "Tiyakin kung ang magsasakang ito ay lehitimong residente (tingnan ang RSBA) at talagang nagsasaka sa nakasaad na lokasyon.",
+            btn_approve_verification: "Aprubahan ang Pagpapatunay", btn_reject_report: "Tanggihan ang Ulat",
+            report_locked_prefix: "Ang ulat ay kasalukuyang naka-lock bilang",
+            validation_profile_title: "Profile ng Pagpapatunay", submitted_label: "Isinumite",
+            farmer_id_section: "Pagkakakilanlan ng Magsasaka", full_name_label: "Buong Pangalan",
+            rsbsa_number_label: "Numero ng RSBSA", declared_location_label: "Idineklarang Lokasyon ng Sakahan",
+            location_missing: "Walang datos ng lokasyon", unregistered: "HINDI REHISTRADO",
+            crop_type_label: "Uri ng Pananim", reported_damage_label: "Naiulat na Pinsala", affected_area_label: "Apektadong Sukat",
+            farmer_remarks_title: "Paunang Puna ng Magsasaka", no_remarks: "Walang karagdagang puna na ibinigay ng magsasaka.",
+            failed_load_profile: "Hindi na-load ang detalyadong profile.",
+            status_pending: "Naghihintay", status_validated: "Napatunayan", status_inspected: "Na-inspeksyon",
+            status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+            sw_error_title: "Error", sw_invalid_id: "Hindi wastong Report ID. Hindi maaaring i-update.",
+            sw_confirm_validation_title: "Kumpirmahin ang Pagpapatunay?", sw_reject_title: "Tanggihan ang Ulat?",
+            sw_validation_text: "Aabisuhan ang Admin para mag-assign ng technician.",
+            sw_reject_text: "Permanenteng isasara nito ang ulat.", sw_yes_confirm: "Oo, Kumpirmahin",
+            sw_updated_title: "Na-update!", sw_updated_text: "Matagumpay na na-update ang workflow.",
+            sw_update_failed: "Nabigo ang pag-update", sw_server_error: "Hindi tumugon ang server",
+            notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
+            filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan", filter_barangay_label: "Barangay",
+            filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear ang mga Filter",
+            filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan", filter_all_barangays: "Lahat ng Barangay"
+        }
+    };
+
     let currentReports = [];
     let activeTab = 'Pending';
+    let currentDetailId = null; // tracks which report's detail panel is open, so we can re-render it on language switch
 
-    document.addEventListener("DOMContentLoaded", fetchReports);
+    document.addEventListener("DOMContentLoaded", async () => {
+        await fetchReports();
+
+        // Deep link support: report_management.html?id=62 jumps straight to
+        // that report's validation profile (used by the Dashboard's clickable
+        // Recent Reports feed, and could be reused by the notification bell later).
+        const deepLinkId = new URLSearchParams(window.location.search).get('id');
+        if (deepLinkId) {
+            setTab('All'); // make sure the report is visible regardless of its current status
+            viewReport(parseInt(deepLinkId, 10));
+        }
+    });
+
+    // Called automatically by i18n.js whenever the user picks a new language
+    function onLanguageChange() {
+        populateFilterOptions(); // refresh "All Types" / "All Severities" / "All Barangays" text
+        filterReports(); // re-renders the list with translated status badges
+        if (currentDetailId) {
+            viewReport(currentDetailId); // re-fetch & rebuild the open detail panel in the new language
+        } else {
+            clearDetailPanel();
+        }
+        loadMaoNotifications();
+    }
+
+    // Translates the status word used in badges and the "locked" message
+    function reportStatusLabel(status) {
+        const map = { Pending: 'status_pending', Validated: 'status_validated', Inspected: 'status_inspected', Approved: 'status_approved', Rejected: 'status_rejected' };
+        const key = map[status];
+        return key ? t(key) : status;
+    }
 
     async function fetchReports() {
         try {
@@ -80,16 +242,58 @@
                     normalizedId: r.Damage_Report_ID || r.id, 
                     displayStatus: r.status ? (r.status.charAt(0).toUpperCase() + r.status.slice(1).toLowerCase()) : 'Pending'
                 })).filter(r => r.displayStatus !== 'Archived');
+                populateFilterOptions();
                 filterReports(); 
             }
         } catch (err) { console.error("Fetch Error:", err); }
     }
 
+    // Same convention already used on the MAO Reports page: the stored Barangay
+    // field is a full free-text address ("Linabu, Balingasag, Misamis Oriental...")
+    // but the actual barangay name is always the first comma-separated segment.
+    function parseBarangay(raw) {
+        if (!raw) return '';
+        return raw.split(',')[0].trim();
+    }
+
+    // Builds the 3 dropdown option lists straight from whatever data actually
+    // exists, rather than a hardcoded list — this way nothing real ever goes
+    // missing (e.g. legacy severity values like "Low" that current submission
+    // forms don't even offer anymore) and no option ever matches zero reports.
+    function populateFilterOptions() {
+        const damageTypes = [...new Set(currentReports.map(r => r.damage_type).filter(Boolean))].sort();
+        const severities  = [...new Set(currentReports.map(r => r.severity).filter(Boolean))].sort();
+        const barangays   = [...new Set(currentReports.map(r => parseBarangay(r.barangay_raw)).filter(Boolean))].sort();
+
+        fillSelect('filterDamageType', damageTypes, t('filter_all_types'));
+        fillSelect('filterSeverity', severities, t('filter_all_severities'));
+        fillSelect('filterBarangay', barangays, t('filter_all_barangays'));
+    }
+
+    function fillSelect(id, values, allLabel) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const currentValue = el.value; // preserve the current selection across rebuilds
+        el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
+        if (values.includes(currentValue)) el.value = currentValue;
+    }
+
+    function clearFilters() {
+        document.getElementById('filterDamageType').value = '';
+        document.getElementById('filterSeverity').value = '';
+        document.getElementById('filterBarangay').value = '';
+        document.getElementById('filterDateFrom').value = '';
+        document.getElementById('filterDateTo').value = '';
+        document.getElementById('searchInput').value = '';
+        filterReports();
+    }
+
     function clearDetailPanel() {
+        currentDetailId = null;
         document.getElementById('detailPanel').innerHTML = `
             <div class="h-full flex flex-col items-center justify-center text-gray-300">
                 <i class="fa-solid fa-file-circle-question text-6xl mb-4 opacity-20"></i>
-                <p class="font-bold text-sm text-gray-400">Select a report to view details</p>
+                <p class="font-bold text-sm text-gray-400">${t('empty_state_text')}</p>
             </div>`;
     }
 
@@ -107,11 +311,25 @@
 
     function filterReports() {
         const query = document.getElementById('searchInput').value.toLowerCase();
+        const damageTypeFilter = document.getElementById('filterDamageType').value;
+        const severityFilter   = document.getElementById('filterSeverity').value;
+        const barangayFilter   = document.getElementById('filterBarangay').value;
+        const dateFrom = document.getElementById('filterDateFrom').value;
+        const dateTo   = document.getElementById('filterDateTo').value;
+
         const filtered = currentReports.filter(r => {
             const matchesTab = (activeTab === 'All') || (r.displayStatus === activeTab);
             const idStr = (r.normalizedId || "").toString();
             const name = (r.farmer || r.FarmerName || "").toLowerCase();
-            return matchesTab && (idStr.includes(query) || name.includes(query));
+            const matchesSearch = idStr.includes(query) || name.includes(query);
+
+            const matchesDamageType = !damageTypeFilter || r.damage_type === damageTypeFilter;
+            const matchesSeverity   = !severityFilter || r.severity === severityFilter;
+            const matchesBarangay   = !barangayFilter || parseBarangay(r.barangay_raw) === barangayFilter;
+            const matchesDateFrom   = !dateFrom || (r.date && r.date >= dateFrom);
+            const matchesDateTo     = !dateTo || (r.date && r.date <= dateTo);
+
+            return matchesTab && matchesSearch && matchesDamageType && matchesSeverity && matchesBarangay && matchesDateFrom && matchesDateTo;
         });
         if (filtered.length === 0) clearDetailPanel();
         renderList(filtered);
@@ -120,17 +338,17 @@
     function renderList(reports) {
         const listContainer = document.getElementById('reportsList');
         if (reports.length === 0) {
-            listContainer.innerHTML = '<p class="text-center text-gray-400 py-10 italic text-xs uppercase font-black">No matching records</p>';
+            listContainer.innerHTML = `<p class="text-center text-gray-400 py-10 italic text-xs uppercase font-black">${t('no_matching_records')}</p>`;
             return;
         }
         listContainer.innerHTML = reports.map(r => `
             <div onclick="viewReport(${r.normalizedId})" id="card-${r.normalizedId}" class="report-card bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group">
                 <div class="flex justify-between items-start mb-2">
                     <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest">#REP-${r.normalizedId}</span>
-                    <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${getStatusStyle(r.displayStatus)}">${r.displayStatus}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${getStatusStyle(r.displayStatus)}">${reportStatusLabel(r.displayStatus)}</span>
                 </div>
-                <h4 class="text-sm font-black text-gray-800 mb-1 group-hover:text-[#11542e]">${r.crop_name || "Crop Report"}</h4>
-                <p class="text-[10px] font-bold text-gray-400">${r.farmer || r.FarmerName} • Area: ${r.area || 'N/A'} Ha</p>
+                <h4 class="text-sm font-black text-gray-800 mb-1 group-hover:text-[#11542e]">${r.crop_name || t('crop_report_fallback')}</h4>
+                <p class="text-[10px] font-bold text-gray-400">${r.farmer || r.FarmerName} • ${t('area_label')}: ${r.area || t('na_fallback')} Ha</p>
             </div>`).join('');
     }
 
@@ -138,6 +356,7 @@
         // Prevent passing undefined IDs
         if (!id) return;
 
+        currentDetailId = id;
         document.querySelectorAll('.report-card').forEach(c => c.classList.remove('selected'));
         const selectedCard = document.getElementById(`card-${id}`);
         if(selectedCard) selectedCard.classList.add('selected');
@@ -147,7 +366,7 @@
         document.getElementById('detailPanel').innerHTML = `
             <div class="h-full flex flex-col items-center justify-center text-gray-300">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4 text-[#11542e]"></i>
-                <p class="font-bold text-sm text-gray-400">Loading validation details...</p>
+                <p class="font-bold text-sm text-gray-400">${t('loading_details')}</p>
             </div>`;
 
         try {
@@ -162,7 +381,7 @@
             let galleryHTML = '';
             if (images.length > 0) {
                 galleryHTML = `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">Initial Evidence</h4>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
                     <div class="flex flex-wrap gap-4 mb-8">
                         ${images.map(img => `
                             <a href="${img.path || img}" target="_blank" class="block w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
@@ -171,9 +390,9 @@
                     </div>`;
             } else {
                 galleryHTML = `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">Initial Evidence</h4>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
                     <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl mb-8">
-                        <p class="text-xs text-gray-400 italic">No photographic evidence was attached to this report.</p>
+                        <p class="text-xs text-gray-400 italic">${t('no_evidence')}</p>
                     </div>`;
             }
 
@@ -181,50 +400,50 @@
             if (baseReport.displayStatus === 'Pending') {
                 decisionPanel = `
                     <div class="bg-amber-50/50 p-8 rounded-[2rem] border border-amber-100 mt-8">
-                        <h4 class="text-lg font-black text-gray-800 mb-2">MAO Identity Verification</h4>
-                        <p class="text-xs text-gray-500 mb-6">Verify if this farmer is a legitimate resident (check RSBA) and actually operates in the reported location.</p>
+                        <h4 class="text-lg font-black text-gray-800 mb-2">${t('mao_verification_title')}</h4>
+                        <p class="text-xs text-gray-500 mb-6">${t('mao_verification_desc')}</p>
                         <div class="flex gap-4">
-                            <button onclick="updateStatus(${id}, 'Validated')" class="flex-1 bg-[#11542e] text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-check"></i> Approve Verification</button>
-                            <button onclick="updateStatus(${id}, 'Rejected')" class="flex-1 bg-red-50 text-red-600 border border-red-200 py-4 rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-xmark"></i> Reject Report</button>
+                            <button onclick="updateStatus(${id}, 'Validated')" class="flex-1 bg-[#11542e] text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-check"></i> ${t('btn_approve_verification')}</button>
+                            <button onclick="updateStatus(${id}, 'Rejected')" class="flex-1 bg-red-50 text-red-600 border border-red-200 py-4 rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-xmark"></i> ${t('btn_reject_report')}</button>
                         </div>
                     </div>`;
             } else {
                 decisionPanel = `
                     <div class="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100 mt-8 flex items-center justify-center">
                         <p class="text-xs font-black text-blue-500 uppercase tracking-widest">
-                            <i class="fa-solid fa-lock mr-2"></i> Report is currently locked as ${baseReport.displayStatus}
+                            <i class="fa-solid fa-lock mr-2"></i> ${t('report_locked_prefix')} ${reportStatusLabel(baseReport.displayStatus)}
                         </p>
                     </div>`;
             }
 
-            const farmLocation = detail.Barangay ? detail.Barangay : 'Location data missing';
+            const farmLocation = detail.Barangay ? detail.Barangay : t('location_missing');
             // Smart lookup for RSBA Number based on exact schema spelling
-            const rsbaDisplay = detail.RSBA_No || baseReport.RSBA_No || detail.rsba_no || 'UNREGISTERED';
+            const rsbaDisplay = detail.RSBA_No || baseReport.RSBA_No || detail.rsba_no || t('unregistered');
 
             document.getElementById('detailPanel').innerHTML = `
                 <div class="max-w-4xl mx-auto pb-10">
                     <div class="flex justify-between items-center mb-8 pb-6 border-b border-gray-100">
                         <div>
-                            <h3 class="text-3xl font-black text-gray-800 tracking-tighter">Validation Profile #REP-${id}</h3>
-                            <p class="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">Submitted: ${baseReport.date || 'N/A'}</p>
+                            <h3 class="text-3xl font-black text-gray-800 tracking-tighter">${t('validation_profile_title')} #REP-${id}</h3>
+                            <p class="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">${t('submitted_label')}: ${baseReport.date || t('na_fallback')}</p>
                         </div>
-                        <span class="px-5 py-2 rounded-full text-[10px] font-black uppercase ${getStatusStyle(baseReport.displayStatus)}">${baseReport.displayStatus}</span>
+                        <span class="px-5 py-2 rounded-full text-[10px] font-black uppercase ${getStatusStyle(baseReport.displayStatus)}">${reportStatusLabel(baseReport.displayStatus)}</span>
                     </div>
 
                     <!-- Farmer Identity Block -->
                     <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 mb-6">
-                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-l-2 border-[#11542e] pl-2">Farmer Identification</h4>
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-l-2 border-[#11542e] pl-2">${t('farmer_id_section')}</h4>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Full Name</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${t('full_name_label')}</p>
                                 <p class="text-sm font-black text-gray-800">${detail.FarmerName || baseReport.farmer}</p>
                             </div>
                             <div>
-                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">RSBSA Number</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${t('rsbsa_number_label')}</p>
                                 <p class="text-sm font-black text-gray-800 font-mono tracking-widest">${rsbaDisplay}</p>
                             </div>
                             <div class="col-span-2">
-                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">Declared Farm Location</p>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${t('declared_location_label')}</p>
                                 <p class="text-sm font-bold text-gray-700 break-words">${farmLocation}</p>
                             </div>
                         </div>
@@ -233,15 +452,15 @@
                     <!-- Farm & Damage Details -->
                     <div class="grid grid-cols-3 gap-4 mb-8">
                         <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Crop Type</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('crop_type_label')}</p>
                             <p class="text-sm font-bold text-[#11542e]">${detail.Crop_Name || baseReport.crop_name}</p>
                         </div>
                         <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Reported Damage</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('reported_damage_label')}</p>
                             <p class="text-sm font-bold text-red-600">${detail.Damage_Type || baseReport.damage_type}</p>
                         </div>
                         <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Affected Area</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('affected_area_label')}</p>
                             <p class="text-sm font-bold text-gray-800">${baseReport.area || detail.Area_Size || '0.00'} Ha</p>
                         </div>
                     </div>
@@ -250,9 +469,9 @@
                     
                     <!-- Farmer Remarks -->
                     <div class="mb-6">
-                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Farmer's Initial Remarks</h4>
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
                         <div class="bg-blue-50/30 border border-blue-100 p-5 rounded-2xl">
-                            <p class="text-sm text-gray-600 leading-relaxed italic">${detail.Description || "No additional remarks provided by the farmer."}</p>
+                            <p class="text-sm text-gray-600 leading-relaxed italic">${detail.Description || t('no_remarks')}</p>
                         </div>
                     </div>
 
@@ -263,7 +482,7 @@
             document.getElementById('detailPanel').innerHTML = `
                 <div class="h-full flex flex-col items-center justify-center text-red-400">
                     <i class="fa-solid fa-triangle-exclamation text-4xl mb-4"></i>
-                    <p class="font-bold text-sm">Failed to load detailed profile.</p>
+                    <p class="font-bold text-sm">${t('failed_load_profile')}</p>
                 </div>`;
         }
     }
@@ -279,16 +498,16 @@
     function updateStatus(id, status) {
         // Double check ID exists
         if (!id) {
-            return Swal.fire('Error', 'Invalid Report ID. Cannot update.', 'error');
+            return Swal.fire(t('sw_error_title'), t('sw_invalid_id'), 'error');
         }
 
         Swal.fire({
-            title: status === 'Validated' ? 'Confirm Validation?' : 'Reject Report?',
-            text: status === 'Validated' ? 'The Admin will be notified to assign a technician.' : 'This will permanently close the report.',
+            title: status === 'Validated' ? t('sw_confirm_validation_title') : t('sw_reject_title'),
+            text: status === 'Validated' ? t('sw_validation_text') : t('sw_reject_text'),
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: status === 'Rejected' ? '#d33' : '#11542e',
-            confirmButtonText: 'Yes, Confirm'
+            confirmButtonText: t('sw_yes_confirm')
         }).then((res) => {
             if (res.isConfirmed) {
                 fetch('../../api/masterfile/damage_report/update_status.php', {
@@ -299,14 +518,14 @@
                 .then(r => r.json())
                 .then(data => {
                     if(data.status === 'success') {
-                        Swal.fire('Updated!', 'Workflow updated successfully.', 'success');
+                        Swal.fire(t('sw_updated_title'), t('sw_updated_text'), 'success');
                         fetchReports();
                         clearDetailPanel();
                     } else {
-                        Swal.fire('Error', data.message || 'Update failed', 'error');
+                        Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
                     }
                 })
-                .catch(() => Swal.fire('Error', 'Server failed to respond', 'error'));
+                .catch(() => Swal.fire(t('sw_error_title'), t('sw_server_error'), 'error'));
             }
         });
     }
@@ -319,7 +538,8 @@
 <script src="../../assets/js/navbar_mao.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            loadMaoNavbar('reports'); 
+            loadMaoNavbar('reports');
+            initI18n(); // re-apply the saved language now that the sidebar has been injected
         });
     </script>
 </body>

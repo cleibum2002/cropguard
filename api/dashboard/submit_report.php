@@ -75,6 +75,14 @@ try {
         $stmt_admin_notif->bind_param("si", $admin_msg, $report_id);
         $stmt_admin_notif->execute();
         $stmt_admin_notif->close();
+
+        // Notify MAO staff too — they're the ones who validate Pending reports
+        $mao_msg = "New damage report (#REP-{$report_id}) submitted by {$farmer_name} — needs your validation.";
+        $mao_redirect = 'report_management.html';
+        $stmt_mao_notif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Related_Report_ID, Redirect_URL) VALUES ('MAO', ?, ?, ?)");
+        $stmt_mao_notif->bind_param("sis", $mao_msg, $report_id, $mao_redirect);
+        $stmt_mao_notif->execute();
+        $stmt_mao_notif->close();
     }
 
     // 5. PROCESS IMAGE UPLOADS

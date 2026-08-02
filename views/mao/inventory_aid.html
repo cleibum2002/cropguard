@@ -6,6 +6,8 @@
     <title>Inventory & Aid | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/mao_notifications.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -13,6 +15,8 @@
         .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.05); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -21,18 +25,41 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
         <header class="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
-            <span class="text-base font-black text-gray-800 tracking-tight">Relief Distribution (MAO Center)</span>
-            <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Beneficiary..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#11542e]/20">
+            <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Relief Distribution (MAO Center)</span>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
+                <div class="relative">
+                    <button id="maoNotifBellBtn" onclick="toggleMaoNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span id="maoNotifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                    </button>
+                    <div id="maoNotifPanel" class="hidden absolute right-0 top-12 w-[480px] max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100]">
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h4 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                        </div>
+                        <div id="maoNotifList" class="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
+                            <p class="text-sm text-gray-400 italic text-center py-10" data-i18n="notif_loading">Loading...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
             <div class="max-w-7xl mx-auto">
-                <div class="mb-8">
-                    <h2 class="text-3xl font-black text-gray-800 tracking-tight">Ayuda Distribution Ledger</h2>
-                    <p class="text-gray-500 text-sm mt-1">Verify farmer identification and mark agricultural inputs as claimed.</p>
+                <div class="mb-8 flex items-end justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Ayuda Distribution Ledger</h2>
+                        <p class="text-gray-500 text-sm mt-1" data-i18n="page_sub">Verify farmer identification and mark agricultural inputs as claimed.</p>
+                    </div>
+                    <div class="relative flex-shrink-0">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Beneficiary..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#11542e]/20" data-i18n-placeholder="search_placeholder">
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -40,12 +67,12 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Distribution ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer Name</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Allocated Aid</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Approved By</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_dist_id">Distribution ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_name">Farmer Name</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_allocated_aid">Allocated Aid</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_approved_by">Approved By</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_status">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="aidTableBody" class="divide-y divide-gray-50">
@@ -66,6 +93,65 @@
                 document.getElementById('maoNameSidebar').innerText = data.user.fullname;
             }
         }).catch(() => { window.location.href = '../../auth.html'; });
+
+        // Reusable EN / TL switcher (see assets/js/i18n.js). Nav keys (nav_*, sidebar_role)
+        // must stay word-for-word identical across every MAO page since they translate
+        // the one shared sidebar injected by navbar_mao.js.
+        const translations = {
+            en: {
+                nav_profile: "My Profile", nav_dashboard: "MAO Dashboard", nav_reports: "Report Management",
+                nav_inventory: "Inventory & Aid", nav_analytics: "Distribution Reports", nav_comm: "Communication",
+                sidebar_role: "MAO Officer",
+                header_title: "Relief Distribution (MAO Center)", search_placeholder: "Search Beneficiary...",
+                page_title: "Ayuda Distribution Ledger", page_sub: "Verify farmer identification and mark agricultural inputs as claimed.",
+                th_dist_id: "Distribution ID", th_farmer_name: "Farmer Name", th_allocated_aid: "Allocated Aid",
+                th_approved_by: "Approved By", th_status: "Status", th_action: "Action",
+                no_aid_found: "No aid allocations found.",
+                status_pending_distribution: "Pending Distribution", status_claimed: "Claimed",
+                btn_released: "Released", btn_mark_claimed: "Mark as Claimed",
+                sw_confirm_dist_title: "Confirm Distribution?",
+                sw_confirm_dist_text: "Has the farmer presented valid ID and received the physical items?",
+                sw_yes_distributed: "Yes, Distributed",
+                sw_distributed_title: "Distributed!", sw_distributed_text: "Beneficiary claim recorded successfully.",
+                sw_error_title: "Error", sw_update_failed: "Failed to update record.", sw_server_conn_failed: "Server connection failed.",
+                sw_signout_title: "Sign Out?", sw_signout_text: "You will be returned to the login screen.", sw_yes_signout: "Yes, sign out",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet."
+            },
+            tl: {
+                nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
+                nav_inventory: "Imbentaryo at Tulong", nav_analytics: "Ulat ng Pamamahagi", nav_comm: "Komunikasyon",
+                sidebar_role: "Opisyal ng MAO",
+                header_title: "Pamamahagi ng Ayuda (MAO Center)", search_placeholder: "Maghanap ng Benepisyaryo...",
+                page_title: "Listahan ng Pamamahagi ng Ayuda", page_sub: "Tiyakin ang pagkakakilanlan ng magsasaka at markahan ang mga natanggap na tulong bilang na-claim.",
+                th_dist_id: "ID ng Pamamahagi", th_farmer_name: "Pangalan ng Magsasaka", th_allocated_aid: "Inilaang Tulong",
+                th_approved_by: "Inaprubahan Ni", th_status: "Katayuan", th_action: "Aksyon",
+                no_aid_found: "Walang nakitang alokasyon ng tulong.",
+                status_pending_distribution: "Naghihintay ng Pamamahagi", status_claimed: "Na-claim na",
+                btn_released: "Naipamahagi na", btn_mark_claimed: "Markahan bilang Na-claim",
+                sw_confirm_dist_title: "Kumpirmahin ang Pamamahagi?",
+                sw_confirm_dist_text: "Nagpakita ba ang magsasaka ng wastong ID at natanggap na ang mga pisikal na bagay?",
+                sw_yes_distributed: "Oo, Naipamahagi Na",
+                sw_distributed_title: "Naipamahagi Na!", sw_distributed_text: "Matagumpay na naitala ang claim ng benepisyaryo.",
+                sw_error_title: "Error", sw_update_failed: "Hindi na-update ang record.", sw_server_conn_failed: "Nabigo ang koneksyon sa server.",
+                sw_signout_title: "Mag-sign Out?", sw_signout_text: "Ibabalik ka sa login screen.", sw_yes_signout: "Oo, mag-sign out",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
+                notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso."
+            }
+        };
+
+        // Translates the status word shown in the ledger badge
+        function aidStatusLabel(status) {
+            const map = { 'Pending Distribution': 'status_pending_distribution', 'Claimed': 'status_claimed' };
+            const key = map[status];
+            return key ? t(key) : status;
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            filterTable(); // re-renders the currently filtered rows with translated status/action text
+            loadMaoNotifications();
+        }
 
         let aidData = [];
 
@@ -88,7 +174,7 @@
         // 3. Render the Table
         function renderTable(data) {
             const tbody = document.getElementById("aidTableBody");
-            tbody.innerHTML = data.length ? "" : '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">No aid allocations found.</td></tr>';
+            tbody.innerHTML = data.length ? "" : `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">${t('no_aid_found')}</td></tr>`;
 
             data.forEach(item => {
                 const isClaimed = item.status === 'Claimed';
@@ -103,13 +189,13 @@
                         <td class="px-6 py-4 text-xs text-gray-500">${item.admin_name}</td>
                         <td class="px-6 py-4 text-center">
                             <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isClaimed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                                ${item.status}
+                                ${aidStatusLabel(item.status)}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
                             ${isClaimed ? 
-                                `<button disabled class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold cursor-not-allowed">Released</button>` : 
-                                `<button onclick="confirmClaim(${item.dist_id})" class="px-4 py-2 bg-[#11542e] text-white rounded-lg text-xs font-bold shadow-md shadow-green-900/20 hover:bg-green-800 transition-all">Mark as Claimed</button>`
+                                `<button disabled class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold cursor-not-allowed">${t('btn_released')}</button>` : 
+                                `<button onclick="confirmClaim(${item.dist_id})" class="px-4 py-2 bg-[#11542e] text-white rounded-lg text-xs font-bold shadow-md shadow-green-900/20 hover:bg-green-800 transition-all">${t('btn_mark_claimed')}</button>`
                             }
                         </td>
                     </tr>
@@ -120,12 +206,12 @@
         // 4. Handle the Distribution Action
         function confirmClaim(id) {
             Swal.fire({
-                title: 'Confirm Distribution?',
-                text: "Has the farmer presented valid ID and received the physical items?",
+                title: t('sw_confirm_dist_title'),
+                text: t('sw_confirm_dist_text'),
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
-                confirmButtonText: 'Yes, Distributed'
+                confirmButtonText: t('sw_yes_distributed')
             }).then(async (result) => {
                 if (result.isConfirmed) {
                     try {
@@ -136,13 +222,13 @@
                         });
                         const data = await res.json();
                         if (data.status === 'success') {
-                            Swal.fire('Distributed!', 'Beneficiary claim recorded successfully.', 'success');
+                            Swal.fire(t('sw_distributed_title'), t('sw_distributed_text'), 'success');
                             loadAidList(); // Refresh the table
                         } else {
-                            Swal.fire('Error', data.message || 'Failed to update record.', 'error');
+                            Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
                         }
                     } catch (e) {
-                        Swal.fire('Error', 'Server connection failed.', 'error');
+                        Swal.fire(t('sw_error_title'), t('sw_server_conn_failed'), 'error');
                     }
                 }
             });
@@ -158,12 +244,12 @@
         // 6. Secure Logout
         function confirmLogout() {
             Swal.fire({
-                title: 'Sign Out?',
-                text: "You will be returned to the login screen.",
+                title: t('sw_signout_title'),
+                text: t('sw_signout_text'),
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
-                confirmButtonText: 'Yes, sign out'
+                confirmButtonText: t('sw_yes_signout')
             }).then(r => {
                 if (r.isConfirmed) {
                     fetch('../../api/auth/logout.php')
@@ -177,7 +263,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }
@@ -188,7 +274,8 @@
     <script src="../../assets/js/navbar_mao.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            loadMaoNavbar('inventory'); 
+            loadMaoNavbar('inventory');
+            initI18n(); // re-apply the saved language now that the sidebar has been injected
         });
     </script>
 

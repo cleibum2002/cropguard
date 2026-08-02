@@ -47,6 +47,21 @@ try {
     $notif->execute();
     $notif->close();
 
+    // Notify Admin staff of the new (encoder-submitted / walk-in) report
+    $getFarmerName = $conn->prepare("SELECT Fullname FROM users WHERE User_ID = ?");
+    $getFarmerName->bind_param("i", $farmer_id);
+    $getFarmerName->execute();
+    $farmerRes   = $getFarmerName->get_result()->fetch_assoc();
+    $farmer_name = $farmerRes['Fullname'] ?? 'a farmer';
+    $getFarmerName->close();
+
+    $encoder_name = $_SESSION['Fullname'] ?? 'the DA Encoder';
+    $admin_msg    = "New damage report (#REP-{$new_report_id}) encoded by {$encoder_name} on behalf of {$farmer_name} — awaiting review.";
+    $stmt_admin_notif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Related_Report_ID) VALUES ('Admin', ?, ?)");
+    $stmt_admin_notif->bind_param("si", $admin_msg, $new_report_id);
+    $stmt_admin_notif->execute();
+    $stmt_admin_notif->close();
+
     $conn->commit();
     echo json_encode(['status' => 'success', 'message' => 'Report encoded and farmer notified.']);
 } catch (Exception $e) {

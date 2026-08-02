@@ -6,6 +6,8 @@
     <title>MAO Dashboard | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/mao_notifications.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -18,6 +20,8 @@
         .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.05); }
         .stat-card { transition: all 0.2s ease; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -26,8 +30,27 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
-            <span class="text-base font-black text-gray-800 tracking-tight">Municipal Operations Overview</span>
+            <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Municipal Operations Overview</span>
             <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
+                <div class="relative">
+                    <button id="maoNotifBellBtn" onclick="toggleMaoNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span id="maoNotifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                    </button>
+                    <div id="maoNotifPanel" class="hidden absolute right-0 top-12 w-[480px] max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100]">
+                        <div class="px-6 py-4 border-b border-gray-100">
+                            <h4 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                        </div>
+                        <div id="maoNotifList" class="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
+                            <p class="text-sm text-gray-400 italic text-center py-10" data-i18n="notif_loading">Loading...</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs border border-blue-200 shadow-sm">MA</div>
             </div>
         </header>
@@ -35,15 +58,15 @@
         <main class="flex-1 overflow-y-auto p-8">
             <div class="max-w-7xl mx-auto">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-black text-gray-800 tracking-tight">Workflow Status</h2>
-                    <p class="text-gray-500 text-sm mt-1">Real-time overview of incoming reports and validation progress.</p>
+                    <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Workflow Status</h2>
+                    <p class="text-gray-500 text-sm mt-1" data-i18n="page_sub">Real-time overview of incoming reports and validation progress.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <!-- Total Reports -->
                     <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-4">
-                            <p class="text-xs font-bold text-gray-500">Total Reports</p>
+                            <p class="text-xs font-bold text-gray-500" data-i18n="stat_total">Total Reports</p>
                             <div class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center"><i class="fa-regular fa-file-lines"></i></div>
                         </div>
                         <h3 class="text-3xl font-black text-gray-800" id="statTotal">0</h3>
@@ -52,7 +75,7 @@
                     <!-- Awaiting MAO Validation -->
                     <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-4">
-                            <p class="text-xs font-bold text-gray-500">Awaiting Validation</p>
+                            <p class="text-xs font-bold text-gray-500" data-i18n="stat_pending">Awaiting Validation</p>
                             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
                         </div>
                         <h3 class="text-3xl font-black text-amber-600" id="statPending">0</h3>
@@ -61,7 +84,7 @@
                     <!-- Validated by MAO -->
                     <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-4">
-                            <p class="text-xs font-bold text-gray-500">Validated Reports</p>
+                            <p class="text-xs font-bold text-gray-500" data-i18n="stat_validated">Validated Reports</p>
                             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-check-double"></i></div>
                         </div>
                         <h3 class="text-3xl font-black text-blue-600" id="statValidated">0</h3>
@@ -70,7 +93,7 @@
                     <!-- Approved Claims -->
                     <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-4">
-                            <p class="text-xs font-bold text-gray-500">Approved Claims</p>
+                            <p class="text-xs font-bold text-gray-500" data-i18n="stat_approved">Approved Claims</p>
                             <div class="w-8 h-8 rounded-lg bg-green-50 text-green-500 flex items-center justify-center"><i class="fa-solid fa-hand-holding-heart"></i></div>
                         </div>
                         <h3 class="text-3xl font-black text-green-600" id="statApproved">0</h3>
@@ -80,19 +103,19 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h4 class="text-sm font-black text-gray-800">Seed Distribution Queue</h4>
-                            <p class="text-xs text-gray-500 mt-1">Approved seed requests waiting for MAO pickup coordination.</p>
+                            <h4 class="text-sm font-black text-gray-800" data-i18n="queue_title">Seed Distribution Queue</h4>
+                            <p class="text-xs text-gray-500 mt-1" data-i18n="queue_sub">Approved seed requests waiting for MAO pickup coordination.</p>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-widest">
                                 <tr>
-                                    <th class="px-3 py-3">Request</th>
-                                    <th class="px-3 py-3">Farmer</th>
-                                    <th class="px-3 py-3">Seed</th>
-                                    <th class="px-3 py-3">Status</th>
-                                    <th class="px-3 py-3 text-right">Action</th>
+                                    <th class="px-3 py-3" data-i18n="th_request">Request</th>
+                                    <th class="px-3 py-3" data-i18n="th_farmer">Farmer</th>
+                                    <th class="px-3 py-3" data-i18n="th_seed">Seed</th>
+                                    <th class="px-3 py-3" data-i18n="th_status">Status</th>
+                                    <th class="px-3 py-3 text-right" data-i18n="th_action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="seedRequestTableBody" class="divide-y divide-gray-100"></tbody>
@@ -108,16 +131,16 @@
                             <h4 id="mapModeLabel" class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Damage Density Map</h4>
                         </div>
                         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-1 rounded-xl shadow-lg border border-white z-[1000] flex gap-1">
-                            <button id="pinViewBtn" onclick="setMapMode('pin')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors bg-[#11542e] text-white">Pin View</button>
-                            <button id="regionViewBtn" onclick="setMapMode('region')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors text-gray-500 hover:bg-gray-100">Region View</button>
+                            <button id="pinViewBtn" onclick="setMapMode('pin')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors bg-[#11542e] text-white" data-i18n="btn_pin_view">Pin View</button>
+                            <button id="regionViewBtn" onclick="setMapMode('region')" class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors text-gray-500 hover:bg-gray-100" data-i18n="btn_region_view">Region View</button>
                         </div>
                     </div>
 
                     <!-- Live Activity Feed -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
-                        <h4 class="text-sm font-black text-gray-800 mb-6">Recent Reports</h4>
+                        <h4 class="text-sm font-black text-gray-800 mb-6" data-i18n="activity_title">Recent Reports</h4>
                         <div id="recentActivityList" class="flex-1 flex flex-col gap-4 overflow-y-auto">
-                            <p class="text-xs text-gray-400 italic text-center py-10">Loading activity...</p>
+                            <p class="text-xs text-gray-400 italic text-center py-10" data-i18n="loading_activity">Loading activity...</p>
                         </div>
                     </div>
                 </div>
@@ -126,6 +149,61 @@
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js). MAO pages only offer
+        // English and Tagalog - no Cebuano, unlike the Farmer side.
+        const translations = {
+            en: {
+                nav_profile: "My Profile", nav_dashboard: "MAO Dashboard", nav_reports: "Report Management",
+                nav_inventory: "Inventory & Aid", nav_analytics: "Distribution Reports", nav_comm: "Communication",
+                sidebar_role: "MAO Officer",
+                header_title: "Municipal Operations Overview",
+                page_title: "Workflow Status", page_sub: "Real-time overview of incoming reports and validation progress.",
+                stat_total: "Total Reports", stat_pending: "Awaiting Validation", stat_validated: "Validated Reports", stat_approved: "Approved Claims",
+                status_pending: "Pending", status_validated: "Validated", status_approved: "Approved",
+                queue_title: "Seed Distribution Queue", queue_sub: "Approved seed requests waiting for MAO pickup coordination.",
+                th_request: "Request", th_farmer: "Farmer", th_seed: "Seed", th_status: "Status", th_action: "Action",
+                loading_seed_requests: "Loading seed requests...", no_seed_requests: "No seed requests are waiting for MAO action.",
+                unable_load_seed_requests: "Unable to load seed requests.", farmer_fallback: "Farmer",
+                action_mark_claimed: "Mark as Claimed", action_notify_farmer: "Notify Farmer for Pickup",
+                btn_pin_view: "Pin View", btn_region_view: "Region View",
+                map_mode_pin: "Damage Density Map", map_mode_region: "Barangay Severity Map (Balingasag)",
+                activity_title: "Recent Reports", loading_activity: "Loading activity...", no_reports_available: "No reports available.",
+                popup_damage_report: "Damage Report", popup_intensity: "Intensity",
+                popup_brgy: "Brgy.", popup_reports: "Reports", popup_avg_severity: "Avg. Severity", popup_no_reports: "No reports on file",
+                sw_continue_title: "Continue?", sw_label_mark_claimed: "mark as claimed", sw_label_notify_farmer: "notify the farmer",
+                sw_action_text: "This will {action} for request #REQ-{id}.", sw_proceed: "Proceed", sw_cancel: "Cancel",
+                sw_done_title: "Done!", sw_action_failed_title: "Action failed",
+                sw_region_error_title: "Could not load Region View", sw_region_error_text: "Please try again.",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet."
+            },
+            tl: {
+                nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
+                nav_inventory: "Imbentaryo at Tulong", nav_analytics: "Ulat ng Pamamahagi", nav_comm: "Komunikasyon",
+                sidebar_role: "Opisyal ng MAO",
+                header_title: "Pangkalahatang-ideya ng Operasyon ng Munisipyo",
+                page_title: "Katayuan ng Daloy ng Trabaho", page_sub: "Real-time na pagtingin sa mga papasok na ulat at progreso ng pagpapatunay.",
+                stat_total: "Kabuuang Ulat", stat_pending: "Naghihintay ng Pagpapatunay", stat_validated: "Napatunayang mga Ulat", stat_approved: "Naaprubahang mga Claim",
+                status_pending: "Naghihintay", status_validated: "Napatunayan", status_approved: "Naaprubahan",
+                queue_title: "Pila ng Pamamahagi ng Binhi", queue_sub: "Mga naaprubahang kahilingan sa binhi na naghihintay ng koordinasyon sa pagkuha sa MAO.",
+                th_request: "Kahilingan", th_farmer: "Magsasaka", th_seed: "Binhi", th_status: "Katayuan", th_action: "Aksyon",
+                loading_seed_requests: "Nilo-load ang mga kahilingan sa binhi...", no_seed_requests: "Walang kahilingan sa binhi na naghihintay ng aksyon ng MAO.",
+                unable_load_seed_requests: "Hindi ma-load ang mga kahilingan sa binhi.", farmer_fallback: "Magsasaka",
+                action_mark_claimed: "Markahan bilang Na-claim", action_notify_farmer: "Abisuhan ang Magsasaka",
+                btn_pin_view: "Pin View", btn_region_view: "Region View",
+                map_mode_pin: "Mapa ng Density ng Pinsala", map_mode_region: "Mapa ng Kalubhaan ng Barangay (Balingasag)",
+                activity_title: "Mga Kamakailang Ulat", loading_activity: "Nilo-load ang aktibidad...", no_reports_available: "Walang available na ulat.",
+                popup_damage_report: "Ulat ng Pinsala", popup_intensity: "Intensity",
+                popup_brgy: "Brgy.", popup_reports: "Mga Ulat", popup_avg_severity: "Avg. Kalubhaan", popup_no_reports: "Walang naitalang ulat",
+                sw_continue_title: "Magpatuloy?", sw_label_mark_claimed: "markahan bilang na-claim na", sw_label_notify_farmer: "abisuhan ang magsasaka",
+                sw_action_text: "Kumpirmahin: {action} para sa kahilingan #REQ-{id}.", sw_proceed: "Magpatuloy", sw_cancel: "Kanselahin",
+                sw_done_title: "Tapos na!", sw_action_failed_title: "Nabigo ang aksyon",
+                sw_region_error_title: "Hindi ma-load ang Region View", sw_region_error_text: "Pakisubukang muli.",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
+                notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso."
+            }
+        };
+
         document.addEventListener("DOMContentLoaded", () => {
             fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
                 if (data.status === 'active' && data.role.toUpperCase() === 'MAO') {
@@ -137,7 +215,29 @@
             loadDynamicDashboard();
             loadSeedRequests();
             initMap();
+            refreshMapLabel();
         });
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            loadDynamicDashboard();
+            loadSeedRequests();
+            refreshMapLabel();
+            loadMaoNotifications();
+        }
+
+        // Translates the status word shown in the Recent Reports activity feed
+        function reportStatusLabel(status) {
+            const map = { PENDING: 'status_pending', VALIDATED: 'status_validated', APPROVED: 'status_approved' };
+            const key = map[(status || '').toUpperCase()];
+            return key ? t(key) : status;
+        }
+
+        // Clicking a Recent Reports card jumps straight to that report's
+        // validation profile in Report Management, not just the page in general.
+        function goToReport(id) {
+            window.location.href = `report_management.html?id=${id}`;
+        }
 
         // DYNAMIC DASHBOARD LOADER
         async function loadDynamicDashboard() {
@@ -174,16 +274,17 @@
                         if(r.status.toUpperCase() === 'APPROVED') colorClass = 'text-green-500';
 
                         return `
-                        <div class="flex items-center gap-4 p-3 border border-gray-50 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div onclick="goToReport(${r.id})" class="flex items-center gap-4 p-3 border border-gray-50 rounded-xl hover:bg-gray-50 hover:border-gray-100 transition-colors cursor-pointer group">
                             <div class="w-8 h-8 rounded-full bg-gray-100 ${colorClass} flex items-center justify-center flex-shrink-0">
                                 <i class="fa-solid fa-file-contract text-[10px]"></i>
                             </div>
                             <div class="flex-1 overflow-hidden">
-                                <p class="text-xs font-bold text-gray-800 truncate">${r.farmer}</p>
-                                <p class="text-[9px] ${colorClass} font-bold uppercase tracking-widest">${r.status}</p>
+                                <p class="text-xs font-bold text-gray-800 truncate group-hover:text-[#11542e] transition-colors">${r.farmer}</p>
+                                <p class="text-[9px] ${colorClass} font-bold uppercase tracking-widest">#REP-${r.id} &bull; ${reportStatusLabel(r.status)}</p>
                             </div>
+                            <i class="fa-solid fa-chevron-right text-gray-300 text-[10px] flex-shrink-0 group-hover:text-gray-400 transition-colors"></i>
                         </div>`;
-                    }).join('') || '<p class="text-xs text-gray-400 italic text-center">No reports available.</p>';
+                    }).join('') || `<p class="text-xs text-gray-400 italic text-center">${t('no_reports_available')}</p>`;
                 }
             } catch (err) {
                 console.error("Dashboard error:", err);
@@ -192,7 +293,7 @@
 
         async function loadSeedRequests() {
             const tbody = document.getElementById('seedRequestTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">Loading seed requests...</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">${t('loading_seed_requests')}</td></tr>`;
 
             try {
                 const res = await fetch('../../api/mao/get_seed_requests.php');
@@ -204,7 +305,7 @@
 
                 const rows = result.data || [];
                 if (!rows.length) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">No seed requests are waiting for MAO action.</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">${t('no_seed_requests')}</td></tr>`;
                     return;
                 }
 
@@ -212,7 +313,7 @@
                     const statusBadge = item.Status === 'Ready for Pickup'
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-emerald-100 text-emerald-700';
-                    const actionText = item.Status === 'Ready for Pickup' ? 'Mark as Claimed' : 'Notify Farmer for Pickup';
+                    const actionText = item.Status === 'Ready for Pickup' ? t('action_mark_claimed') : t('action_notify_farmer');
                     const actionClass = item.Status === 'Ready for Pickup'
                         ? 'bg-[#11542e] hover:bg-[#0c3d22]'
                         : 'bg-amber-600 hover:bg-amber-700';
@@ -220,7 +321,7 @@
                     return `
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-3 py-3 text-xs font-black text-gray-700">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
-                            <td class="px-3 py-3 text-xs text-gray-600">${item.Farmer_Name || 'Farmer'}</td>
+                            <td class="px-3 py-3 text-xs text-gray-600">${item.Farmer_Name || t('farmer_fallback')}</td>
                             <td class="px-3 py-3 text-xs text-gray-600">${item.Requested_Seed}</td>
                             <td class="px-3 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusBadge}">${item.Status}</span></td>
                             <td class="px-3 py-3 text-right">
@@ -233,20 +334,21 @@
                 }).join('');
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = '<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-red-500">Unable to load seed requests.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-6 text-center text-xs text-red-500">${t('unable_load_seed_requests')}</td></tr>`;
             }
         }
 
         async function handleSeedRequestAction(requestId, farmerId, action) {
-            const actionLabel = action === 'mark_claimed' ? 'mark as claimed' : 'notify the farmer';
+            const actionLabel = action === 'mark_claimed' ? t('sw_label_mark_claimed') : t('sw_label_notify_farmer');
             const confirmResult = await Swal.fire({
-                title: 'Continue?',
-                text: `This will ${actionLabel} for request #REQ-${String(requestId).padStart(3, '0')}.`,
+                title: t('sw_continue_title'),
+                text: t('sw_action_text').replace('{action}', actionLabel).replace('{id}', String(requestId).padStart(3, '0')),
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
                 cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Proceed'
+                confirmButtonText: t('sw_proceed'),
+                cancelButtonText: t('sw_cancel')
             });
 
             if (!confirmResult.isConfirmed) return;
@@ -263,10 +365,10 @@
                     throw new Error(result.message || 'Action failed.');
                 }
 
-                Swal.fire({ icon: 'success', title: 'Done!', text: result.message, timer: 2200, showConfirmButton: false });
+                Swal.fire({ icon: 'success', title: t('sw_done_title'), text: result.message, timer: 2200, showConfirmButton: false });
                 loadSeedRequests();
             } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Action failed', text: err.message });
+                Swal.fire({ icon: 'error', title: t('sw_action_failed_title'), text: err.message });
             }
         }
 
@@ -298,7 +400,7 @@
                         data.data.forEach(p => {
                             if (p[0] && p[1] && p[0] > 0 && p[1] > 0) {
                                 const marker = L.marker([p[0], p[1]]).addTo(pinLayerGroup);
-                                marker.bindPopup(`<b>Damage Report</b><br>Intensity: ${(p[2] * 100).toFixed(0)}%`);
+                                marker.bindPopup(`<b>${t('popup_damage_report')}</b><br>${t('popup_intensity')}: ${(p[2] * 100).toFixed(0)}%`);
                                 markers.push([p[0], p[1]]);
                             }
                         });
@@ -375,17 +477,17 @@
 
                 regionLayerGroup = L.geoJSON(boundaries, {
                     style: (feature) => {
-                        const t = tally[feature.properties.adm4_en];
-                        const avg = t.count > 0 ? (t.sum / t.count) : 0;
-                        return { fillColor: severityColor(avg, t.count), fillOpacity: 0.65, color: '#ffffff', weight: 1.5 };
+                        const stats = tally[feature.properties.adm4_en];
+                        const avg = stats.count > 0 ? (stats.sum / stats.count) : 0;
+                        return { fillColor: severityColor(avg, stats.count), fillOpacity: 0.65, color: '#ffffff', weight: 1.5 };
                     },
                     onEachFeature: (feature, layer) => {
                         const name = feature.properties.adm4_en;
-                        const t = tally[name];
-                        const avgPct = t.count > 0 ? Math.round((t.sum / t.count) * 100) : 0;
+                        const stats = tally[name];
+                        const avgPct = stats.count > 0 ? Math.round((stats.sum / stats.count) * 100) : 0;
                         layer.bindPopup(
-                            `<b>Brgy. ${name}</b><br>Reports: ${t.count}` +
-                            (t.count > 0 ? `<br>Avg. Severity: ${avgPct}%` : '<br>No reports on file')
+                            `<b>${t('popup_brgy')} ${name}</b><br>${t('popup_reports')}: ${stats.count}` +
+                            (stats.count > 0 ? `<br>${t('popup_avg_severity')}: ${avgPct}%` : `<br>${t('popup_no_reports')}`)
                         );
                     }
                 });
@@ -396,15 +498,21 @@
                 }
             }).catch(() => {
                 regionDataLoaded = false; // allow retry on next toggle
-                Swal.fire({ icon: 'error', title: 'Could not load Region View', text: 'Please try again.' });
+                Swal.fire({ icon: 'error', title: t('sw_region_error_title'), text: t('sw_region_error_text') });
             });
+        }
+
+        // Keeps #mapModeLabel in sync with both the current map mode AND the
+        // current language. Called on page load, on mode toggle, and on language switch.
+        function refreshMapLabel() {
+            const label = document.getElementById('mapModeLabel');
+            if (label) label.innerText = currentMapMode === 'pin' ? t('map_mode_pin') : t('map_mode_region');
         }
 
         function setMapMode(mode) {
             currentMapMode = mode;
             const pinBtn = document.getElementById('pinViewBtn');
             const regionBtn = document.getElementById('regionViewBtn');
-            const label = document.getElementById('mapModeLabel');
             const activeClasses = ['bg-[#11542e]', 'text-white'];
             const inactiveClasses = ['text-gray-500', 'hover:bg-gray-100'];
 
@@ -413,7 +521,6 @@
                 if (!map.hasLayer(pinLayerGroup)) pinLayerGroup.addTo(map);
                 pinBtn.classList.add(...activeClasses); pinBtn.classList.remove(...inactiveClasses);
                 regionBtn.classList.remove(...activeClasses); regionBtn.classList.add(...inactiveClasses);
-                label.innerText = 'Damage Density Map';
             } else {
                 if (map.hasLayer(pinLayerGroup)) map.removeLayer(pinLayerGroup);
                 loadRegionView();
@@ -423,8 +530,8 @@
                 }
                 regionBtn.classList.add(...activeClasses); regionBtn.classList.remove(...inactiveClasses);
                 pinBtn.classList.remove(...activeClasses); pinBtn.classList.add(...inactiveClasses);
-                label.innerText = 'Barangay Severity Map (Balingasag)';
             }
+            refreshMapLabel();
         }
 
         // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
@@ -432,7 +539,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }
@@ -447,7 +554,8 @@
     <script src="../../assets/js/navbar_mao.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            loadMaoNavbar('dashboard'); 
+            loadMaoNavbar('dashboard');
+            initI18n(); // re-apply the saved language now that the sidebar has been injected
         });
     </script>
 
