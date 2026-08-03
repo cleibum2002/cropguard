@@ -183,8 +183,25 @@
                 if (data.status === 'success') {
                     allUsers = data.data;
                     renderUsers(allUsers);
+                    maybeAutoSelectFromQuery();
                 }
             } catch(e) { console.error('Failed to load users', e); }
+        }
+
+        // "Message Admin" (MAO sidebar shortcut) links here as index.html?to=admin
+        // so MAO officers land straight in a chat with an Admin instead of having
+        // to find one in the user list themselves.
+        let autoSelectHandled = false;
+        function maybeAutoSelectFromQuery() {
+            if (autoSelectHandled || selectedUserId) return;
+            const target = new URLSearchParams(window.location.search).get('to');
+            if (target && target.toLowerCase() === 'admin') {
+                const admin = allUsers.find(u => u.role === 'Admin');
+                if (admin) {
+                    autoSelectHandled = true;
+                    selectUser(admin.id, admin.name, admin.role);
+                }
+            }
         }
 
         function renderUsers(users) {

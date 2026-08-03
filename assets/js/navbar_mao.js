@@ -39,6 +39,11 @@ function loadMaoNavbar(currentPage) {
                 <i class="fa-solid fa-message mr-3 w-5 text-center ${currentPage === 'communication' ? 'text-[#f1c40f]' : ''}"></i> Communication
                 <span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
+
+           <a href="../communication/index.html?to=admin" class="flex items-center px-4 py-3 rounded-xl transition-all text-white/60 hover:bg-white/5 hover:text-white border-l-4 border-transparent">
+               <i class="fa-solid fa-headset mr-3 w-5 text-center"></i> Message Admin
+           </a>
+            
         </nav>
         
         <div class="p-4 border-t border-white/10">
