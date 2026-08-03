@@ -93,7 +93,8 @@ try {
         for ($i = 0; $i < count($_FILES['images']['name']); $i++) {
             if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
                 $file_ext = strtolower(pathinfo($_FILES['images']['name'][$i], PATHINFO_EXTENSION));
-                if (in_array($file_ext, ['jpg', 'jpeg', 'png'])) {
+                $isValidImage = in_array($file_ext, ['jpg', 'jpeg', 'png']) && (getimagesize($_FILES['images']['tmp_name'][$i]) !== false);
+                if ($isValidImage) {
                     $new_file_name = 'rep_' . $report_id . '_' . uniqid() . '.' . $file_ext;
                     if (move_uploaded_file($_FILES['images']['tmp_name'][$i], $upload_dir . $new_file_name)) {
                         $db_path = 'uploads/reports/' . $new_file_name;
@@ -115,6 +116,6 @@ try {
 } catch (Exception $e) {
     if (isset($conn)) $conn->rollback();
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 ?>

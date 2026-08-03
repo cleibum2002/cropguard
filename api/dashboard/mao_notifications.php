@@ -39,5 +39,5 @@ try {
         echo json_encode(['status' => 'error', 'message' => 'Unknown action.']);
     }
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }

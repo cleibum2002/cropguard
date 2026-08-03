@@ -89,6 +89,6 @@ try {
     echo json_encode(['status' => 'success', 'message' => 'The seed request has been marked as claimed.']);
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 ?>

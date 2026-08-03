@@ -45,6 +45,6 @@ try {
         echo json_encode(["status" => "error", "message" => "ID, Fullname and Email are required."]);
     }
 } catch (Exception $e) {
-    echo json_encode(["status" => "error", "message" => "Database Error: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
 }
 ?>

@@ -118,6 +118,21 @@
                     </button>
                 </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-emerald-500">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Cash Aid Value</p>
+                        <h3 id="totalCashAmount" class="text-2xl font-black text-gray-800">₱0.00</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-amber-500">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Seeds in Stock</p>
+                        <h3 id="totalSeedStock" class="text-2xl font-black text-gray-800">0 Sacks</h3>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-blue-500">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Seed Value (Cash)</p>
+                        <h3 id="totalSeedValue" class="text-2xl font-black text-gray-800">₱0.00</h3>
+                    </div>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -237,9 +252,12 @@
                 return;
             }
             list.innerHTML = items.map(n => `
-                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors">
-                    <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
-                    <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors ${n.Redirect_URL ? 'cursor-pointer flex items-center justify-between gap-3' : ''}" ${n.Redirect_URL ? `onclick="window.location.href='${n.Redirect_URL}'"` : ''}>
+                    <div class="min-w-0">
+                        <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
+                        <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                    </div>
+                    ${n.Redirect_URL ? '<span class="flex-shrink-0 text-[9px] font-black text-white bg-[#11542e] px-2.5 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap flex items-center gap-1">View <i class="fa-solid fa-arrow-right"></i></span>' : ''}
                 </div>
             `).join('');
         }
@@ -271,10 +289,31 @@
                 allData = response.data || [];
                 filteredData = [...allData];
                 renderTable();
+                renderSummaryCards();
             } catch (e) {
                 console.error("Load failed", e);
                 Swal.fire('Error', 'Failed to connect to the database.', 'error');
             }
+        }
+
+        function renderSummaryCards() {
+            let cashTotal = 0, seedStockTotal = 0, seedValueTotal = 0;
+
+            allData.forEach(item => {
+                const stock = parseFloat(item.current_stock) || 0;
+                const price = parseFloat(item.price) || 0;
+
+                if (item.category === 'Cash Aid') {
+                    cashTotal += stock * price;
+                } else if (item.category === 'Seeds') {
+                    seedStockTotal += stock;
+                    seedValueTotal += stock * price;
+                }
+            });
+
+            document.getElementById('totalCashAmount').innerText = '₱' + cashTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            document.getElementById('totalSeedStock').innerText = seedStockTotal.toLocaleString('en-US') + ' Sacks';
+            document.getElementById('totalSeedValue').innerText = '₱' + seedValueTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
         function renderTable() {

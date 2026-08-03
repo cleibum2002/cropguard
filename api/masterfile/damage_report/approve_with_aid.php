@@ -72,7 +72,7 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
         
     } catch (Exception $e) {
         $conn->rollback();
-        echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
     }
     
 } else {

@@ -159,11 +159,17 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div class="lg:col-span-2 space-y-4">
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center">
+                            <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center gap-3">
                                 <h3 class="font-black text-gray-800 flex items-center gap-2">
                                     <i class="fa-regular fa-clock text-amber-500"></i> Validation Queue
                                 </h3>
-                                <a href="damage_reports.html" class="text-[11px] font-black text-[#11542e] uppercase tracking-widest hover:underline">View All</a>
+                                <div class="flex items-center gap-3">
+                                    <select id="queueSortFilter" onchange="loadData()" class="text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-[#11542e]">
+                                        <option value="ASC">Oldest to Recent</option>
+                                        <option value="DESC">Recent to Oldest</option>
+                                    </select>
+                                    <a href="damage_reports.html" class="text-[11px] font-black text-[#11542e] uppercase tracking-widest hover:underline whitespace-nowrap">View All</a>
+                                </div>
                             </div>
                             <div class="divide-y divide-gray-50" id="queueTable">
                                 <div class="px-6 py-8 text-center text-gray-400 italic text-sm">Loading queue...</div>
@@ -254,9 +260,20 @@
                     <p class="text-xs italic text-gray-400 col-span-3">Loading profile...</p>
                 </div>
 
-                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Field Notes / Description</h4>
+                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                    <i class="fa-solid fa-user text-gray-400 mr-1"></i> Farmer's Original Report
+                </h4>
                 <div class="bg-gray-50 border-l-4 border-blue-500 p-5 rounded-r-xl mb-6">
-                    <p id="reviewNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">Loading field notes...</p>
+                    <p id="reviewFarmerNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">Loading field notes...</p>
+                </div>
+
+                <div id="reviewTechFindingsSection" class="hidden">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+                        <i class="fa-solid fa-user-doctor text-green-600 mr-1"></i> Technician's Field Findings
+                    </h4>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-xl mb-6">
+                        <p id="reviewTechNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed"></p>
+                    </div>
                 </div>
                 
                 <!-- ── PHOTO EVIDENCE + GEOTAGS ──────────────────────────── -->
@@ -364,9 +381,12 @@
                 return;
             }
             list.innerHTML = items.map(n => `
-                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors">
-                    <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
-                    <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors ${n.Redirect_URL ? 'cursor-pointer flex items-center justify-between gap-3' : ''}" ${n.Redirect_URL ? `onclick="window.location.href='${n.Redirect_URL}'"` : ''}>
+                    <div class="min-w-0">
+                        <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
+                        <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                    </div>
+                    ${n.Redirect_URL ? '<span class="flex-shrink-0 text-[9px] font-black text-white bg-[#11542e] px-2.5 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap flex items-center gap-1">View <i class="fa-solid fa-arrow-right"></i></span>' : ''}
                 </div>
             `).join('');
         }
@@ -482,7 +502,8 @@
         // ─── DASHBOARD DATA LOAD ──────────────────────────────────────────────
         async function loadData() {
             try {
-                const res  = await fetch('../../api/dashboard/stats.php');
+                const queueSort = document.getElementById('queueSortFilter')?.value || 'ASC';
+                const res  = await fetch('../../api/dashboard/stats.php?queue_sort=' + queueSort);
                 const data = await res.json();
 
                 document.getElementById('statItems').innerText   = data.total_items ?? '--';
@@ -561,7 +582,8 @@
         async function reviewInspection(id, status) {
             document.getElementById('reviewReportId').value = id;
             document.getElementById('reviewModalTitle').innerText = `Report Details #REP-${id}`;
-            document.getElementById('reviewNotes').innerText = "Loading data...";
+            document.getElementById('reviewFarmerNotes').innerText = "Loading data...";
+            document.getElementById('reviewTechFindingsSection').classList.add('hidden');
             document.getElementById('reviewGallery').innerHTML = "";
             document.getElementById('adminReviewProfile').innerHTML = '<p class="text-xs italic text-gray-400 col-span-3">Loading profile...</p>';
             document.getElementById('adminAidQty').value  = "";
@@ -576,8 +598,13 @@
                 aidSection.classList.remove('hidden');
                 const btnText = status === 'INSPECTED' ? 'Approve & Allocate Aid' : 'Direct Approve & Allocate Aid';
                 const btnIcon = status === 'INSPECTED' ? 'fa-check' : 'fa-bolt';
+                const returnBtn = status === 'INSPECTED' ? `
+                    <button onclick="returnToTechnician(${id})" class="px-6 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 text-sm font-bold rounded-xl shadow-sm hover:bg-amber-500 hover:text-white transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Return to Technician
+                    </button>` : '';
                 footer.innerHTML = `
                     <button onclick="closeReviewModal()" class="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">Close</button>
+                    ${returnBtn}
                     <button onclick="updateStatus(${id}, 'Rejected')" class="px-6 py-2.5 bg-red-50 text-red-600 border border-red-200 text-sm font-bold rounded-xl shadow-sm hover:bg-red-500 hover:text-white transition-all flex items-center gap-2">
                         <i class="fa-solid fa-xmark"></i> Reject Claim
                     </button>
@@ -646,7 +673,18 @@
                             </div>
                         `;
 
-                        document.getElementById('reviewNotes').innerText = detail.Description || "No notes provided.";
+                        // Split the Description into the Farmer's original report vs the Technician's field findings
+                        const rawDescription = detail.Description || "No notes provided.";
+                        const techMarker = '--- TECH FINDINGS ---';
+                        if (rawDescription.includes(techMarker)) {
+                            const parts = rawDescription.split(techMarker);
+                            document.getElementById('reviewFarmerNotes').innerText = parts[0].trim() || "No notes provided.";
+                            document.getElementById('reviewTechNotes').innerText = parts[1].trim() || "No findings provided.";
+                            document.getElementById('reviewTechFindingsSection').classList.remove('hidden');
+                        } else {
+                            document.getElementById('reviewFarmerNotes').innerText = rawDescription;
+                            document.getElementById('reviewTechFindingsSection').classList.add('hidden');
+                        }
 
                         // ── Render gallery with geotags ───────────────────────
                         // data.images should now be array of { path, geo_lat, geo_lng }
@@ -656,13 +694,46 @@
                         );
                         renderGeoGallery('reviewGallery', imagesNormalized, 'geoSummaryBadge');
                     } else {
-                        document.getElementById('reviewNotes').innerText = "Error loading details.";
+                        document.getElementById('reviewFarmerNotes').innerText = "Error loading details.";
                     }
                 })
-                .catch(() => { document.getElementById('reviewNotes').innerText = "Failed to connect to server."; });
+                .catch(() => { document.getElementById('reviewFarmerNotes').innerText = "Failed to connect to server."; });
         }
 
         function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
+
+        function returnToTechnician(id) {
+            Swal.fire({
+                title: 'Return to Technician?',
+                html: 'The report will go back to "Pending Inspection" for the assigned technician to redo the field validation.',
+                input: 'textarea',
+                inputLabel: 'Reason (optional)',
+                inputPlaceholder: 'e.g. Please provide clearer photos of the affected area...',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d97706',
+                confirmButtonText: 'Yes, Return It'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('../../api/masterfile/damage_report/return_to_technician.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id, reason: result.value })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({ icon: 'success', title: 'Returned!', text: data.message, timer: 1800, showConfirmButton: false });
+                            closeReviewModal();
+                            loadData();
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(() => Swal.fire('Error', 'Server connection failed.', 'error'));
+                }
+            });
+        }
 
         async function approveWithAid() {
             const reportId = document.getElementById('reviewReportId').value;

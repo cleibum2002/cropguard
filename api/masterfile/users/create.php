@@ -34,7 +34,7 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
         }
         $stmt->close();
     } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
     }
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Missing required fields.']);

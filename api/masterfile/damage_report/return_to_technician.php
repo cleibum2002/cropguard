@@ -1,0 +1,37 @@
+<?php
+// File Location: api/masterfile/damage_report/return_to_technician.php
+ini_set('display_errors', 0);
+session_start();
+header('Content-Type: application/json');
+
+if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+    exit;
+}
+
+require_once '../../config/db_connection.php';
+
+$data = json_decode(file_get_contents("php://input"));
+
+if (empty($data->id)) {
+    echo json_encode(['status' => 'error', 'message' => 'Missing report ID.']);
+    exit;
+}
+
+$report_id = (int)$data->id;
+$reason = trim($data->reason ?? '');
+$reasonNote = $reason !== '' ? $reason : 'Please review and re-submit your field findings.';
+
+try {
+    // Reset status back to 'Validated' so it reappears in the technician's Pending Inspection
+    // queue, and append the reason to Description so the technician can see why it was returned.
+    $stmt = $conn->prepare("UPDATE damage_report SET Status = 'Validated', Description = CONCAT(IFNULL(Description, ''), '\n\n--- RETURNED FOR REVISION ---\n', ?) WHERE Damage_Report_ID = ?");
+    $stmt->bind_param("si", $reasonNote, $report_id);
+    $stmt->execute();
+    $stmt->close();
+
+    echo json_encode(['status' => 'success', 'message' => 'Report returned to technician for re-inspection.']);
+} catch (Exception $e) {
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+}
+?>

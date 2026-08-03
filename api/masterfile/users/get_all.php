@@ -27,6 +27,6 @@ try {
     
     echo json_encode(['status' => 'success', 'data' => $users]);
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 ?>

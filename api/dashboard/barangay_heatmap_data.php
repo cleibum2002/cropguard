@@ -78,5 +78,5 @@ try {
 
 } catch (Exception $e) {
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }

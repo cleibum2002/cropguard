@@ -70,6 +70,6 @@ try {
 
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 ?>

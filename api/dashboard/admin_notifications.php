@@ -14,7 +14,7 @@ $action = $_GET['action'] ?? 'fetch';
 
 try {
     if ($action === 'fetch') {
-        $query = "SELECT Notification_ID, Message, Is_Read, Related_Report_ID, DATE_FORMAT(Created_At, '%b %d, %h:%i %p') as DateStr 
+        $query = "SELECT Notification_ID, Message, Is_Read, Related_Report_ID, Redirect_URL, DATE_FORMAT(Created_At, '%b %d, %h:%i %p') as DateStr 
                   FROM admin_notification 
                   WHERE Target_Role = 'Admin'
                   ORDER BY Created_At DESC LIMIT 10";
@@ -39,5 +39,5 @@ try {
         echo json_encode(['status' => 'error', 'message' => 'Unknown action.']);
     }
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }

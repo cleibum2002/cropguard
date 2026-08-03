@@ -35,6 +35,7 @@ try {
     $res['avg_response'] = $avgResult ?? null;
 
     // 5. Validation queue — joined with users table
+    $queueSort = (isset($_GET['queue_sort']) && strtoupper($_GET['queue_sort']) === 'DESC') ? 'DESC' : 'ASC';
     $queueQuery = "SELECT 
                         dr.Damage_Report_ID, 
                         dr.Damage_Type,
@@ -45,7 +46,7 @@ try {
                    JOIN users u ON dr.Farmer_ID = u.User_ID
                    LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
                    WHERE dr.Status = 'Pending'
-                   ORDER BY dr.Report_Date ASC
+                   ORDER BY dr.Report_Date $queueSort
                    LIMIT 5";
     $queue = $conn->query($queueQuery);
     $res['queue'] = $queue ? $queue->fetch_all(MYSQLI_ASSOC) : [];
@@ -84,7 +85,7 @@ echo json_encode($res);
 
 
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 $conn->close();
 ?>

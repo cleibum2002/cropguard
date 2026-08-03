@@ -1,0 +1,9 @@
+# Block execution of any script files inside the uploads folder.
+# Even if a malicious file somehow gets past the PHP-side validation,
+# the server will refuse to run it — it can only ever be served as a plain file.
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phps|pht|cgi|pl)$">
+    Require all denied
+</FilesMatch>

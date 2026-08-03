@@ -47,8 +47,9 @@ try {
         $new_request_id = $conn->insert_id;
         $farmer_name = $_SESSION['Fullname'] ?? 'A farmer';
         $admin_msg = "New seed request from {$farmer_name} for \"{$requested_seed}\".";
-        $stmt_admin_notif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message) VALUES ('Admin', ?)");
-        $stmt_admin_notif->bind_param("s", $admin_msg);
+        $redirect_url = 'admin_seed_requests.html';
+        $stmt_admin_notif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Redirect_URL) VALUES ('Admin', ?, ?)");
+        $stmt_admin_notif->bind_param("ss", $admin_msg, $redirect_url);
         $stmt_admin_notif->execute();
         $stmt_admin_notif->close();
 
@@ -57,6 +58,6 @@ try {
         echo json_encode(['status' => 'error', 'message' => 'Failed to submit request.']);
     }
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => 'Database error: ' . $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 ?>

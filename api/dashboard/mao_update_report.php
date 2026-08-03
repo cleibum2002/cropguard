@@ -88,6 +88,6 @@ try {
 } catch (Exception $e) {
     if (isset($conn) && !$conn->connect_error) $conn->rollback();
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
 }
 ?>

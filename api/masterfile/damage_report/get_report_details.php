@@ -62,7 +62,7 @@ if (isset($_GET['id'])) {
             echo json_encode(['status' => 'error', 'message' => 'Report not found.']);
         }
     } catch (Exception $e) {
-        echo json_encode(['status' => 'error', 'message' => 'System error: ' . $e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
     }
 } else {
     echo json_encode(['status' => 'error', 'message' => 'No ID provided.']);

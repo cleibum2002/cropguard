@@ -33,5 +33,5 @@ try {
     }
     $stmt->close();
 } catch (Throwable $e) {
-    echo json_encode(["status" => "error", "message" => "System Error: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
 }

@@ -59,6 +59,6 @@ try {
     }
 } catch (Throwable $e) {
     if(isset($conn)) $conn->rollback();
-    echo json_encode(["status" => "error", "message" => "System Error: " . $e->getMessage()]);
+    echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
 }
 ?>

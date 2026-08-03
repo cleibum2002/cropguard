@@ -83,14 +83,22 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
                 $fileError = $_FILES['evidencePhotos']['error'][$i];
 
                 if ($fileError === 0) {
-                    $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
-                    $newFileName = uniqid('evd_' . $report_id . '_') . '.' . $fileExtension;
-                    $destination = $uploadDir . $newFileName;
+                    $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    $allowedExtensions = ['jpg', 'jpeg', 'png'];
 
-                    if (move_uploaded_file($tmpName, $destination)) {
-                        $dbPath = 'uploads/evidence/' . $newFileName; 
-                        $imgStmt->bind_param("is", $report_id, $dbPath);
-                        $imgStmt->execute();
+                    // Verify BOTH the extension AND that the file content is actually a real image
+                    // (blocks a .php or other script renamed to look like a .jpg)
+                    $isValidImage = in_array($fileExtension, $allowedExtensions) && (getimagesize($tmpName) !== false);
+
+                    if ($isValidImage) {
+                        $newFileName = uniqid('evd_' . $report_id . '_') . '.' . $fileExtension;
+                        $destination = $uploadDir . $newFileName;
+
+                        if (move_uploaded_file($tmpName, $destination)) {
+                            $dbPath = 'uploads/evidence/' . $newFileName; 
+                            $imgStmt->bind_param("is", $report_id, $dbPath);
+                            $imgStmt->execute();
+                        }
                     }
                 }
             }
@@ -102,7 +110,7 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
 
     } catch (Exception $e) {
         $conn->rollback();
-        echo json_encode(['status' => 'error', 'message' => 'System Error: ' . $e->getMessage()]);
+        echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
     }
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Required fields missing.']);
