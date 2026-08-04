@@ -12,6 +12,12 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'
 try {
     include_once '../../config/db_connection.php'; // Adjust path if needed
 
+    // Toggle between the active working queue and the archived/closed reports view
+    $isArchiveView = (isset($_GET['view']) && $_GET['view'] === 'archived');
+    $whereClause = $isArchiveView
+        ? "WHERE dr.Status IN ('Approved', 'Rejected', 'Archived')"
+        : "WHERE dr.Status NOT IN ('Approved', 'Rejected', 'Archived')";
+
     // Notice we now JOIN the 'users' table twice! Once for the Farmer, once for the Tech.
     $query = "
         SELECT 
@@ -31,7 +37,7 @@ try {
         LEFT JOIN users f ON dr.Farmer_ID = f.User_ID AND f.Role = 'Farmer'
         LEFT JOIN crop c ON dr.Crop_ID = c.Crop_ID
         LEFT JOIN users t ON dr.Technician_ID = t.User_ID AND t.Role = 'Technician'
-        WHERE dr.Status != 'Archived'
+        $whereClause
         ORDER BY dr.Damage_Report_ID DESC
     ";
     

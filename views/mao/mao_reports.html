@@ -53,8 +53,8 @@
            ============================================= */
         @media print {
             @page {
-                margin: 1.5cm 2cm;
-                size: A4;
+                margin: 1cm 1.2cm;
+                size: A4 landscape;
             }
 
             html {
@@ -75,6 +75,13 @@
                 padding: 0 !important;
                 margin: 0 !important;
                 overflow: visible !important;
+                background-color: white !important;
+            }
+            #mainContent .max-w-5xl {
+                margin: 0 !important;
+            }
+            #mainContent > .max-w-5xl > * + * {
+                margin-top: 8px !important;
             }
 
             .flex-1.flex.flex-col {
@@ -93,6 +100,49 @@
             #repTotalFarmers, #repClaimed, #repUnits {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            /* ═══ GOVERNMENT-STYLE TABLE GRID ═══ */
+            #reportPreviewCard table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            #reportPreviewCard table th,
+            #reportPreviewCard table td {
+                border: 1px solid #000 !important;
+                padding: 3px 4px !important;
+                font-size: 8px !important;
+            }
+            #reportPreviewCard table th {
+                font-size: 7px !important;
+            }
+            #reportPreviewCard table thead {
+                display: table-header-group;
+            }
+            #reportPreviewCard table th {
+                background-color: #dcdcdc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            #reportPreviewCard table tr {
+                page-break-inside: avoid;
+            }
+
+            /* Remove the soft "web card" look entirely, print as a flat page */
+            #reportPreviewCard,
+            #reportPreviewCard > div {
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+            }
+            #reportPreviewCard .p-10 {
+                padding: 0 !important;
+            }
+
+            /* Summary stat boxes become a plain bordered row instead of colored cards */
+            /* Summary stat boxes removed entirely from the printed version */
+            #reportPreviewCard .grid.grid-cols-3 {
+                display: none !important;
             }
         }
     </style>
@@ -135,23 +185,19 @@
         <main id="mainContent" class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
             <div class="max-w-5xl mx-auto space-y-6">
 
-                <div class="print-header hidden">
-                    <div style="display: flex; align-items: flex-start; gap: 18px; padding-bottom: 12px;">
-                        <img src="../../assets/images/DA.png" alt="Department of Agriculture Logo"
-                             style="height: 80px; width: auto; flex-shrink: 0;">
-                        <div style="line-height: 1.4;">
-                            <p style="font-size: 10px; color: #555; margin: 0; letter-spacing: 0.05em;" data-i18n="print_country">Republic of the Philippines</p>
-                            <p style="font-size: 14px; font-weight: 900; color: #1a1a1a; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 0.03em;" data-i18n="print_department">Department of Agriculture</p>
-                            <p style="font-size: 11px; font-weight: 700; color: #333; margin: 1px 0 0 0; text-transform: uppercase;" data-i18n="print_region_office">Regional Field Office X</p>
-                            <p style="font-size: 10px; color: #666; margin: 2px 0 0 0;" data-i18n="print_city">Cagayan de Oro City, Misamis Oriental</p>
-                        </div>
+                <div class="print-header hidden" style="text-align: center; padding-bottom: 6px;">
+                    <img src="../../assets/images/DA.png" alt="Department of Agriculture Logo"
+                         style="height: 90px; width: auto; margin: 0 auto 8px auto; display: block;">
+                    <p style="font-size: 10px; color: #333; margin: 0; letter-spacing: 0.06em;" data-i18n="print_country">Republic of the Philippines</p>
+                    <p style="font-size: 15px; font-weight: 900; color: #000; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;" data-i18n="print_department">Department of Agriculture</p>
+                    <p style="font-size: 11px; font-weight: 700; color: #000; margin: 1px 0 0 0; text-transform: uppercase;" data-i18n="print_region_office">Regional Field Office X — Northern Mindanao</p>
+                    <p style="font-size: 10px; color: #444; margin: 2px 0 10px 0;" data-i18n="print_city">Cagayan de Oro City, Misamis Oriental</p>
+
+                    <div style="border-top: 2.5px solid #000; border-bottom: 1px solid #000; padding: 6px 0; margin: 8px 0 4px 0;">
+                        <p style="font-size: 14px; font-weight: 900; color: #000; margin: 0; text-transform: uppercase; letter-spacing: 0.12em;" data-i18n="print_ledger_title">Official Aid Distribution Ledger</p>
                     </div>
 
-                    <div style="border-top: 3px solid #1a1a1a; border-bottom: 1px solid #1a1a1a; padding: 5px 0; margin-bottom: 4px; text-align: center;">
-                        <p style="font-size: 13px; font-weight: 900; color: #1a1a1a; margin: 0; text-transform: uppercase; letter-spacing: 0.1em;" data-i18n="print_ledger_title">Official Aid Distribution Ledger</p>
-                    </div>
-
-                    <p style="font-size: 10px; color: #666; text-align: center; margin: 6px 0 20px 0;">
+                    <p style="font-size: 9px; color: #555; margin: 6px 0 20px 0;">
                         <span data-i18n="print_generated_on">Generated on:</span> <span id="printDate"></span>
                     </p>
                 </div>

@@ -76,12 +76,17 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">Damage Reports Processing</h2>
-                        <p class="text-gray-400 text-sm">Review incoming reports and assign technicians for field inspection.</p>
+                        <h2 id="pageTitle" class="text-2xl font-black text-gray-800 tracking-tight">Damage Reports Processing</h2>
+                        <p id="pageSubtitle" class="text-gray-400 text-sm">Review incoming reports and assign technicians for field inspection.</p>
                     </div>
-                    <button onclick="openModal()" class="bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-plus"></i> Submit Report (Walk-in)
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button id="archiveToggleBtn" onclick="toggleArchiveView()" class="bg-white border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-box-archive"></i> View Archive
+                        </button>
+                        <button onclick="openModal()" class="bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
+                            <i class="fa-solid fa-plus"></i> Submit Report (Walk-in)
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -350,6 +355,25 @@
     <script>
         const API_URL = "../../api/masterfile/damage_report/";
         let allData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
+        let isArchiveView = false;
+
+        function toggleArchiveView() {
+            isArchiveView = !isArchiveView;
+            const btn = document.getElementById('archiveToggleBtn');
+            const title = document.getElementById('pageTitle');
+            const subtitle = document.getElementById('pageSubtitle');
+
+            if (isArchiveView) {
+                btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Back to Active Reports';
+                title.innerText = 'Archived Reports';
+                subtitle.innerText = 'Approved, rejected, and manually archived reports.';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-box-archive"></i> View Archive';
+                title.innerText = 'Damage Reports Processing';
+                subtitle.innerText = 'Review incoming reports and assign technicians for field inspection.';
+            }
+            loadTable();
+        }
         let aidInventory = [];
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -460,7 +484,8 @@
 
         async function loadTable() {
             try {
-                const res = await fetch(API_URL + "get_all.php");
+                const viewParam = isArchiveView ? '?view=archived' : '';
+                const res = await fetch(API_URL + "get_all.php" + viewParam);
                 const response = await res.json();
                 if (response.status === 'success') { allData = response.data || []; filteredData = [...allData]; renderTable(); }
             } catch (e) { Swal.fire('Error', 'Database connection failed.', 'error'); }

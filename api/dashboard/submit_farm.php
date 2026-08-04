@@ -47,6 +47,22 @@ try {
         throw new Exception("Failed to save farm location: " . $stmt->error);
     }
 
+    // Also create a matching entry in the `crop` table, so this crop immediately
+    // shows up in the "Which crop was damaged?" picker when filing a report.
+    // (Planting_Date is left blank here — it gets filled in automatically the
+    // first time this crop is actually used in a damage report.)
+    $cropNameStmt = $conn->prepare("SELECT Crop_Name FROM crop_type WHERE Type_ID = ?");
+    $cropNameStmt->bind_param("i", $type_id);
+    $cropNameStmt->execute();
+    $cropTypeResult = $cropNameStmt->get_result()->fetch_assoc();
+    $crop_name = $cropTypeResult['Crop_Name'] ?? 'Registered Crop';
+    $cropNameStmt->close();
+
+    $insertCrop = $conn->prepare("INSERT INTO crop (Crop_Name, Type_ID, Area_Hectares, Farmer_ID) VALUES (?, ?, ?, ?)");
+    $insertCrop->bind_param("sidi", $crop_name, $type_id, $area, $farmer_id);
+    $insertCrop->execute();
+    $insertCrop->close();
+
     if (ob_get_length()) ob_clean();
     echo json_encode(['status' => 'success', 'message' => 'Farm location successfully added!']);
 

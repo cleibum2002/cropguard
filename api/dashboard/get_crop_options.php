@@ -12,14 +12,19 @@ if (!isset($_SESSION['User_ID'])) {
 require_once '../config/db_connection.php';
 
 try {
-    // Fetch from crops table
+    // Fetch only the crops registered by THIS farmer (from My Farms)
+    $farmer_id = $_SESSION['User_ID'];
     $crops = [];
-    $cropResult = $conn->query("SELECT * FROM crop"); // Change 'crops' to your actual table name if different
+    $stmtCrops = $conn->prepare("SELECT * FROM crop WHERE Farmer_ID = ?");
+    $stmtCrops->bind_param("i", $farmer_id);
+    $stmtCrops->execute();
+    $cropResult = $stmtCrops->get_result();
     if ($cropResult) {
         while($row = $cropResult->fetch_assoc()) {
             $crops[] = $row;
         }
     }
+    $stmtCrops->close();
 
     // Fetch from crop types table
     $types = [];
