@@ -75,7 +75,7 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
 
         if (isset($_FILES['evidencePhotos']) && !empty($_FILES['evidencePhotos']['name'][0])) {
             $fileCount = count($_FILES['evidencePhotos']['name']);
-            $imgStmt = $conn->prepare("INSERT INTO damage_report_images (Damage_Report_ID, Image_Path) VALUES (?, ?)");
+            $imgStmt = $conn->prepare("INSERT INTO damage_report_images (Damage_Report_ID, Image_Path, Uploaded_By_Role) VALUES (?, ?, 'Technician')");
             
             for ($i = 0; $i < $fileCount; $i++) {
                 $tmpName = $_FILES['evidencePhotos']['tmp_name'][$i];

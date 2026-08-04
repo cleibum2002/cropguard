@@ -372,6 +372,18 @@
             }
         }
 
+// DevTools confirmed marker-icon-2x.png and marker-shadow.png were being actively
+// blocked on the way to unpkg.com (even in Incognito) — not a code problem, a
+// network-level block outside our control. So markers are drawn as pure CSS/HTML
+// instead of an image file: nothing to fetch means nothing that can be blocked.
+const cropGuardMarkerIcon = L.divIcon({
+    className: 'cropguard-marker-pin',
+    html: '<div style="background:#11542e; width:16px; height:16px; border-radius:50% 50% 50% 0; transform: rotate(-45deg); border: 2px solid #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.5);"></div>',
+    iconSize: [16, 16],
+    iconAnchor: [8, 16],
+    popupAnchor: [0, -16]
+});
+
 // ── MAP STATE (shared between Pin View and Region View) ──────────
         let map;                               // the single Leaflet map instance
         let pinLayerGroup = L.layerGroup();    // holds the original heat-blob + pin markers
@@ -399,7 +411,7 @@
                         const markers = [];
                         data.data.forEach(p => {
                             if (p[0] && p[1] && p[0] > 0 && p[1] > 0) {
-                                const marker = L.marker([p[0], p[1]]).addTo(pinLayerGroup);
+                                const marker = L.marker([p[0], p[1]], { icon: cropGuardMarkerIcon }).addTo(pinLayerGroup);
                                 marker.bindPopup(`<b>${t('popup_damage_report')}</b><br>${t('popup_intensity')}: ${(p[2] * 100).toFixed(0)}%`);
                                 markers.push([p[0], p[1]]);
                             }

@@ -133,28 +133,34 @@
                     <p class="italic text-gray-400 col-span-3">Loading profile...</p>
                 </div>
 
-                <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                    <i class="fa-solid fa-user text-gray-400 mr-1"></i> Farmer's Original Report
-                </h4>
-                <div class="bg-gray-50 border-l-4 border-blue-500 p-5 rounded-r-xl mb-6">
-                    <p id="reviewFarmerNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed">Loading field notes...</p>
-                </div>
+                <div class="grid grid-cols-2 border-2 border-gray-200 rounded-2xl overflow-hidden divide-x-2 divide-gray-300 mb-6">
+                    <div id="reviewFarmerCol" class="p-5 bg-gray-50">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                            <i class="fa-solid fa-user text-gray-400 mr-1"></i> Farmer's Original Report
+                        </h4>
+                        <p class="text-[11px] font-bold text-gray-500 mb-3">Severity Reported: <span id="reviewFarmerSeverityVal" class="text-gray-800">—</span></p>
+                        <p id="reviewFarmerNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed mb-4">Loading field notes...</p>
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Farmer's Photos</p>
+                        <div id="reviewFarmerGallery" class="flex flex-wrap gap-3"></div>
+                    </div>
 
-                <div id="reviewTechFindingsSection" class="hidden">
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-                        <i class="fa-solid fa-user-doctor text-green-600 mr-1"></i> Technician's Field Findings
-                    </h4>
-                    <div class="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-xl mb-6">
-                        <p id="reviewTechNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed"></p>
+                    <div id="reviewTechFindingsSection" class="p-5 bg-green-50 hidden">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
+                            <i class="fa-solid fa-user-doctor text-green-600 mr-1"></i> Technician's Field Findings
+                        </h4>
+                        <p class="text-[11px] font-bold text-gray-500 mb-3">Severity Confirmed: <span id="reviewTechSeverityVal" class="text-green-700">—</span></p>
+                        <p id="reviewTechNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed mb-4"></p>
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Technician's Photos</p>
+                        <div id="reviewTechGallery" class="flex flex-wrap gap-3"></div>
                     </div>
                 </div>
                 
-                <!-- ── PHOTO EVIDENCE + GEOTAGS ──────────────────────────── -->
+                <!-- ── GEOTAG LEGEND (applies to photos in both columns above) ──── -->
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Photographic Evidence</h4>
                     <span id="geoSummaryBadge" class="hidden text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"></span>
                 </div>
-                <div class="flex items-center gap-4 mb-3">
+                <div class="flex items-center gap-4 mb-6">
                     <span class="flex items-center gap-1 text-[9px] font-bold text-green-600">
                         <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> GPS captured
                     </span>
@@ -163,7 +169,6 @@
                     </span>
                     <span class="text-[9px] text-gray-400 italic">Click coordinates to open in Google Maps</span>
                 </div>
-                <div id="reviewGallery" class="flex flex-wrap gap-4"></div>
 
                 <div id="reliefCalculationSection" class="mt-6 pt-6 border-t border-gray-100">
                     <h4 class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -562,8 +567,12 @@
             document.getElementById('reviewReportId').value = id;
             document.getElementById('reviewModalTitle').innerText = `Report Details #REP-${id}`;
             document.getElementById('reviewFarmerNotes').innerText = "Loading data...";
+            document.getElementById('reviewFarmerSeverityVal').innerText = "—";
+            document.getElementById('reviewTechSeverityVal').innerText = "—";
             document.getElementById('reviewTechFindingsSection').classList.add('hidden');
-            document.getElementById('reviewGallery').innerHTML = "";
+            document.getElementById('reviewFarmerCol').classList.add('col-span-2');
+            document.getElementById('reviewFarmerGallery').innerHTML = "";
+            document.getElementById('reviewTechGallery').innerHTML = "";
             document.getElementById('adminReviewProfile').innerHTML = '<p class="italic text-gray-400 col-span-3">Loading profile...</p>';
            resetMultiAidForm();
             document.getElementById('geoSummaryBadge').classList.add('hidden');
@@ -637,16 +646,40 @@
                             document.getElementById('reviewFarmerNotes').innerText = parts[0].trim() || "No notes provided.";
                             document.getElementById('reviewTechNotes').innerText = parts[1].trim() || "No findings provided.";
                             document.getElementById('reviewTechFindingsSection').classList.remove('hidden');
+                            document.getElementById('reviewFarmerCol').classList.remove('col-span-2');
                         } else {
                             document.getElementById('reviewFarmerNotes').innerText = rawDescription;
                             document.getElementById('reviewTechFindingsSection').classList.add('hidden');
+                            document.getElementById('reviewFarmerCol').classList.add('col-span-2');
                         }
 
-                        // Render gallery with geotags
+                        // Severity comparison: Farmer_Reported_Severity is a frozen snapshot taken at
+                        // submission time; Damage_Severity is whatever the technician confirmed during
+                        // inspection (or still the farmer's value if no inspection has happened yet).
+                        // Reports created before this field existed will show "Not recorded".
+                        document.getElementById('reviewFarmerSeverityVal').innerText = detail.Farmer_Reported_Severity || 'Not recorded';
+                        document.getElementById('reviewTechSeverityVal').innerText = detail.Damage_Severity || '—';
+
+                        // Render photo evidence — split by who actually uploaded each photo, so farmer
+                        // photos land in the farmer column and technician photos land in the technician
+                        // column, instead of one mixed pile.
                         const imagesNormalized = (data.images || []).map(img =>
-                            typeof img === 'string' ? { path: img, geo_lat: null, geo_lng: null } : img
+                            typeof img === 'string' ? { path: img, geo_lat: null, geo_lng: null, uploaded_by: 'Farmer' } : img
                         );
-                        renderGeoGallery('reviewGallery', imagesNormalized, 'geoSummaryBadge');
+                        const farmerImages = imagesNormalized.filter(img => (img.uploaded_by || 'Farmer') !== 'Technician');
+                        const techImages   = imagesNormalized.filter(img => img.uploaded_by === 'Technician');
+                        renderGeoGallery('reviewFarmerGallery', farmerImages, null);
+                        renderGeoGallery('reviewTechGallery', techImages, null);
+
+                        // Overall GPS-tagged summary badge covers every photo on the report, farmer + technician combined
+                        if (imagesNormalized.length > 0) {
+                            const geoCount = imagesNormalized.filter(img => img.geo_lat && img.geo_lng).length;
+                            const badge = document.getElementById('geoSummaryBadge');
+                            badge.classList.remove('hidden');
+                            if (geoCount === imagesNormalized.length) { badge.textContent = `✓ All ${geoCount} photos geotagged`; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
+                            else if (geoCount === 0)                  { badge.textContent = 'No photos geotagged'; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
+                            else                                      { badge.textContent = `${geoCount}/${imagesNormalized.length} geotagged`; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
+                        }
                     } else {
                         document.getElementById('reviewFarmerNotes').innerText = "Error loading details.";
                     }

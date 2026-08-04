@@ -33,10 +33,12 @@ try {
     $conn->begin_transaction();
 
     $sql  = "INSERT INTO damage_report 
-                (Farmer_ID, Location_ID, Crop_ID, Damage_Type, Damage_Severity, Description, Status, Encoder_ID)
-             VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?)";
+                (Farmer_ID, Location_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status, Encoder_ID)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("iiisssi", $farmer_id, $location_id, $crop_id, $damage_type, $severity, $description, $encoder_id);
+    // Farmer_Reported_Severity permanently snapshots the original value — Damage_Severity
+    // gets overwritten later once a technician inspects the farm.
+    $stmt->bind_param("iiissssi", $farmer_id, $location_id, $crop_id, $damage_type, $severity, $severity, $description, $encoder_id);
     if (!$stmt->execute()) throw new Exception($stmt->error);
     $new_report_id = $conn->insert_id;
     $stmt->close();
@@ -62,10 +64,18 @@ try {
     $stmt_admin_notif->execute();
     $stmt_admin_notif->close();
 
+    // Notify MAO staff too — they're the ones who validate Pending reports
+    $mao_msg      = "New damage report (#REP-{$new_report_id}) encoded by {$encoder_name} on behalf of {$farmer_name} — needs your validation.";
+    $mao_redirect = 'report_management.html';
+    $stmt_mao_notif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Related_Report_ID, Redirect_URL) VALUES ('MAO', ?, ?, ?)");
+    $stmt_mao_notif->bind_param("sis", $mao_msg, $new_report_id, $mao_redirect);
+    $stmt_mao_notif->execute();
+    $stmt_mao_notif->close();
+
     $conn->commit();
     echo json_encode(['status' => 'success', 'message' => 'Report encoded and farmer notified.']);
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    echo json_encode(['status' => 'error', 'message' => 'Error: ' . $e->getMessage()]);
 }
 ?>

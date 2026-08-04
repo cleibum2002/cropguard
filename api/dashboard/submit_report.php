@@ -59,10 +59,13 @@ try {
         $success_message = 'Report successfully updated!';
     } else {
         // FIXED: Included Type_ID here so it isn't empty
-        $sql_report = "INSERT INTO damage_report (Farmer_ID, Location_ID, Crop_ID, Damage_Type, Damage_Severity, Description, Status) 
-                       VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
+        $sql_report = "INSERT INTO damage_report (Farmer_ID, Location_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending')";
         $stmt_report = $conn->prepare($sql_report);
-        $stmt_report->bind_param("iiisss", $farmer_id, $location_id, $crop_id, $damage_type, $severity, $description);
+        // Farmer_Reported_Severity is a permanent snapshot of what the farmer originally
+        // reported. Damage_Severity gets overwritten once a technician inspects the farm,
+        // so without this the farmer's original number would be lost forever.
+        $stmt_report->bind_param("iiissss", $farmer_id, $location_id, $crop_id, $damage_type, $severity, $severity, $description);
         
         if (!$stmt_report->execute()) throw new Exception("Insert failed: " . $stmt_report->error);
         $report_id = $conn->insert_id;

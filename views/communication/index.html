@@ -201,6 +201,12 @@
                     autoSelectHandled = true;
                     selectUser(admin.id, admin.name, admin.role);
                 }
+            } else if (target && target.toLowerCase() === 'mao') {
+                const mao = allUsers.find(u => u.role === 'MAO');
+                if (mao) {
+                    autoSelectHandled = true;
+                    selectUser(mao.id, mao.name, mao.role);
+                }
             }
         }
 

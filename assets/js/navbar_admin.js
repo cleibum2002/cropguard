@@ -42,6 +42,9 @@ function loadAdminNavbar(currentPage) {
                 <i class="fa-solid fa-message mr-3 w-4"></i> Communication
                 <span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
+            <a href="../communication/index.html?to=mao" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
+                <i class="fa-solid fa-headset mr-3 w-4"></i> Message MAO
+            </a>
             <a href="admin_seed_requests.html" class="sidebar-link ${currentPage === 'seed_requests' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
                 <i class="fa-solid fa-leaf mr-3 w-4"></i> Seed Requests
             </a>
