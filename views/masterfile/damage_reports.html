@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -23,6 +24,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     #sidebar-container { width: 16rem; flex-shrink: 0; }
     #sidebar-container aside { background-color: #11542e; height: 100vh; display: flex; flex-direction: column; }
     #sidebar-container nav { flex: 1; overflow-y: auto; scrollbar-width: thin; }
@@ -53,19 +56,24 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">Incident Validation</span>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">Incident Validation</span>
+                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
             </div>
             <div class="flex items-center gap-4">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
-                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or crop..."
+                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or crop..." data-i18n-placeholder="search_placeholder"
                         class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
                 </div>
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    </div>
                     <div class="text-right">
                         <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                        <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                        <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                     </div>
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                 </div>
@@ -76,15 +84,15 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 id="pageTitle" class="text-2xl font-black text-gray-800 tracking-tight">Damage Reports Processing</h2>
-                        <p id="pageSubtitle" class="text-gray-400 text-sm">Review incoming reports and assign technicians for field inspection.</p>
+                        <h2 id="pageTitle" class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Damage Reports Processing</h2>
+                        <p id="pageSubtitle" class="text-gray-400 text-sm" data-i18n="page_sub">Review incoming reports and assign technicians for field inspection.</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <button id="archiveToggleBtn" onclick="toggleArchiveView()" class="bg-white border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 text-sm">
-                            <i class="fa-solid fa-box-archive"></i> View Archive
+                            <i class="fa-solid fa-box-archive"></i> <span data-i18n="btn_view_archive">View Archive</span>
                         </button>
                         <button onclick="openModal()" class="bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
-                            <i class="fa-solid fa-plus"></i> Submit Report (Walk-in)
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_submit_walkin">Submit Report (Walk-in)</span>
                         </button>
                     </div>
                 </div>
@@ -94,12 +102,12 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Report ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer Info</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Crop Details</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Damage Type</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_report_id">Report ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_info">Farmer Info</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_crop_details">Crop Details</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_damage_type">Damage Type</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
@@ -108,8 +116,8 @@
                     <div class="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="pageInfo">Showing entries...</p>
                         <div class="flex gap-2">
-                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Previous</button>
-                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Next</button>
+                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all" data-i18n="btn_previous">Previous</button>
+                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all" data-i18n="btn_next">Next</button>
                         </div>
                     </div>
                 </div>
@@ -125,7 +133,7 @@
                     <i class="fa-solid fa-magnifying-glass-chart text-blue-600 text-xl"></i>
                     <div>
                         <h3 class="text-base font-black text-blue-900" id="reviewModalTitle">Review Report Details</h3>
-                        <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Validation & Evidence Data</p>
+                        <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest" data-i18n="modal_subtitle">Validation & Evidence Data</p>
                     </div>
                 </div>
                 <button onclick="closeReviewModal()" class="w-8 h-8 flex items-center justify-center rounded-full text-blue-400 hover:bg-blue-100 hover:text-blue-600 transition-colors">
@@ -135,63 +143,63 @@
             
             <div class="p-8 overflow-y-auto custom-scrollbar flex-1 bg-white">
                 <div id="adminReviewProfile" class="mb-6 grid grid-cols-2 md:grid-cols-3 gap-3 border-b border-gray-100 pb-6 text-xs">
-                    <p class="italic text-gray-400 col-span-3">Loading profile...</p>
+                    <p class="italic text-gray-400 col-span-3" data-i18n="loading_profile">Loading profile...</p>
                 </div>
 
                 <div class="grid grid-cols-2 border-2 border-gray-200 rounded-2xl overflow-hidden divide-x-2 divide-gray-300 mb-6">
                     <div id="reviewFarmerCol" class="p-5 bg-gray-50">
                         <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                            <i class="fa-solid fa-user text-gray-400 mr-1"></i> Farmer's Original Report
+                            <i class="fa-solid fa-user text-gray-400 mr-1"></i> <span data-i18n="label_farmer_original_report">Farmer's Original Report</span>
                         </h4>
-                        <p class="text-[11px] font-bold text-gray-500 mb-3">Severity Reported: <span id="reviewFarmerSeverityVal" class="text-gray-800">—</span></p>
-                        <p id="reviewFarmerNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed mb-4">Loading field notes...</p>
-                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Farmer's Photos</p>
+                        <p class="text-[11px] font-bold text-gray-500 mb-3"><span data-i18n="label_severity_reported">Severity Reported</span>: <span id="reviewFarmerSeverityVal" class="text-gray-800">—</span></p>
+                        <p id="reviewFarmerNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed mb-4" data-i18n="loading_field_notes">Loading field notes...</p>
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_farmer_photos">Farmer's Photos</p>
                         <div id="reviewFarmerGallery" class="flex flex-wrap gap-3"></div>
                     </div>
 
                     <div id="reviewTechFindingsSection" class="p-5 bg-green-50 hidden">
                         <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
-                            <i class="fa-solid fa-user-doctor text-green-600 mr-1"></i> Technician's Field Findings
+                            <i class="fa-solid fa-user-doctor text-green-600 mr-1"></i> <span data-i18n="label_technician_findings">Technician's Field Findings</span>
                         </h4>
-                        <p class="text-[11px] font-bold text-gray-500 mb-3">Severity Confirmed: <span id="reviewTechSeverityVal" class="text-green-700">—</span></p>
+                        <p class="text-[11px] font-bold text-gray-500 mb-3"><span data-i18n="label_severity_confirmed">Severity Confirmed</span>: <span id="reviewTechSeverityVal" class="text-green-700">—</span></p>
                         <p id="reviewTechNotes" class="text-sm text-gray-700 whitespace-pre-line leading-relaxed mb-4"></p>
-                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Technician's Photos</p>
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_technician_photos">Technician's Photos</p>
                         <div id="reviewTechGallery" class="flex flex-wrap gap-3"></div>
                     </div>
                 </div>
                 
                 <!-- ── GEOTAG LEGEND (applies to photos in both columns above) ──── -->
                 <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Photographic Evidence</h4>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_photographic_evidence">Photographic Evidence</h4>
                     <span id="geoSummaryBadge" class="hidden text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"></span>
                 </div>
                 <div class="flex items-center gap-4 mb-6">
                     <span class="flex items-center gap-1 text-[9px] font-bold text-green-600">
-                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> GPS captured
+                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> <span data-i18n="legend_gps_captured">GPS captured</span>
                     </span>
                     <span class="flex items-center gap-1 text-[9px] font-bold text-red-500">
-                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> No GPS data
+                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> <span data-i18n="legend_no_gps">No GPS data</span>
                     </span>
-                    <span class="text-[9px] text-gray-400 italic">Click coordinates to open in Google Maps</span>
+                    <span class="text-[9px] text-gray-400 italic" data-i18n="legend_click_coords">Click coordinates to open in Google Maps</span>
                 </div>
 
                 <div id="reliefCalculationSection" class="mt-6 pt-6 border-t border-gray-100">
                     <h4 class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-seedling"></i> Automated Relief Calculation
+                        <i class="fa-solid fa-seedling"></i> <span data-i18n="label_relief_calc">Automated Relief Calculation</span>
                     </h4>
-                    <div id="calcLoading" class="text-xs text-gray-400 italic">Calculating recommended seeds...</div>
+                    <div id="calcLoading" class="text-xs text-gray-400 italic" data-i18n="label_calculating">Calculating recommended seeds...</div>
                     <div id="calcDetails" class="hidden">
                         <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
                             <div>
-                                <p class="text-[10px] font-black text-green-600 uppercase tracking-widest">Base Requirement</p>
+                                <p class="text-[10px] font-black text-green-600 uppercase tracking-widest" data-i18n="label_base_requirement">Base Requirement</p>
                                 <p id="calcBase" class="text-lg font-black text-gray-800 mt-1">2 Bags/Ha</p>
                             </div>
                             <div class="text-center border-l border-green-200 pl-4">
-                                <p class="text-[10px] font-black text-green-600 uppercase tracking-widest">Damage Severity</p>
+                                <p class="text-[10px] font-black text-green-600 uppercase tracking-widest" data-i18n="label_damage_severity">Damage Severity</p>
                                 <p id="calcMultiplier" class="text-lg font-black text-red-600 mt-1">0%</p>
                             </div>
                             <div class="text-right border-l border-green-200 pl-4">
-                                <p class="text-[10px] font-black text-[#11542e] uppercase tracking-widest">Recommended Relief</p>
+                                <p class="text-[10px] font-black text-[#11542e] uppercase tracking-widest" data-i18n="label_recommended_relief">Recommended Relief</p>
                                 <p id="calcRecommended" class="text-2xl font-black text-[#11542e] mt-1">0 Bags</p>
                             </div>
                         </div>
@@ -199,43 +207,43 @@
                 </div>
 
                 <div id="aidAllocationSection" class="mt-8 pt-6 border-t border-gray-100 hidden">
-                    <h4 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4">Direct Allocate Relief Assistance</h4>
-                    <p class="text-[10px] text-gray-500 mb-3 font-medium">You can allocate multiple items at once. Click "Add another item" to include more.</p>
+                    <h4 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4" data-i18n="label_direct_allocate">Direct Allocate Relief Assistance</h4>
+                    <p class="text-[10px] text-gray-500 mb-3 font-medium" data-i18n="label_allocate_hint">You can allocate multiple items at once. Click "Add another item" to include more.</p>
                     
                     <div id="multiAidContainer">
                         <!-- Single aid item row (template) -->
                         <div class="aid-item-row bg-indigo-50/30 p-4 rounded-xl border border-indigo-100 mb-3">
                             <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                                 <div class="md:col-span-2">
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Agricultural Input</label>
+                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase" data-i18n="label_agri_input">Agricultural Input</label>
                                     <select class="adminAidItem w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500 font-semibold" onchange="updateAidDetailsRow(this)">
-                                        <option value="">-- Select Relief Item --</option>
+                                        <option value="" data-i18n="placeholder_select_relief">-- Select Relief Item --</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Quantity</label>
+                                    <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase" data-i18n="label_quantity">Quantity</label>
                                     <input type="number" class="adminAidQty w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500" min="1" placeholder="e.g. 2">
                                 </div>
                                 <div>
-                                    <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase">Unit</p>
+                                    <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase" data-i18n="label_unit">Unit</p>
                                     <p class="aidUnitDisplay text-sm font-black text-gray-800">—</p>
                                 </div>
                                 <div>
-                                    <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase">Stock</p>
+                                    <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase" data-i18n="label_stock">Stock</p>
                                     <p class="aidStockDisplay text-sm font-black text-blue-600">—</p>
                                 </div>
                             </div>
                             <button type="button" class="remove-aid-row mt-2 text-[10px] font-bold text-red-500 hover:text-red-700 transition-colors hidden" onclick="this.closest('.aid-item-row').remove()">
-                                <i class="fa-solid fa-trash-can mr-1"></i> Remove this item
+                                <i class="fa-solid fa-trash-can mr-1"></i> <span data-i18n="btn_remove_item">Remove this item</span>
                             </button>
                         </div>
                     </div>
                     
                     <div class="flex items-center gap-3 mt-2">
                         <button type="button" onclick="addAidRow()" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-all flex items-center gap-1.5">
-                            <i class="fa-solid fa-plus"></i> Add another item
+                            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_item">Add another item</span>
                         </button>
-                        <p class="text-[10px] text-gray-400 italic">This allocation will be deducted from inventory and sent to the MAO for distribution.</p>
+                        <p class="text-[10px] text-gray-400 italic" data-i18n="label_allocation_hint">This allocation will be deducted from inventory and sent to the MAO for distribution.</p>
                     </div>
                 </div>
             </div>
@@ -251,29 +259,29 @@
             <div class="px-6 py-4 bg-blue-50 border-b border-blue-100 flex items-center gap-3">
                 <i class="fa-solid fa-user-gear text-blue-600 text-lg"></i>
                 <div>
-                    <h3 class="text-base font-bold text-blue-800">Assign Technician</h3>
-                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Report #<span id="assignModalReportLabel">—</span></p>
+                    <h3 class="text-base font-bold text-blue-800" data-i18n="label_assign_technician">Assign Technician</h3>
+                    <p class="text-[10px] text-blue-400 font-bold uppercase tracking-widest"><span data-i18n="label_report_hash">Report #</span><span id="assignModalReportLabel">—</span></p>
                 </div>
             </div>
             <div class="p-6 space-y-5">
                 <input type="hidden" id="assignReportId">
                 <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-user mr-1"></i> Field Officer</label>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-user mr-1"></i> <span data-i18n="label_field_officer">Field Officer</span></label>
                     <select id="technicianId" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-700">
-                        <option value="">Select Technician...</option>
+                        <option value="" data-i18n="placeholder_select_technician">Select Technician...</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-calendar-day mr-1"></i> Scheduled Visit Date</label>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-calendar-day mr-1"></i> <span data-i18n="label_scheduled_visit">Scheduled Visit Date</span></label>
                     <input type="date" id="visitDate" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-700">
-                    <p class="text-[10px] text-gray-400 mt-1 italic">Set the date the technician should visit the farm.</p>
+                    <p class="text-[10px] text-gray-400 mt-1 italic" data-i18n="hint_visit_date">Set the date the technician should visit the farm.</p>
                 </div>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-2">
                 <button onclick="confirmAssignment()" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-900/20 hover:bg-blue-700 transition-all">
-                    <i class="fa-solid fa-check mr-2"></i>Confirm Assignment
+                    <i class="fa-solid fa-check mr-2"></i><span data-i18n="btn_confirm_assignment">Confirm Assignment</span>
                 </button>
- <button onclick="closeAssignModal()" class="w-full py-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
+ <button onclick="closeAssignModal()" class="w-full py-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors" data-i18n="btn_cancel">Cancel</button>
             </div>
         </div>
     </div>
@@ -284,75 +292,246 @@
             <div class="px-6 py-4 bg-green-50 border-b border-green-100 flex items-center gap-3 flex-shrink-0">
                 <i class="fa-solid fa-plus text-[#11542e] text-lg"></i>
                 <div>
-                    <h3 class="text-base font-bold text-[#11542e]">Submit Report (Walk-in)</h3>
-                    <p class="text-[10px] text-green-500 font-bold uppercase tracking-widest">For farmers reporting in person</p>
+                    <h3 class="text-base font-bold text-[#11542e]" data-i18n="btn_submit_walkin">Submit Report (Walk-in)</h3>
+                    <p class="text-[10px] text-green-500 font-bold uppercase tracking-widest" data-i18n="label_walkin_sub">For farmers reporting in person</p>
                 </div>
             </div>
             <div class="p-6 space-y-4 overflow-y-auto">
                 <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-user mr-1"></i> Farmer</label>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2"><i class="fa-solid fa-user mr-1"></i> <span data-i18n="label_farmer">Farmer</span></label>
                     <select id="walkinFarmerId" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
-                        <option value="">Loading farmers...</option>
+                        <option value="" data-i18n="loading_farmers">Loading farmers...</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Crop Name</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_crop_name">Crop Name</label>
                         <input type="text" id="walkinCropName" placeholder="e.g. RC-222" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Crop Type</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_crop_details_short">Crop Type</label>
                         <input type="text" id="walkinCropType" placeholder="e.g. Rice" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Area (Hectares)</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_area_hectares">Area (Hectares)</label>
                         <input type="number" step="0.01" min="0" id="walkinArea" placeholder="e.g. 1.5" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Planting Date</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_planting_date">Planting Date</label>
                         <input type="date" id="walkinPlantingDate" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Damage Type</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_damage_type">Damage Type</label>
                         <select id="walkinDamageType" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
-                            <option value="">Select...</option>
-                            <option value="Flood">Flood</option>
-                            <option value="Typhoon">Typhoon</option>
-                            <option value="Pest Infestation">Pest Infestation</option>
-                            <option value="Drought">Drought</option>
+                            <option value="" data-i18n="placeholder_select">Select...</option>
+                            <option value="Flood" data-i18n="damage_flood">Flood</option>
+                            <option value="Typhoon" data-i18n="damage_typhoon">Typhoon</option>
+                            <option value="Pest Infestation" data-i18n="damage_pest">Pest Infestation</option>
+                            <option value="Drought" data-i18n="damage_drought">Drought</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Severity</label>
+                        <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_severity">Severity</label>
                         <select id="walkinSeverity" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
-                            <option value="">Select...</option>
-                            <option value="Low">Low</option>
-                            <option value="Moderate">Moderate</option>
-                            <option value="High">High</option>
-                            <option value="Total Loss">Total Loss</option>
+                            <option value="" data-i18n="placeholder_select">Select...</option>
+                            <option value="Low" data-i18n="severity_low">Low</option>
+                            <option value="Moderate" data-i18n="severity_moderate">Moderate</option>
+                            <option value="High" data-i18n="severity_high">High</option>
+                            <option value="Total Loss" data-i18n="severity_total_loss">Total Loss</option>
                         </select>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
-                    <textarea id="walkinDescription" rows="3" placeholder="Additional notes about the damage..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700 resize-none"></textarea>
+                    <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_description">Description</label>
+                    <textarea id="walkinDescription" rows="3" placeholder="Additional notes about the damage..." data-i18n-placeholder="placeholder_walkin_description" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700 resize-none"></textarea>
                 </div>
-                <p class="text-[10px] text-gray-400 italic">This report will be submitted with status "Pending", same as if the farmer submitted it directly.</p>
+                <p class="text-[10px] text-gray-400 italic" data-i18n="hint_walkin_pending">This report will be submitted with status "Pending", same as if the farmer submitted it directly.</p>
             </div>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col gap-2 flex-shrink-0">
                 <button onclick="submitWalkinReport()" class="w-full py-3 bg-[#11542e] text-white rounded-xl font-bold text-sm shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all">
-                    <i class="fa-solid fa-paper-plane mr-2"></i>Submit Report
+                    <i class="fa-solid fa-paper-plane mr-2"></i><span data-i18n="btn_submit_report">Submit Report</span>
                 </button>
-                <button onclick="closeWalkinModal()" class="w-full py-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">Cancel</button>
+                <button onclick="closeWalkinModal()" class="w-full py-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors" data-i18n="btn_cancel">Cancel</button>
             </div>
         </div>
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js)
+        const translations = {
+            en: {
+                header_title: "Incident Validation", badge_admin_mode: "Admin Mode",
+                search_placeholder: "Search farmer or crop...", role_admin: "Admin",
+                page_title: "Damage Reports Processing", page_sub: "Review incoming reports and assign technicians for field inspection.",
+                page_title_archive: "Archived Reports", page_sub_archive: "Approved, rejected, and manually archived reports.",
+                btn_view_archive: "View Archive", btn_back_to_active: "Back to Active Reports",
+                btn_submit_walkin: "Submit Report (Walk-in)",
+                th_report_id: "Report ID", th_farmer_info: "Farmer Info", th_crop_details: "Crop Details",
+                th_damage_type: "Damage Type", th_status: "Status", th_actions: "Actions",
+                btn_previous: "Previous", btn_next: "Next",
+                no_reports_found: "No reports found.",
+                btn_review_inspection: "Review Inspection", label_finalized: "Finalized", label_tech_assigned: "Tech Assigned",
+                btn_assign_tech: "Assign Tech", label_awaiting_mao: "Awaiting MAO",
+                title_view_details: "View Details", title_archive_report: "Archive Report",
+                label_unknown: "Unknown", label_submitted: "Submitted", label_area: "Area", label_visit: "Visit",
+                status_pending: "Pending", status_validated: "Validated", status_inspected: "Inspected",
+                status_approved: "Approved", status_rejected: "Rejected", status_archived: "Archived",
+                label_showing: "SHOWING", label_to: "TO", label_of: "OF",
+                modal_subtitle: "Validation & Evidence Data", loading_profile: "Loading profile...",
+                label_farmer_original_report: "Farmer's Original Report", label_severity_reported: "Severity Reported",
+                loading_field_notes: "Loading field notes...", label_farmer_photos: "Farmer's Photos",
+                label_technician_findings: "Technician's Field Findings", label_severity_confirmed: "Severity Confirmed",
+                label_technician_photos: "Technician's Photos", label_photographic_evidence: "Photographic Evidence",
+                legend_gps_captured: "GPS captured", legend_no_gps: "No GPS data", legend_click_coords: "Click coordinates to open in Google Maps",
+                label_relief_calc: "Automated Relief Calculation", label_calculating: "Calculating recommended seeds...",
+                label_base_requirement: "Base Requirement", label_damage_severity: "Damage Severity", label_recommended_relief: "Recommended Relief",
+                label_direct_allocate: "Direct Allocate Relief Assistance", label_allocate_hint: 'You can allocate multiple items at once. Click "Add another item" to include more.',
+                label_agri_input: "Agricultural Input", placeholder_select_relief: "-- Select Relief Item --",
+                label_quantity: "Quantity", label_unit: "Unit", label_stock: "Stock",
+                btn_remove_item: "Remove this item", btn_add_item: "Add another item",
+                label_allocation_hint: "This allocation will be deducted from inventory and sent to the MAO for distribution.",
+                label_report_details_prefix: "Report Details", loading_data: "Loading data...", label_not_recorded: "Not recorded",
+                btn_close: "Close", btn_return_to_technician: "Return to Technician", btn_reject_claim: "Reject Claim",
+                btn_approve_allocate: "Approve & Allocate Aid", btn_direct_approve_allocate: "Direct Approve & Allocate Aid",
+                btn_close_viewer: "Close Viewer", could_not_calc_relief: "Could not calculate relief.",
+                profile_farmer_name: "Farmer Name", profile_rsbsa_no: "RSBSA No.", profile_declared_location: "Declared Location",
+                profile_crop_type: "Crop Type", profile_reported_damage: "Reported Damage", profile_affected_area: "Affected Area",
+                label_unregistered: "UNREGISTERED", label_missing: "Missing",
+                no_notes_provided: "No notes provided.", no_findings_provided: "No findings provided.",
+                error_loading_details: "Error loading details.", failed_connect_server: "Failed to connect to server.",
+                badge_all_geotagged: "✓ All {n} photos geotagged", badge_no_geotagged: "No photos geotagged", badge_partial_geotagged: "{a}/{b} geotagged",
+                no_photo_evidence: "No photographic evidence is attached to this report.", label_evidence_photo: "Evidence photo",
+                label_assign_technician: "Assign Technician", label_report_hash: "Report #", label_field_officer: "Field Officer",
+                placeholder_select_technician: "Select Technician...", label_scheduled_visit: "Scheduled Visit Date",
+                hint_visit_date: "Set the date the technician should visit the farm.", btn_confirm_assignment: "Confirm Assignment", btn_cancel: "Cancel",
+                label_walkin_sub: "For farmers reporting in person", label_farmer: "Farmer", loading_farmers: "Loading farmers...",
+                label_crop_name: "Crop Name", th_crop_details_short: "Crop Type", label_area_hectares: "Area (Hectares)", label_planting_date: "Planting Date",
+                placeholder_select: "Select...", damage_flood: "Flood", damage_typhoon: "Typhoon", damage_pest: "Pest Infestation", damage_drought: "Drought",
+                label_severity: "Severity", severity_low: "Low", severity_moderate: "Moderate", severity_high: "High", severity_total_loss: "Total Loss",
+                label_description: "Description", placeholder_walkin_description: "Additional notes about the damage...",
+                hint_walkin_pending: 'This report will be submitted with status "Pending", same as if the farmer submitted it directly.', btn_submit_report: "Submit Report",
+                sw_return_title: "Return to Technician?", sw_return_html: 'The report will go back to "Pending Inspection" for the assigned technician to redo the field validation.',
+                sw_return_input_label: "Reason (optional)", sw_return_input_placeholder: "e.g. Please provide clearer photos of the affected area...",
+                sw_return_confirm: "Yes, Return It", sw_returned_title: "Returned!", sw_error_title: "Error", sw_server_failed: "Server connection failed.",
+                sw_not_enough_stock_title: "Not Enough Stock", sw_not_enough_stock_text: '"{item}": You want {qty} {unit}, but only {stock} available.',
+                sw_required_title: "Required", sw_required_relief_item: "Please add at least one relief item with a valid quantity.",
+                sw_direct_approve_title: "Direct Approve & Allocate Aid?", sw_direct_approve_html: "You are about to approve this report and allocate:",
+                sw_direct_approve_confirm: "Yes, Direct Approve", sw_approved_title: "Approved!", sw_approved_text: "Report approved and all aid items allocated.",
+                sw_required_technician: "Please select a technician.", sw_required_visit_date: "Please set a scheduled visit date.",
+                sw_invalid_date_title: "Invalid Date", sw_invalid_date_text: "Visit date must be today or a future date.",
+                sw_assigned_title: "Assigned!", sw_assigned_text: "Technician and visit date have been set.", sw_server_failed_short: "Server failed.",
+                sw_are_you_sure: "Are you sure?", sw_status_confirm_text: "You are about to {action} this report.",
+                sw_action_reject: "reject", sw_action_validate: "validate", sw_yes: "Yes",
+                sw_success_title: "Success!", sw_status_updated_text: "Report updated to {status}", sw_update_failed: "Update failed",
+                sw_archive_title: "Archive?", sw_archive_text: "You can revert this in the Archive list.",
+                placeholder_select_farmer: "-- Select Farmer --", no_farmers_found: "No farmers found", failed_load_farmers: "Failed to load farmers",
+                sw_missing_fields_title: "Missing Fields", sw_missing_fields_text: "Farmer, crop name, damage type, and severity are required.",
+                sw_submitted_title: "Submitted!", sw_submit_failed: "Failed to submit report.",
+                sw_logout_title: "Logout?", sw_yes_logout: "Yes, logout",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                sw_db_connection_failed: "Database connection failed."
+            },
+            tl: {
+                header_title: "Pagpapatunay ng Insidente", badge_admin_mode: "Admin Mode",
+                search_placeholder: "Maghanap ng magsasaka o pananim...", role_admin: "Admin",
+                page_title: "Pagproseso ng mga Ulat ng Pinsala", page_sub: "Suriin ang mga papasok na ulat at magtalaga ng technician para sa field inspection.",
+                page_title_archive: "Mga Naka-archive na Ulat", page_sub_archive: "Mga naaprubahan, tinanggihan, at manwal na naka-archive na ulat.",
+                btn_view_archive: "Tingnan ang Archive", btn_back_to_active: "Bumalik sa Aktibong mga Ulat",
+                btn_submit_walkin: "Magsumite ng Ulat (Walk-in)",
+                th_report_id: "ID ng Ulat", th_farmer_info: "Impormasyon ng Magsasaka", th_crop_details: "Detalye ng Pananim",
+                th_damage_type: "Uri ng Pinsala", th_status: "Katayuan", th_actions: "Aksyon",
+                btn_previous: "Nakaraan", btn_next: "Susunod",
+                no_reports_found: "Walang nahanap na ulat.",
+                btn_review_inspection: "Suriin ang Inspeksyon", label_finalized: "Tapos na", label_tech_assigned: "May Technician na",
+                btn_assign_tech: "Magtalaga ng Technician", label_awaiting_mao: "Naghihintay sa MAO",
+                title_view_details: "Tingnan ang Detalye", title_archive_report: "I-archive ang Ulat",
+                label_unknown: "Hindi Alam", label_submitted: "Isinumite", label_area: "Sukat", label_visit: "Pagbisita",
+                status_pending: "Naghihintay", status_validated: "Napatunayan", status_inspected: "Naispeksyon",
+                status_approved: "Naaprubahan", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
+                label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA",
+                modal_subtitle: "Datos ng Pagpapatunay at Ebidensya", loading_profile: "Nilo-load ang profile...",
+                label_farmer_original_report: "Orihinal na Ulat ng Magsasaka", label_severity_reported: "Iniulat na Kalubhaan",
+                loading_field_notes: "Nilo-load ang mga tala...", label_farmer_photos: "Mga Larawan ng Magsasaka",
+                label_technician_findings: "Natuklasan ng Technician sa Field", label_severity_confirmed: "Kinumpirmang Kalubhaan",
+                label_technician_photos: "Mga Larawan ng Technician", label_photographic_evidence: "Ebidensyang Larawan",
+                legend_gps_captured: "May GPS", legend_no_gps: "Walang GPS", legend_click_coords: "I-click ang coordinates para buksan sa Google Maps",
+                label_relief_calc: "Awtomatikong Kalkulasyon ng Tulong", label_calculating: "Kinakalkula ang inirerekomendang binhi...",
+                label_base_requirement: "Batayang Kinakailangan", label_damage_severity: "Kalubhaan ng Pinsala", label_recommended_relief: "Inirerekomendang Tulong",
+                label_direct_allocate: "Direktang Maglaan ng Tulong", label_allocate_hint: 'Maaari kang maglaan ng maraming item nang sabay. I-click ang "Magdagdag ng isa pang item" para magdagdag pa.',
+                label_agri_input: "Panustos sa Agrikultura", placeholder_select_relief: "-- Piliin ang Item ng Tulong --",
+                label_quantity: "Dami", label_unit: "Yunit", label_stock: "Stock",
+                btn_remove_item: "Alisin ang item na ito", btn_add_item: "Magdagdag ng isa pang item",
+                label_allocation_hint: "Ang paglalaang ito ay ibabawas sa imbentaryo at ipapadala sa MAO para sa pamamahagi.",
+                label_report_details_prefix: "Detalye ng Ulat", loading_data: "Nilo-load ang datos...", label_not_recorded: "Hindi naitala",
+                btn_close: "Isara", btn_return_to_technician: "Ibalik sa Technician", btn_reject_claim: "Tanggihan ang Claim",
+                btn_approve_allocate: "Aprubahan at Maglaan ng Tulong", btn_direct_approve_allocate: "Direktang Aprubahan at Maglaan ng Tulong",
+                btn_close_viewer: "Isara ang Viewer", could_not_calc_relief: "Hindi makalkula ang tulong.",
+                profile_farmer_name: "Pangalan ng Magsasaka", profile_rsbsa_no: "RSBSA No.", profile_declared_location: "Idineklarang Lokasyon",
+                profile_crop_type: "Uri ng Pananim", profile_reported_damage: "Iniulat na Pinsala", profile_affected_area: "Apektadong Sukat",
+                label_unregistered: "HINDI NAKAREHISTRO", label_missing: "Nawawala",
+                no_notes_provided: "Walang naibigay na tala.", no_findings_provided: "Walang naibigay na natuklasan.",
+                error_loading_details: "Error sa pag-load ng detalye.", failed_connect_server: "Hindi makakonekta sa server.",
+                badge_all_geotagged: "✓ Lahat ng {n} larawan may GPS", badge_no_geotagged: "Walang larawang may GPS", badge_partial_geotagged: "{a}/{b} may GPS",
+                no_photo_evidence: "Walang larawang ebidensya na nakalakip sa ulat na ito.", label_evidence_photo: "Larawang ebidensya",
+                label_assign_technician: "Magtalaga ng Technician", label_report_hash: "Ulat #", label_field_officer: "Field Officer",
+                placeholder_select_technician: "Pumili ng Technician...", label_scheduled_visit: "Iskedyul ng Pagbisita",
+                hint_visit_date: "Itakda ang petsa kung kailan dapat bisitahin ng technician ang bukid.", btn_confirm_assignment: "Kumpirmahin ang Pagtatalaga", btn_cancel: "Kanselahin",
+                label_walkin_sub: "Para sa mga magsasakang nag-uulat nang personal", label_farmer: "Magsasaka", loading_farmers: "Nilo-load ang mga magsasaka...",
+                label_crop_name: "Pangalan ng Pananim", th_crop_details_short: "Uri ng Pananim", label_area_hectares: "Sukat (Ektarya)", label_planting_date: "Petsa ng Pagtatanim",
+                placeholder_select: "Pumili...", damage_flood: "Baha", damage_typhoon: "Bagyo", damage_pest: "Peste", damage_drought: "Tagtuyot",
+                label_severity: "Kalubhaan", severity_low: "Mababa", severity_moderate: "Katamtaman", severity_high: "Mataas", severity_total_loss: "Kabuuang Pagkawala",
+                label_description: "Deskripsyon", placeholder_walkin_description: "Karagdagang tala tungkol sa pinsala...",
+                hint_walkin_pending: 'Isusumite ang ulat na ito na may katayuang "Naghihintay", tulad ng direktang isinumite ng magsasaka.', btn_submit_report: "Isumite ang Ulat",
+                sw_return_title: "Ibalik sa Technician?", sw_return_html: 'Babalik ang ulat sa "Naghihintay na Inspeksyon" para gawing muli ng nakatalagang technician ang field validation.',
+                sw_return_input_label: "Dahilan (opsyonal)", sw_return_input_placeholder: "hal. Pakibigay ng mas malinaw na larawan ng apektadong lugar...",
+                sw_return_confirm: "Oo, Ibalik Ito", sw_returned_title: "Naibalik na!", sw_error_title: "Error", sw_server_failed: "Nabigo ang koneksyon sa server.",
+                sw_not_enough_stock_title: "Kulang ang Stock", sw_not_enough_stock_text: '"{item}": Gusto mong bigyan ng {qty} {unit}, pero {stock} lang ang available.',
+                sw_required_title: "Kailangan", sw_required_relief_item: "Magdagdag ng kahit isang item ng tulong na may wastong dami.",
+                sw_direct_approve_title: "Direktang Aprubahan at Maglaan ng Tulong?", sw_direct_approve_html: "Aaprubahan mo ang ulat na ito at ilalaan ang:",
+                sw_direct_approve_confirm: "Oo, Direktang Aprubahan", sw_approved_title: "Naaprubahan!", sw_approved_text: "Naaprubahan ang ulat at na-allocate na ang lahat ng item ng tulong.",
+                sw_required_technician: "Pumili ng technician.", sw_required_visit_date: "Magtakda ng iskedyul ng pagbisita.",
+                sw_invalid_date_title: "Hindi Wastong Petsa", sw_invalid_date_text: "Ang petsa ng pagbisita ay dapat ngayon o hinaharap na petsa.",
+                sw_assigned_title: "Naitalaga na!", sw_assigned_text: "Naitakda na ang technician at petsa ng pagbisita.", sw_server_failed_short: "Nabigo ang server.",
+                sw_are_you_sure: "Sigurado ka ba?", sw_status_confirm_text: "Ikaw ay {action} ang ulat na ito.",
+                sw_action_reject: "tatanggihan", sw_action_validate: "pagpapatunayan", sw_yes: "Oo",
+                sw_success_title: "Tagumpay!", sw_status_updated_text: "Na-update ang ulat sa {status}", sw_update_failed: "Nabigo ang pag-update",
+                sw_archive_title: "I-archive?", sw_archive_text: "Maaari mo itong ibalik sa listahan ng Archive.",
+                placeholder_select_farmer: "-- Pumili ng Magsasaka --", no_farmers_found: "Walang nahanap na magsasaka", failed_load_farmers: "Nabigong i-load ang mga magsasaka",
+                sw_missing_fields_title: "Kulang na Detalye", sw_missing_fields_text: "Kinakailangan ang magsasaka, pangalan ng pananim, uri ng pinsala, at kalubhaan.",
+                sw_submitted_title: "Naisumite na!", sw_submit_failed: "Nabigong isumite ang ulat.",
+                sw_logout_title: "Mag-logout?", sw_yes_logout: "Oo, mag-logout",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
+                sw_db_connection_failed: "Nabigo ang koneksyon sa database."
+            }
+        };
+
+        // Maps the raw DB status word to its translated label
+        function reportStatusLabel(status) {
+            const key = 'status_' + (status || '').toLowerCase();
+            return translations.en[key] ? t(key) : status;
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            const title = document.getElementById('pageTitle');
+            const subtitle = document.getElementById('pageSubtitle');
+            const btn = document.getElementById('archiveToggleBtn');
+            if (isArchiveView) {
+                title.innerText = t('page_title_archive');
+                subtitle.innerText = t('page_sub_archive');
+                btn.innerHTML = `<i class="fa-solid fa-arrow-left"></i> ${t('btn_back_to_active')}`;
+            } else {
+                title.innerText = t('page_title');
+                subtitle.innerText = t('page_sub');
+                btn.innerHTML = `<i class="fa-solid fa-box-archive"></i> ${t('btn_view_archive')}`;
+            }
+            renderTable(); // re-renders action buttons / status labels with the new language
+        }
+
         const API_URL = "../../api/masterfile/damage_report/";
         let allData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
         let isArchiveView = false;
@@ -364,13 +543,13 @@
             const subtitle = document.getElementById('pageSubtitle');
 
             if (isArchiveView) {
-                btn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Back to Active Reports';
-                title.innerText = 'Archived Reports';
-                subtitle.innerText = 'Approved, rejected, and manually archived reports.';
+                btn.innerHTML = `<i class="fa-solid fa-arrow-left"></i> ${t('btn_back_to_active')}`;
+                title.innerText = t('page_title_archive');
+                subtitle.innerText = t('page_sub_archive');
             } else {
-                btn.innerHTML = '<i class="fa-solid fa-box-archive"></i> View Archive';
-                title.innerText = 'Damage Reports Processing';
-                subtitle.innerText = 'Review incoming reports and assign technicians for field inspection.';
+                btn.innerHTML = `<i class="fa-solid fa-box-archive"></i> ${t('btn_view_archive')}`;
+                title.innerText = t('page_title');
+                subtitle.innerText = t('page_sub');
             }
             loadTable();
         }
@@ -488,7 +667,7 @@
                 const res = await fetch(API_URL + "get_all.php" + viewParam);
                 const response = await res.json();
                 if (response.status === 'success') { allData = response.data || []; filteredData = [...allData]; renderTable(); }
-            } catch (e) { Swal.fire('Error', 'Database connection failed.', 'error'); }
+            } catch (e) { Swal.fire(t('sw_error_title'), t('sw_db_connection_failed'), 'error'); }
         }
 
         function renderTable() {
@@ -497,7 +676,7 @@
             const end   = start + rowsPerPage;
             const items = filteredData.slice(start, end);
 
-            tbody.innerHTML = items.length ? "" : '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">No reports found.</td></tr>';
+            tbody.innerHTML = items.length ? "" : `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_reports_found')}</td></tr>`;
 
             items.forEach(item => {
                 let statusBadge = '', actionButtons = '';
@@ -510,33 +689,33 @@
                 else                                     statusBadge = 'bg-red-100 text-red-700';
 
                 if (currentStatus === 'INSPECTED') {
-                    actionButtons = `<button onclick="reviewInspection(${item.id}, '${currentStatus}')" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> Review Inspection</button>`;
+                    actionButtons = `<button onclick="reviewInspection(${item.id}, '${currentStatus}')" class="px-4 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-2"><i class="fa-solid fa-magnifying-glass"></i> ${t('btn_review_inspection')}</button>`;
                 } else if (currentStatus === 'APPROVED' || currentStatus === 'REJECTED' || currentStatus === 'ARCHIVED') {
-                    actionButtons = `<div class="flex items-center gap-2"><span class="text-gray-400 italic text-[10px] font-bold uppercase">Finalized</span></div>`;
+                    actionButtons = `<div class="flex items-center gap-2"><span class="text-gray-400 italic text-[10px] font-bold uppercase">${t('label_finalized')}</span></div>`;
                 } else if (item.technician_name) {
-                    actionButtons = `<span class="text-blue-500 italic text-[10px] font-bold uppercase tracking-tighter">Tech Assigned</span>`;
+                    actionButtons = `<span class="text-blue-500 italic text-[10px] font-bold uppercase tracking-tighter">${t('label_tech_assigned')}</span>`;
                 } else if (currentStatus === 'VALIDATED') {
-                    actionButtons = `<button onclick="openAssignModal(${item.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> Assign Tech</button>`;
+                    actionButtons = `<button onclick="openAssignModal(${item.id})" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"><i class="fa-solid fa-user-plus"></i> ${t('btn_assign_tech')}</button>`;
                 } else {
-                    actionButtons = `<span class="text-amber-500 italic text-[10px] font-bold uppercase tracking-tighter"><i class="fa-solid fa-clock mr-1"></i> Awaiting MAO</span>`;
+                    actionButtons = `<span class="text-amber-500 italic text-[10px] font-bold uppercase tracking-tighter"><i class="fa-solid fa-clock mr-1"></i> ${t('label_awaiting_mao')}</span>`;
                 }
 
                 actionButtons += `
                     <div class="flex items-center gap-1 ml-3 border-l border-gray-100 pl-3">
-                        <button onclick="reviewInspection(${item.id}, '${currentStatus}')" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-200 transition-colors" title="View Details"><i class="fa-solid fa-eye text-xs"></i></button>
-                        <button onclick="deleteItem(${item.id})" class="w-8 h-8 bg-red-50 text-red-400 rounded-lg hover:bg-red-100 transition-colors" title="Archive Report"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <button onclick="reviewInspection(${item.id}, '${currentStatus}')" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-200 transition-colors" title="${t('title_view_details')}"><i class="fa-solid fa-eye text-xs"></i></button>
+                        <button onclick="deleteItem(${item.id})" class="w-8 h-8 bg-red-50 text-red-400 rounded-lg hover:bg-red-100 transition-colors" title="${t('title_archive_report')}"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>`;
 
-                const visitDateDisplay = item.visit_date ? `<p class="text-[9px] mt-1 font-bold text-blue-400"><i class="fa-solid fa-calendar-check mr-1"></i>Visit: ${item.visit_date}</p>` : '';
+                const visitDateDisplay = item.visit_date ? `<p class="text-[9px] mt-1 font-bold text-blue-400"><i class="fa-solid fa-calendar-check mr-1"></i>${t('label_visit')}: ${item.visit_date}</p>` : '';
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/60 transition-all border-b border-gray-50">
                         <td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-${item.id}</td>
-                        <td class="px-6 py-4"><p class="text-sm font-black text-gray-800">${item.farmer || 'Unknown'}</p><p class="text-[10px] text-gray-400">Submitted: ${item.date || 'N/A'}</p></td>
-                        <td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">${item.crop_name || 'N/A'}</p><p class="text-[10px] text-gray-500">Area: ${item.area || '0.00'} Ha</p></td>
+                        <td class="px-6 py-4"><p class="text-sm font-black text-gray-800">${item.farmer || t('label_unknown')}</p><p class="text-[10px] text-gray-400">${t('label_submitted')}: ${item.date || 'N/A'}</p></td>
+                        <td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">${item.crop_name || 'N/A'}</p><p class="text-[10px] text-gray-500">${t('label_area')}: ${item.area || '0.00'} Ha</p></td>
                         <td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">${item.damage_type || 'N/A'}</span></td>
                         <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">${item.status}</span>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">${reportStatusLabel(item.status)}</span>
                             ${item.technician_name ? `<p class="text-[9px] mt-1 font-bold text-purple-500"><i class="fa-solid fa-user-check mr-1"></i>${item.technician_name}</p>` : ''}
                             ${visitDateDisplay}
                         </td>
@@ -544,7 +723,7 @@
                     </tr>`;
             });
 
-            document.getElementById("pageInfo").innerText = `SHOWING ${filteredData.length ? start + 1 : 0} TO ${Math.min(end, filteredData.length)} OF ${filteredData.length}`;
+            document.getElementById("pageInfo").innerText = `${t('label_showing')} ${filteredData.length ? start + 1 : 0} ${t('label_to')} ${Math.min(end, filteredData.length)} ${t('label_of')} ${filteredData.length}`;
             document.getElementById("prevBtn").disabled = currentPage === 1;
             document.getElementById("nextBtn").disabled = end >= filteredData.length;
         }
@@ -554,7 +733,7 @@
             const gallery = document.getElementById(containerId);
             gallery.innerHTML = '';
             if (!images || !images.length) {
-                gallery.innerHTML = '<p class="text-sm text-gray-400 italic bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">No photographic evidence is attached to this report.</p>';
+                gallery.innerHTML = `<p class="text-sm text-gray-400 italic bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">${t('no_photo_evidence')}</p>`;
                 if (summaryBadgeId) document.getElementById(summaryBadgeId).classList.add('hidden');
                 return;
             }
@@ -568,12 +747,12 @@
                 const card = document.createElement('div');
                 card.className = 'geo-photo-card';
                 card.innerHTML = `
-                    <a href="${img.path || img}" target="_blank"><img src="${img.path || img}" alt="Evidence photo ${idx + 1}" loading="lazy"></a>
-                    <div class="geo-dot ${hasGeo ? 'ok' : 'none'}" title="${hasGeo ? 'GPS captured' : 'No GPS data'}">
+                    <a href="${img.path || img}" target="_blank"><img src="${img.path || img}" alt="${t('label_evidence_photo')} ${idx + 1}" loading="lazy"></a>
+                    <div class="geo-dot ${hasGeo ? 'ok' : 'none'}" title="${hasGeo ? t('legend_gps_captured') : t('legend_no_gps')}">
                         <i class="fa-solid ${hasGeo ? 'fa-location-dot' : 'fa-location-slash'}" style="font-size:7px;"></i>
                     </div>
                     <div class="geo-info ${hasGeo ? 'geotagged' : 'no-geo'}">
-                        ${hasGeo ? `<a href="${mapUrl}" target="_blank"><i class="fa-solid fa-location-dot"></i> ${latText}, ${lngText}</a>` : '<i class="fa-solid fa-triangle-exclamation"></i> No GPS data'}
+                        ${hasGeo ? `<a href="${mapUrl}" target="_blank"><i class="fa-solid fa-location-dot"></i> ${latText}, ${lngText}</a>` : `<i class="fa-solid fa-triangle-exclamation"></i> ${t('legend_no_gps')}`}
                     </div>
                 `;
                 gallery.appendChild(card);
@@ -581,24 +760,24 @@
             if (summaryBadgeId) {
                 const badge = document.getElementById(summaryBadgeId);
                 badge.classList.remove('hidden');
-                if (geoCount === images.length)  { badge.textContent = `✓ All ${geoCount} photos geotagged`; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
-                else if (geoCount === 0)          { badge.textContent = 'No photos geotagged';               badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
-                else                              { badge.textContent = `${geoCount}/${images.length} geotagged`; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
+                if (geoCount === images.length)  { badge.textContent = t('badge_all_geotagged').replace('{n}', geoCount); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
+                else if (geoCount === 0)          { badge.textContent = t('badge_no_geotagged'); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
+                else                              { badge.textContent = t('badge_partial_geotagged').replace('{a}', geoCount).replace('{b}', images.length); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
             }
         }
 
         // ─── REVIEW MODAL ─────────────────────────────────────────────────────
         function reviewInspection(id, status) {
             document.getElementById('reviewReportId').value = id;
-            document.getElementById('reviewModalTitle').innerText = `Report Details #REP-${id}`;
-            document.getElementById('reviewFarmerNotes').innerText = "Loading data...";
+            document.getElementById('reviewModalTitle').innerText = `${t('label_report_details_prefix')} #REP-${id}`;
+            document.getElementById('reviewFarmerNotes').innerText = t('loading_data');
             document.getElementById('reviewFarmerSeverityVal').innerText = "—";
             document.getElementById('reviewTechSeverityVal').innerText = "—";
             document.getElementById('reviewTechFindingsSection').classList.add('hidden');
             document.getElementById('reviewFarmerCol').classList.add('col-span-2');
             document.getElementById('reviewFarmerGallery').innerHTML = "";
             document.getElementById('reviewTechGallery').innerHTML = "";
-            document.getElementById('adminReviewProfile').innerHTML = '<p class="italic text-gray-400 col-span-3">Loading profile...</p>';
+            document.getElementById('adminReviewProfile').innerHTML = `<p class="italic text-gray-400 col-span-3">${t('loading_profile')}</p>`;
            resetMultiAidForm();
             document.getElementById('geoSummaryBadge').classList.add('hidden');
 
@@ -607,24 +786,24 @@
 
             if (status === 'INSPECTED' || status === 'PENDING' || status === 'VALIDATED') {
                 aidSection.classList.remove('hidden');
-                const btnText = status === 'INSPECTED' ? 'Approve & Allocate Aid' : 'Direct Approve & Allocate Aid';
+                const btnText = status === 'INSPECTED' ? t('btn_approve_allocate') : t('btn_direct_approve_allocate');
                 const btnIcon = status === 'INSPECTED' ? 'fa-check' : 'fa-bolt';
                 const returnBtn = status === 'INSPECTED' ? `
                     <button onclick="returnToTechnician(${id})" class="px-6 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 text-sm font-bold rounded-xl shadow-sm hover:bg-amber-500 hover:text-white transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-rotate-left"></i> Return to Technician
+                        <i class="fa-solid fa-rotate-left"></i> ${t('btn_return_to_technician')}
                     </button>` : '';
                 footer.innerHTML = `
-                    <button onclick="closeReviewModal()" class="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">Close</button>
+                    <button onclick="closeReviewModal()" class="px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">${t('btn_close')}</button>
                     ${returnBtn}
                     <button onclick="updateStatus(${id}, 'Rejected')" class="px-6 py-2.5 bg-red-50 text-red-600 border border-red-200 text-sm font-bold rounded-xl shadow-sm hover:bg-red-500 hover:text-white transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-xmark"></i> Reject Claim
+                        <i class="fa-solid fa-xmark"></i> ${t('btn_reject_claim')}
                     </button>
                     <button onclick="approveWithAid()" class="px-6 py-2.5 bg-green-600 text-white text-sm font-black rounded-xl shadow-lg shadow-green-900/20 hover:bg-green-700 transition-all flex items-center gap-2">
                         <i class="fa-solid ${btnIcon}"></i> ${btnText}
                     </button>`;
             } else {
                 aidSection.classList.add('hidden');
-                footer.innerHTML = `<button onclick="closeReviewModal()" class="px-6 py-2.5 bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 rounded-xl transition-colors">Close Viewer</button>`;
+                footer.innerHTML = `<button onclick="closeReviewModal()" class="px-6 py-2.5 bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 rounded-xl transition-colors">${t('btn_close_viewer')}</button>`;
             }
 
             document.getElementById('reviewModal').classList.remove('hidden');
@@ -647,29 +826,29 @@
                         if (firstQtyInput) firstQtyInput.value = bags || 1;
                     }
                 })
-                .catch(() => { document.getElementById('calcLoading').innerText = 'Could not calculate relief.'; });
+                .catch(() => { document.getElementById('calcLoading').innerText = t('could_not_calc_relief'); });
 
             fetch(`../../api/masterfile/damage_report/get_report_details.php?id=${id}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
                         const detail = data.report;
-                        const rsbsa  = detail.RSBA_No || detail.rsbsa_no || 'UNREGISTERED';
+                        const rsbsa  = detail.RSBA_No || detail.rsbsa_no || t('label_unregistered');
                         document.getElementById('adminReviewProfile').innerHTML = `
-                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">Farmer Name</p><p class="text-xs font-bold text-gray-800">${detail.FarmerName || 'Unknown'}</p></div>
-                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">RSBSA No.</p><p class="text-xs font-bold text-gray-800 font-mono tracking-widest">${rsbsa}</p></div>
-                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">Declared Location</p><p class="text-[11px] font-bold text-gray-800 truncate" title="${detail.Barangay}">${detail.Barangay || 'Missing'}</p></div>
-                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">Crop Type</p><p class="text-xs font-bold text-[#11542e]">${detail.Crop_Name || 'Unknown'}</p></div>
-                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">Reported Damage</p><p class="text-xs font-bold text-red-600">${detail.Damage_Type || 'Unknown'}</p></div>
-                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">Affected Area</p><p class="text-xs font-bold text-gray-800">${detail.Affected_Area || detail.Area_Size || '0.00'} Ha</p></div>
+                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_farmer_name')}</p><p class="text-xs font-bold text-gray-800">${detail.FarmerName || t('label_unknown')}</p></div>
+                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_rsbsa_no')}</p><p class="text-xs font-bold text-gray-800 font-mono tracking-widest">${rsbsa}</p></div>
+                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_declared_location')}</p><p class="text-[11px] font-bold text-gray-800 truncate" title="${detail.Barangay}">${detail.Barangay || t('label_missing')}</p></div>
+                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_crop_type')}</p><p class="text-xs font-bold text-[#11542e]">${detail.Crop_Name || t('label_unknown')}</p></div>
+                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_reported_damage')}</p><p class="text-xs font-bold text-red-600">${detail.Damage_Type || t('label_unknown')}</p></div>
+                            <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_affected_area')}</p><p class="text-xs font-bold text-gray-800">${detail.Affected_Area || detail.Area_Size || '0.00'} Ha</p></div>
                         `;
                         // Split the Description into the Farmer's original report vs the Technician's field findings
-                        const rawDescription = detail.Description || "No notes provided.";
+                        const rawDescription = detail.Description || t('no_notes_provided');
                         const techMarker = '--- TECH FINDINGS ---';
                         if (rawDescription.includes(techMarker)) {
                             const parts = rawDescription.split(techMarker);
-                            document.getElementById('reviewFarmerNotes').innerText = parts[0].trim() || "No notes provided.";
-                            document.getElementById('reviewTechNotes').innerText = parts[1].trim() || "No findings provided.";
+                            document.getElementById('reviewFarmerNotes').innerText = parts[0].trim() || t('no_notes_provided');
+                            document.getElementById('reviewTechNotes').innerText = parts[1].trim() || t('no_findings_provided');
                             document.getElementById('reviewTechFindingsSection').classList.remove('hidden');
                             document.getElementById('reviewFarmerCol').classList.remove('col-span-2');
                         } else {
@@ -682,7 +861,7 @@
                         // submission time; Damage_Severity is whatever the technician confirmed during
                         // inspection (or still the farmer's value if no inspection has happened yet).
                         // Reports created before this field existed will show "Not recorded".
-                        document.getElementById('reviewFarmerSeverityVal').innerText = detail.Farmer_Reported_Severity || 'Not recorded';
+                        document.getElementById('reviewFarmerSeverityVal').innerText = detail.Farmer_Reported_Severity || t('label_not_recorded');
                         document.getElementById('reviewTechSeverityVal').innerText = detail.Damage_Severity || '—';
 
                         // Render photo evidence — split by who actually uploaded each photo, so farmer
@@ -701,30 +880,30 @@
                             const geoCount = imagesNormalized.filter(img => img.geo_lat && img.geo_lng).length;
                             const badge = document.getElementById('geoSummaryBadge');
                             badge.classList.remove('hidden');
-                            if (geoCount === imagesNormalized.length) { badge.textContent = `✓ All ${geoCount} photos geotagged`; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
-                            else if (geoCount === 0)                  { badge.textContent = 'No photos geotagged'; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
-                            else                                      { badge.textContent = `${geoCount}/${imagesNormalized.length} geotagged`; badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
+                            if (geoCount === imagesNormalized.length) { badge.textContent = t('badge_all_geotagged').replace('{n}', geoCount); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
+                            else if (geoCount === 0)                  { badge.textContent = t('badge_no_geotagged'); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
+                            else                                      { badge.textContent = t('badge_partial_geotagged').replace('{a}', geoCount).replace('{b}', imagesNormalized.length); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
                         }
                     } else {
-                        document.getElementById('reviewFarmerNotes').innerText = "Error loading details.";
+                        document.getElementById('reviewFarmerNotes').innerText = t('error_loading_details');
                     }
                 })
-                .catch(() => { document.getElementById('reviewFarmerNotes').innerText = "Failed to connect to server."; });
+                .catch(() => { document.getElementById('reviewFarmerNotes').innerText = t('failed_connect_server'); });
         }
 
         function closeReviewModal() { document.getElementById('reviewModal').classList.add('hidden'); }
 
         function returnToTechnician(id) {
             Swal.fire({
-                title: 'Return to Technician?',
-                html: 'The report will go back to "Pending Inspection" for the assigned technician to redo the field validation.',
+                title: t('sw_return_title'),
+                html: t('sw_return_html'),
                 input: 'textarea',
-                inputLabel: 'Reason (optional)',
-                inputPlaceholder: 'e.g. Please provide clearer photos of the affected area...',
+                inputLabel: t('sw_return_input_label'),
+                inputPlaceholder: t('sw_return_input_placeholder'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d97706',
-                confirmButtonText: 'Yes, Return It'
+                confirmButtonText: t('sw_return_confirm')
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch('../../api/masterfile/damage_report/return_to_technician.php', {
@@ -735,14 +914,14 @@
                     .then(res => res.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            Swal.fire({ icon: 'success', title: 'Returned!', text: data.message, timer: 1800, showConfirmButton: false });
+                            Swal.fire({ icon: 'success', title: t('sw_returned_title'), text: data.message, timer: 1800, showConfirmButton: false });
                             closeReviewModal();
                             loadTable();
                         } else {
-                            Swal.fire('Error', data.message, 'error');
+                            Swal.fire(t('sw_error_title'), data.message, 'error');
                         }
                     })
-                    .catch(() => Swal.fire('Error', 'Server connection failed.', 'error'));
+                    .catch(() => Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'));
                 }
             });
         }
@@ -767,8 +946,8 @@
                     
                     if (parseFloat(qty) > parseFloat(selectedItem.current_stock)) {
                         hasError = true;
-                        Swal.fire({ icon: 'error', title: 'Not Enough Stock', 
-                            text: `"${selectedItem.item_name}": You want ${qty} ${selectedItem.unit}, but only ${selectedItem.current_stock} available.` });
+                        Swal.fire({ icon: 'error', title: t('sw_not_enough_stock_title'), 
+                            text: t('sw_not_enough_stock_text').replace('{item}', selectedItem.item_name).replace('{qty}', qty).replace('{unit}', selectedItem.unit).replace('{stock}', selectedItem.current_stock) });
                         return;
                     }
                     
@@ -782,7 +961,7 @@
             
             if (hasError) return;
             if (allocations.length === 0) {
-                return Swal.fire("Required", "Please add at least one relief item with a valid quantity.", "warning");
+                return Swal.fire(t('sw_required_title'), t('sw_required_relief_item'), "warning");
             }
             
             // Build summary text
@@ -790,13 +969,13 @@
             const summaryText = summaryParts.join(', ');
             
             Swal.fire({ 
-                title: 'Direct Approve & Allocate Aid?', 
-                html: `<div class="text-sm text-left">You are about to approve this report and allocate:<br><br>
+                title: t('sw_direct_approve_title'), 
+                html: `<div class="text-sm text-left">${t('sw_direct_approve_html')}<br><br>
                     <ul class="list-disc pl-5 space-y-1">${allocations.map(a => `<li><strong>${a.quantity} ${a.unit}</strong> — ${a.category}</li>`).join('')}</ul></div>`,
                 icon: 'warning', 
                 showCancelButton: true, 
                 confirmButtonColor: '#16a34a', 
-                confirmButtonText: 'Yes, Direct Approve' 
+                confirmButtonText: t('sw_direct_approve_confirm') 
             })
             .then(async (result) => {
                 if (result.isConfirmed) {
@@ -810,17 +989,17 @@
                             const data = await res.json();
                             if (data.status !== 'success') {
                                 allSuccess = false;
-                                Swal.fire('Error', `${alloc.category}: ${data.message}`, 'error');
+                                Swal.fire(t('sw_error_title'), `${alloc.category}: ${data.message}`, 'error');
                                 break;
                             }
                         }
                         if (allSuccess) {
-                            Swal.fire('Approved!', 'Report approved and all aid items allocated.', 'success'); 
+                            Swal.fire(t('sw_approved_title'), t('sw_approved_text'), 'success'); 
                             closeReviewModal(); 
                             loadTable(); 
                             loadMasterfileItems();
                         }
-                    } catch (err) { Swal.fire('Error', 'Server connection failed.', 'error'); }
+                    } catch (err) { Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'); }
                 }
             });
         }
@@ -841,25 +1020,26 @@
             const reportId  = document.getElementById('assignReportId').value;
             const techId    = document.getElementById('technicianId').value;
             const visitDate = document.getElementById('visitDate').value;
-            if (!techId)    return Swal.fire("Required", "Please select a technician.", "warning");
-            if (!visitDate) return Swal.fire("Required", "Please set a scheduled visit date.", "warning");
+            if (!techId)    return Swal.fire(t('sw_required_title'), t('sw_required_technician'), "warning");
+            if (!visitDate) return Swal.fire(t('sw_required_title'), t('sw_required_visit_date'), "warning");
             const today = new Date(); today.setHours(0, 0, 0, 0);
-            if (new Date(visitDate) < today) return Swal.fire("Invalid Date", "Visit date must be today or a future date.", "warning");
+            if (new Date(visitDate) < today) return Swal.fire(t('sw_invalid_date_title'), t('sw_invalid_date_text'), "warning");
             try {
                 const res = await fetch(API_URL + "assign_technician.php", {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ report_id: reportId, technician_id: techId, visit_date: visitDate })
                 });
                 const result = await res.json();
-                if (result.status === 'success') { Swal.fire({ icon: 'success', title: 'Assigned!', text: 'Technician and visit date have been set.', showConfirmButton: false, timer: 1800 }); closeAssignModal(); loadTable(); }
-                else { Swal.fire('Error', result.message, 'error'); }
-            } catch (e) { Swal.fire('Error', 'Server failed.', 'error'); }
+                if (result.status === 'success') { Swal.fire({ icon: 'success', title: t('sw_assigned_title'), text: t('sw_assigned_text'), showConfirmButton: false, timer: 1800 }); closeAssignModal(); loadTable(); }
+                else { Swal.fire(t('sw_error_title'), result.message, 'error'); }
+            } catch (e) { Swal.fire(t('sw_error_title'), t('sw_server_failed_short'), 'error'); }
         }
 
         async function updateStatus(id, newStatus) {
+            const actionWord = newStatus === 'Rejected' ? t('sw_action_reject') : t('sw_action_validate');
             const result = await Swal.fire({
-                title: 'Are you sure?', text: `You are about to ${newStatus === 'Rejected' ? 'reject' : 'validate'} this report.`, icon: 'warning',
-                showCancelButton: true, confirmButtonColor: newStatus === 'Rejected' ? '#dc2626' : '#11542e', confirmButtonText: `Yes, ${newStatus}`
+                title: t('sw_are_you_sure'), text: t('sw_status_confirm_text').replace('{action}', actionWord), icon: 'warning',
+                showCancelButton: true, confirmButtonColor: newStatus === 'Rejected' ? '#dc2626' : '#11542e', confirmButtonText: `${t('sw_yes')}, ${reportStatusLabel(newStatus)}`
             });
             if (result.isConfirmed) {
                 try {
@@ -867,14 +1047,14 @@
                         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: newStatus })
                     });
                     const resData = await r.json();
-                    if (resData.status === 'success') { Swal.fire({ title: 'Success!', text: `Report updated to ${newStatus}`, icon: 'success', timer: 1500, showConfirmButton: false }); loadTable(); closeReviewModal(); }
-                    else { Swal.fire('Error', 'Update failed', 'error'); }
-                } catch (e) { Swal.fire('Error', 'Server connection failed.', 'error'); }
+                    if (resData.status === 'success') { Swal.fire({ title: t('sw_success_title'), text: t('sw_status_updated_text').replace('{status}', reportStatusLabel(newStatus)), icon: 'success', timer: 1500, showConfirmButton: false }); loadTable(); closeReviewModal(); }
+                    else { Swal.fire(t('sw_error_title'), t('sw_update_failed'), 'error'); }
+                } catch (e) { Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'); }
             }
         }
 
         function deleteItem(id) {
-            Swal.fire({ title: 'Archive?', text: "You can revert this in the Archive list.", icon: 'warning', showCancelButton: true })
+            Swal.fire({ title: t('sw_archive_title'), text: t('sw_archive_text'), icon: 'warning', showCancelButton: true })
                 .then(r => {
                     if (r.isConfirmed) fetch(API_URL + "update_status.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: 'Archived' }) }).then(() => { loadTable(); });
                 });
@@ -890,7 +1070,7 @@
 
         // ─── WALK-IN REPORT MODAL ───────────────────────────────────────
         function openModal() {
-            document.getElementById('walkinFarmerId').innerHTML   = '<option value="">Loading farmers...</option>';
+            document.getElementById('walkinFarmerId').innerHTML   = `<option value="">${t('loading_farmers')}</option>`;
             document.getElementById('walkinCropName').value       = '';
             document.getElementById('walkinCropType').value       = '';
             document.getElementById('walkinArea').value           = '';
@@ -912,13 +1092,13 @@
                 const res = await fetch(API_URL + "get_farmers.php");
                 const result = await res.json();
                 if (result.status === 'success' && result.data.length > 0) {
-                    select.innerHTML = '<option value="">-- Select Farmer --</option>' +
+                    select.innerHTML = `<option value="">${t('placeholder_select_farmer')}</option>` +
                         result.data.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
                 } else {
-                    select.innerHTML = '<option value="">No farmers found</option>';
+                    select.innerHTML = `<option value="">${t('no_farmers_found')}</option>`;
                 }
             } catch (e) {
-                select.innerHTML = '<option value="">Failed to load farmers</option>';
+                select.innerHTML = `<option value="">${t('failed_load_farmers')}</option>`;
             }
         }
 
@@ -933,7 +1113,7 @@
             const description   = document.getElementById('walkinDescription').value.trim();
 
             if (!farmer_id || !crop_name || !damage_type || !severity) {
-                return Swal.fire('Missing Fields', 'Farmer, crop name, damage type, and severity are required.', 'warning');
+                return Swal.fire(t('sw_missing_fields_title'), t('sw_missing_fields_text'), 'warning');
             }
 
             try {
@@ -944,19 +1124,19 @@
                 });
                 const result = await res.json();
                 if (result.status === 'success') {
-                    Swal.fire('Submitted!', result.message, 'success');
+                    Swal.fire(t('sw_submitted_title'), result.message, 'success');
                     closeWalkinModal();
                     loadTable();
                 } else {
-                    Swal.fire('Error', result.message || 'Failed to submit report.', 'error');
+                    Swal.fire(t('sw_error_title'), result.message || t('sw_submit_failed'), 'error');
                 }
             } catch (err) {
-                Swal.fire('Error', 'Server connection failed.', 'error');
+                Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error');
             }
         }
 
         function confirmLogout() {
-            Swal.fire({ title: 'Logout?', text: "Are you sure?", icon: 'warning', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: 'Yes, logout' })
+            Swal.fire({ title: t('sw_logout_title'), text: t('sw_are_you_sure'), icon: 'warning', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: t('sw_yes_logout') })
                 .then((result) => { if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.href = '../../auth.html'; }).catch(() => { window.location.href = '../../auth.html'; }); });
         }
 
@@ -965,7 +1145,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => { fetch('../../api/auth/logout.php').then(() => { window.location.href = '../../auth.html'; }); });
             }, 5 * 60 * 1000);
         }
@@ -975,7 +1155,7 @@
 
     <script src="../../assets/js/navbar_admin.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('reports'); });
+        document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('reports'); initI18n(); });
     </script>
 </body>
 </html>

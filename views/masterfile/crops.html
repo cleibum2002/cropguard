@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
             if (data.status === 'active' && data.role.toLowerCase() === 'admin') {
@@ -20,6 +21,8 @@
     </script>
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     #sidebar-container { width: 16rem; flex-shrink: 0; }
     #sidebar-container aside { background-color: #11542e; height: 100vh; display: flex; flex-direction: column; }
     #sidebar-container nav { flex: 1; overflow-y: auto; scrollbar-width: thin; }
@@ -38,16 +41,21 @@
 
     <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
         <div class="flex items-center gap-4">
-            <span class="text-base font-black text-gray-800">Crops Masterlist</span>
-            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+            <span class="text-base font-black text-gray-800" data-i18n="header_title">Crops Masterlist</span>
+            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
         </div>
         <div class="flex items-center gap-4">
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
-                <input type="text" id="searchInput" onkeyup="filterCrops()" placeholder="Search crops or variety..."
+                <input type="text" id="searchInput" onkeyup="filterCrops()" placeholder="Search crops or variety..." data-i18n-placeholder="search_placeholder"
                        class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-[#11542e] outline-none">
             </div>
             <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
                 <div class="relative">
                     <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100">
                         <i class="fa-regular fa-bell text-sm"></i>
@@ -55,17 +63,17 @@
                     </button>
                     <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
                         <div class="px-4 py-3 border-b border-gray-100">
-                            <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest">Notifications</h4>
+                            <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
                         </div>
                         <div id="notifList" class="divide-y divide-gray-50">
-                            <p class="text-xs text-gray-400 italic text-center py-8">Loading...</p>
+                            <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="text-right">
                         <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                        <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                        <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                     </div>
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                 </div>
@@ -78,23 +86,23 @@
 
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                 <div>
-                    <h2 class="text-2xl font-black text-gray-800 tracking-tight">Registered Commodities</h2>
-                    <p class="text-gray-400 text-sm">DA Region X — Northern Mindanao Operations Center</p>
+                    <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Registered Commodities</h2>
+                    <p class="text-gray-400 text-sm" data-i18n="page_sub">DA Region X — Northern Mindanao Operations Center</p>
                 </div>
                 <div class="flex items-center gap-3">
                     <div class="bg-white p-1.5 rounded-xl border border-gray-100 flex items-center shadow-sm">
                         <button id="gridBtn" onclick="setView('grid')"
                                 class="px-3 py-1.5 bg-[#11542e] text-white rounded-lg text-[11px] font-bold transition-all">
-                            <i class="fa-solid fa-grip mr-1"></i> Grid
+                            <i class="fa-solid fa-grip mr-1"></i> <span data-i18n="btn_grid">Grid</span>
                         </button>
                         <button id="listBtn" onclick="setView('list')"
                                 class="px-3 py-1.5 text-gray-400 rounded-lg text-[11px] font-bold transition-all hover:text-gray-600">
-                            <i class="fa-solid fa-list mr-1"></i> List
+                            <i class="fa-solid fa-list mr-1"></i> <span data-i18n="btn_list">List</span>
                         </button>
                     </div>
                     <button onclick="openModal()"
                             class="bg-[#f1c40f] text-[#11542e] px-6 py-3 rounded-xl font-black shadow-lg shadow-yellow-500/20 hover:scale-105 transition-all flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-plus"></i> REGISTER CROP
+                        <i class="fa-solid fa-plus"></i> <span data-i18n="btn_register_crop">REGISTER CROP</span>
                     </button>
                 </div>
             </div>
@@ -102,15 +110,15 @@
             <!-- Loading state -->
             <div id="loadingState" class="flex flex-col items-center justify-center py-20 text-gray-400">
                 <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-[#11542e]"></i>
-                <p class="text-sm font-medium">Loading crops...</p>
+                <p class="text-sm font-medium" data-i18n="loading_crops">Loading crops...</p>
             </div>
 
             <!-- Error state -->
             <div id="errorState" class="hidden flex flex-col items-center justify-center py-20 text-gray-400">
                 <i class="fa-solid fa-circle-exclamation text-3xl mb-3 text-red-400"></i>
-                <p class="text-sm font-medium text-red-500" id="errorMessage">Failed to load crops.</p>
+                <p class="text-sm font-medium text-red-500" id="errorMessage" data-i18n="label_failed_load">Failed to load crops.</p>
                 <button onclick="loadCrops()" class="mt-3 px-4 py-2 bg-[#11542e] text-white text-xs font-bold rounded-xl hover:bg-[#0c3d22] transition-all">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> Retry
+                    <i class="fa-solid fa-rotate-right mr-1"></i> <span data-i18n="btn_retry">Retry</span>
                 </button>
             </div>
 
@@ -122,11 +130,11 @@
                 <table class="w-full text-left">
                     <thead class="bg-gray-50/60">
                         <tr>
-                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Crop Name</th>
-                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Type</th>
-                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Growth Period</th>
-                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Prod. Cost</th>
-                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_crop_name">Crop Name</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_type">Type</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_growth_period">Growth Period</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_prod_cost">Prod. Cost</th>
+                            <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="cropListBody" class="divide-y divide-gray-50"></tbody>
@@ -141,7 +149,7 @@
 <div id="cropModal" class="fixed inset-0 bg-[#11542e]/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden">
         <div class="p-7 border-b border-gray-50 flex justify-between items-center">
-            <h3 id="modalTitle" class="text-xl font-black text-gray-800">Register New Crop</h3>
+            <h3 id="modalTitle" class="text-xl font-black text-gray-800" data-i18n="modal_title_register">Register New Crop</h3>
             <button onclick="closeModal()"
                     class="w-9 h-9 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all text-lg font-bold">&times;</button>
         </div>
@@ -149,7 +157,7 @@
             <input type="hidden" id="cropId">
 
             <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Crop Name / Variety</label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_crop_name_variety">Crop Name / Variety</label>
                 <input type="text" id="cropName"
                        class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm"
                        placeholder="e.g. RC-222 (Tubigan)">
@@ -157,31 +165,31 @@
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Commodity Type</label>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_commodity_type">Commodity Type</label>
                     <select id="cropType" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
-                        <option value="Rice">Rice</option>
-                        <option value="Corn">Corn</option>
-                        <option value="Banana">Banana</option>
-                        <option value="Vegetables">Vegetables</option>
-                        <option value="Eggplant">Eggplant</option>
-                        <option value="Other">Other</option>
+                        <option value="Rice" data-i18n="crop_type_rice">Rice</option>
+                        <option value="Corn" data-i18n="crop_type_corn">Corn</option>
+                        <option value="Banana" data-i18n="crop_type_banana">Banana</option>
+                        <option value="Vegetables" data-i18n="crop_type_vegetables">Vegetables</option>
+                        <option value="Eggplant" data-i18n="crop_type_eggplant">Eggplant</option>
+                        <option value="Other" data-i18n="crop_type_other">Other</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Growth Duration</label>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_growth_duration">Growth Duration</label>
                     <input type="text" id="cropPeriod" placeholder="e.g. 110 Days"
                            class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
                 </div>
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Std. Production Cost (₱)</label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_prod_cost_php">Std. Production Cost (₱)</label>
                 <input type="number" id="cropProdCost" placeholder="e.g. 45000" min="0" step="0.01"
                        class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_description">Description</label>
                 <textarea id="cropDesc" rows="3"
                           class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm"
                           placeholder="Short description..."></textarea>
@@ -189,9 +197,9 @@
 
             <div class="pt-4 flex gap-3">
                 <button onclick="closeModal()"
-                        class="flex-1 py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm">Cancel</button>
+                        class="flex-1 py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
                 <button onclick="saveCrop()" id="saveBtn"
-                        class="flex-[2] py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm">
+                        class="flex-[2] py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm" data-i18n="btn_save_crop">
                     Save Crop
                 </button>
             </div>
@@ -200,6 +208,73 @@
 </div>
 
 <script>
+    // Reusable EN / TL switcher (see assets/js/i18n.js)
+    const translations = {
+        en: {
+            header_title: "Crops Masterlist", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+            search_placeholder: "Search crops or variety...",
+            notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
+            page_title: "Registered Commodities", page_sub: "DA Region X — Northern Mindanao Operations Center",
+            btn_grid: "Grid", btn_list: "List", btn_register_crop: "REGISTER CROP",
+            loading_crops: "Loading crops...", label_failed_load: "Failed to load crops.", btn_retry: "Retry",
+            th_crop_name: "Crop Name", th_type: "Type", th_growth_period: "Growth Period", th_prod_cost: "Prod. Cost", th_actions: "Actions",
+            modal_title_register: "Register New Crop", modal_title_edit: "Edit Crop",
+            label_crop_name_variety: "Crop Name / Variety", label_commodity_type: "Commodity Type", label_growth_duration: "Growth Duration",
+            label_prod_cost_php: "Std. Production Cost (₱)", label_description: "Description",
+            crop_type_rice: "Rice", crop_type_corn: "Corn", crop_type_banana: "Banana",
+            crop_type_vegetables: "Vegetables", crop_type_eggplant: "Eggplant", crop_type_other: "Other",
+            btn_cancel: "Cancel", btn_save_crop: "Save Crop", btn_saving: "Saving...",
+            label_certified: "Certified", label_variety_suffix: "Variety", no_description_provided: "No description provided.",
+            label_na: "N/A", btn_details: "Details",
+            no_crops_found: "No crops found.", no_crops_registered: "No crops registered yet.",
+            label_type: "Type", label_production_cost: "Production Cost",
+            sw_required_title: "Required", sw_required_crop_name: "Please enter the crop name.",
+            sw_saved_title: "Saved!", sw_saved_text: "Crop saved successfully.", sw_error_title: "Error",
+            sw_remove_title: "Remove Crop?", sw_remove_text: "This crop will be removed from the masterlist.", sw_yes_remove: "Yes, Remove",
+            sw_removed_title: "Removed!",
+            sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
+            sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to inactivity."
+        },
+        tl: {
+            header_title: "Crops Masterlist", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+            search_placeholder: "Maghanap ng pananim o barayti...",
+            notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
+            page_title: "Nakarehistrong Commodity", page_sub: "DA Region X — Sentro ng Operasyon sa Northern Mindanao",
+            btn_grid: "Grid", btn_list: "Listahan", btn_register_crop: "IREHISTRO ANG PANANIM",
+            loading_crops: "Nilo-load ang mga pananim...", label_failed_load: "Nabigong i-load ang mga pananim.", btn_retry: "Subukan Muli",
+            th_crop_name: "Pangalan ng Pananim", th_type: "Uri", th_growth_period: "Tagal ng Paglago", th_prod_cost: "Gastos sa Produksyon", th_actions: "Aksyon",
+            modal_title_register: "Irehistro ang Bagong Pananim", modal_title_edit: "I-edit ang Pananim",
+            label_crop_name_variety: "Pangalan/Barayti ng Pananim", label_commodity_type: "Uri ng Commodity", label_growth_duration: "Tagal ng Paglago",
+            label_prod_cost_php: "Karaniwang Gastos sa Produksyon (₱)", label_description: "Deskripsyon",
+            crop_type_rice: "Palay", crop_type_corn: "Mais", crop_type_banana: "Saging",
+            crop_type_vegetables: "Gulay", crop_type_eggplant: "Talong", crop_type_other: "Iba Pa",
+            btn_cancel: "Kanselahin", btn_save_crop: "I-save ang Pananim", btn_saving: "Sine-save...",
+            label_certified: "Sertipikado", label_variety_suffix: "Barayti", no_description_provided: "Walang ibinigay na deskripsyon.",
+            label_na: "N/A", btn_details: "Detalye",
+            no_crops_found: "Walang nahanap na pananim.", no_crops_registered: "Wala pang nakarehistrong pananim.",
+            label_type: "Uri", label_production_cost: "Gastos sa Produksyon",
+            sw_required_title: "Kailangan", sw_required_crop_name: "Pakilagay ang pangalan ng pananim.",
+            sw_saved_title: "Na-save na!", sw_saved_text: "Matagumpay na na-save ang pananim.", sw_error_title: "Error",
+            sw_remove_title: "Alisin ang Pananim?", sw_remove_text: "Aalisin ang pananim na ito sa masterlist.", sw_yes_remove: "Oo, Alisin",
+            sw_removed_title: "Naalis na!",
+            sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
+            sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa hindi paggamit."
+        }
+    };
+
+    // Crop type is stored in the DB in English regardless of UI language —
+    // this helper only translates what's *displayed*.
+    function cropTypeLabel(type) {
+        const map = { Rice: 'crop_type_rice', Corn: 'crop_type_corn', Banana: 'crop_type_banana', Vegetables: 'crop_type_vegetables', Eggplant: 'crop_type_eggplant', Other: 'crop_type_other' };
+        return map[type] ? t(map[type]) : type;
+    }
+
+    // Called automatically by i18n.js whenever the user picks a new language
+    function onLanguageChange() {
+        renderCrops();
+        loadAdminNotifications();
+    }
+
     // ── All API calls point to api/crop_type/ ─────────────────────────────────
     const API_BASE = "../../api/masterfile/crop_type/";
 
@@ -242,7 +317,7 @@
     function renderNotificationList(items) {
         const list = document.getElementById('notifList');
         if (!items || items.length === 0) {
-            list.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-8">No notifications yet.</p>';
+            list.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-8">${t('notif_none')}</p>`;
             return;
         }
         list.innerHTML = items.map(n => `
@@ -315,7 +390,7 @@
         } else if (state === 'error' || state === 'empty') {
             document.getElementById('errorState').classList.remove('hidden');
             if (state === 'empty') {
-                document.getElementById('errorMessage').innerText = 'No crops registered yet.';
+                document.getElementById('errorMessage').innerText = t('no_crops_registered');
             }
         } else if (state === 'grid') {
             document.getElementById('cropGrid').classList.remove('hidden');
@@ -333,7 +408,7 @@
     function renderGrid() {
         const grid = document.getElementById('cropGrid');
         if (!filteredCrops.length) {
-            grid.innerHTML = '<div class="col-span-3 py-16 text-center text-gray-400 italic">No crops found.</div>';
+            grid.innerHTML = `<div class="col-span-3 py-16 text-center text-gray-400 italic">${t('no_crops_found')}</div>`;
             return;
         }
         grid.innerHTML = filteredCrops.map(crop => {
@@ -341,21 +416,21 @@
             const color = cropColors[crop.type] || 'bg-green-50 text-[#11542e]';
             const cost  = crop.prod_cost
                 ? '₱' + parseFloat(crop.prod_cost).toLocaleString('en-PH', { minimumFractionDigits: 2 })
-                : 'N/A';
+                : t('label_na');
             return `
             <div class="crop-card bg-white p-7 rounded-2xl border border-gray-100 shadow-sm group">
                 <div class="flex justify-between items-start mb-5">
                     <div class="w-14 h-14 ${color} rounded-2xl flex items-center justify-center text-xl group-hover:bg-[#11542e] group-hover:text-white transition-all duration-300">
                         <i class="fa-solid ${icon}"></i>
                     </div>
-                    <span class="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black uppercase tracking-widest">Certified</span>
+                    <span class="px-2.5 py-1 bg-amber-100 text-amber-700 rounded-full text-[9px] font-black uppercase tracking-widest">${t('label_certified')}</span>
                 </div>
-                <p class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-1">${crop.type || 'Unknown'} Variety</p>
+                <p class="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] mb-1">${cropTypeLabel(crop.type) || t('label_na')} ${t('label_variety_suffix')}</p>
                 <h3 class="text-lg font-black text-gray-800 mb-2 leading-snug">${crop.name}</h3>
-                <p class="text-xs text-gray-400 mb-4 line-clamp-2">${crop.description || 'No description provided.'}</p>
+                <p class="text-xs text-gray-400 mb-4 line-clamp-2">${crop.description || t('no_description_provided')}</p>
                 <div class="flex items-center gap-2 mb-5 flex-wrap">
                     <div class="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full">
-                        <i class="fa-regular fa-clock text-[#f1c40f]"></i> ${crop.period || 'N/A'}
+                        <i class="fa-regular fa-clock text-[#f1c40f]"></i> ${crop.period || t('label_na')}
                     </div>
                     <div class="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full">
                         <i class="fa-solid fa-peso-sign text-[#11542e]"></i> ${cost}
@@ -364,7 +439,7 @@
                 <div class="flex gap-2">
                     <button onclick="viewInfo(${crop.id})"
                             class="flex-1 py-2.5 bg-gray-50 text-gray-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#11542e] hover:text-white transition-all">
-                        Details
+                        ${t('btn_details')}
                     </button>
                     <button onclick="editCrop(${crop.id})"
                             class="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all">
@@ -382,7 +457,7 @@
     function renderListView() {
         const tbody = document.getElementById('cropListBody');
         if (!filteredCrops.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic">No crops found.</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic">${t('no_crops_found')}</td></tr>`;
             return;
         }
         tbody.innerHTML = filteredCrops.map(crop => {
@@ -396,7 +471,7 @@
                     <p class="text-[10px] text-gray-400 mt-0.5">${crop.description || ''}</p>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-bold">${crop.type || '—'}</span>
+                    <span class="px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-bold">${crop.type ? cropTypeLabel(crop.type) : '—'}</span>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-500">${crop.period || '—'}</td>
                 <td class="px-6 py-4 text-sm text-gray-500">${cost}</td>
@@ -440,7 +515,7 @@
 
     // ── Modal ─────────────────────────────────────────────────────────────────
     function openModal() {
-        document.getElementById('modalTitle').innerText = "Register New Crop";
+        document.getElementById('modalTitle').innerText = t('modal_title_register');
         document.getElementById('cropId').value      = "";
         document.getElementById('cropName').value    = "";
         document.getElementById('cropType').value    = "Rice";
@@ -453,7 +528,7 @@
     function editCrop(id) {
         const crop = allCrops.find(c => c.id == id);
         if (!crop) return;
-        document.getElementById('modalTitle').innerText   = "Edit Crop";
+        document.getElementById('modalTitle').innerText   = t('modal_title_edit');
         document.getElementById('cropId').value           = crop.id;
         document.getElementById('cropName').value         = crop.name;
         document.getElementById('cropType').value         = crop.type || "Rice";
@@ -470,15 +545,15 @@
         if (!crop) return;
         const cost = crop.prod_cost
             ? '₱' + parseFloat(crop.prod_cost).toLocaleString('en-PH', { minimumFractionDigits: 2 })
-            : 'N/A';
+            : t('label_na');
         Swal.fire({
             title: crop.name,
             html: `
                 <div class="text-left space-y-2 text-sm text-gray-600">
-                    <p><strong class="text-gray-700">Type:</strong> ${crop.type || '—'}</p>
-                    <p><strong class="text-gray-700">Growth Duration:</strong> ${crop.period || '—'}</p>
-                    <p><strong class="text-gray-700">Production Cost:</strong> ${cost}</p>
-                    <p><strong class="text-gray-700">Description:</strong> ${crop.description || 'No description provided.'}</p>
+                    <p><strong class="text-gray-700">${t('label_type')}:</strong> ${crop.type ? cropTypeLabel(crop.type) : '—'}</p>
+                    <p><strong class="text-gray-700">${t('label_growth_duration')}:</strong> ${crop.period || '—'}</p>
+                    <p><strong class="text-gray-700">${t('label_production_cost')}:</strong> ${cost}</p>
+                    <p><strong class="text-gray-700">${t('label_description')}:</strong> ${crop.description || t('no_description_provided')}</p>
                 </div>`,
             confirmButtonColor: '#11542e'
         });
@@ -489,7 +564,7 @@
         const id   = document.getElementById('cropId').value;
         const name = document.getElementById('cropName').value.trim();
 
-        if (!name) { Swal.fire("Required", "Please enter the crop name.", "warning"); return; }
+        if (!name) { Swal.fire(t('sw_required_title'), t('sw_required_crop_name'), "warning"); return; }
 
         const payload = {
             name,
@@ -502,7 +577,7 @@
 
         const btn = document.getElementById('saveBtn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...';
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> ${t('btn_saving')}`;
 
         try {
             const res  = await fetch(API_BASE + (id ? "update.php" : "create.php"), {
@@ -516,30 +591,30 @@
             catch { throw new Error("Server error: " + raw.substring(0, 200)); }
 
             if (result.status === 'success') {
-                Swal.fire({ icon: 'success', title: 'Saved!', text: result.message || 'Crop saved successfully.', showConfirmButton: false, timer: 1500 });
+                Swal.fire({ icon: 'success', title: t('sw_saved_title'), text: result.message || t('sw_saved_text'), showConfirmButton: false, timer: 1500 });
                 closeModal();
                 loadCrops();
             } else {
-                Swal.fire('Error', result.message, 'error');
+                Swal.fire(t('sw_error_title'), result.message, 'error');
             }
         } catch (e) {
-            Swal.fire('Error', e.message, 'error');
+            Swal.fire(t('sw_error_title'), e.message, 'error');
         } finally {
             btn.disabled = false;
-            btn.innerHTML = 'Save Crop';
+            btn.innerHTML = t('btn_save_crop');
         }
     }
 
     // ── Delete ────────────────────────────────────────────────────────────────
     function confirmDelete(id) {
         Swal.fire({
-            title: 'Remove Crop?',
-            text:  "This crop will be removed from the masterlist.",
+            title: t('sw_remove_title'),
+            text:  t('sw_remove_text'),
             icon:  'warning',
             showCancelButton:    true,
             confirmButtonColor:  '#d33',
             cancelButtonColor:   '#11542e',
-            confirmButtonText:   'Yes, Remove'
+            confirmButtonText:   t('sw_yes_remove')
         }).then(async r => {
             if (!r.isConfirmed) return;
             try {
@@ -551,13 +626,13 @@
                 const raw    = await res.text();
                 const result = JSON.parse(raw);
                 if (result.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Removed!', showConfirmButton: false, timer: 1500 });
+                    Swal.fire({ icon: 'success', title: t('sw_removed_title'), showConfirmButton: false, timer: 1500 });
                     loadCrops();
                 } else {
-                    Swal.fire('Error', result.message, 'error');
+                    Swal.fire(t('sw_error_title'), result.message, 'error');
                 }
             } catch (e) {
-                Swal.fire('Error', e.message, 'error');
+                Swal.fire(t('sw_error_title'), e.message, 'error');
             }
         });
     }
@@ -565,9 +640,9 @@
     // ── Logout & idle ─────────────────────────────────────────────────────────
     function confirmLogout() {
         Swal.fire({
-            title: 'Logout?', text: "Are you sure you want to exit?",
+            title: t('sw_logout_title'), text: t('sw_logout_text'),
             icon: 'warning', showCancelButton: true,
-            confirmButtonColor: '#11542e', confirmButtonText: 'Yes, logout'
+            confirmButtonColor: '#11542e', confirmButtonText: t('sw_yes_logout')
         }).then(result => {
             if (result.isConfirmed)
                 fetch('../../api/auth/logout.php')
@@ -581,8 +656,8 @@
         clearTimeout(idleTimer);
         idleTimer = setTimeout(() => {
             Swal.fire({
-                icon: 'warning', title: 'Session Expired',
-                text: 'You have been logged out due to inactivity.',
+                icon: 'warning', title: t('sw_session_expired_title'),
+                text: t('sw_session_expired_text'),
                 confirmButtonColor: '#11542e', allowOutsideClick: false
             }).then(() => {
                 fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
@@ -597,6 +672,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         loadAdminNavbar('crops');
+        initI18n();
     });
 </script>
 

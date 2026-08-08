@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -25,6 +26,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     
     /* This CSS handles the injected sidebar */
     #sidebar-container { width: 16rem; flex-shrink: 0; }
@@ -54,13 +57,18 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">Analytics & Data Trends</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">Analytics & Data Trends</span>
             </div>
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    </div>
                     <div class="text-right">
                         <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                        <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                        <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                     </div>
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                 </div>
@@ -73,7 +81,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Area Damaged</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_total_area">Total Area Damaged</p>
                             <h3 id="totalAreaStat" class="text-3xl font-black text-red-600">0.00 <span class="text-sm text-gray-400">Ha</span></h3>
                         </div>
                         <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl">
@@ -82,8 +90,8 @@
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Most Affected Crop</p>
-                            <h3 id="topCropStat" class="text-2xl font-black text-[#11542e]">Loading...</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_top_crop">Most Affected Crop</p>
+                            <h3 id="topCropStat" class="text-2xl font-black text-[#11542e]" data-i18n="loading">Loading...</h3>
                         </div>
                         <div class="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-xl">
                             <i class="fa-solid fa-wheat-awn"></i>
@@ -91,8 +99,8 @@
                     </div>
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Primary Threat</p>
-                            <h3 id="topCauseStat" class="text-2xl font-black text-blue-600">Loading...</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_top_cause">Primary Threat</p>
+                            <h3 id="topCauseStat" class="text-2xl font-black text-blue-600" data-i18n="loading">Loading...</h3>
                         </div>
                         <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">
                             <i class="fa-solid fa-cloud-showers-water"></i>
@@ -102,14 +110,14 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest">Incidents by Damage Type</h3>
+                        <h3 class="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest" data-i18n="chart_title_cause">Incidents by Damage Type</h3>
                         <div class="relative h-64 w-full flex items-center justify-center">
                             <canvas id="causeChart"></canvas>
                         </div>
                     </div>
 
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest">Hectares Lost per Crop</h3>
+                        <h3 class="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest" data-i18n="chart_title_crop">Hectares Lost per Crop</h3>
                         <div class="relative h-64 w-full">
                             <canvas id="cropAreaChart"></canvas>
                         </div>
@@ -118,7 +126,7 @@
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">Monthly Damage Trend (2026)</h3>
+                        <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="chart_title_trend">Monthly Damage Trend (2026)</h3>
                     </div>
                     <div class="relative h-72 w-full">
                         <canvas id="trendChart"></canvas>
@@ -130,6 +138,39 @@
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js)
+        const translations = {
+            en: {
+                header_title: "Analytics & Data Trends", role_admin: "Admin", loading: "Loading...",
+                stat_total_area: "Total Area Damaged", stat_top_crop: "Most Affected Crop", stat_top_cause: "Primary Threat",
+                chart_title_cause: "Incidents by Damage Type", chart_title_crop: "Hectares Lost per Crop", chart_title_trend: "Monthly Damage Trend (2026)",
+                label_hectares_damaged: "Hectares Damaged", label_reported_incidents: "Reported Incidents", label_na: "N/A",
+                sw_error_title: "Error", sw_failed_load_analytics: "Failed to load analytics data.",
+                sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                header_title: "Analytics at Uso ng Datos", role_admin: "Admin", loading: "Nilo-load...",
+                stat_total_area: "Kabuuang Apektadong Sukat", stat_top_crop: "Pinakaapektadong Pananim", stat_top_cause: "Pangunahing Banta",
+                chart_title_cause: "Insidente ayon sa Uri ng Pinsala", chart_title_crop: "Ektaryang Nawala kada Pananim", chart_title_trend: "Buwanang Uso ng Pinsala (2026)",
+                label_hectares_damaged: "Nawalang Ektarya", label_reported_incidents: "Naiulat na Insidente", label_na: "N/A",
+                sw_error_title: "Error", sw_failed_load_analytics: "Nabigong i-load ang datos ng analytics.",
+                sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+            }
+        };
+
+        // Called automatically by i18n.js whenever the user picks a new language.
+        // Simplest correct approach: just reload + redraw everything so chart legends
+        // and dataset labels pick up the new language too.
+        function onLanguageChange() {
+            loadAnalyticsData();
+        }
+
+        // Chart instances are tracked so we can destroy() the old one before redrawing —
+        // otherwise Chart.js throws "Canvas is already in use" on every language switch.
+        let causeChartInstance = null, cropChartInstance = null, trendChartInstance = null;
+
         document.addEventListener("DOMContentLoaded", loadAnalyticsData);
 
         async function loadAnalyticsData() {
@@ -148,7 +189,7 @@
                 }
             } catch (e) {
                 console.error("Analytics Error:", e);
-                Swal.fire('Error', 'Failed to load analytics data.', 'error');
+                Swal.fire(t('sw_error_title'), t('sw_failed_load_analytics'), 'error');
             }
         }
 
@@ -185,12 +226,12 @@
             document.getElementById('totalAreaStat').innerHTML = `${totalArea.toFixed(2)} <span class="text-sm text-gray-400">Ha</span>`;
             
             // Find Top Crop
-            let topCrop = "N/A"; let maxCropVal = -1;
+            let topCrop = t('label_na'); let maxCropVal = -1;
             for (let c in cropAreas) { if(cropAreas[c] > maxCropVal) { maxCropVal = cropAreas[c]; topCrop = c; } }
             document.getElementById('topCropStat').innerText = topCrop;
 
             // Find Top Cause
-            let topCause = "N/A"; let maxCauseVal = -1;
+            let topCause = t('label_na'); let maxCauseVal = -1;
             for (let c in causeCounts) { if(causeCounts[c] > maxCauseVal) { maxCauseVal = causeCounts[c]; topCause = c; } }
             document.getElementById('topCauseStat').innerText = topCause;
 
@@ -202,7 +243,8 @@
 
         function drawCauseChart(causeData) {
             const ctx = document.getElementById('causeChart').getContext('2d');
-            new Chart(ctx, {
+            if (causeChartInstance) causeChartInstance.destroy();
+            causeChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(causeData),
@@ -218,12 +260,13 @@
 
         function drawCropChart(cropData) {
             const ctx = document.getElementById('cropAreaChart').getContext('2d');
-            new Chart(ctx, {
+            if (cropChartInstance) cropChartInstance.destroy();
+            cropChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: Object.keys(cropData),
                     datasets: [{
-                        label: 'Hectares Damaged',
+                        label: t('label_hectares_damaged'),
                         data: Object.values(cropData),
                         backgroundColor: '#11542e',
                         borderRadius: 4
@@ -235,12 +278,13 @@
 
         function drawTrendChart(monthData) {
             const ctx = document.getElementById('trendChart').getContext('2d');
-            new Chart(ctx, {
+            if (trendChartInstance) trendChartInstance.destroy();
+            trendChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: Object.keys(monthData),
                     datasets: [{
-                        label: 'Reported Incidents',
+                        label: t('label_reported_incidents'),
                         data: Object.values(monthData),
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -254,12 +298,12 @@
         }
 function confirmLogout() {
             Swal.fire({
-                title: 'Logout?',
-                text: "Are you sure you want to exit?",
+                title: t('sw_logout_title'),
+                text: t('sw_logout_text'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
-                confirmButtonText: 'Yes, logout'
+                confirmButtonText: t('sw_yes_logout')
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Secure background API call
@@ -282,7 +326,7 @@ function confirmLogout() {
     function resetIdleTimer() {
         clearTimeout(idleTimer);
         idleTimer = setTimeout(() => {
-            Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+            Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                 .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
         }, 5 * 60 * 1000);
     }
@@ -296,6 +340,7 @@ function confirmLogout() {
         document.addEventListener('DOMContentLoaded', () => {
             // PASS THE CORRECT PAGE KEY HERE
             loadAdminNavbar('analytics'); 
+            initI18n();
         });
     </script>
 

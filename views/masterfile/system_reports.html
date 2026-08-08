@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -25,6 +26,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
 
     #sidebar-container { width: 16rem; flex-shrink: 0; }
     #sidebar-container aside {
@@ -165,14 +168,19 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">System Reports Engine</span>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">System Reports Engine</span>
+                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
             </div>
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    </div>
                     <div class="text-right">
                         <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                        <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                        <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                     </div>
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                 </div>
@@ -218,42 +226,42 @@
                             <i class="fa-solid fa-sliders text-lg"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-black text-gray-800 tracking-tight">Report Generator</h3>
-                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Configure your data parameters</p>
+                            <h3 class="text-lg font-black text-gray-800 tracking-tight" data-i18n="label_report_generator">Report Generator</h3>
+                            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest" data-i18n="label_configure_params">Configure your data parameters</p>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Status Filter</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_status_filter">Status Filter</label>
                             <select id="statusFilter" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
-                                <option value="ALL">All Statuses</option>
-                                <option value="APPROVED">Approved Only</option>
-                                <option value="PENDING">Pending Only</option>
-                                <option value="ARCHIVED">Archived Only</option>
+                                <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
+                                <option value="APPROVED" data-i18n="filter_approved_only">Approved Only</option>
+                                <option value="PENDING" data-i18n="filter_pending_only">Pending Only</option>
+                                <option value="ARCHIVED" data-i18n="filter_archived_only">Archived Only</option>
                             </select>
                         </div>
 
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Timeframe</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_timeframe">Timeframe</label>
                             <select id="timeframeFilter" onchange="toggleSpecificDate()" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
-                                <option value="ALL">All Time</option>
-                                <option value="DAILY">Today</option>
-                                <option value="WEEKLY">Last 7 Days</option>
-                                <option value="MONTHLY">This Month</option>
-                                <option value="YEARLY">This Year</option>
-                                <option value="SPECIFIC">Specific Date...</option>
+                                <option value="ALL" data-i18n="filter_all_time">All Time</option>
+                                <option value="DAILY" data-i18n="filter_today">Today</option>
+                                <option value="WEEKLY" data-i18n="filter_last_7_days">Last 7 Days</option>
+                                <option value="MONTHLY" data-i18n="filter_this_month">This Month</option>
+                                <option value="YEARLY" data-i18n="filter_this_year">This Year</option>
+                                <option value="SPECIFIC" data-i18n="filter_specific_date">Specific Date...</option>
                             </select>
                         </div>
 
                         <div id="specificDateContainer" class="hidden">
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Select Date</label>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_select_date">Select Date</label>
                             <input type="date" id="specificDate" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                         </div>
 
                         <div class="flex items-end">
                             <button onclick="generateReport()" class="w-full bg-[#11542e] text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-bolt"></i> Generate
+                                <i class="fa-solid fa-bolt"></i> <span data-i18n="btn_generate">Generate</span>
                             </button>
                         </div>
                     </div>
@@ -268,14 +276,14 @@
                     <!-- Toolbar (screen only) -->
                     <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center no-print">
                         <h3 class="font-black text-gray-800 text-sm uppercase tracking-wider">
-                            <i class="fa-solid fa-file-contract mr-2 text-gray-400"></i> Report Preview
+                            <i class="fa-solid fa-file-contract mr-2 text-gray-400"></i> <span data-i18n="label_report_preview">Report Preview</span>
                         </h3>
                         <div class="flex items-center gap-2">
                             <button onclick="exportToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-emerald-700 transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-file-excel"></i> Export to Excel
+                                <i class="fa-solid fa-file-excel"></i> <span data-i18n="btn_export_excel">Export to Excel</span>
                             </button>
                             <button onclick="printReport()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-indigo-700 transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-print"></i> Print Official PDF
+                                <i class="fa-solid fa-print"></i> <span data-i18n="btn_print_pdf">Print Official PDF</span>
                             </button>
                         </div>
                     </div>
@@ -285,28 +293,28 @@
                         <!-- Summary Metrics -->
                         <div class="grid grid-cols-3 gap-4 mb-8 border-b border-gray-200 pb-6">
                             <div class="text-center border-r border-gray-200">
-                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Total Incidents</p>
+                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest" data-i18n="label_total_incidents">Total Incidents</p>
                                 <p id="repTotal" class="text-3xl font-black text-gray-800 mt-1">0</p>
                             </div>
                             <div class="text-center border-r border-gray-200">
-                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Total Affected Area</p>
+                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest" data-i18n="label_total_affected_area">Total Affected Area</p>
                                 <p id="repArea" class="text-3xl font-black text-red-600 mt-1">0.00 Ha</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest">Est. Aid Required</p>
+                                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest" data-i18n="label_est_aid_required">Est. Aid Required</p>
                                 <p id="repAid" class="text-3xl font-black text-indigo-600 mt-1">0 Bags</p>
                             </div>
                         </div>
 
                         <!-- Crop Damage Breakdown -->
                         <div class="mb-8">
-                            <h4 class="text-xs font-black text-gray-800 uppercase mb-3">Crop Damage Breakdown</h4>
+                            <h4 class="text-xs font-black text-gray-800 uppercase mb-3" data-i18n="label_crop_breakdown">Crop Damage Breakdown</h4>
                             <table class="w-full text-left bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
                                 <thead class="bg-gray-100 border-b border-gray-200">
                                     <tr>
-                                        <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase">Crop Type</th>
-                                        <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase text-center">Incidents</th>
-                                        <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase text-right">Total Area (Ha)</th>
+                                        <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase" data-i18n="th_crop_type">Crop Type</th>
+                                        <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase text-center" data-i18n="th_incidents">Incidents</th>
+                                        <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase text-right" data-i18n="th_total_area">Total Area (Ha)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="breakdownTableBody" class="divide-y divide-gray-100 text-sm font-bold text-gray-700">
@@ -316,16 +324,16 @@
 
                         <!-- Detailed Incident Ledger -->
                         <div>
-                            <h4 class="text-xs font-black text-gray-800 uppercase mb-3">Detailed Incident Ledger</h4>
+                            <h4 class="text-xs font-black text-gray-800 uppercase mb-3" data-i18n="label_incident_ledger">Detailed Incident Ledger</h4>
                             <table class="w-full text-left">
                                 <thead>
                                     <tr class="border-b-2 border-gray-800 text-gray-800">
-                                        <th class="py-2 text-[10px] font-black uppercase">Ref ID</th>
-                                        <th class="py-2 text-[10px] font-black uppercase">Farmer</th>
-                                        <th class="py-2 text-[10px] font-black uppercase">Crop</th>
-                                        <th class="py-2 text-[10px] font-black uppercase">Date</th>
-                                        <th class="py-2 text-[10px] font-black uppercase">Area</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-right">Status</th>
+                                        <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_ref_id">Ref ID</th>
+                                        <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_farmer_short">Farmer</th>
+                                        <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_crop_short">Crop</th>
+                                        <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_date_short">Date</th>
+                                        <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_area_short">Area</th>
+                                        <th class="py-2 text-[10px] font-black uppercase text-right" data-i18n="th_status">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reportTableBody" class="divide-y divide-gray-100 text-xs text-gray-600">
@@ -356,6 +364,67 @@
 
 
 <script>
+    // Reusable EN / TL switcher (see assets/js/i18n.js). Note: the official printed
+    // PDF letterhead, signature block, and Excel export column headers are deliberately
+    // left in English — those are formal government documents/deliverables, not UI copy.
+    const translations = {
+        en: {
+            header_title: "System Reports Engine", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+            label_report_generator: "Report Generator", label_configure_params: "Configure your data parameters",
+            label_status_filter: "Status Filter", filter_all_statuses: "All Statuses", filter_approved_only: "Approved Only",
+            filter_pending_only: "Pending Only", filter_archived_only: "Archived Only",
+            label_timeframe: "Timeframe", filter_all_time: "All Time", filter_today: "Today", filter_last_7_days: "Last 7 Days",
+            filter_this_month: "This Month", filter_this_year: "This Year", filter_specific_date: "Specific Date...",
+            label_select_date: "Select Date", btn_generate: "Generate",
+            label_report_preview: "Report Preview", btn_export_excel: "Export to Excel", btn_print_pdf: "Print Official PDF",
+            label_total_incidents: "Total Incidents", label_total_affected_area: "Total Affected Area", label_est_aid_required: "Est. Aid Required",
+            label_crop_breakdown: "Crop Damage Breakdown", th_crop_type: "Crop Type", th_incidents: "Incidents", th_total_area: "Total Area (Ha)",
+            label_incident_ledger: "Detailed Incident Ledger", th_ref_id: "Ref ID", th_farmer_short: "Farmer", th_crop_short: "Crop",
+            th_date_short: "Date", th_area_short: "Area", th_status: "Status",
+            label_unknown: "Unknown", label_na: "N/A",
+            no_records_match: "No records match your selected timeframe and status.",
+            status_approved: "Approved", status_pending: "Pending", status_archived: "Archived", status_rejected: "Rejected",
+            sw_generating_title: "Generating Report...", sw_error_title: "Error", sw_failed_pull_data: "Failed to pull data from database.",
+            sw_no_data_title: "No Data", sw_no_data_text: "Generate a report first before exporting.",
+            sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
+            sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to inactivity."
+        },
+        tl: {
+            header_title: "System Reports Engine", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+            label_report_generator: "Tagabuo ng Ulat", label_configure_params: "I-configure ang iyong mga parameter ng datos",
+            label_status_filter: "Filter ng Katayuan", filter_all_statuses: "Lahat ng Katayuan", filter_approved_only: "Naaprubahan Lang",
+            filter_pending_only: "Naghihintay Lang", filter_archived_only: "Naka-archive Lang",
+            label_timeframe: "Saklaw ng Panahon", filter_all_time: "Lahat ng Panahon", filter_today: "Ngayon", filter_last_7_days: "Huling 7 Araw",
+            filter_this_month: "Ngayong Buwan", filter_this_year: "Ngayong Taon", filter_specific_date: "Tiyak na Petsa...",
+            label_select_date: "Pumili ng Petsa", btn_generate: "Bumuo",
+            label_report_preview: "Preview ng Ulat", btn_export_excel: "I-export sa Excel", btn_print_pdf: "I-print ang Opisyal na PDF",
+            label_total_incidents: "Kabuuang Insidente", label_total_affected_area: "Kabuuang Apektadong Sukat", label_est_aid_required: "Tinatayang Kinakailangang Tulong",
+            label_crop_breakdown: "Paghahati-hati ng Pinsala sa Pananim", th_crop_type: "Uri ng Pananim", th_incidents: "Insidente", th_total_area: "Kabuuang Sukat (Ha)",
+            label_incident_ledger: "Detalyadong Talaan ng Insidente", th_ref_id: "Ref ID", th_farmer_short: "Magsasaka", th_crop_short: "Pananim",
+            th_date_short: "Petsa", th_area_short: "Sukat", th_status: "Katayuan",
+            label_unknown: "Hindi Alam", label_na: "N/A",
+            no_records_match: "Walang talaan na tumutugma sa napiling saklaw ng panahon at katayuan.",
+            status_approved: "Naaprubahan", status_pending: "Naghihintay", status_archived: "Naka-archive", status_rejected: "Tinanggihan",
+            sw_generating_title: "Bumubuo ng Ulat...", sw_error_title: "Error", sw_failed_pull_data: "Nabigong kunin ang datos mula sa database.",
+            sw_no_data_title: "Walang Datos", sw_no_data_text: "Bumuo muna ng ulat bago mag-export.",
+            sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
+            sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa hindi paggamit."
+        }
+    };
+
+    // Maps the raw DB status word to its translated label
+    function reportStatusLabel(status) {
+        const key = 'status_' + (status || '').toLowerCase();
+        return translations.en[key] ? t(key) : status;
+    }
+
+    // Called automatically by i18n.js whenever the user picks a new language
+    function onLanguageChange() {
+        if (currentReportData.length > 0 || document.getElementById('reportPreviewCard').classList.contains('hidden') === false) {
+            renderPreview(currentReportData); // re-renders the preview table with translated status words
+        }
+    }
+
     let currentReportData = [];
 
     // Set print date
@@ -381,7 +450,7 @@
 
     async function generateReport() {
         Swal.fire({
-            title: 'Generating Report...',
+            title: t('sw_generating_title'),
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading(); }
         });
@@ -437,10 +506,10 @@
                 Swal.close();
 
             } else {
-                Swal.fire('Error', response.message, 'error');
+                Swal.fire(t('sw_error_title'), response.message, 'error');
             }
         } catch (e) {
-            Swal.fire('Error', 'Failed to pull data from database.', 'error');
+            Swal.fire(t('sw_error_title'), t('sw_failed_pull_data'), 'error');
         }
     }
 
@@ -453,8 +522,8 @@
         let cropData = {};
 
         if (data.length === 0) {
-            listTbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-gray-400 italic">No records match your selected timeframe and status.</td></tr>';
-            breakdownTbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-gray-400 italic">N/A</td></tr>';
+            listTbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-gray-400 italic">${t('no_records_match')}</td></tr>`;
+            breakdownTbody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-gray-400 italic">${t('label_na')}</td></tr>`;
             document.getElementById('repTotal').innerText = "0";
             document.getElementById('repArea').innerText = "0.00 Ha";
             document.getElementById('repAid').innerText = "0 Bags";
@@ -464,7 +533,7 @@
         // Build rows and aggregate
         listTbody.innerHTML = data.map(item => {
             const area = parseFloat(item.area || 0);
-            const cropName = item.crop_name || 'Unknown';
+            const cropName = item.crop_name || t('label_unknown');
 
             totalArea += area;
             if (item.status.toUpperCase() === 'APPROVED') {
@@ -477,7 +546,7 @@
 
             const cleanDate = item.date
                 ? new Date(item.date.split(' ')[0]).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : 'N/A';
+                : t('label_na');
 
             const statusClass = item.status.toUpperCase() === 'APPROVED'
                 ? 'text-green-600'
@@ -488,11 +557,11 @@
             return `
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="py-2 font-bold text-gray-500">REP-${item.id}</td>
-                    <td class="py-2 font-bold">${item.farmer || 'Unknown'}</td>
+                    <td class="py-2 font-bold">${item.farmer || t('label_unknown')}</td>
                     <td class="py-2">${cropName}</td>
                     <td class="py-2 text-gray-500">${cleanDate}</td>
                     <td class="py-2 text-red-600 font-bold">${area.toFixed(2)}</td>
-                    <td class="py-2 text-right font-bold uppercase tracking-widest ${statusClass}">${item.status}</td>
+                    <td class="py-2 text-right font-bold uppercase tracking-widest ${statusClass}">${reportStatusLabel(item.status)}</td>
                 </tr>
             `;
         }).join('');
@@ -509,12 +578,12 @@
         // Update metrics
         document.getElementById('repTotal').innerText = data.length;
         document.getElementById('repArea').innerText = totalArea.toFixed(2) + " Ha";
-        document.getElementById('repAid').innerText = totalAid > 0 ? totalAid + " Bags" : "N/A";
+        document.getElementById('repAid').innerText = totalAid > 0 ? totalAid + " Bags" : t('label_na');
     }
 
     function exportToExcel() {
         if (!currentReportData || currentReportData.length === 0) {
-            Swal.fire({ icon: 'info', title: 'No Data', text: 'Generate a report first before exporting.', confirmButtonColor: '#11542e' });
+            Swal.fire({ icon: 'info', title: t('sw_no_data_title'), text: t('sw_no_data_text'), confirmButtonColor: '#11542e' });
             return;
         }
         const rows = currentReportData.map(item => {
@@ -547,12 +616,12 @@
 
     function confirmLogout() {
         Swal.fire({
-            title: 'Logout?',
-            text: "Are you sure you want to exit?",
+            title: t('sw_logout_title'),
+            text: t('sw_logout_text'),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#11542e',
-            confirmButtonText: 'Yes, logout'
+            confirmButtonText: t('sw_yes_logout')
         }).then((result) => {
             if (result.isConfirmed) {
                 fetch('../../api/auth/logout.php')
@@ -569,8 +638,8 @@
         idleTimer = setTimeout(() => {
             Swal.fire({
                 icon: 'warning',
-                title: 'Session Expired',
-                text: 'You have been logged out due to inactivity.',
+                title: t('sw_session_expired_title'),
+                text: t('sw_session_expired_text'),
                 confirmButtonColor: '#11542e',
                 allowOutsideClick: false
             }).then(() => {
@@ -588,6 +657,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         loadAdminNavbar('sys_reports');
+        initI18n();
     });
 </script>
 

@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -24,6 +25,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     #sidebar-container { width: 16rem; flex-shrink: 0; }
     #sidebar-container aside { background-color: #11542e; height: 100vh; display: flex; flex-direction: column; }
     #sidebar-container nav { flex: 1; overflow-y: auto; scrollbar-width: thin; }
@@ -42,19 +45,24 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">Seed Requests Management</span>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">Seed Requests Management</span>
+                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
             </div>
             <div class="flex items-center gap-4">
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
-                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or seed..."
+                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or seed..." data-i18n-placeholder="search_placeholder"
                         class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
                 </div>
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    </div>
                     <div class="text-right">
                         <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                        <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                        <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                     </div>
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                 </div>
@@ -65,8 +73,8 @@
             <div class="max-w-7xl mx-auto">
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">Review Seed Requests</h2>
-                        <p class="text-gray-400 text-sm">Approve pending seed varieties to add them to the system masterlist.</p>
+                        <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Review Seed Requests</h2>
+                        <p class="text-gray-400 text-sm" data-i18n="page_sub">Approve pending seed varieties to add them to the system masterlist.</p>
                     </div>
                 </div>
 
@@ -75,12 +83,12 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Req ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer Info</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Requested Seed</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_req_id">Req ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_info">Farmer Info</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_requested_seed">Requested Seed</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
@@ -89,8 +97,8 @@
                     <div class="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="pageInfo">Showing entries...</p>
                         <div class="flex gap-2">
-                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Previous</button>
-                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Next</button>
+                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all" data-i18n="btn_previous">Previous</button>
+                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all" data-i18n="btn_next">Next</button>
                         </div>
                     </div>
                 </div>
@@ -99,154 +107,261 @@
     </div>
 
     <!-- ── Process Modal ──────────────────────────────────────────────────── -->
-    <div id="processModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden">
+        <div id="processModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden">
 
-            <!-- Header -->
-            <div class="px-6 py-4 bg-[#11542e] border-b border-[#11542e] flex justify-between items-center text-white">
-                <div class="flex items-center gap-3">
-                    <i class="fa-solid fa-clipboard-check text-xl text-[#f1c40f]"></i>
-                    <h3 class="text-base font-bold">Process Request</h3>
+                <!-- Header -->
+                <div class="px-6 py-4 bg-[#11542e] border-b border-[#11542e] flex justify-between items-center text-white">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-clipboard-check text-xl text-[#f1c40f]"></i>
+                        <h3 class="text-base font-bold" data-i18n="modal_process_title">Process Request</h3>
+                    </div>
+                    <span id="cropRegistrationBadge"
+                          class="hidden bg-[#f1c40f] text-[#11542e] px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1 mr-auto ml-3">
+                        <i class="fa-solid fa-plus-circle"></i> <span data-i18n="badge_new_crop">New Crop</span>
+                    </span>
+                    <button onclick="closeProcessModal()" class="text-white/70 hover:text-white text-xl ml-3">&times;</button>
                 </div>
-                <span id="cropRegistrationBadge"
-                      class="hidden bg-[#f1c40f] text-[#11542e] px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-1 mr-auto ml-3">
-                    <i class="fa-solid fa-plus-circle"></i> New Crop
-                </span>
-                <button onclick="closeProcessModal()" class="text-white/70 hover:text-white text-xl ml-3">&times;</button>
-            </div>
 
-            <form id="processForm" onsubmit="submitProcess(event)">
-                <input type="hidden" id="reqId">
-                <input type="hidden" id="farmerId">
+                <form id="processForm" onsubmit="submitProcess(event)">
+                    <input type="hidden" id="reqId">
+                    <input type="hidden" id="farmerId">
 
-                <!-- Scrollable body -->
-                <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <!-- Scrollable body -->
+                    <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
 
-                    <!-- Seed name display -->
-                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1">Requested Seed</p>
-                        <p id="displaySeed" class="text-lg font-black text-gray-800"></p>
-                    </div>
-
-                    <!-- Action selector -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Action <span class="text-red-500">*</span>
-                        </label>
-                        <select id="actionStatus" required onchange="handleActionChange()"
-                                class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm font-medium text-gray-700">
-                            <option value="">-- Select Action --</option>
-                            <option value="Approved by Admin">Approve</option>
-                            <option value="Rejected">Reject</option>
-                        </select>
-                        <p class="text-[10px] text-gray-400 mt-1 italic">
-                            If approving a new variety, crop registration details will appear below.
-                        </p>
-                    </div>
-
-                    <!-- ── Reject Reason (only shown when Rejected is selected) ── -->
-                    <div id="rejectReasonSection" class="hidden">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Reason for Rejection <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="rejectReason" rows="2"
-                                  class="w-full px-3 py-2 bg-white border border-red-200 rounded-md outline-none focus:ring-1 focus:ring-red-400 text-sm resize-y"
-                                  placeholder="e.g. Variety not suitable for Region X conditions, not yet available for distribution..."></textarea>
-                        <p class="text-[10px] text-gray-400 mt-1 italic">This reason will be included in the farmer's notification.</p>
-                    </div>
-
-                    <!-- Notification message -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                            Notification Message <span class="text-red-500">*</span>
-                        </label>
-                        <textarea id="adminMessage" required rows="3"
-                                  class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm resize-y"
-                                  placeholder="Select an action above to generate the message..."></textarea>
-                        <p class="text-[10px] text-gray-400 mt-1 italic">This message will be sent to the farmer as a notification.</p>
-                    </div>
-
-                    <!-- ── NEW CROP DETAILS PANEL (hidden until needed) ────── -->
-                    <div id="cropDetailsPanel" class="hidden">
-
-                        <div class="flex items-center gap-3 pt-1">
-                            <div class="flex-1 h-px bg-gray-200"></div>
-                            <span class="text-[10px] font-black text-[#11542e] uppercase tracking-widest whitespace-nowrap flex items-center gap-1.5">
-                                <i class="fa-solid fa-seedling"></i> Crops Masterlist Registration
-                            </span>
-                            <div class="flex-1 h-px bg-gray-200"></div>
+                        <!-- Seed name display -->
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-1" data-i18n="th_requested_seed">Requested Seed</p>
+                            <p id="displaySeed" class="text-lg font-black text-gray-800"></p>
                         </div>
 
-                        <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 font-medium leading-relaxed mt-3">
-                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
-                            This seed variety is <strong>not yet</strong> in the Crops Masterlist.
-                            Fill in the details below — they will be saved automatically when you approve.
-                        </p>
-
-                        <!-- Commodity Type -->
-                        <div class="mt-3">
+                        <!-- Action selector -->
+                        <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                Commodity Type <span class="text-red-500">*</span>
+                                <span data-i18n="label_action">Action</span> <span class="text-red-500">*</span>
                             </label>
-                            <select id="newCropType"
+                            <select id="actionStatus" required onchange="handleActionChange()"
                                     class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm font-medium text-gray-700">
-                                <option value="">-- Select Type --</option>
-                                <option value="Rice">Rice</option>
-                                <option value="Corn">Corn</option>
-                                <option value="Banana">Banana</option>
-                                <option value="Vegetables">Vegetables</option>
-                                <option value="Eggplant">Eggplant</option>
-                                <option value="Other">Other</option>
+                                <option value="" data-i18n="placeholder_select_action">-- Select Action --</option>
+                                <option value="Approved by Admin" data-i18n="btn_approve">Approve</option>
+                                <option value="Rejected" data-i18n="btn_reject">Reject</option>
                             </select>
+                            <p class="text-[10px] text-gray-400 mt-1 italic" data-i18n="hint_action">
+                                If approving a new variety, crop registration details will appear below.
+                            </p>
                         </div>
 
-                        <!-- Growth Period + Production Cost -->
-                        <div class="grid grid-cols-2 gap-3 mt-3">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                    Growth Duration <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="newGrowthPeriod" placeholder="e.g. 115 Days"
-                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
-                                    Std. Production Cost (₱)
-                                </label>
-                                <input type="number" id="newProdCost" placeholder="e.g. 45000" min="0" step="0.01"
-                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
-                            </div>
+                        <!-- ── Reject Reason (only shown when Rejected is selected) ── -->
+                        <div id="rejectReasonSection" class="hidden">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                <span data-i18n="label_reject_reason">Reason for Rejection</span> <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="rejectReason" rows="2"
+                                      class="w-full px-3 py-2 bg-white border border-red-200 rounded-md outline-none focus:ring-1 focus:ring-red-400 text-sm resize-y"
+                                      placeholder="e.g. Variety not suitable for Region X conditions, not yet available for distribution..." data-i18n-placeholder="placeholder_reject_reason"></textarea>
+                            <p class="text-[10px] text-gray-400 mt-1 italic" data-i18n="hint_reject_reason">This reason will be included in the farmer's notification.</p>
                         </div>
 
-                        <!-- Description -->
-                        <div class="mt-3">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Description</label>
-                            <textarea id="newDescription" rows="2"
-                                      placeholder="Short description of this variety..."
-                                      class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm resize-y"></textarea>
+                        <!-- Notification message -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                <span data-i18n="label_notification_message">Notification Message</span> <span class="text-red-500">*</span>
+                            </label>
+                            <textarea id="adminMessage" required rows="3"
+                                      class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm resize-y"
+                                      placeholder="Select an action above to generate the message..." data-i18n-placeholder="placeholder_notification_message"></textarea>
+                            <p class="text-[10px] text-gray-400 mt-1 italic" data-i18n="hint_notification_message">This message will be sent to the farmer as a notification.</p>
                         </div>
+
+                        <!-- ── NEW CROP DETAILS PANEL (hidden until needed) ────── -->
+                        <div id="cropDetailsPanel" class="hidden">
+
+                            <div class="flex items-center gap-3 pt-1">
+                                <div class="flex-1 h-px bg-gray-200"></div>
+                                <span class="text-[10px] font-black text-[#11542e] uppercase tracking-widest whitespace-nowrap flex items-center gap-1.5">
+                                    <i class="fa-solid fa-seedling"></i> <span data-i18n="label_crops_masterlist_reg">Crops Masterlist Registration</span>
+                                </span>
+                                <div class="flex-1 h-px bg-gray-200"></div>
+                            </div>
+
+                            <p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 font-medium leading-relaxed mt-3">
+                                <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                <span data-i18n="hint_not_in_masterlist">This seed variety is not yet in the Crops Masterlist. Fill in the details below — they will be saved automatically when you approve.</span>
+                            </p>
+
+                            <!-- Commodity Type -->
+                            <div class="mt-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <span data-i18n="label_commodity_type">Commodity Type</span> <span class="text-red-500">*</span>
+                                </label>
+                                <select id="newCropType"
+                                        class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm font-medium text-gray-700">
+                                    <option value="" data-i18n="placeholder_select_type">-- Select Type --</option>
+                                    <option value="Rice" data-i18n="crop_type_rice">Rice</option>
+                                    <option value="Corn" data-i18n="crop_type_corn">Corn</option>
+                                    <option value="Banana" data-i18n="crop_type_banana">Banana</option>
+                                    <option value="Vegetables" data-i18n="crop_type_vegetables">Vegetables</option>
+                                    <option value="Eggplant" data-i18n="crop_type_eggplant">Eggplant</option>
+                                    <option value="Other" data-i18n="crop_type_other">Other</option>
+                                </select>
+                            </div>
+
+                            <!-- Growth Period + Production Cost -->
+                            <div class="grid grid-cols-2 gap-3 mt-3">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        <span data-i18n="label_growth_duration">Growth Duration</span> <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="newGrowthPeriod" placeholder="e.g. 115 Days"
+                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                        <span data-i18n="label_prod_cost_php">Std. Production Cost (₱)</span>
+                                    </label>
+                                    <input type="number" id="newProdCost" placeholder="e.g. 45000" min="0" step="0.01"
+                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mt-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_description">Description</label>
+                                <textarea id="newDescription" rows="2"
+                                          placeholder="Short description of this variety..." data-i18n-placeholder="placeholder_variety_description"
+                                          class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm resize-y"></textarea>
+                            </div>
+                        </div>
+                        <!-- ── END CROP DETAILS PANEL ──────────────────────────── -->
+
                     </div>
-                    <!-- ── END CROP DETAILS PANEL ──────────────────────────── -->
 
-                </div>
-
-                <!-- Footer -->
-                <div class="px-6 py-4 flex justify-end gap-3 bg-gray-50 border-t border-gray-100">
-                    <button type="button" onclick="closeProcessModal()"
-                            class="px-5 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit" id="submitDecisionBtn"
-                            class="px-6 py-2 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-green-900/20">
-                        Submit Decision
-                    </button>
-                </div>
-            </form>
+                    <!-- Footer -->
+                    <div class="px-6 py-4 flex justify-end gap-3 bg-gray-50 border-t border-gray-100">
+                        <button type="button" onclick="closeProcessModal()"
+                                class="px-5 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors" data-i18n="btn_cancel">
+                            Cancel
+                        </button>
+                        <button type="submit" id="submitDecisionBtn"
+                                class="px-6 py-2 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-xl transition-colors shadow-lg shadow-green-900/20" data-i18n="btn_submit_decision">
+                            Submit Decision
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
-    <!-- ── End Process Modal ─────────────────────────────────────────────── -->
+        <!-- ── End Process Modal ─────────────────────────────────────────────── -->
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js)
+        const translations = {
+            en: {
+                header_title: "Seed Requests Management", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+                search_placeholder: "Search farmer or seed...",
+                page_title: "Review Seed Requests", page_sub: "Approve pending seed varieties to add them to the system masterlist.",
+                th_req_id: "Req ID", th_farmer_info: "Farmer Info", th_requested_seed: "Requested Seed", th_status: "Status", th_actions: "Actions",
+                btn_previous: "Previous", btn_next: "Next",
+                modal_process_title: "Process Request", badge_new_crop: "New Crop",
+                label_action: "Action", placeholder_select_action: "-- Select Action --", btn_approve: "Approve", btn_reject: "Reject",
+                hint_action: "If approving a new variety, crop registration details will appear below.",
+                label_reject_reason: "Reason for Rejection", placeholder_reject_reason: "e.g. Variety not suitable for Region X conditions, not yet available for distribution...",
+                hint_reject_reason: "This reason will be included in the farmer's notification.",
+                label_notification_message: "Notification Message", placeholder_notification_message: "Select an action above to generate the message...",
+                hint_notification_message: "This message will be sent to the farmer as a notification.",
+                label_crops_masterlist_reg: "Crops Masterlist Registration",
+                hint_not_in_masterlist: "This seed variety is not yet in the Crops Masterlist. Fill in the details below — they will be saved automatically when you approve.",
+                label_commodity_type: "Commodity Type", placeholder_select_type: "-- Select Type --",
+                crop_type_rice: "Rice", crop_type_corn: "Corn", crop_type_banana: "Banana",
+                crop_type_vegetables: "Vegetables", crop_type_eggplant: "Eggplant", crop_type_other: "Other",
+                label_growth_duration: "Growth Duration", label_prod_cost_php: "Std. Production Cost (₱)",
+                label_description: "Description", placeholder_variety_description: "Short description of this variety...",
+                btn_cancel: "Cancel", btn_submit_decision: "Submit Decision",
+                no_seed_requests_found: "No seed requests found.",
+                status_pending: "Pending", status_approved: "Approved", status_rejected: "Rejected",
+                btn_process: "Process", btn_view: "View", label_date: "Date",
+                label_in_progress: "In Progress", label_rejected: "Rejected",
+                label_showing: "SHOWING", label_to: "TO", label_of: "OF",
+                msg_approved: 'Your request for "{seed}" has been reviewed and approved.',
+                msg_rejected: 'Your request for "{seed}" has been reviewed and rejected.',
+                msg_rejected_with_reason: 'Your request for "{seed}" has been reviewed and rejected. Reason: {reason}',
+                msg_approved_already_exists: 'Your request for "{seed}" has been reviewed and approved. This variety is already available in our Crops Masterlist.',
+                sw_error_title: "Error", sw_db_connection_failed: "Database connection failed.",
+                sw_required_title: "Required", sw_required_select_action: "Please select an action.", sw_required_reject_reason: "Please provide a reason for rejection.",
+                sw_required_crop_fields: "Please fill in Commodity Type and Growth Duration.",
+                sw_server_error_title: "Server Error",
+                sw_crop_exists_title: "Crop Already in Masterlist",
+                sw_crop_exists_html: '<strong>"{seed}"</strong> is already registered in the Crops Masterlist.<br><br>Approving this request will notify the farmer that their requested variety is already available.',
+                sw_proceed_notify: "Proceed & Notify Farmer",
+                sw_new_crop_title: "New Crop Detected",
+                sw_new_crop_html: '<strong>"{seed}"</strong> is not yet in the Crops Masterlist.<br>Fill in the registration details below, then click <strong>Submit Decision</strong> again.',
+                sw_got_it: "Got it", sw_network_error: "Network error: ",
+                sw_processed_title: "Processed!", sw_processed_text_registered: "Request approved and new crop registered to the Masterlist.", sw_processed_text_notified: "The farmer has been notified.",
+                btn_checking: "Checking...", btn_processing: "Processing...",
+                modal_full_description_title: "Full Description", btn_close: "Close",
+                sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                header_title: "Pamamahala ng Kahilingan sa Binhi", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+                search_placeholder: "Maghanap ng magsasaka o binhi...",
+                page_title: "Suriin ang mga Kahilingan sa Binhi", page_sub: "Aprubahan ang mga naghihintay na barayti ng binhi para idagdag sa masterlist ng sistema.",
+                th_req_id: "Req ID", th_farmer_info: "Impormasyon ng Magsasaka", th_requested_seed: "Hiniling na Binhi", th_status: "Katayuan", th_actions: "Aksyon",
+                btn_previous: "Nakaraan", btn_next: "Susunod",
+                modal_process_title: "Iproseso ang Kahilingan", badge_new_crop: "Bagong Pananim",
+                label_action: "Aksyon", placeholder_select_action: "-- Pumili ng Aksyon --", btn_approve: "Aprubahan", btn_reject: "Tanggihan",
+                hint_action: "Kung inaprubahan ang bagong barayti, lalabas sa ibaba ang detalye ng pagrehistro ng pananim.",
+                label_reject_reason: "Dahilan ng Pagtanggi", placeholder_reject_reason: "hal. Hindi angkop ang barayti para sa kondisyon ng Region X, hindi pa available para sa pamamahagi...",
+                hint_reject_reason: "Isasama ang dahilang ito sa abiso ng magsasaka.",
+                label_notification_message: "Mensahe ng Abiso", placeholder_notification_message: "Pumili ng aksyon sa itaas para bumuo ng mensahe...",
+                hint_notification_message: "Ipapadala ang mensaheng ito sa magsasaka bilang abiso.",
+                label_crops_masterlist_reg: "Pagpaparehistro sa Crops Masterlist",
+                hint_not_in_masterlist: "Ang baraytong ito ng binhi ay wala pa sa Crops Masterlist. Punan ang mga detalye sa ibaba — awtomatiko itong mase-save kapag inaprubahan mo.",
+                label_commodity_type: "Uri ng Commodity", placeholder_select_type: "-- Pumili ng Uri --",
+                crop_type_rice: "Palay", crop_type_corn: "Mais", crop_type_banana: "Saging",
+                crop_type_vegetables: "Gulay", crop_type_eggplant: "Talong", crop_type_other: "Iba Pa",
+                label_growth_duration: "Tagal ng Paglago", label_prod_cost_php: "Karaniwang Gastos sa Produksyon (₱)",
+                label_description: "Deskripsyon", placeholder_variety_description: "Maikling deskripsyon ng baraytong ito...",
+                btn_cancel: "Kanselahin", btn_submit_decision: "Isumite ang Desisyon",
+                no_seed_requests_found: "Walang nahanap na kahilingan sa binhi.",
+                status_pending: "Naghihintay", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+                btn_process: "Iproseso", btn_view: "Tingnan", label_date: "Petsa",
+                label_in_progress: "Isinasagawa", label_rejected: "Tinanggihan",
+                label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA",
+                msg_approved: 'Ang iyong kahilingan para sa "{seed}" ay nasuri at naaprubahan.',
+                msg_rejected: 'Ang iyong kahilingan para sa "{seed}" ay nasuri at tinanggihan.',
+                msg_rejected_with_reason: 'Ang iyong kahilingan para sa "{seed}" ay nasuri at tinanggihan. Dahilan: {reason}',
+                msg_approved_already_exists: 'Ang iyong kahilingan para sa "{seed}" ay nasuri at naaprubahan. Available na ang baraytong ito sa aming Crops Masterlist.',
+                sw_error_title: "Error", sw_db_connection_failed: "Nabigo ang koneksyon sa database.",
+                sw_required_title: "Kailangan", sw_required_select_action: "Pumili ng aksyon.", sw_required_reject_reason: "Magbigay ng dahilan para sa pagtanggi.",
+                sw_required_crop_fields: "Punan ang Uri ng Commodity at Tagal ng Paglago.",
+                sw_server_error_title: "Server Error",
+                sw_crop_exists_title: "Nasa Masterlist na ang Pananim",
+                sw_crop_exists_html: 'Nakarehistro na ang <strong>"{seed}"</strong> sa Crops Masterlist.<br><br>Ang pag-apruba sa kahilingang ito ay mag-aabiso sa magsasaka na available na ang kanilang hiniling na barayti.',
+                sw_proceed_notify: "Magpatuloy at Abisuhan ang Magsasaka",
+                sw_new_crop_title: "May Natukoy na Bagong Pananim",
+                sw_new_crop_html: 'Ang <strong>"{seed}"</strong> ay wala pa sa Crops Masterlist.<br>Punan ang mga detalye ng pagrehistro sa ibaba, pagkatapos ay i-click muli ang <strong>Isumite ang Desisyon</strong>.',
+                sw_got_it: "Nakuha ko", sw_network_error: "Network error: ",
+                sw_processed_title: "Naiproseso na!", sw_processed_text_registered: "Naaprubahan ang kahilingan at nairehistro ang bagong pananim sa Masterlist.", sw_processed_text_notified: "Naabisuhan na ang magsasaka.",
+                btn_checking: "Sinusuri...", btn_processing: "Pinoproseso...",
+                modal_full_description_title: "Buong Deskripsyon", btn_close: "Isara",
+                sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+            }
+        };
+
+        // Maps the raw DB status word to its translated label for the table badge
+        function seedReqStatusLabel(status) {
+            if (status === 'Pending') return t('status_pending');
+            if (status === 'Approved by Admin' || status === 'Ready for Pickup' || status === 'Claimed' || status === 'Approved') return t('status_approved');
+            return t('status_rejected');
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            renderTable(); // re-renders status badges / action buttons with translated text
+        }
+
         let allData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
 
         document.addEventListener("DOMContentLoaded", () => { loadTable(); });
@@ -262,10 +377,10 @@
                     filteredData = [...allData];
                     renderTable();
                 } else {
-                    Swal.fire('Error', response.message, 'error');
+                    Swal.fire(t('sw_error_title'), response.message, 'error');
                 }
             } catch (e) {
-                Swal.fire('Error', 'Database connection failed.', 'error');
+                Swal.fire(t('sw_error_title'), t('sw_db_connection_failed'), 'error');
             }
         }
 
@@ -277,7 +392,7 @@
 
             tbody.innerHTML = items.length
                 ? ""
-                : '<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">No seed requests found.</td></tr>';
+                : `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_seed_requests_found')}</td></tr>`;
 
             items.forEach(item => {
                 let statusBadge = '', actionButtons = '';
@@ -288,19 +403,19 @@
                         <div class="flex flex-col gap-2 items-end">
                             <button onclick="openProcessModal(${item.Request_ID}, ${item.Farmer_ID}, '${item.Requested_Seed.replace(/'/g, "\\'")}')"
                                 class="px-3 py-1.5 bg-[#11542e] hover:bg-[#0c3d22] text-white rounded-lg text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-1 w-24 justify-center">
-                                <i class="fa-solid fa-list-check"></i> Process
+                                <i class="fa-solid fa-list-check"></i> ${t('btn_process')}
                             </button>
                             <button onclick="viewFullDescription('${item.Description.replace(/'/g, "\\'")}')"
                                 class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-[10px] font-black uppercase transition-all shadow-sm flex items-center gap-1 w-24 justify-center">
-                                <i class="fa-solid fa-eye"></i> View
+                                <i class="fa-solid fa-eye"></i> ${t('btn_view')}
                             </button>
                         </div>`;
                 } else if (item.Status === 'Approved by Admin' || item.Status === 'Ready for Pickup' || item.Status === 'Claimed' || item.Status === 'Approved') {
                     statusBadge   = 'bg-green-100 text-green-700';
-                    actionButtons = `<span class="text-gray-400 italic text-[10px] font-bold uppercase"><i class="fa-solid fa-check text-green-500 mr-1"></i> In Progress</span>`;
+                    actionButtons = `<span class="text-gray-400 italic text-[10px] font-bold uppercase"><i class="fa-solid fa-check text-green-500 mr-1"></i> ${t('label_in_progress')}</span>`;
                 } else {
                     statusBadge   = 'bg-red-100 text-red-700';
-                    actionButtons = `<span class="text-gray-400 italic text-[10px] font-bold uppercase"><i class="fa-solid fa-xmark text-red-500 mr-1"></i> Rejected</span>`;
+                    actionButtons = `<span class="text-gray-400 italic text-[10px] font-bold uppercase"><i class="fa-solid fa-xmark text-red-500 mr-1"></i> ${t('label_rejected')}</span>`;
                 }
 
                 tbody.innerHTML += `
@@ -308,7 +423,7 @@
                         <td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
                         <td class="px-6 py-4">
                             <p class="text-sm font-black text-gray-800">${item.Farmer_Name}</p>
-                            <p class="text-[10px] text-gray-400">Date: ${item.DateStr}</p>
+                            <p class="text-[10px] text-gray-400">${t('label_date')}: ${item.DateStr}</p>
                         </td>
                         <td class="px-6 py-4">
                             <p class="text-sm font-bold text-[#11542e]">${item.Requested_Seed}</p>
@@ -318,7 +433,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">
-                                ${item.Status}
+                                ${seedReqStatusLabel(item.Status)}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">${actionButtons}</td>
@@ -326,7 +441,7 @@
             });
 
             document.getElementById("pageInfo").innerText =
-                `SHOWING ${filteredData.length ? start + 1 : 0} TO ${Math.min(end, filteredData.length)} OF ${filteredData.length}`;
+                `${t('label_showing')} ${filteredData.length ? start + 1 : 0} ${t('label_to')} ${Math.min(end, filteredData.length)} ${t('label_of')} ${filteredData.length}`;
             document.getElementById("prevBtn").disabled = currentPage === 1;
             document.getElementById("nextBtn").disabled = end >= filteredData.length;
         }
@@ -354,11 +469,11 @@
             const cropBadge     = document.getElementById("cropRegistrationBadge");
 
             if (status === 'Approved by Admin' || status === 'Approved') {
-                msgBox.value = `Your request for "${seed}" has been reviewed and approved.`;
+                msgBox.value = t('msg_approved').replace('{seed}', seed);
                 rejectSection.classList.add("hidden");
                 document.getElementById("rejectReason").value = "";
             } else if (status === 'Rejected') {
-                msgBox.value = `Your request for "${seed}" has been reviewed and rejected.`;
+                msgBox.value = t('msg_rejected').replace('{seed}', seed);
                 rejectSection.classList.remove("hidden");
                 // Hide crop panel if admin switches to reject after approval flow
                 cropPanel.classList.add("hidden");
@@ -409,7 +524,7 @@
             const seedName = document.getElementById('displaySeed').innerText.trim();
 
             if (!status) {
-                Swal.fire('Required', 'Please select an action.', 'warning');
+                Swal.fire(t('sw_required_title'), t('sw_required_select_action'), 'warning');
                 return;
             }
 
@@ -417,10 +532,10 @@
             if (status === 'Rejected') {
                 const reason = document.getElementById('rejectReason').value.trim();
                 if (!reason) {
-                    Swal.fire('Required', 'Please provide a reason for rejection.', 'warning');
+                    Swal.fire(t('sw_required_title'), t('sw_required_reject_reason'), 'warning');
                     return;
                 }
-                const fullMessage = `Your request for "${seedName}" has been reviewed and rejected. Reason: ${reason}`;
+                const fullMessage = t('msg_rejected_with_reason').replace('{seed}', seedName).replace('{reason}', reason);
                 await finalSubmit({ request_id: reqId, farmer_id: farmerId, status, message: fullMessage, requested_seed: seedName });
                 return;
             }
@@ -430,7 +545,7 @@
 
             if (!panelVisible) {
                 // Step 1 — check if crop already exists in masterlist
-                setSubmitLoading(true, 'Checking...');
+                setSubmitLoading(true, t('btn_checking'));
                 try {
                     const res = await fetch('../../api/masterfile/admin/process_seed_request.php', {
                         method:  'POST',
@@ -445,7 +560,7 @@
                     } catch (parseErr) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Server Error',
+                            title: t('sw_server_error_title'),
                             html: `<pre class="text-left text-xs bg-gray-100 p-2 rounded overflow-auto max-h-48">${raw.replace(/</g,'&lt;')}</pre>`,
                             confirmButtonColor: '#11542e'
                         });
@@ -453,7 +568,7 @@
                     }
 
                     if (data.status === 'error') {
-                        Swal.fire('Error', data.message, 'error');
+                        Swal.fire(t('sw_error_title'), data.message, 'error');
                         return;
                     }
 
@@ -461,20 +576,17 @@
                         // ── Crop already in masterlist ────────────────────────
                         const confirmResult = await Swal.fire({
                             icon: 'info',
-                            title: 'Crop Already in Masterlist',
-                            html: `<span class="text-sm text-gray-600">
-                                       <strong>"${seedName}"</strong> is already registered in the Crops Masterlist.<br><br>
-                                       Approving this request will notify the farmer that their requested variety is already available.
-                                   </span>`,
+                            title: t('sw_crop_exists_title'),
+                            html: `<span class="text-sm text-gray-600">${t('sw_crop_exists_html').replace('{seed}', seedName)}</span>`,
                             showCancelButton:    true,
                             confirmButtonColor:  '#11542e',
                             cancelButtonColor:   '#6b7280',
-                            confirmButtonText:   'Proceed & Notify Farmer',
-                            cancelButtonText:    'Cancel'
+                            confirmButtonText:   t('sw_proceed_notify'),
+                            cancelButtonText:    t('btn_cancel')
                         });
 
                         if (confirmResult.isConfirmed) {
-                            const updatedMessage = `Your request for "${seedName}" has been reviewed and approved. This variety is already available in our Crops Masterlist.`;
+                            const updatedMessage = t('msg_approved_already_exists').replace('{seed}', seedName);
                             document.getElementById("adminMessage").value = updatedMessage;
                             await finalSubmit({ request_id: reqId, farmer_id: farmerId, status, message: updatedMessage, requested_seed: seedName });
                         }
@@ -485,17 +597,17 @@
                         document.getElementById("cropRegistrationBadge").classList.remove("hidden");
                         Swal.fire({
                             icon:               'info',
-                            title:              'New Crop Detected',
-                            html:               `<span class="text-sm text-gray-600"><strong>"${seedName}"</strong> is not yet in the Crops Masterlist.<br>Fill in the registration details below, then click <strong>Submit Decision</strong> again.</span>`,
+                            title:              t('sw_new_crop_title'),
+                            html:               `<span class="text-sm text-gray-600">${t('sw_new_crop_html').replace('{seed}', seedName)}</span>`,
                             confirmButtonColor: '#11542e',
-                            confirmButtonText:  'Got it'
+                            confirmButtonText:  t('sw_got_it')
                         });
                     }
 
                 } catch (err) {
-                    Swal.fire('Error', 'Network error: ' + err.message, 'error');
+                    Swal.fire(t('sw_error_title'), t('sw_network_error') + err.message, 'error');
                 } finally {
-                    setSubmitLoading(false, 'Submit Decision');
+                    setSubmitLoading(false, t('btn_submit_decision'));
                 }
 
             } else {
@@ -506,7 +618,7 @@
                 const prodCost     = parseFloat(document.getElementById('newProdCost').value) || 0;
 
                 if (!cropType || !growthPeriod) {
-                    Swal.fire('Required', 'Please fill in Commodity Type and Growth Duration.', 'warning');
+                    Swal.fire(t('sw_required_title'), t('sw_required_crop_fields'), 'warning');
                     return;
                 }
 
@@ -542,7 +654,7 @@
                 } catch (parseErr) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'Server Error',
+                        title: t('sw_server_error_title'),
                         html: `<pre class="text-left text-xs bg-gray-100 p-2 rounded overflow-auto max-h-48">${raw.replace(/</g,'&lt;')}</pre>`,
                         confirmButtonColor: '#11542e'
                     });
@@ -551,18 +663,18 @@
 
                 if (data.status === 'success') {
                     const text = data.crop_registered
-                        ? 'Request approved and new crop registered to the Masterlist.'
-                        : 'The farmer has been notified.';
-                    Swal.fire({ icon: 'success', title: 'Processed!', text, timer: 2500, showConfirmButton: false });
+                        ? t('sw_processed_text_registered')
+                        : t('sw_processed_text_notified');
+                    Swal.fire({ icon: 'success', title: t('sw_processed_title'), text, timer: 2500, showConfirmButton: false });
                     closeProcessModal();
                     loadTable();
                 } else {
-                    Swal.fire('Error', data.message, 'error');
+                    Swal.fire(t('sw_error_title'), data.message, 'error');
                 }
             } catch (err) {
-                Swal.fire('Error', 'Network error: ' + err.message, 'error');
+                Swal.fire(t('sw_error_title'), t('sw_network_error') + err.message, 'error');
             } finally {
-                setSubmitLoading(false, 'Submit Decision');
+                setSubmitLoading(false, t('btn_submit_decision'));
             }
         }
 
@@ -578,16 +690,16 @@
 
         function viewFullDescription(text) {
             Swal.fire({
-                title: 'Full Description', text,
-                icon: 'info', confirmButtonColor: '#11542e', confirmButtonText: 'Close'
+                title: t('modal_full_description_title'), text,
+                icon: 'info', confirmButtonColor: '#11542e', confirmButtonText: t('btn_close')
             });
         }
 
         function confirmLogout() {
             Swal.fire({
-                title: 'Logout?', text: "Are you sure you want to exit?",
+                title: t('sw_logout_title'), text: t('sw_logout_text'),
                 icon: 'warning', showCancelButton: true,
-                confirmButtonColor: '#11542e', confirmButtonText: 'Yes, logout'
+                confirmButtonColor: '#11542e', confirmButtonText: t('sw_yes_logout')
             }).then(result => {
                 if (result.isConfirmed)
                     fetch('../../api/auth/logout.php')
@@ -601,7 +713,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }
@@ -613,6 +725,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('seed_requests');
+            initI18n();
         });
     </script>
 
