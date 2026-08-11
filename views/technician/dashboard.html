@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -18,6 +19,8 @@
     </script>
 
     <style>
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
         .geo-badge {
             position: absolute; top: 4px; left: 4px; right: 4px;
             text-align: center; font-size: 8px; font-weight: 800;
@@ -54,16 +57,16 @@
 
         <nav class="flex-1 px-4 py-8 space-y-2">
             <a href="../profile/profile.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-user-circle mr-3 w-4"></i> My Profile
+                <i class="fa-solid fa-user-circle mr-3 w-4"></i> <span data-i18n="nav_my_profile">My Profile</span>
             </a>
             <a href="#" class="sidebar-link active flex items-center px-4 py-3 rounded-xl">
-                <i class="fa-solid fa-clipboard-list mr-3 w-5 text-[#f1c40f]"></i> My Assignments
+                <i class="fa-solid fa-clipboard-list mr-3 w-5 text-[#f1c40f]"></i> <span data-i18n="nav_my_assignments">My Assignments</span>
             </a>
             <a href="tech_reports.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-file-signature mr-3 w-4"></i> Inspection Reports
+                <i class="fa-solid fa-file-signature mr-3 w-4"></i> <span data-i18n="nav_inspection_reports">Inspection Reports</span>
             </a>
             <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication<span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                <i class="fa-solid fa-message mr-3 w-4"></i> <span data-i18n="nav_communication">Communication</span><span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
 
@@ -72,7 +75,7 @@
                 <div id="techInitial" class="w-10 h-10 bg-green-100 text-green-800 rounded-full flex items-center justify-center font-black text-sm">T</div>
                 <div class="flex-1 overflow-hidden">
                     <p id="techName" class="text-xs font-bold truncate">Loading...</p>
-                    <p class="text-[10px] text-white/40 uppercase font-black">Technician</p>
+                    <p class="text-[10px] text-white/40 uppercase font-black" data-i18n="label_technician">Technician</p>
                 </div>
                 <button onclick="confirmLogout()" class="text-white/30 hover:text-red-400 transition-colors">
                     <i class="fa-solid fa-right-from-bracket"></i>
@@ -84,45 +87,53 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8">
             <div class="flex items-center gap-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                Technician Portal
-                <span class="bg-blue-50 text-blue-500 px-3 py-1 rounded-full border border-blue-100">Field Mode</span>
+                <span data-i18n="header_title">Technician Portal</span>
+                <span class="bg-blue-50 text-blue-500 px-3 py-1 rounded-full border border-blue-100" data-i18n="badge_field_mode">Field Mode</span>
             </div>
             <div class="flex items-center gap-6">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
                 <div class="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1 rounded-full border border-green-100 text-[10px] font-bold">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> On Duty
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span data-i18n="badge_on_duty">On Duty</span>
                 </div>
             </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-10">
             <div class="max-w-5xl mx-auto">
-                <h2 class="text-3xl font-black text-gray-800 mb-2">Technician Dashboard</h2>
-                <p class="text-gray-400 text-sm mb-10">Manage your assigned field validations and inspection logs.</p>
+                <div class="flex justify-end mb-4">
+                    
+                </div>
+                <h2 class="text-3xl font-black text-gray-800 mb-2" data-i18n="page_title">Technician Dashboard</h2>
+                <p class="text-gray-400 text-sm mb-10" data-i18n="page_sub">Manage your assigned field validations and inspection logs.</p>
 
                 <div class="flex gap-10 border-b border-gray-100 mb-10">
-                    <button onclick="switchTab('assignments')" id="btnAssignments" class="tab-btn active pb-4 text-xs font-black uppercase tracking-widest transition-all">My Assignments</button>
-                    <button onclick="switchTab('validation')"  id="btnValidation"  class="tab-btn pb-4 text-xs font-black uppercase tracking-widest text-gray-400 transition-all">Field Validation</button>
-                    <button onclick="switchTab('completed')"   id="btnCompleted"   class="tab-btn pb-4 text-xs font-black uppercase tracking-widest text-gray-400 transition-all">Completed</button>
+                    <button onclick="switchTab('assignments')" id="btnAssignments" class="tab-btn active pb-4 text-xs font-black uppercase tracking-widest transition-all" data-i18n="tab_my_assignments">My Assignments</button>
+                    <button onclick="switchTab('validation')"  id="btnValidation"  class="tab-btn pb-4 text-xs font-black uppercase tracking-widest text-gray-400 transition-all" data-i18n="tab_field_validation">Field Validation</button>
+                    <button onclick="switchTab('completed')"   id="btnCompleted"   class="tab-btn pb-4 text-xs font-black uppercase tracking-widest text-gray-400 transition-all" data-i18n="tab_completed">Completed</button>
                 </div>
 
                 <!-- ── ASSIGNMENTS TAB ── -->
                 <div id="sectionAssignments">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                         <div class="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
-                            <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Assigned Reports</p>
+                            <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2" data-i18n="stat_assigned_reports">Assigned Reports</p>
                             <h3 id="statAssigned" class="text-4xl font-black text-blue-600">0</h3>
                         </div>
                         <div class="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
-                            <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2">Urgent Tasks</p>
+                            <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2" data-i18n="stat_urgent_tasks">Urgent Tasks</p>
                             <h3 id="statUrgent" class="text-4xl font-black text-amber-600">0</h3>
                         </div>
                         <div class="bg-green-50/50 p-6 rounded-3xl border border-green-100">
-                            <p class="text-[10px] font-black text-green-400 uppercase tracking-widest mb-2">Inspections Done</p>
+                            <p class="text-[10px] font-black text-green-400 uppercase tracking-widest mb-2" data-i18n="stat_inspections_done">Inspections Done</p>
                             <h3 id="statDone" class="text-4xl font-black text-green-600">0</h3>
                         </div>
                     </div>
 
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Priority Queue</h4>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6" data-i18n="label_priority_queue">Priority Queue</h4>
                     <div id="assignmentList" class="space-y-4"></div>
                 </div>
 
@@ -136,12 +147,12 @@
                                 </div>
                                 <div>
                                     <h5 id="formReportID" class="text-[10px] font-black uppercase tracking-widest opacity-60">Report #0000</h5>
-                                    <p id="formReportTitle" class="text-lg font-bold">Crop Damage Inspection</p>
+                                    <p id="formReportTitle" class="text-lg font-bold" data-i18n="label_crop_damage_inspection">Crop Damage Inspection</p>
                                 </div>
                             </div>
                             <div class="text-right">
-                                <p id="formBrgy" class="text-sm font-bold">Brgy. Loading...</p>
-                                <p class="text-[10px] opacity-60 uppercase font-black">Location</p>
+                                <p id="formBrgy" class="text-sm font-bold" data-i18n="label_brgy_loading">Brgy. Loading...</p>
+                                <p class="text-[10px] opacity-60 uppercase font-black" data-i18n="label_location">Location</p>
                                 <p id="formVisitDate" class="text-[10px] opacity-80 font-bold mt-1"></p>
                             </div>
                         </div>
@@ -150,50 +161,50 @@
                             <input type="hidden" id="reportIdField" name="id">
 
                             <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Observations / Field Findings</label>
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4" data-i18n="label_observations">Observations / Field Findings</label>
                                 <textarea id="obsField" name="observations" rows="4" required
                                     class="w-full bg-gray-50 border-0 rounded-2xl p-5 text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
-                                    placeholder="Describe the current state of the crop..."></textarea>
+                                    placeholder="Describe the current state of the crop..." data-i18n-placeholder="placeholder_observations"></textarea>
                             </div>
 
                             <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6">Damage Classification</label>
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6" data-i18n="label_damage_classification">Damage Classification</label>
                                 <div class="grid grid-cols-1 gap-3">
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
                                         <input type="radio" name="severity" value="Minimal" class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700">Minimal</p><p class="text-[10px] text-gray-400">1-10% Damage</p></div>
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_minimal">Minimal</p><p class="text-[10px] text-gray-400" data-i18n="severity_minimal_range">1-10% Damage</p></div>
                                     </label>
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
                                         <input type="radio" name="severity" value="Light" class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700">Light</p><p class="text-[10px] text-gray-400">11-30% Damage</p></div>
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_light">Light</p><p class="text-[10px] text-gray-400" data-i18n="severity_light_range">11-30% Damage</p></div>
                                     </label>
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
                                         <input type="radio" name="severity" value="Moderate" class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700">Moderate</p><p class="text-[10px] text-gray-400">31-50% Damage</p></div>
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_moderate">Moderate</p><p class="text-[10px] text-gray-400" data-i18n="severity_moderate_range">31-50% Damage</p></div>
                                     </label>
                                     <label class="flex items-center gap-4 p-4 border-2 border-blue-100 bg-blue-50/30 rounded-2xl cursor-pointer">
                                         <input type="radio" name="severity" value="Severe" checked class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700">Severe</p><p class="text-[10px] text-gray-400">51-80% Damage</p></div>
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_severe">Severe</p><p class="text-[10px] text-gray-400" data-i18n="severity_severe_range">51-80% Damage</p></div>
                                     </label>
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
                                         <input type="radio" name="severity" value="Total Loss" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700">Total Loss</p><p class="text-[10px] text-gray-400">81-100% Damage</p></div>
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_total_loss">Total Loss</p><p class="text-[10px] text-gray-400" data-i18n="severity_total_loss_range">81-100% Damage</p></div>
                                     </label>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Attach Field Evidence (Photos)</label>
+                                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4" data-i18n="label_attach_evidence">Attach Field Evidence (Photos)</label>
                                 <div class="bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5 mb-3 flex items-start gap-2">
                                     <i class="fa-solid fa-circle-info text-blue-400 text-xs mt-0.5 flex-shrink-0"></i>
-                                    <p class="text-[10px] text-blue-600 font-semibold leading-relaxed">Each photo will automatically capture your GPS location when taken, confirming you physically visited the farm.</p>
+                                    <p class="text-[10px] text-blue-600 font-semibold leading-relaxed" data-i18n="hint_gps_capture">Each photo will automatically capture your GPS location when taken, confirming you physically visited the farm.</p>
                                 </div>
                                 <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center hover:bg-blue-50 hover:border-blue-300 transition-all">
                                     <div class="file-upload-wrapper w-full">
                                         <div class="pointer-events-none">
                                             <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-3"></i>
-                                            <p class="text-sm font-bold text-gray-700">Click to upload photos</p>
-                                            <p class="text-xs text-gray-400 mt-1">Accepts JPG, PNG (Max 5MB per file)</p>
+                                            <p class="text-sm font-bold text-gray-700" data-i18n="label_click_upload">Click to upload photos</p>
+                                            <p class="text-xs text-gray-400 mt-1" data-i18n="label_upload_hint">Accepts JPG, PNG (Max 5MB per file)</p>
                                         </div>
                                         <input type="file" id="evidencePhotos" accept="image/*" multiple onchange="handleFileSelection(event)">
                                     </div>
@@ -203,9 +214,9 @@
 
                             <div class="pt-6 flex gap-4">
                                 <button type="submit" class="flex-1 bg-[#11542e] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center justify-center gap-3">
-                                    <i class="fa-solid fa-paper-plane"></i> Submit Field Validation
+                                    <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_submit_validation">Submit Field Validation</span>
                                 </button>
-                                <button type="button" onclick="switchTab('assignments')" class="px-8 py-5 border border-gray-200 rounded-2xl font-black text-[10px] uppercase text-gray-400 hover:bg-gray-50 transition-all">Cancel</button>
+                                <button type="button" onclick="switchTab('assignments')" class="px-8 py-5 border border-gray-200 rounded-2xl font-black text-[10px] uppercase text-gray-400 hover:bg-gray-50 transition-all" data-i18n="btn_cancel">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -226,8 +237,8 @@
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-file-invoice"></i></div>
                     <div>
-                        <h3 class="font-black text-gray-800 tracking-tight">Farmer's Damage Report</h3>
-                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Pre-Inspection Details</p>
+                        <h3 class="font-black text-gray-800 tracking-tight" data-i18n="modal_farmer_report_title">Farmer's Damage Report</h3>
+                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest" data-i18n="modal_pre_inspection">Pre-Inspection Details</p>
                     </div>
                 </div>
                 <button onclick="closeReportModal()" class="w-10 h-10 bg-white border border-gray-200 text-gray-500 rounded-full hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-all"><i class="fa-solid fa-xmark"></i></button>
@@ -239,6 +250,92 @@
     </div>
 
 <script>
+    // Reusable EN / TL switcher (see assets/js/i18n.js) — this page has no shared
+    // navbar loader (sidebar is inline HTML), so the switcher UI lives right here.
+    const translations = {
+        en: {
+            nav_my_profile: "My Profile", nav_my_assignments: "My Assignments", nav_inspection_reports: "Inspection Reports", nav_communication: "Communication",
+            label_technician: "Technician", header_title: "Technician Portal", badge_field_mode: "Field Mode", badge_on_duty: "On Duty",
+            page_title: "Technician Dashboard", page_sub: "Manage your assigned field validations and inspection logs.",
+            tab_my_assignments: "My Assignments", tab_field_validation: "Field Validation", tab_completed: "Completed",
+            stat_assigned_reports: "Assigned Reports", stat_urgent_tasks: "Urgent Tasks", stat_inspections_done: "Inspections Done",
+            label_priority_queue: "Priority Queue",
+            label_crop_damage_inspection: "Crop Damage Inspection", label_brgy_loading: "Brgy. Loading...", label_location: "Location",
+            label_observations: "Observations / Field Findings", placeholder_observations: "Describe the current state of the crop...",
+            label_damage_classification: "Damage Classification",
+            severity_minimal: "Minimal", severity_minimal_range: "1-10% Damage",
+            severity_light: "Light", severity_light_range: "11-30% Damage",
+            severity_moderate: "Moderate", severity_moderate_range: "31-50% Damage",
+            severity_severe: "Severe", severity_severe_range: "51-80% Damage",
+            severity_total_loss: "Total Loss", severity_total_loss_range: "81-100% Damage",
+            label_attach_evidence: "Attach Field Evidence (Photos)",
+            hint_gps_capture: "Each photo will automatically capture your GPS location when taken, confirming you physically visited the farm.",
+            label_click_upload: "Click to upload photos", label_upload_hint: "Accepts JPG, PNG (Max 5MB per file)",
+            btn_submit_validation: "Submit Field Validation", btn_cancel: "Cancel",
+            modal_farmer_report_title: "Farmer's Damage Report", modal_pre_inspection: "Pre-Inspection Details",
+            label_na: "N/A", label_farmer: "Farmer", label_crop_variety: "Crop Variety", label_farm_location: "Farm Location",
+            label_report_date: "Report Date", label_damage_cause: "Damage Cause", label_est_area: "Est. Area (Ha)",
+            label_location_missing: "Location data missing", label_farmers_remarks: "Farmer's Remarks", no_description: "No description provided by the farmer.",
+            label_attached_evidence: "Attached Field Evidence", no_field_photos: "No field photos attached by the farmer.",
+            label_no_pending_assignments: "No pending assignments in your area.",
+            badge_pending_inspection: "Pending Inspection", label_reported_by: "Reported by",
+            btn_view_details: "View Details", btn_inspect_area: "Inspect Area",
+            label_no_completed: "No completed inspections yet.", label_final_assessment: "Final Assessment", badge_inspected: "Inspected",
+            no_visit_date: "No Visit Date Set", label_overdue: "Overdue", label_today: "Today", label_tomorrow: "Tomorrow", label_in_days: "In {n} days",
+            sw_fetching_report: "Fetching Report...", sw_error_title: "Error", sw_could_not_load_report: "Could not load report details.", sw_failed_connect: "Failed to connect to the server.",
+            sw_action_required_title: "Action Required", sw_action_required_text: "Please select a report from 'My Assignments' first.",
+            crop_damage_validation_suffix: "Damage Validation",
+            geo_locating: "Locating...", geo_no_gps: "No GPS",
+            sw_uploading_title: "Uploading Data...", sw_uploading_text: "Submitting your report and evidence photos.",
+            sw_submitted_title: "Inspection Submitted", sw_submitted_text: "Admin notified and photos uploaded.",
+            sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
+            sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+        },
+        tl: {
+            nav_my_profile: "Aking Profile", nav_my_assignments: "Aking mga Atas", nav_inspection_reports: "Ulat ng Inspeksyon", nav_communication: "Komunikasyon",
+            label_technician: "Technician", header_title: "Portal ng Technician", badge_field_mode: "Field Mode", badge_on_duty: "Nasa Trabaho",
+            page_title: "Dashboard ng Technician", page_sub: "Pamahalaan ang mga itinalagang field validation at talaan ng inspeksyon.",
+            tab_my_assignments: "Aking mga Atas", tab_field_validation: "Field Validation", tab_completed: "Tapos na",
+            stat_assigned_reports: "Itinalagang Ulat", stat_urgent_tasks: "Madaliang Gawain", stat_inspections_done: "Natapos na Inspeksyon",
+            label_priority_queue: "Priority Queue",
+            label_crop_damage_inspection: "Inspeksyon ng Pinsala sa Pananim", label_brgy_loading: "Brgy. Nilo-load...", label_location: "Lokasyon",
+            label_observations: "Obserbasyon / Natuklasan sa Field", placeholder_observations: "Ilarawan ang kasalukuyang kalagayan ng pananim...",
+            label_damage_classification: "Klasipikasyon ng Pinsala",
+            severity_minimal: "Minimal", severity_minimal_range: "1-10% na Pinsala",
+            severity_light: "Magaan", severity_light_range: "11-30% na Pinsala",
+            severity_moderate: "Katamtaman", severity_moderate_range: "31-50% na Pinsala",
+            severity_severe: "Malubha", severity_severe_range: "51-80% na Pinsala",
+            severity_total_loss: "Kabuuang Pagkawala", severity_total_loss_range: "81-100% na Pinsala",
+            label_attach_evidence: "Ilakip ang Ebidensya sa Field (Larawan)",
+            hint_gps_capture: "Awtomatikong makukuha ng bawat larawan ang iyong GPS location kapag kinuha, na nagpapatunay na personal mong binisita ang bukid.",
+            label_click_upload: "I-click para mag-upload ng larawan", label_upload_hint: "Tumatanggap ng JPG, PNG (Max 5MB kada file)",
+            btn_submit_validation: "Isumite ang Field Validation", btn_cancel: "Kanselahin",
+            modal_farmer_report_title: "Ulat ng Pinsala ng Magsasaka", modal_pre_inspection: "Detalye Bago ang Inspeksyon",
+            label_na: "N/A", label_farmer: "Magsasaka", label_crop_variety: "Barayti ng Pananim", label_farm_location: "Lokasyon ng Bukid",
+            label_report_date: "Petsa ng Ulat", label_damage_cause: "Sanhi ng Pinsala", label_est_area: "Tinatayang Sukat (Ha)",
+            label_location_missing: "Kulang ang datos ng lokasyon", label_farmers_remarks: "Puna ng Magsasaka", no_description: "Walang ibinigay na deskripsyon ang magsasaka.",
+            label_attached_evidence: "Nakalakip na Ebidensya sa Field", no_field_photos: "Walang larawan sa field na inilakip ng magsasaka.",
+            label_no_pending_assignments: "Walang naghihintay na atas sa iyong lugar.",
+            badge_pending_inspection: "Naghihintay ng Inspeksyon", label_reported_by: "Iniulat ni",
+            btn_view_details: "Tingnan ang Detalye", btn_inspect_area: "Inspeksyunin ang Lugar",
+            label_no_completed: "Wala pang natapos na inspeksyon.", label_final_assessment: "Pangwakas na Pagtatasa", badge_inspected: "Naispeksyon",
+            no_visit_date: "Walang Itinakdang Petsa ng Pagbisita", label_overdue: "Lampas na", label_today: "Ngayon", label_tomorrow: "Bukas", label_in_days: "Sa {n} araw",
+            sw_fetching_report: "Kinukuha ang Ulat...", sw_error_title: "Error", sw_could_not_load_report: "Hindi ma-load ang detalye ng ulat.", sw_failed_connect: "Nabigong kumonekta sa server.",
+            sw_action_required_title: "Kailangan ng Aksyon", sw_action_required_text: "Pumili muna ng ulat mula sa 'Aking mga Atas'.",
+            crop_damage_validation_suffix: "Damage Validation",
+            geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS",
+            sw_uploading_title: "Ina-upload ang Datos...", sw_uploading_text: "Isinusumite ang iyong ulat at mga larawang ebidensya.",
+            sw_submitted_title: "Naisumite ang Inspeksyon", sw_submitted_text: "Naabisuhan ang Admin at na-upload na ang mga larawan.",
+            sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
+            sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+        }
+    };
+
+    // Called automatically by i18n.js whenever the user picks a new language
+    function onLanguageChange() {
+        loadData(); // re-renders assignments/completed lists with translated text
+    }
+
     let selectedFiles = [];
     let photoGeoTags  = [];
 
@@ -254,7 +351,7 @@
     function visitDateBadge(dateStr) {
         if (!dateStr) {
             return `<span class="visit-badge-none inline-flex items-center gap-1 text-[10px] font-black px-3 py-1 rounded-full border">
-                        <i class="fa-solid fa-calendar-xmark"></i> No Visit Date Set
+                        <i class="fa-solid fa-calendar-xmark"></i> ${t('no_visit_date')}
                     </span>`;
         }
 
@@ -265,15 +362,16 @@
 
         if (diff < 0) {
             return `<span class="visit-badge-overdue inline-flex items-center gap-1 text-[10px] font-black px-3 py-1 rounded-full border">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Overdue · ${label}
+                        <i class="fa-solid fa-triangle-exclamation"></i> ${t('label_overdue')} · ${label}
                     </span>`;
         } else if (diff === 0) {
             return `<span class="visit-badge-today inline-flex items-center gap-1 text-[10px] font-black px-3 py-1 rounded-full border">
-                        <i class="fa-solid fa-calendar-day"></i> Today · ${label}
+                        <i class="fa-solid fa-calendar-day"></i> ${t('label_today')} · ${label}
                     </span>`;
         } else {
+            const dayLabel = diff === 1 ? t('label_tomorrow') : t('label_in_days').replace('{n}', diff);
             return `<span class="visit-badge-upcoming inline-flex items-center gap-1 text-[10px] font-black px-3 py-1 rounded-full border">
-                        <i class="fa-solid fa-calendar-check"></i> ${diff === 1 ? 'Tomorrow' : 'In ' + diff + ' days'} · ${label}
+                        <i class="fa-solid fa-calendar-check"></i> ${dayLabel} · ${label}
                     </span>`;
         }
     }
@@ -296,29 +394,29 @@
 
                 const list = document.getElementById('assignmentList');
                 if (data.assignments.length === 0) {
-                    list.innerHTML = '<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">No pending assignments in your area.</p>';
+                    list.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_pending_assignments')}</p>`;
                 } else {
                     list.innerHTML = data.assignments.map(a => `
                         <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 hover:shadow-md transition-all">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
                                     <span class="bg-red-50 text-red-500 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter mb-3 inline-block border border-red-100">
-                                        Pending Inspection
+                                        ${t('badge_pending_inspection')}
                                     </span>
                                     <h5 class="text-xl font-black text-gray-800 mb-1">${a.crop_name} Damage</h5>
                                     <p class="text-sm text-gray-400 font-medium mb-4">
-                                        Reported by <span class="font-bold text-gray-600">${a.farmer_name}</span>
+                                        ${t('label_reported_by')} <span class="font-bold text-gray-600">${a.farmer_name}</span>
                                         &nbsp;·&nbsp; ${a.barangay}
                                     </p>
                                     <div>${visitDateBadge(a.visit_date)}</div>
                                 </div>
                                 <div class="flex flex-col gap-2 flex-shrink-0">
                                     <button onclick="viewReportDetails(${a.id})" class="bg-blue-50 text-blue-600 border border-blue-200 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-eye"></i> View Details
+                                        <i class="fa-solid fa-eye"></i> ${t('btn_view_details')}
                                     </button>
                                     <button onclick="openValidation(${a.id}, '${a.crop_name}', '${a.barangay}', '${a.visit_date || ''}')"
                                         class="bg-[#11542e] text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0c3d22] transition-all shadow-md shadow-green-900/10 flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-magnifying-glass-location"></i> Inspect Area
+                                        <i class="fa-solid fa-magnifying-glass-location"></i> ${t('btn_inspect_area')}
                                     </button>
                                 </div>
                             </div>
@@ -335,19 +433,19 @@
                             </div>
                             <div>
                                 <h6 class="font-black text-gray-800">#REP-${c.id}</h6>
-                                <p class="text-[10px] text-gray-400 uppercase font-black">${c.date} · Final Assessment: ${c.severity}</p>
+                                <p class="text-[10px] text-gray-400 uppercase font-black">${c.date} · ${t('label_final_assessment')}: ${c.severity}</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-black bg-green-100 text-green-700 border border-green-200 px-4 py-1.5 rounded-full uppercase tracking-widest">Inspected</span>
+                        <span class="text-[10px] font-black bg-green-100 text-green-700 border border-green-200 px-4 py-1.5 rounded-full uppercase tracking-widest">${t('badge_inspected')}</span>
                     </div>
-                `).join('') || '<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">No completed inspections yet.</p>';
+                `).join('') || `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_completed')}</p>`;
             }
         } catch (e) { console.error(e); }
     }
 
     // ── View Farmer Report (Modal) ───────────────────────────────────
     async function viewReportDetails(id) {
-        Swal.fire({ title: 'Fetching Report...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: t('sw_fetching_report'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         
         try {
             const res = await fetch(`../../api/masterfile/damage_report/get_report_details.php?id=${id}`);
@@ -357,38 +455,45 @@
             if (data.status === 'success') {
                 const r = data.report;
                 const imgs = data.images.length > 0 
-                    ? data.images.map(src => `<img src="${src}" class="w-full h-32 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-80" onclick="window.open('${src}', '_blank')">`).join('')
-                    : '<p class="text-xs text-gray-400 italic col-span-3">No field photos attached by the farmer.</p>';
+                    ? data.images.map(img => {
+                        // get_report_details.php returns each image as an object now
+                        // ({ path, geo_lat, geo_lng, uploaded_by }), not a plain URL string —
+                        // this fell out of sync when that endpoint changed for the Admin/MAO
+                        // farmer-vs-technician photo split.
+                        const src = typeof img === 'string' ? img : img.path;
+                        return `<img src="${src}" class="w-full h-32 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-80" onclick="window.open('${src}', '_blank')">`;
+                      }).join('')
+                    : `<p class="text-xs text-gray-400 italic col-span-3">${t('no_field_photos')}</p>`;
                     
-                const locationStr = r.Barangay ? r.Barangay : 'Location data missing';
+                const locationStr = r.Barangay ? r.Barangay : t('label_location_missing');
 
                 document.getElementById('reportModalContent').innerHTML = `
                     <div class="grid grid-cols-2 gap-y-6 gap-x-4 mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">Farmer</p><p class="font-bold text-gray-800">${r.FarmerName || 'N/A'}</p></div>
-                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">Crop Variety</p><p class="font-bold text-gray-800">${r.Crop_Name || 'N/A'}</p></div>
-                        <div class="col-span-2"><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">Farm Location</p><p class="font-bold text-gray-800">${locationStr}</p></div>
-                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">Report Date</p><p class="font-bold text-gray-800">${r.Report_Date}</p></div>
-                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">Damage Cause</p><p class="font-bold text-red-600">${r.Damage_Type || 'N/A'}</p></div>
-                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">Est. Area (Ha)</p><p class="font-bold text-gray-800">${r.Area_Hectares || r.Area_Size || '0.00'} Ha</p></div>
+                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_farmer')}</p><p class="font-bold text-gray-800">${r.FarmerName || t('label_na')}</p></div>
+                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_crop_variety')}</p><p class="font-bold text-gray-800">${r.Crop_Name || t('label_na')}</p></div>
+                        <div class="col-span-2"><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_farm_location')}</p><p class="font-bold text-gray-800">${locationStr}</p></div>
+                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_report_date')}</p><p class="font-bold text-gray-800">${r.Report_Date}</p></div>
+                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_damage_cause')}</p><p class="font-bold text-red-600">${r.Damage_Type || t('label_na')}</p></div>
+                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_est_area')}</p><p class="font-bold text-gray-800">${r.Area_Hectares || r.Area_Size || '0.00'} Ha</p></div>
                     </div>
                     
                     <div class="mb-8">
-                        <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-2 border-l-2 border-blue-500 pl-2">Farmer's Remarks</p>
-                        <p class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 text-gray-700 text-sm leading-relaxed">${r.Description || 'No description provided by the farmer.'}</p>
+                        <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-2 border-l-2 border-blue-500 pl-2">${t('label_farmers_remarks')}</p>
+                        <p class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 text-gray-700 text-sm leading-relaxed">${r.Description || t('no_description')}</p>
                     </div>
                     
                     <div>
-                        <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-3 border-l-2 border-blue-500 pl-2">Attached Field Evidence</p>
+                        <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('label_attached_evidence')}</p>
                         <div class="grid grid-cols-3 gap-3">${imgs}</div>
                     </div>
                 `;
                 document.getElementById('reportModal').classList.remove('hidden');
             } else {
-                Swal.fire('Error', data.message || 'Could not load report details.', 'error');
+                Swal.fire(t('sw_error_title'), data.message || t('sw_could_not_load_report'), 'error');
             }
         } catch(e) {
             Swal.close();
-            Swal.fire('Error', 'Failed to connect to the server.', 'error');
+            Swal.fire(t('sw_error_title'), t('sw_failed_connect'), 'error');
         }
     }
 

@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -23,6 +24,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     
     /* This CSS handles the injected sidebar */
     #sidebar-container { width: 16rem; flex-shrink: 0; }
@@ -53,32 +56,36 @@
 
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">User Management</span>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Mode</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">User Management</span>
+                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
             </div>
             <div class="flex items-center gap-4">
                 
                 <div class="flex items-center gap-2">
                     <div class="relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
-                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search name or email..."
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search name or email..." data-i18n-placeholder="search_placeholder"
                                class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-[#11542e] outline-none">
                     </div>
                     
                     <select id="roleFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
-                        <option value="ALL">All Roles</option>
-                        <option value="Admin">Admin</option>
-                        <option value="MAO">MAO</option>
-                        <option value="Technician">Technician</option>
-                        <option value="Farmer">Farmer</option>
-                        <option value="Encoder">Encoder</option>
+                        <option value="ALL" data-i18n="filter_all_roles">All Roles</option>
+                        <option value="Admin" data-i18n="opt_role_admin">Admin</option>
+                        <option value="MAO" data-i18n="opt_role_mao">MAO</option>
+                        <option value="Technician" data-i18n="opt_role_technician">Technician</option>
+                        <option value="Farmer" data-i18n="opt_role_farmer">Farmer</option>
+                        <option value="Encoder" data-i18n="opt_role_encoder">Encoder</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
                     <span class="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
-                        <i class="fa-solid fa-wifi text-gray-300"></i> Offline Mode Ready
+                        <i class="fa-solid fa-wifi text-gray-300"></i> <span data-i18n="offline_ready">Offline Mode Ready</span>
                     </span>
-                    <button class="text-xs font-bold text-gray-500">EN / <span class="text-[#11542e]">FIL</span></button>
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    </div>
                     <div class="relative">
                         <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100">
                             <i class="fa-regular fa-bell text-sm"></i>
@@ -86,17 +93,17 @@
                         </button>
                         <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
                             <div class="px-4 py-3 border-b border-gray-100">
-                                <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest">Notifications</h4>
+                                <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
                             </div>
                             <div id="notifList" class="divide-y divide-gray-50">
-                                <p class="text-xs text-gray-400 italic text-center py-8">Loading...</p>
+                                <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
                             </div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <div class="text-right">
                             <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                            <p class="text-[10px] text-amber-600 font-bold uppercase">Admin</p>
+                            <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                         </div>
                         <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                     </div>
@@ -109,11 +116,11 @@
 
                 <div class="flex justify-between items-end mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight">System Users</h2>
-                        <p class="text-gray-400 text-sm">DA Region X — Manage access and credentials for all roles.</p>
+                        <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">System Users</h2>
+                        <p class="text-gray-400 text-sm" data-i18n="page_sub">DA Region X — Manage access and credentials for all roles.</p>
                     </div>
                     <button onclick="openModal()" class="bg-[#f1c40f] text-[#11542e] px-6 py-3 rounded-xl font-black shadow-lg shadow-yellow-500/20 hover:scale-105 transition-all flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-plus"></i> Add New User
+                        <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_new_user">Add New User</span>
                     </button>
                 </div>
 
@@ -122,11 +129,11 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">User Details</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_id">ID</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user_details">User Details</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_role">Role</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
@@ -136,8 +143,8 @@
                     <div class="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="pageInfo">Showing entries...</p>
                         <div class="flex gap-2">
-                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Previous</button>
-                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all">Next</button>
+                            <button id="prevBtn" onclick="changePage(-1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all" data-i18n="btn_previous">Previous</button>
+                            <button id="nextBtn" onclick="changePage(1)" class="px-5 py-2 bg-gray-50 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 disabled:opacity-30 transition-all" data-i18n="btn_next">Next</button>
                         </div>
                     </div>
                 </div>
@@ -149,57 +156,125 @@
     <div id="modal" class="fixed inset-0 bg-[#11542e]/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden">
             <div class="p-7 border-b border-gray-50 flex justify-between items-center">
-                <h3 id="modalTitle" class="text-xl font-black text-gray-800">New User</h3>
+                <h3 id="modalTitle" class="text-xl font-black text-gray-800" data-i18n="modal_title_new_user">New User</h3>
                 <button onclick="closeModal()" class="w-9 h-9 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all text-lg font-bold leading-none">&times;</button>
             </div>
             <div class="p-7 space-y-4">
                 <input type="hidden" id="editId">
                 <div class="grid grid-cols-2 gap-4">
                     <div class="col-span-2">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Full Name</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_full_name">Full Name</label>
                         <input type="text" id="userFullName" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Juan Dela Cruz">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Email Address</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_email_address">Email Address</label>
                         <input type="email" id="userEmail" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="user@da.gov.ph">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Contact Number</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_contact_number">Contact Number</label>
                         <input type="text" id="userContact" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="09xxxxxxxxx">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Password</label>
-                    <input type="password" id="userPassword" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Leave blank to keep current (if editing)">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_password">Password</label>
+                    <input type="password" id="userPassword" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Leave blank to keep current (if editing)" data-i18n-placeholder="placeholder_password_hint">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Role</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_role">Role</label>
                         <select id="userRole" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
-                            <option value="Admin">Admin</option>
-                            <option value="MAO">MAO</option>
-                            <option value="Technician">Technician</option>
-                            <option value="Farmer">Farmer</option>
-                            <option value="Encoder">Encoder</option>
+                            <option value="Admin" data-i18n="opt_role_admin">Admin</option>
+                            <option value="MAO" data-i18n="opt_role_mao">MAO</option>
+                            <option value="Technician" data-i18n="opt_role_technician">Technician</option>
+                            <option value="Farmer" data-i18n="opt_role_farmer">Farmer</option>
+                            <option value="Encoder" data-i18n="opt_role_encoder">Encoder</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Status</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_status">Status</label>
                         <select id="userStatus" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
-                            <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="Active" data-i18n="status_active">Active</option>
+                            <option value="Inactive" data-i18n="status_inactive">Inactive</option>
                         </select>
                     </div>
                 </div>
                 <div class="pt-4 flex gap-3">
-                    <button onclick="closeModal()" class="flex-1 py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm">Cancel</button>
-                    <button onclick="saveData()" class="flex-[2] py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm">Save User</button>
+                    <button onclick="closeModal()" class="flex-1 py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
+                    <button onclick="saveData()" class="flex-[2] py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm" data-i18n="btn_save_user">Save User</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js)
+        const translations = {
+            en: {
+                header_title: "User Management", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+                search_placeholder: "Search name or email...",
+                filter_all_roles: "All Roles", opt_role_admin: "Admin", opt_role_mao: "MAO",
+                opt_role_technician: "Technician", opt_role_farmer: "Farmer", opt_role_encoder: "Encoder",
+                offline_ready: "Offline Mode Ready",
+                notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
+                page_title: "System Users", page_sub: "DA Region X — Manage access and credentials for all roles.",
+                btn_add_new_user: "Add New User",
+                th_id: "ID", th_user_details: "User Details", th_role: "Role", th_status: "Status", th_actions: "Actions",
+                btn_previous: "Previous", btn_next: "Next",
+                modal_title_new_user: "New User", modal_title_add_user: "Add New User", modal_title_edit_user: "Edit User",
+                label_full_name: "Full Name", label_email_address: "Email Address", label_contact_number: "Contact Number",
+                label_password: "Password", placeholder_password_hint: "Leave blank to keep current (if editing)",
+                status_active: "Active", status_inactive: "Inactive",
+                btn_cancel: "Cancel", btn_save_user: "Save User",
+                no_users_found: "No users found matching your filters.", label_no_email: "No email",
+                sw_required_title: "Required", sw_required_name_email: "Please enter full name and email.", sw_required_password: "Please assign a password for the new user.",
+                sw_saved_title: "Saved!", sw_error_title: "Error", sw_server_failed: "Server connection failed.",
+                sw_revoke_title: "Revoke Access?", sw_revoke_text: "This will deactivate the user's account.", sw_yes_deactivate: "Yes, Deactivate",
+                sw_deactivated_title: "Deactivated!", sw_deactivated_text: "User access removed.", sw_failed_connect: "Failed to connect to the server.",
+                sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                label_showing: "SHOWING", label_to: "TO", label_of: "OF"
+            },
+            tl: {
+                header_title: "Pamamahala ng User", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+                search_placeholder: "Maghanap ng pangalan o email...",
+                filter_all_roles: "Lahat ng Tungkulin", opt_role_admin: "Admin", opt_role_mao: "MAO",
+                opt_role_technician: "Technician", opt_role_farmer: "Magsasaka", opt_role_encoder: "Encoder",
+                offline_ready: "Handa ang Offline Mode",
+                notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
+                page_title: "Mga User ng Sistema", page_sub: "DA Region X — Pamahalaan ang access at kredensyal para sa lahat ng tungkulin.",
+                btn_add_new_user: "Magdagdag ng Bagong User",
+                th_id: "ID", th_user_details: "Detalye ng User", th_role: "Tungkulin", th_status: "Katayuan", th_actions: "Aksyon",
+                btn_previous: "Nakaraan", btn_next: "Susunod",
+                modal_title_new_user: "Bagong User", modal_title_add_user: "Magdagdag ng Bagong User", modal_title_edit_user: "I-edit ang User",
+                label_full_name: "Buong Pangalan", label_email_address: "Email Address", label_contact_number: "Contact Number",
+                label_password: "Password", placeholder_password_hint: "Iwanang blangko para panatilihin ang kasalukuyan (kung ine-edit)",
+                status_active: "Aktibo", status_inactive: "Hindi Aktibo",
+                btn_cancel: "Kanselahin", btn_save_user: "I-save ang User",
+                no_users_found: "Walang nahanap na user na tumutugma sa iyong mga filter.", label_no_email: "Walang email",
+                sw_required_title: "Kailangan", sw_required_name_email: "Ilagay ang buong pangalan at email.", sw_required_password: "Magtalaga ng password para sa bagong user.",
+                sw_saved_title: "Na-save na!", sw_error_title: "Error", sw_server_failed: "Nabigo ang koneksyon sa server.",
+                sw_revoke_title: "Bawiin ang Access?", sw_revoke_text: "I-de-deactivate nito ang account ng user.", sw_yes_deactivate: "Oo, I-deactivate",
+                sw_deactivated_title: "Na-deactivate na!", sw_deactivated_text: "Naalis na ang access ng user.", sw_failed_connect: "Nabigong kumonekta sa server.",
+                sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
+                label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA"
+            }
+        };
+
+        // Role is stored in the DB in English regardless of UI language —
+        // this helper only translates what's *displayed*.
+        function roleLabel(role) {
+            const map = { Admin: 'opt_role_admin', MAO: 'opt_role_mao', Technician: 'opt_role_technician', Farmer: 'opt_role_farmer', Encoder: 'opt_role_encoder' };
+            return map[role] ? t(map[role]) : role;
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            renderTable();
+            renderNotificationList(lastNotifItems);
+        }
+        let lastNotifItems = [];
+
         const API_URL = "../../api/masterfile/users/";
         let allData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
 
@@ -227,9 +302,10 @@
         }
 
         function renderNotificationList(items) {
+            lastNotifItems = items || [];
             const list = document.getElementById('notifList');
             if (!items || items.length === 0) {
-                list.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-8">No notifications yet.</p>';
+                list.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-8">${t('notif_none')}</p>`;
                 return;
             }
             list.innerHTML = items.map(n => `
@@ -284,7 +360,7 @@
 
             tbody.innerHTML = items.length
                 ? ""
-                : '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">No users found matching your filters.</td></tr>';
+                : `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_users_found')}</td></tr>`;
 
             items.forEach(item => {
                 const statusColor = item.status === 'Active'
@@ -302,14 +378,14 @@
                         <td class="px-6 py-4 font-bold text-gray-300 text-center text-sm">#${item.id}</td>
                         <td class="px-6 py-4">
                             <p class="text-sm font-black text-gray-800">${item.fullname}</p>
-                            <p class="text-[10px] text-gray-400">${item.email || 'No email'} ${item.contact_number ? '• ' + item.contact_number : ''}</p>
+                            <p class="text-[10px] text-gray-400">${item.email || t('label_no_email')} ${item.contact_number ? '• ' + item.contact_number : ''}</p>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-bold ${roleColor}">${item.role}</span>
+                            <span class="px-3 py-1 rounded-full text-[10px] font-bold ${roleColor}">${roleLabel(item.role)}</span>
                         </td>
                         <td class="px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusColor}">
-                                ${item.status}
+                                ${item.status === 'Active' ? t('status_active') : t('status_inactive')}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
@@ -326,7 +402,7 @@
             });
 
             document.getElementById("pageInfo").innerText =
-                `SHOWING ${filteredData.length ? start + 1 : 0} TO ${Math.min(end, filteredData.length)} OF ${filteredData.length}`;
+                `${t('label_showing')} ${filteredData.length ? start + 1 : 0} ${t('label_to')} ${Math.min(end, filteredData.length)} ${t('label_of')} ${filteredData.length}`;
             document.getElementById("prevBtn").disabled = currentPage === 1;
             document.getElementById("nextBtn").disabled = end >= filteredData.length;
         }
@@ -354,7 +430,7 @@
         function changePage(dir) { currentPage += dir; renderTable(); }
 
         function openModal() {
-            document.getElementById("modalTitle").innerText = "Add New User";
+            document.getElementById("modalTitle").innerText = t('modal_title_add_user');
             document.getElementById("editId").value = "";
             document.getElementById("userFullName").value = "";
             document.getElementById("userEmail").value = "";
@@ -367,7 +443,7 @@
 
         function editItem(id) {
             const i = allData.find(x => x.id == id);
-            document.getElementById("modalTitle").innerText = "Edit User";
+            document.getElementById("modalTitle").innerText = t('modal_title_edit_user');
             document.getElementById("editId").value = i.id;
             document.getElementById("userFullName").value = i.fullname;
             document.getElementById("userEmail").value = i.email || "";
@@ -391,8 +467,8 @@
                 status: document.getElementById("userStatus").value
             };
 
-            if (!data.fullname || !data.email) return Swal.fire("Required", "Please enter full name and email.", "warning");
-            if (!id && !data.password) return Swal.fire("Required", "Please assign a password for the new user.", "warning");
+            if (!data.fullname || !data.email) return Swal.fire(t('sw_required_title'), t('sw_required_name_email'), "warning");
+            if (!id && !data.password) return Swal.fire(t('sw_required_title'), t('sw_required_password'), "warning");
             if (id) data.id = id;
 
             try {
@@ -403,26 +479,26 @@
                 });
                 const result = await res.json();
                 if (result.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Saved!', text: result.message, showConfirmButton: false, timer: 1500 });
+                    Swal.fire({ icon: 'success', title: t('sw_saved_title'), text: result.message, showConfirmButton: false, timer: 1500 });
                     closeModal();
                     loadTable();
                 } else {
-                    Swal.fire('Error', result.message, 'error');
+                    Swal.fire(t('sw_error_title'), result.message, 'error');
                 }
             } catch (e) {
-                Swal.fire('Error', 'Server connection failed.', 'error');
+                Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error');
             }
         }
 
         function deleteItem(id) {
             Swal.fire({
-                title: 'Revoke Access?',
-                text: "This will deactivate the user's account.",
+                title: t('sw_revoke_title'),
+                text: t('sw_revoke_text'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#11542e',
-                confirmButtonText: 'Yes, Deactivate'
+                confirmButtonText: t('sw_yes_deactivate')
             }).then(r => {
                 if (r.isConfirmed) {
                     fetch(API_URL + "soft_delete.php", {
@@ -433,13 +509,13 @@
                     .then(res => res.json())
                     .then(res => {
                         if (res.status === 'success') {
-                            Swal.fire({ icon: 'success', title: 'Deactivated!', text: 'User access removed.', showConfirmButton: false, timer: 1500 });
+                            Swal.fire({ icon: 'success', title: t('sw_deactivated_title'), text: t('sw_deactivated_text'), showConfirmButton: false, timer: 1500 });
                             loadTable();
                         } else {
-                            Swal.fire('Error', res.message, 'error');
+                            Swal.fire(t('sw_error_title'), res.message, 'error');
                         }
                     }).catch(() => {
-                        Swal.fire('Error', 'Failed to connect to the server.', 'error');
+                        Swal.fire(t('sw_error_title'), t('sw_failed_connect'), 'error');
                     });
                 }
             });
@@ -447,12 +523,12 @@
 
         function confirmLogout() {
             Swal.fire({
-                title: 'Logout?',
-                text: "Are you sure you want to exit?",
+                title: t('sw_logout_title'),
+                text: t('sw_logout_text'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
-                confirmButtonText: 'Yes, logout'
+                confirmButtonText: t('sw_yes_logout')
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch('../../api/auth/logout.php')
@@ -470,7 +546,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => { fetch('../../api/auth/logout.php').then(() => { window.location.href = '../../auth.html'; }); });
             }, 5 * 60 * 1000);
         }
@@ -482,6 +558,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('staff'); 
+            initI18n();
         });
     </script>
 

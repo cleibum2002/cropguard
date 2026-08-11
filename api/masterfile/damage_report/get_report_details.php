@@ -6,7 +6,7 @@ session_start();
 
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'])) {
+if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO', 'Technician'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
     exit;
 }

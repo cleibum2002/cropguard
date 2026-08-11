@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -23,6 +24,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     
     /* This CSS handles the injected sidebar */
     #sidebar-container { width: 16rem; flex-shrink: 0; }
@@ -52,13 +55,20 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">Farmer Management</span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">RSBSA Registry</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">Farmer Management</span>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_rsbsa_registry">RSBSA Registry</span>
             </div>
-            <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
-                <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or RSBSA..."
-                    class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
+                    <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or RSBSA..." data-i18n-placeholder="search_placeholder"
+                        class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
+                </div>
             </div>
         </header>
 
@@ -67,15 +77,15 @@
 
                 <div class="grid grid-cols-3 gap-4 mb-6">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Total Farmers</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_total_farmers">Total Farmers</p>
                         <p id="statTotal" class="text-3xl font-black text-gray-800">0</p>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">With RSBSA</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_with_rsbsa">With RSBSA</p>
                         <p id="statWithRSBSA" class="text-3xl font-black text-green-600">0</p>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Missing RSBSA</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_missing_rsbsa">Missing RSBSA</p>
                         <p id="statMissing" class="text-3xl font-black text-red-500">0</p>
                     </div>
                 </div>
@@ -85,12 +95,12 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Farmer</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">RSBSA Number</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">RSBSA Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Account</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Action</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer">Farmer</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_contact">Contact</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_rsbsa_number">RSBSA Number</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_rsbsa_status">RSBSA Status</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_account">Account</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="farmerTableBody" class="divide-y divide-gray-50"></tbody>
@@ -107,7 +117,7 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
             <div class="flex items-center justify-between p-6 border-b border-gray-100">
                 <div>
-                    <h2 class="text-lg font-black text-gray-800">Edit RSBSA Number</h2>
+                    <h2 class="text-lg font-black text-gray-800" data-i18n="modal_title_edit_rsbsa">Edit RSBSA Number</h2>
                     <p id="editFarmerName" class="text-xs text-gray-400 mt-1"></p>
                 </div>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-xl">
@@ -117,22 +127,67 @@
             <div class="p-6 space-y-4">
                 <input type="hidden" id="editUserId">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2">RSBSA Number</label>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="th_rsbsa_number">RSBSA Number</label>
                     <input type="text" id="editRSBSA" placeholder="e.g. 202-5985-77856"
                         class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e]">
-                    <p class="text-[10px] text-gray-400 mt-1">Format: ###-####-##### (e.g. 202-5985-77856)</p>
+                    <p class="text-[10px] text-gray-400 mt-1" data-i18n="hint_rsbsa_format">Format: ###-####-##### (e.g. 202-5985-77856)</p>
                 </div>
             </div>
             <div class="flex gap-3 p-6 border-t border-gray-100">
-                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50">Cancel</button>
+                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50" data-i18n="btn_cancel">Cancel</button>
                 <button onclick="saveRSBSA()" class="flex-1 py-3 rounded-xl bg-[#11542e] text-white text-sm font-bold shadow-md hover:bg-green-800">
-                    <i class="fa-solid fa-floppy-disk mr-2"></i> Save
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> <span data-i18n="btn_save">Save</span>
                 </button>
             </div>
         </div>
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js)
+        const translations = {
+            en: {
+                header_title: "Farmer Management", badge_rsbsa_registry: "RSBSA Registry",
+                search_placeholder: "Search farmer or RSBSA...",
+                stat_total_farmers: "Total Farmers", stat_with_rsbsa: "With RSBSA", stat_missing_rsbsa: "Missing RSBSA",
+                th_farmer: "Farmer", th_contact: "Contact", th_rsbsa_number: "RSBSA Number", th_rsbsa_status: "RSBSA Status",
+                th_account: "Account", th_action: "Action",
+                modal_title_edit_rsbsa: "Edit RSBSA Number", hint_rsbsa_format: "Format: ###-####-##### (e.g. 202-5985-77856)",
+                btn_cancel: "Cancel", btn_save: "Save",
+                no_farmers_found: "No farmers found.",
+                badge_missing: "Missing", badge_verified: "Verified", badge_invalid_format: "Invalid Format",
+                status_active: "Active", status_inactive: "Inactive",
+                btn_edit_rsbsa: "Edit RSBSA",
+                sw_invalid_format_title: "Invalid Format", sw_invalid_format_text: "RSBSA must follow: ###-####-##### (e.g. 202-5985-77856)",
+                sw_saved_title: "Saved!", sw_saved_text: "RSBSA number updated.", sw_error_title: "Error",
+                sw_update_failed: "Update failed.", sw_server_failed: "Server connection failed.",
+                sw_logout_title: "Logout?", sw_logout_btn: "Logout",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                header_title: "Pamamahala ng Magsasaka", badge_rsbsa_registry: "RSBSA Registry",
+                search_placeholder: "Maghanap ng magsasaka o RSBSA...",
+                stat_total_farmers: "Kabuuang Magsasaka", stat_with_rsbsa: "May RSBSA", stat_missing_rsbsa: "Walang RSBSA",
+                th_farmer: "Magsasaka", th_contact: "Contact", th_rsbsa_number: "RSBSA Number", th_rsbsa_status: "Katayuan ng RSBSA",
+                th_account: "Account", th_action: "Aksyon",
+                modal_title_edit_rsbsa: "I-edit ang RSBSA Number", hint_rsbsa_format: "Format: ###-####-##### (hal. 202-5985-77856)",
+                btn_cancel: "Kanselahin", btn_save: "I-save",
+                no_farmers_found: "Walang nahanap na magsasaka.",
+                badge_missing: "Kulang", badge_verified: "Beripikado", badge_invalid_format: "Maling Format",
+                status_active: "Aktibo", status_inactive: "Hindi Aktibo",
+                btn_edit_rsbsa: "I-edit ang RSBSA",
+                sw_invalid_format_title: "Maling Format", sw_invalid_format_text: "Dapat sundin ng RSBSA ang: ###-####-##### (hal. 202-5985-77856)",
+                sw_saved_title: "Na-save na!", sw_saved_text: "Na-update ang RSBSA number.", sw_error_title: "Error",
+                sw_update_failed: "Nabigo ang pag-update.", sw_server_failed: "Nabigo ang koneksyon sa server.",
+                sw_logout_title: "Mag-logout?", sw_logout_btn: "Mag-logout",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+            }
+        };
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            filterTable(); // re-renders respecting whatever search text is currently active
+        }
+
         let allFarmers = [];
 
         document.addEventListener('DOMContentLoaded', loadFarmers);
@@ -159,7 +214,7 @@
         function renderTable(data) {
             const tbody = document.getElementById('farmerTableBody');
             if (!data.length) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">No farmers found.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">${t('no_farmers_found')}</td></tr>`;
                 return;
             }
             tbody.innerHTML = data.map(f => {
@@ -167,10 +222,10 @@
                 const validFormat = hasRSBSA && /^\d{3}-\d{4}-\d{5}$/.test(f.rsbsa_no);
                 const isActive    = f.status === 'Active';
                 const rsbsaBadge  = !hasRSBSA
-                    ? `<span class="px-2 py-1 bg-red-100 text-red-600 rounded-full text-[9px] font-black uppercase">Missing</span>`
+                    ? `<span class="px-2 py-1 bg-red-100 text-red-600 rounded-full text-[9px] font-black uppercase">${t('badge_missing')}</span>`
                     : validFormat
-                        ? `<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[9px] font-black uppercase">Verified</span>`
-                        : `<span class="px-2 py-1 bg-amber-100 text-amber-600 rounded-full text-[9px] font-black uppercase">Invalid Format</span>`;
+                        ? `<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-[9px] font-black uppercase">${t('badge_verified')}</span>`
+                        : `<span class="px-2 py-1 bg-amber-100 text-amber-600 rounded-full text-[9px] font-black uppercase">${t('badge_invalid_format')}</span>`;
                 return `
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-4">
@@ -182,13 +237,13 @@
                     <td class="px-6 py-4 text-center">${rsbsaBadge}</td>
                     <td class="px-6 py-4 text-center">
                         <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}">
-                            ${f.status}
+                            ${isActive ? t('status_active') : t('status_inactive')}
                         </span>
                     </td>
                     <td class="px-6 py-4 text-right">
                         <button onclick="openModal(${f.id}, '${f.fullname.replace(/'/g, "\\'")}', '${f.rsbsa_no || ''}')"
                             class="px-3 py-2 bg-[#11542e] text-white rounded-xl text-[10px] font-black hover:bg-green-800 transition-all">
-                            <i class="fa-solid fa-pen mr-1"></i> Edit RSBSA
+                            <i class="fa-solid fa-pen mr-1"></i> ${t('btn_edit_rsbsa')}
                         </button>
                     </td>
                 </tr>`;
@@ -218,7 +273,7 @@
             const rsbsa = document.getElementById('editRSBSA').value.trim();
 
             if (rsbsa && !/^\d{3}-\d{4}-\d{5}$/.test(rsbsa)) {
-                Swal.fire('Invalid Format', 'RSBSA must follow: ###-####-##### (e.g. 202-5985-77856)', 'warning');
+                Swal.fire(t('sw_invalid_format_title'), t('sw_invalid_format_text'), 'warning');
                 return;
             }
 
@@ -230,17 +285,17 @@
                 });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    Swal.fire({ icon: 'success', title: 'Saved!', text: 'RSBSA number updated.', timer: 1500, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: t('sw_saved_title'), text: t('sw_saved_text'), timer: 1500, showConfirmButton: false });
                     closeModal();
                     loadFarmers();
                 } else {
-                    Swal.fire('Error', data.message || 'Update failed.', 'error');
+                    Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
                 }
-            } catch(e) { Swal.fire('Error', 'Server connection failed.', 'error'); }
+            } catch(e) { Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'); }
         }
 
         function confirmLogout() {
-            Swal.fire({ title: 'Logout?', icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: 'Logout' })
+            Swal.fire({ title: t('sw_logout_title'), icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: t('sw_logout_btn') })
             .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'); });
         }
 
@@ -249,7 +304,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }
@@ -264,6 +319,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             // PASS THE CORRECT PAGE KEY HERE
             loadAdminNavbar('farmers'); 
+            initI18n();
         });
     </script>
 

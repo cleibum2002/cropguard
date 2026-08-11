@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         // Session Check for Technician
@@ -29,6 +30,8 @@
         .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.06); }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .lang-link { cursor: pointer; }
+        .lang-link.lang-active { color: #11542e; text-decoration: underline; }
         
         @media print {
             body { background-color: white; }
@@ -56,16 +59,16 @@
         
         <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             <a href="../profile/profile.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-user-circle mr-3 w-4"></i> My Profile
+                <i class="fa-solid fa-user-circle mr-3 w-4"></i> <span data-i18n="nav_my_profile">My Profile</span>
             </a>
             <a href="dashboard.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-house mr-3 w-4"></i> Assigned Reports
+                <i class="fa-solid fa-house mr-3 w-4"></i> <span data-i18n="nav_assigned_reports">Assigned Reports</span>
             </a>
             <a href="tech_reports.html" class="sidebar-link active flex items-center px-4 py-3 text-white rounded-xl font-semibold text-sm">
-                <i class="fa-solid fa-file-signature mr-3 w-4 text-[#f1c40f]"></i> Inspection Reports
+                <i class="fa-solid fa-file-signature mr-3 w-4 text-[#f1c40f]"></i> <span data-i18n="nav_inspection_reports">Inspection Reports</span>
             </a>
             <a href="../communication/index.html" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication<span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                <i class="fa-solid fa-message mr-3 w-4"></i> <span data-i18n="nav_communication">Communication</span><span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
         </nav>
         
@@ -74,7 +77,7 @@
                 <div class="w-9 h-9 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0">T</div>
                 <div class="overflow-hidden flex-1">
                     <p id="techNameSidebar" class="text-white text-xs font-bold truncate">Loading...</p>
-                    <p class="text-white/40 text-[10px]">Field Technician</p>
+                    <p class="text-white/40 text-[10px]" data-i18n="label_field_technician">Field Technician</p>
                 </div>
                 <i class="fa-solid fa-right-from-bracket text-white/30 text-sm cursor-pointer hover:text-red-400" onclick="confirmLogout()"></i>
             </div>
@@ -83,10 +86,17 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0 no-print">
-            <span class="text-base font-black text-gray-800 tracking-tight">Field Assessment Engine</span>
-            <button onclick="window.print()" class="bg-[#11542e] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:bg-green-800">
-                <i class="fa-solid fa-print mr-2"></i> Print Field Report
-            </button>
+            <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Field Assessment Engine</span>
+            <div class="flex items-center gap-4">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
+                <button onclick="window.print()" class="bg-[#11542e] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:bg-green-800">
+                    <i class="fa-solid fa-print mr-2"></i> <span data-i18n="btn_print_report">Print Field Report</span>
+                </button>
+            </div>
         </header>
 
         <main id="mainContent" class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
@@ -99,40 +109,68 @@
                 </div>
 
                 <div id="reportConfigCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-4 mb-5">
                         <div class="w-10 h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center"><i class="fa-solid fa-filter"></i></div>
                         <div>
-                            <h3 class="text-lg font-black text-gray-800">Inspection Summary Generator</h3>
-                            <p class="text-[10px] font-bold text-gray-400 uppercase">Status Tracking for Assigned Tasks</p>
+                            <h3 class="text-lg font-black text-gray-800" data-i18n="label_summary_generator">Inspection Summary Generator</h3>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase" data-i18n="label_status_tracking">Status Tracking for Assigned Tasks</p>
                         </div>
+                    </div>
+                    <div class="flex flex-wrap items-end gap-3">
+                        <div class="flex-1 min-w-[160px]">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="label_search_farmer">Search Farmer</label>
+                            <input type="text" id="searchInput" onkeyup="renderLedger()" placeholder="Search farmer name..." data-i18n-placeholder="placeholder_search_farmer"
+                                class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="th_current_status">Status</label>
+                            <select id="filterStatus" onchange="renderLedger()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                                <option value="">All Statuses</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="th_crop_name">Damage Type</label>
+                            <select id="filterDamageType" onchange="renderLedger()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                                <option value="">All Types</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="label_barangay">Barangay</label>
+                            <select id="filterBarangay" onchange="renderLedger()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                                <option value="">All Barangays</option>
+                            </select>
+                        </div>
+                        <button onclick="clearLedgerFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear Filters</span>
+                        </button>
                     </div>
                 </div>
 
                 <div id="reportPreviewCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 min-h-[600px]">
                     <div class="grid grid-cols-3 gap-6 mb-10 pb-10 border-b border-gray-100">
                         <div class="text-center border-r">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Assignments</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_active_assignments">Active Assignments</p>
                             <p id="repAssigned" class="text-4xl font-black text-gray-800 mt-2">0</p>
                         </div>
                         <div class="text-center border-r">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Inspections Completed</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_inspections_completed">Inspections Completed</p>
                             <p id="repInspected" class="text-4xl font-black text-green-600 mt-2">0</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Urgent/High Severity</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_urgent_severity">Urgent/High Severity</p>
                             <p id="repSevere" class="text-4xl font-black text-red-600 mt-2">0</p>
                         </div>
                     </div>
 
-                    <h4 class="text-xs font-black text-gray-800 uppercase mb-4 border-l-4 border-blue-700 pl-3">Technician Task Ledger</h4>
+                    <h4 class="text-xs font-black text-gray-800 uppercase mb-4 border-l-4 border-blue-700 pl-3" data-i18n="label_task_ledger">Technician Task Ledger</h4>
                     <table class="w-full text-left text-[11px] border-collapse">
                         <thead>
                             <tr class="border-b-2 border-gray-800 text-gray-800 font-black">
-                                <th class="py-3 px-2">REF ID</th>
-                                <th class="py-3 px-2">FARMER & LOCATION</th>
-                                <th class="py-3 px-2">CROP NAME</th>
-                                <th class="py-3 px-2">REMARKS</th>
-                                <th class="py-3 px-2 text-right">CURRENT STATUS</th>
+                                <th class="py-3 px-2" data-i18n="th_ref_id">REF ID</th>
+                                <th class="py-3 px-2" data-i18n="th_farmer_location">FARMER & LOCATION</th>
+                                <th class="py-3 px-2" data-i18n="th_crop_name">CROP NAME</th>
+                                <th class="py-3 px-2" data-i18n="th_remarks">REMARKS</th>
+                                <th class="py-3 px-2 text-right" data-i18n="th_current_status">CURRENT STATUS</th>
                             </tr>
                         </thead>
                         <tbody id="reportTableBody" class="divide-y divide-gray-100 text-gray-600">
@@ -157,7 +195,102 @@
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js). Note: the print-only
+        // official letterhead and signature block stay in English on purpose —
+        // that's a formal government document, not on-screen UI.
+        const translations = {
+            en: {
+                nav_my_profile: "My Profile", nav_assigned_reports: "Assigned Reports", nav_inspection_reports: "Inspection Reports", nav_communication: "Communication",
+                label_field_technician: "Field Technician", header_title: "Field Assessment Engine", btn_print_report: "Print Field Report",
+                label_summary_generator: "Inspection Summary Generator", label_status_tracking: "Status Tracking for Assigned Tasks",
+                stat_active_assignments: "Active Assignments", stat_inspections_completed: "Inspections Completed", stat_urgent_severity: "Urgent/High Severity",
+                label_task_ledger: "Technician Task Ledger",
+                th_ref_id: "REF ID", th_farmer_location: "FARMER & LOCATION", th_crop_name: "CROP NAME", th_remarks: "REMARKS", th_current_status: "CURRENT STATUS",
+                label_verified_inspection: "Verified Inspection", label_inspection_data: "Inspection Data", label_severity_prefix: "Severity",
+                label_unspecified: "Unspecified", label_in_progress: "In-Progress", label_awaiting_inspection: "Awaiting Inspection",
+                label_no_tasks_found: "No assigned or completed tasks found.", label_no_match_filters: "No tasks match your current filters.",
+                label_search_farmer: "Search Farmer", placeholder_search_farmer: "Search farmer name...",
+                label_barangay: "Barangay", filter_clear: "Clear Filters",
+                filter_all_statuses: "All Statuses", filter_all_types: "All Types", filter_all_barangays: "All Barangays",
+                status_inspected: "Inspected", status_approved: "Approved", status_rejected: "Rejected",
+                sw_logout_title: "Logout?", sw_yes_logout: "Yes, logout",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                nav_my_profile: "Aking Profile", nav_assigned_reports: "Itinalagang Ulat", nav_inspection_reports: "Ulat ng Inspeksyon", nav_communication: "Komunikasyon",
+                label_field_technician: "Field Technician", header_title: "Field Assessment Engine", btn_print_report: "I-print ang Field Report",
+                label_summary_generator: "Tagabuo ng Buod ng Inspeksyon", label_status_tracking: "Pagsubaybay ng Katayuan ng mga Atas",
+                stat_active_assignments: "Aktibong Atas", stat_inspections_completed: "Natapos na Inspeksyon", stat_urgent_severity: "Madalian/Mataas na Kalubhaan",
+                label_task_ledger: "Talaan ng Gawain ng Technician",
+                th_ref_id: "REF ID", th_farmer_location: "MAGSASAKA AT LOKASYON", th_crop_name: "PANGALAN NG PANANIM", th_remarks: "PUNA", th_current_status: "KASALUKUYANG KATAYUAN",
+                label_verified_inspection: "Naberipikang Inspeksyon", label_inspection_data: "Datos ng Inspeksyon", label_severity_prefix: "Kalubhaan",
+                label_unspecified: "Hindi Tinukoy", label_in_progress: "Isinasagawa", label_awaiting_inspection: "Naghihintay ng Inspeksyon",
+                label_no_tasks_found: "Walang natagpuang itinalaga o natapos na gawain.", label_no_match_filters: "Walang gawaing tumutugma sa iyong mga filter.",
+                label_search_farmer: "Maghanap ng Magsasaka", placeholder_search_farmer: "Maghanap ng pangalan ng magsasaka...",
+                label_barangay: "Barangay", filter_clear: "I-clear ang mga Filter",
+                filter_all_statuses: "Lahat ng Katayuan", filter_all_types: "Lahat ng Uri", filter_all_barangays: "Lahat ng Barangay",
+                status_inspected: "Naispeksyon", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+                sw_logout_title: "Mag-logout?", sw_yes_logout: "Oo, mag-logout",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+            }
+        };
+
+        // Maps a raw status word to its translated label — reused for both the
+        // status filter dropdown options and the badges rendered in the table.
+        function ledgerStatusLabel(status) {
+            const map = { 'Inspected': 'status_inspected', 'Approved': 'status_approved', 'Rejected': 'status_rejected', 'Awaiting Inspection': 'label_awaiting_inspection' };
+            return map[status] ? t(map[status]) : status;
+        }
+
+        function fillSelect(id, values, allLabel) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const currentValue = el.value; // preserve the current selection across rebuilds
+            el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${v}">${ledgerStatusLabel(v)}</option>`).join('');
+            if (values.includes(currentValue)) el.value = currentValue;
+        }
+
+        // Builds the dropdown option lists straight from whatever data actually
+        // exists in the ledger, so nothing real ever goes missing and no option
+        // ever matches zero rows.
+        function populateLedgerFilters() {
+            const statuses    = [...new Set(allLedgerRows.map(r => r.status).filter(Boolean))];
+            const damageTypes = [...new Set(allLedgerRows.map(r => r.damage_type).filter(Boolean))].sort();
+            const barangays   = [...new Set(allLedgerRows.map(r => r.barangay).filter(Boolean))].sort();
+
+            fillSelect('filterStatus', statuses, t('filter_all_statuses'));
+
+            const typeEl = document.getElementById('filterDamageType');
+            const curType = typeEl.value;
+            typeEl.innerHTML = `<option value="">${t('filter_all_types')}</option>` + damageTypes.map(v => `<option value="${v}">${v}</option>`).join('');
+            if (damageTypes.includes(curType)) typeEl.value = curType;
+
+            const brgyEl = document.getElementById('filterBarangay');
+            const curBrgy = brgyEl.value;
+            brgyEl.innerHTML = `<option value="">${t('filter_all_barangays')}</option>` + barangays.map(v => `<option value="${v}">${v}</option>`).join('');
+            if (barangays.includes(curBrgy)) brgyEl.value = curBrgy;
+        }
+
+        function clearLedgerFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterDamageType').value = '';
+            document.getElementById('filterBarangay').value = '';
+            renderLedger();
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            populateLedgerFilters(); // refresh translated "All ..." option text + status labels
+            renderLedger();
+        }
+
         document.getElementById('printDate').innerText = new Date().toLocaleString();
+
+        // Normalized, filterable copy of the ledger. Completed and active reports
+        // have different raw shapes from the API, so both get mapped into one
+        // consistent row shape here — this is what filtering and rendering work from.
+        let allLedgerRows = [];
 
         async function generateTechReport() {
             try {
@@ -171,61 +304,92 @@
                     document.getElementById('repInspected').innerText = response.stats.completed;
                     document.getElementById('repSevere').innerText = response.stats.urgent;
 
-                    const tbody = document.getElementById('reportTableBody');
-                    
-                    // Combine Assignments and Completed List for a full ledger
-                    const active = response.assignments || [];
+                    const active    = response.assignments || [];
                     const completed = response.completed_list || [];
-                    
-                    let tableHTML = '';
 
-                    // 1. Render Completed items
-                    completed.forEach(item => {
-                        tableHTML += `
-                            <tr class="bg-gray-50/50">
-                                <td class="py-3 px-2 font-mono text-gray-400">#REP-${item.id}</td>
-                                <td class="py-3 px-2 font-black text-gray-800">Verified Inspection</td>
-                                <td class="py-3 px-2 font-bold text-gray-500">Inspection Data</td>
-                                <td class="py-3 px-2 italic text-gray-400">Severity: ${item.severity}</td>
-                                <td class="py-3 px-2 text-right">
-                                    <span class="font-black uppercase text-[9px] text-green-600">${item.current_status}</span>
-                                </td>
-                            </tr>
-                        `;
-                    });
+                    allLedgerRows = [
+                        ...completed.map(item => ({
+                            id: item.id, isCompleted: true,
+                            farmer_name: item.farmer_name || '', barangay: item.barangay || '',
+                            crop_name: item.crop_name || '', damage_type: item.Damage_Type || '',
+                            severity: item.severity, status: item.current_status
+                        })),
+                        ...active.map(item => ({
+                            id: item.id, isCompleted: false,
+                            farmer_name: item.farmer_name || '', barangay: item.barangay || '',
+                            crop_name: item.crop_name || '', damage_type: item.Damage_Type || '',
+                            severity: null, status: 'Awaiting Inspection'
+                        }))
+                    ];
 
-                    // 2. Render Active assignments
-                    active.forEach(item => {
-                        tableHTML += `
-                            <tr>
-                                <td class="py-3 px-2 font-mono text-gray-400">#REP-${item.id}</td>
-                                <td class="py-3 px-2">
-                                    <p class="font-black text-gray-800">${item.farmer_name}</p>
-                                    <p class="text-[9px] text-gray-400 uppercase">${item.barangay}</p>
-                                </td>
-                                <td class="py-3 px-2 font-bold text-blue-600">${item.crop_name || 'Unspecified'}</td>
-                                <td class="py-3 px-2 text-gray-400">${item.Damage_Type || 'In-Progress'}</td>
-                                <td class="py-3 px-2 text-right">
-                                    <span class="font-black uppercase text-[9px] text-amber-500">Awaiting Inspection</span>
-                                </td>
-                            </tr>
-                        `;
-                    });
-
-                    tbody.innerHTML = tableHTML || '<tr><td colspan="5" class="py-20 text-center text-gray-400 italic">No assigned or completed tasks found.</td></tr>';
+                    populateLedgerFilters();
+                    renderLedger();
                 }
             } catch (err) {
                 console.error("Report generation failed:", err);
             }
         }
 
+        // Renders the ledger table applying whatever search/status/damage-type/
+        // barangay filters are currently set.
+        function renderLedger() {
+            const query          = (document.getElementById('searchInput').value || '').toLowerCase();
+            const statusFilter   = document.getElementById('filterStatus').value;
+            const typeFilter     = document.getElementById('filterDamageType').value;
+            const barangayFilter = document.getElementById('filterBarangay').value;
+
+            const filtered = allLedgerRows.filter(r => {
+                const matchesSearch   = !query || r.farmer_name.toLowerCase().includes(query);
+                const matchesStatus   = !statusFilter || r.status === statusFilter;
+                const matchesType     = !typeFilter || r.damage_type === typeFilter;
+                const matchesBarangay = !barangayFilter || r.barangay === barangayFilter;
+                return matchesSearch && matchesStatus && matchesType && matchesBarangay;
+            });
+
+            const tbody = document.getElementById('reportTableBody');
+            if (!filtered.length) {
+                const msg = allLedgerRows.length ? t('label_no_match_filters') : t('label_no_tasks_found');
+                tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center text-gray-400 italic">${msg}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(r => {
+                if (r.isCompleted) {
+                    return `
+                        <tr class="bg-gray-50/50">
+                            <td class="py-3 px-2 font-mono text-gray-400">#REP-${r.id}</td>
+                            <td class="py-3 px-2 font-black text-gray-800">${r.farmer_name || t('label_verified_inspection')}</td>
+                            <td class="py-3 px-2 font-bold text-gray-500">${r.crop_name || t('label_inspection_data')}</td>
+                            <td class="py-3 px-2 italic text-gray-400">${t('label_severity_prefix')}: ${r.severity}</td>
+                            <td class="py-3 px-2 text-right">
+                                <span class="font-black uppercase text-[9px] text-green-600">${ledgerStatusLabel(r.status)}</span>
+                            </td>
+                        </tr>`;
+                } else {
+                    return `
+                        <tr>
+                            <td class="py-3 px-2 font-mono text-gray-400">#REP-${r.id}</td>
+                            <td class="py-3 px-2">
+                                <p class="font-black text-gray-800">${r.farmer_name}</p>
+                                <p class="text-[9px] text-gray-400 uppercase">${r.barangay}</p>
+                            </td>
+                            <td class="py-3 px-2 font-bold text-blue-600">${r.crop_name || t('label_unspecified')}</td>
+                            <td class="py-3 px-2 text-gray-400">${r.damage_type || t('label_in_progress')}</td>
+                            <td class="py-3 px-2 text-right">
+                                <span class="font-black uppercase text-[9px] text-amber-500">${t('label_awaiting_inspection')}</span>
+                            </td>
+                        </tr>`;
+                }
+            }).join('');
+        }
+
         function confirmLogout() {
             Swal.fire({
-                title: 'Logout?',
+                title: t('sw_logout_title'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
-                confirmButtonText: 'Yes, logout'
+                confirmButtonText: t('sw_yes_logout')
             }).then((result) => {
                 if (result.isConfirmed) window.location.href = '../../auth.html';
             });
@@ -237,7 +401,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }

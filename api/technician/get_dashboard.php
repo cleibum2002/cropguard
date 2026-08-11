@@ -60,14 +60,21 @@ try {
 
     // 4. Recently Completed
     $qComp = "SELECT 
-                Damage_Report_ID AS id,
-                DATE(Report_Date) AS date,
-                Damage_Severity   AS severity,
-                Status            AS current_status
-              FROM damage_report 
-              WHERE Technician_ID = ?
-                AND Status IN ('Inspected', 'Approved', 'Rejected')
-              ORDER BY Report_Date DESC
+                dr.Damage_Report_ID AS id,
+                DATE(dr.Report_Date) AS date,
+                dr.Damage_Severity   AS severity,
+                dr.Status            AS current_status,
+                c.Crop_Name          AS crop_name,
+                dr.Damage_Type       AS Damage_Type,
+                f.Fullname           AS farmer_name,
+                fl.Barangay          AS barangay
+              FROM damage_report dr
+              JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
+              JOIN users         f  ON dr.Farmer_ID   = f.User_ID
+              LEFT JOIN crop     c  ON dr.Crop_ID     = c.Crop_ID
+              WHERE dr.Technician_ID = ?
+                AND dr.Status IN ('Inspected', 'Approved', 'Rejected')
+              ORDER BY dr.Report_Date DESC
               LIMIT 10";
 
     $stmt = $conn->prepare($qComp);

@@ -8,6 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="../../assets/js/i18n.js"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -23,6 +24,8 @@
 
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f2f0; }
+    .lang-link { cursor: pointer; }
+    .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     
     /* This CSS handles the injected sidebar */
     #sidebar-container { width: 16rem; flex-shrink: 0; }
@@ -52,19 +55,24 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800">Audit Logs</span>
-                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide">Admin Only</span>
+                <span class="text-base font-black text-gray-800" data-i18n="header_title">Audit Logs</span>
+                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_only">Admin Only</span>
             </div>
             <div class="flex items-center gap-3">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400 mr-1">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
                 <select id="moduleFilter" onchange="loadLogs()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
-                    <option value="">All Modules</option>
-                    <option value="Authentication">Authentication</option>
-                    <option value="Reports">Reports</option>
-                    <option value="Damage Reports">Damage Reports</option>
-                    <option value="Aid Distribution">Aid Distribution</option>
+                    <option value="" data-i18n="filter_all_modules">All Modules</option>
+                    <option value="Authentication" data-i18n="module_authentication">Authentication</option>
+                    <option value="Reports" data-i18n="module_reports">Reports</option>
+                    <option value="Damage Reports" data-i18n="module_damage_reports">Damage Reports</option>
+                    <option value="Aid Distribution" data-i18n="module_aid_distribution">Aid Distribution</option>
                 </select>
                 <button onclick="loadLogs()" class="bg-[#11542e] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-800 transition-all">
-                    <i class="fa-solid fa-sync mr-1"></i> Refresh
+                    <i class="fa-solid fa-sync mr-1"></i> <span data-i18n="btn_refresh">Refresh</span>
                 </button>
             </div>
         </header>
@@ -75,19 +83,19 @@
                 <!-- Stats -->
                 <div class="grid grid-cols-4 gap-4 mb-6">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Total Actions</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_total_actions">Total Actions</p>
                         <p id="statTotal" class="text-3xl font-black text-gray-800">0</p>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Logins Today</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_logins_today">Logins Today</p>
                         <p id="statLogins" class="text-3xl font-black text-blue-600">0</p>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Reports Submitted</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_reports_submitted">Reports Submitted</p>
                         <p id="statReports" class="text-3xl font-black text-green-600">0</p>
                     </div>
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Aid Actions</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_aid_actions">Aid Actions</p>
                         <p id="statAid" class="text-3xl font-black text-amber-600">0</p>
                     </div>
                 </div>
@@ -98,13 +106,13 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Time</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">User</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Action</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Description</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Module</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">IP Address</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_time">Time</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user">User</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_role">Role</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_action">Action</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_module">Module</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_ip_address">IP Address</th>
                                 </tr>
                             </thead>
                             <tbody id="logTableBody" class="divide-y divide-gray-50"></tbody>
@@ -117,6 +125,55 @@
     </div>
 
     <script>
+        // Reusable EN / TL switcher (see assets/js/i18n.js)
+        const translations = {
+            en: {
+                header_title: "Audit Logs", badge_admin_only: "Admin Only",
+                filter_all_modules: "All Modules", module_authentication: "Authentication", module_reports: "Reports",
+                module_damage_reports: "Damage Reports", module_aid_distribution: "Aid Distribution",
+                btn_refresh: "Refresh",
+                stat_total_actions: "Total Actions", stat_logins_today: "Logins Today",
+                stat_reports_submitted: "Reports Submitted", stat_aid_actions: "Aid Actions",
+                th_time: "Time", th_user: "User", th_role: "Role", th_action: "Action",
+                label_description: "Description", th_module: "Module", th_ip_address: "IP Address",
+                no_logs_found: "No logs found.", label_system: "System",
+                action_login: "Login", action_submit_report: "Submit Report", action_edit_report: "Edit Report",
+                action_validate_report: "Validate Report", action_approve_report: "Approve Report", action_mark_claimed: "Mark as Claimed",
+                sw_logout_title: "Logout?",
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            },
+            tl: {
+                header_title: "Audit Logs", badge_admin_only: "Admin Lamang",
+                filter_all_modules: "Lahat ng Module", module_authentication: "Authentication", module_reports: "Mga Ulat",
+                module_damage_reports: "Mga Ulat ng Pinsala", module_aid_distribution: "Pamamahagi ng Tulong",
+                btn_refresh: "I-refresh",
+                stat_total_actions: "Kabuuang Aksyon", stat_logins_today: "Login Ngayong Araw",
+                stat_reports_submitted: "Naisumiteng Ulat", stat_aid_actions: "Aksyon sa Tulong",
+                th_time: "Oras", th_user: "User", th_role: "Tungkulin", th_action: "Aksyon",
+                label_description: "Deskripsyon", th_module: "Module", th_ip_address: "IP Address",
+                no_logs_found: "Walang nahanap na log.", label_system: "Sistema",
+                action_login: "Login", action_submit_report: "Isumite ang Ulat", action_edit_report: "I-edit ang Ulat",
+                action_validate_report: "Patunayan ang Ulat", action_approve_report: "Aprubahan ang Ulat", action_mark_claimed: "Markahan bilang Na-claim",
+                sw_logout_title: "Mag-logout?",
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+            }
+        };
+
+        // Raw Action values are stored in English in the audit log DB regardless
+        // of UI language — this only translates what's *displayed* in the badge.
+        function auditActionLabel(action) {
+            const map = {
+                'Login': 'action_login', 'Submit Report': 'action_submit_report', 'Edit Report': 'action_edit_report',
+                'Validate Report': 'action_validate_report', 'Approve Report': 'action_approve_report', 'Mark as Claimed': 'action_mark_claimed'
+            };
+            return map[action] ? t(map[action]) : action;
+        }
+
+        // Called automatically by i18n.js whenever the user picks a new language
+        function onLanguageChange() {
+            loadLogs(); // re-fetches and re-renders with translated action labels
+        }
+
         document.addEventListener('DOMContentLoaded', loadLogs);
 
         async function loadLogs() {
@@ -145,7 +202,7 @@
         function renderLogs(data) {
             const tbody = document.getElementById('logTableBody');
             if (!data.length) {
-                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 italic">No logs found.</td></tr>';
+                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 italic">${t('no_logs_found')}</td></tr>`;
                 return;
             }
 
@@ -164,12 +221,12 @@
                 return `
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
-                    <td class="px-6 py-3 text-xs font-bold text-gray-800">${log.user_name || 'System'}</td>
+                    <td class="px-6 py-3 text-xs font-bold text-gray-800">${log.user_name || t('label_system')}</td>
                     <td class="px-6 py-3">
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase">${log.user_role}</span>
                     </td>
                     <td class="px-6 py-3">
-                        <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${log.Action}</span>
+                        <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${auditActionLabel(log.Action)}</span>
                     </td>
                     <td class="px-6 py-3 text-xs text-gray-600 max-w-xs truncate">${log.Description}</td>
                     <td class="px-6 py-3 text-xs text-gray-500">${log.Module}</td>
@@ -179,7 +236,7 @@
         }
 
         function confirmLogout() {
-            Swal.fire({ title: 'Logout?', icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
+            Swal.fire({ title: t('sw_logout_title'), icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
             .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'); });
         }
 
@@ -188,7 +245,7 @@
         function resetIdleTimer() {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false })
+                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
                     .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
             }, 5 * 60 * 1000);
         }
@@ -202,6 +259,7 @@
     // This is the cleanest way to initialize
     document.addEventListener('DOMContentLoaded', () => {
         loadAdminNavbar('logs'); 
+        initI18n();
     });
 </script>
 
