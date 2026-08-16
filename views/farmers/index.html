@@ -600,7 +600,7 @@
                 label_severity: "Severity", opt_low: "Low", opt_moderate: "Moderate", opt_high: "High", opt_total_loss: "Total Loss",
                 label_description: "Description of Damage", desc_placeholder: "Describe what happened...",
                 label_photos: "Photographic Evidence",
-                photo_info: "Each photo will automatically capture your GPS location when taken. This helps admins verify the photo was taken at the declared farm location.",
+                photo_info: "Upload clear photos showing the extent of the crop damage.",
                 btn_take_photo: "Take Photo or Upload from Gallery", btn_cancel: "Cancel", btn_submit_report: "Submit Report",
                 modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
                 label_specific_location: "Specific Location Details", label_street: "Street / Sitio / Purok / House No.",
@@ -667,7 +667,7 @@
                 label_severity: "Kalubhaan", opt_low: "Mababa", opt_moderate: "Katamtaman", opt_high: "Mataas", opt_total_loss: "Kumpletong Pagkalugi",
                 label_description: "Paglalarawan ng Pinsala", desc_placeholder: "Ilarawan kung ano ang nangyari...",
                 label_photos: "Larawan bilang Ebidensya",
-                photo_info: "Awtomatikong makukuha ng bawat larawan ang iyong lokasyon sa GPS kapag kinuha. Nakakatulong ito sa mga admin na i-verify na ang larawan ay kinuha sa idineklarang lokasyon ng sakahan.",
+                photo_info: "Mag-upload ng malinaw na mga larawan na nagpapakita ng lawak ng pinsala sa pananim.",
                 btn_take_photo: "Kumuha ng Larawan o Mag-upload mula sa Gallery", btn_cancel: "Kanselahin", btn_submit_report: "Isumite ang Ulat",
                 modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
                 label_specific_location: "Detalye ng Tiyak na Lokasyon", label_street: "Kalye / Sitio / Purok / Numero ng Bahay",
@@ -734,7 +734,7 @@
                 label_severity: "Grabe sa Kadaot", opt_low: "Gamay", opt_moderate: "Kasarangan", opt_high: "Grabe", opt_total_loss: "Total nga Kadaot",
                 label_description: "Deskripsyon sa Kadaot", desc_placeholder: "Isaysay kung unsa ang nahitabo...",
                 label_photos: "Litrato nga Ebidensya",
-                photo_info: "Awtomatik nga makuha sa matag litrato ang imong GPS location kung kuhaan. Makatabang ni para ma-verify sa mga admin nga ang litrato gikuha sa gideklarar nga lokasyon sa uma.",
+                photo_info: "Pag-upload og klaro nga mga litrato nga nagpakita sa gidak-on sa kadaot sa tanom.",
                 btn_take_photo: "Pagkuha og Litrato o Pag-upload gikan sa Gallery", btn_cancel: "Kanselahon", btn_submit_report: "I-submit ang Report",
                 modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
                 label_specific_location: "Detalyado nga Lokasyon", label_street: "Dalan / Sitio / Purok / Numero sa Balay",
@@ -790,7 +790,6 @@
         const REGION_X_NAME = 'Region X \u2013 Northern Mindanao';
 
         let selectedFiles = [];
-        let photoGeoTags  = [];
 
         document.addEventListener("DOMContentLoaded", () => {
             loadDashboardData();
@@ -939,8 +938,6 @@
                 const isDupe = selectedFiles.some(s => s.name === f.name && s.size === f.size);
                 if (!isDupe) {
                     selectedFiles.push(f);
-                    photoGeoTags.push({ lat: null, lng: null, status: 'loading' });
-                    captureGeoForPhoto(selectedFiles.length - 1);
                 }
             });
 
@@ -948,32 +945,8 @@
             renderPreviews();
         }
 
-        function captureGeoForPhoto(index) {
-            if (!navigator.geolocation) {
-                photoGeoTags[index].status = 'failed';
-                renderPreviews();
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                pos => {
-                    if (!photoGeoTags[index]) return;
-                    photoGeoTags[index].lat    = pos.coords.latitude;
-                    photoGeoTags[index].lng    = pos.coords.longitude;
-                    photoGeoTags[index].status = 'success';
-                    renderPreviews();
-                },
-                () => {
-                    if (!photoGeoTags[index]) return;
-                    photoGeoTags[index].status = 'failed';
-                    renderPreviews();
-                },
-                { timeout: 10000, maximumAge: 30000 }
-            );
-        }
-
         function removePhoto(index) {
             selectedFiles.splice(index, 1);
-            photoGeoTags.splice(index, 1);
             renderPreviews();
         }
 
@@ -991,28 +964,13 @@
             countLabel.classList.remove('hidden');
 
             selectedFiles.forEach((file, i) => {
-                const geo  = photoGeoTags[i];
-                const url  = URL.createObjectURL(file);
-
-                let badgeHtml = '';
-                if (geo.status === 'loading') {
-                    badgeHtml = `<div class="geo-badge loading"><i class="fa-solid fa-spinner fa-spin"></i> Locating...</div>`;
-                } else if (geo.status === 'success') {
-                    const mapUrl = `https://www.google.com/maps?q=${geo.lat},${geo.lng}`;
-                    badgeHtml = `<div class="geo-badge success" title="${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}">
-                        <a href="${mapUrl}" target="_blank" style="color:inherit;text-decoration:none;">
-                            <i class="fa-solid fa-location-dot"></i> ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}
-                        </a></div>`;
-                } else {
-                    badgeHtml = `<div class="geo-badge failed"><i class="fa-solid fa-triangle-exclamation"></i> No GPS</div>`;
-                }
+                const url = URL.createObjectURL(file);
 
                 const wrap = document.createElement('div');
                 wrap.className = 'img-thumb';
                 wrap.innerHTML = `
                     <img src="${url}" alt="Photo ${i + 1}">
                     <button type="button" class="remove-btn" onclick="removePhoto(${i})" title="Remove photo">&times;</button>
-                    ${badgeHtml}
                 `;
                 container.appendChild(wrap);
             });
@@ -1323,6 +1281,29 @@
             currentMaxArea = (opt && opt.value) ? parseFloat(opt.getAttribute("data-max-area")) : 0;
             document.getElementById("landArea").max = currentMaxArea;
             validateArea();
+
+            const picker = document.getElementById('cropPicker');
+            const locationId = opt ? opt.value : '';
+            if (!locationId) {
+                picker.innerHTML = '<option value="">' + t('opt_select_crop') + '</option>';
+                farmerCropsData = [];
+                return;
+            }
+            picker.innerHTML = '<option value="" disabled selected>Loading crops for this farm...</option>';
+            fetch('../../api/dashboard/get_crop_options.php?location_id=' + locationId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        farmerCropsData = data.crops || [];
+                        picker.innerHTML = '<option value="">' + t('opt_select_crop') + '</option>';
+                        farmerCropsData.forEach(c => {
+                            picker.innerHTML += '<option value="' + c.Crop_ID + '">' + c.Crop_Name + '</option>';
+                        });
+                        if (!farmerCropsData.length) {
+                            picker.innerHTML = '<option value="" disabled>' + t('opt_no_crops') + '</option>';
+                        }
+                    }
+                });
         }
 
         function validateArea() {
@@ -1343,7 +1324,6 @@
         function openReportModal(editId) {
             document.getElementById("reportForm").reset();
             selectedFiles = [];
-            photoGeoTags  = [];
             document.getElementById('imagePreviewContainer').innerHTML = '';
             document.getElementById('photoCount').classList.add('hidden');
 
@@ -1383,14 +1363,6 @@
 
             selectedFiles.forEach((file, i) => {
                 formData.append('images[]', file);
-                const geo = photoGeoTags[i];
-                if (geo && geo.lat && geo.lng) {
-                    formData.append(`geo_lat_${i}`, geo.lat);
-                    formData.append(`geo_lng_${i}`, geo.lng);
-                } else {
-                    formData.append(`geo_lat_${i}`, '');
-                    formData.append(`geo_lng_${i}`, '');
-                }
             });
 
             Swal.fire({ title: t('sw_submitting_title'), text: t('sw_submitting_text'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -1412,7 +1384,7 @@
                 Swal.close();
                 if (data.status === 'success') {
                     const r = data.data;
-                    selectedFiles = []; photoGeoTags = [];
+                    selectedFiles = [];
                     document.getElementById('imagePreviewContainer').innerHTML = '';
                     document.getElementById('photoCount').classList.add('hidden');
                     document.getElementById('reportId').value     = r.Damage_Report_ID;

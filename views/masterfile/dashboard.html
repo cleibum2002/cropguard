@@ -283,21 +283,12 @@
                     </div>
                 </div>
                 
-                <!-- ── PHOTO EVIDENCE + GEOTAGS ──────────────────────────── -->
+                <!-- ── PHOTO EVIDENCE ──────────────────────────── -->
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Photographic Evidence</h4>
-                    <!-- Geo summary badge -->
-                    <span id="geoSummaryBadge" class="hidden text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"></span>
                 </div>
-                <!-- Legend -->
                 <div class="flex items-center gap-4 mb-3">
-                    <span class="flex items-center gap-1 text-[9px] font-bold text-green-600">
-                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> GPS captured
-                    </span>
-                    <span class="flex items-center gap-1 text-[9px] font-bold text-red-500">
-                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> No GPS data
-                    </span>
-                    <span class="text-[9px] text-gray-400 italic">Click photo to open full size · Click coordinates to view on map</span>
+                    <span class="text-[9px] text-gray-400 italic">Click photo to open full size</span>
                 </div>
                 <div id="reviewGallery" class="flex flex-wrap gap-4"></div>
 
@@ -497,62 +488,26 @@
             }
         }
 
-        // ─── GEOTAGGED GALLERY RENDERER ───────────────────────────────────────
-        // Used by both admin dashboard and damage_reports pages
-        function renderGeoGallery(containerId, images, summaryBadgeId) {
+        // ─── PHOTO GALLERY RENDERER ───────────────────────────────────────
+        function renderGeoGallery(containerId, images) {
             const gallery = document.getElementById(containerId);
             gallery.innerHTML = '';
 
             if (!images || !images.length) {
                 gallery.innerHTML = '<p class="text-sm text-gray-400 italic bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">No photographic evidence is attached to this report.</p>';
-                if (summaryBadgeId) document.getElementById(summaryBadgeId).classList.add('hidden');
                 return;
             }
 
-            let geoCount = 0;
             images.forEach((img, idx) => {
-                const hasGeo = img.geo_lat && img.geo_lng;
-                if (hasGeo) geoCount++;
-
-                const mapUrl  = hasGeo ? `https://www.google.com/maps?q=${img.geo_lat},${img.geo_lng}` : null;
-                const latText = hasGeo ? parseFloat(img.geo_lat).toFixed(5)  : null;
-                const lngText = hasGeo ? parseFloat(img.geo_lng).toFixed(5) : null;
-
                 const card = document.createElement('div');
                 card.className = 'geo-photo-card';
                 card.innerHTML = `
                     <a href="${img.path || img}" target="_blank">
                         <img src="${img.path || img}" alt="Evidence photo ${idx + 1}" loading="lazy">
                     </a>
-                    <div class="geo-dot ${hasGeo ? 'ok' : 'none'}" title="${hasGeo ? 'GPS location captured' : 'No GPS data'}">
-                        <i class="fa-solid ${hasGeo ? 'fa-location-dot' : 'fa-location-slash'}" style="font-size:7px;"></i>
-                    </div>
-                    <div class="geo-info ${hasGeo ? 'geotagged' : 'no-geo'}">
-                        ${hasGeo
-                            ? `<a href="${mapUrl}" target="_blank" title="Open in Google Maps">
-                                <i class="fa-solid fa-location-dot"></i> ${latText}, ${lngText}
-                               </a>`
-                            : '<i class="fa-solid fa-triangle-exclamation"></i> No GPS data'}
-                    </div>
                 `;
                 gallery.appendChild(card);
             });
-
-            // Update the summary badge
-            if (summaryBadgeId) {
-                const badge = document.getElementById(summaryBadgeId);
-                badge.classList.remove('hidden');
-                if (geoCount === images.length) {
-                    badge.textContent = `✓ All ${geoCount} photos geotagged`;
-                    badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700';
-                } else if (geoCount === 0) {
-                    badge.textContent = 'No photos geotagged';
-                    badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700';
-                } else {
-                    badge.textContent = `${geoCount}/${images.length} photos geotagged`;
-                    badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700';
-                }
-            }
         }
 
         // ─── DASHBOARD DATA LOAD ──────────────────────────────────────────────
@@ -644,7 +599,6 @@
             document.getElementById('adminReviewProfile').innerHTML = '<p class="text-xs italic text-gray-400 col-span-3">Loading profile...</p>';
             document.getElementById('adminAidQty').value  = "";
             document.getElementById('adminAidItem').value = "";
-            document.getElementById('geoSummaryBadge').classList.add('hidden');
             updateAidDetails();
 
             const footer     = document.getElementById('reviewModalFooter');
@@ -746,9 +700,9 @@
                         // data.images should now be array of { path, geo_lat, geo_lng }
                         // For backwards compat, handle both plain strings and objects
                         const imagesNormalized = (data.images || []).map(img =>
-                            typeof img === 'string' ? { path: img, geo_lat: null, geo_lng: null } : img
+                            typeof img === 'string' ? { path: img } : img
                         );
-                        renderGeoGallery('reviewGallery', imagesNormalized, 'geoSummaryBadge');
+                        renderGeoGallery('reviewGallery', imagesNormalized);
                     } else {
                         document.getElementById('reviewFarmerNotes').innerText = "Error loading details.";
                     }

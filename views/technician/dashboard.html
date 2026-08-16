@@ -269,7 +269,7 @@
             severity_severe: "Severe", severity_severe_range: "51-80% Damage",
             severity_total_loss: "Total Loss", severity_total_loss_range: "81-100% Damage",
             label_attach_evidence: "Attach Field Evidence (Photos)",
-            hint_gps_capture: "Each photo will automatically capture your GPS location when taken, confirming you physically visited the farm.",
+            hint_gps_capture: "Upload clear photos showing what you observed during your field inspection.",
             label_click_upload: "Click to upload photos", label_upload_hint: "Accepts JPG, PNG (Max 5MB per file)",
             btn_submit_validation: "Submit Field Validation", btn_cancel: "Cancel",
             modal_farmer_report_title: "Farmer's Damage Report", modal_pre_inspection: "Pre-Inspection Details",
@@ -307,7 +307,7 @@
             severity_severe: "Malubha", severity_severe_range: "51-80% na Pinsala",
             severity_total_loss: "Kabuuang Pagkawala", severity_total_loss_range: "81-100% na Pinsala",
             label_attach_evidence: "Ilakip ang Ebidensya sa Field (Larawan)",
-            hint_gps_capture: "Awtomatikong makukuha ng bawat larawan ang iyong GPS location kapag kinuha, na nagpapatunay na personal mong binisita ang bukid.",
+            hint_gps_capture: "Mag-upload ng malinaw na mga larawan ng iyong napansin habang sinusuri ang bukid.",
             label_click_upload: "I-click para mag-upload ng larawan", label_upload_hint: "Tumatanggap ng JPG, PNG (Max 5MB kada file)",
             btn_submit_validation: "Isumite ang Field Validation", btn_cancel: "Kanselahin",
             modal_farmer_report_title: "Ulat ng Pinsala ng Magsasaka", modal_pre_inspection: "Detalye Bago ang Inspeksyon",
@@ -337,7 +337,6 @@
     }
 
     let selectedFiles = [];
-    let photoGeoTags  = [];
 
     document.addEventListener('DOMContentLoaded', loadData);
 
@@ -540,7 +539,6 @@
 
         document.getElementById('inspectionForm').reset();
         selectedFiles = [];
-        photoGeoTags  = [];
         renderPreviews();
         switchTab('validation');
     }
@@ -550,34 +548,9 @@
         const newFiles = Array.from(event.target.files);
         newFiles.forEach(f => {
             selectedFiles.push(f);
-            photoGeoTags.push({ lat: null, lng: null, status: 'loading' });
-            captureGeoForPhoto(selectedFiles.length - 1);
         });
         event.target.value = '';
         renderPreviews();
-    }
-
-    function captureGeoForPhoto(index) {
-        if (!navigator.geolocation) {
-            photoGeoTags[index].status = 'failed';
-            renderPreviews();
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            pos => {
-                if (!photoGeoTags[index]) return;
-                photoGeoTags[index].lat    = pos.coords.latitude;
-                photoGeoTags[index].lng    = pos.coords.longitude;
-                photoGeoTags[index].status = 'success';
-                renderPreviews();
-            },
-            () => {
-                if (!photoGeoTags[index]) return;
-                photoGeoTags[index].status = 'failed';
-                renderPreviews();
-            },
-            { timeout: 10000, maximumAge: 30000 }
-        );
     }
 
     function renderPreviews() {
@@ -587,23 +560,12 @@
         if (selectedFiles.length > 0) {
             container.classList.remove('hidden');
             selectedFiles.forEach((file, index) => {
-                const geo = photoGeoTags[index];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    let badgeHtml = '';
-                    if (geo.status === 'loading') {
-                        badgeHtml = `<div class="geo-badge loading"><i class="fa-solid fa-spinner fa-spin"></i> Locating...</div>`;
-                    } else if (geo.status === 'success') {
-                        badgeHtml = `<div class="geo-badge success" title="${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}"><i class="fa-solid fa-location-dot"></i> ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)}</div>`;
-                    } else {
-                        badgeHtml = `<div class="geo-badge failed"><i class="fa-solid fa-triangle-exclamation"></i> No GPS</div>`;
-                    }
-
                     const imgDiv = document.createElement('div');
                     imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
                     imgDiv.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover">
-                        ${badgeHtml}
                         <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
                             <button type="button" onclick="removeFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
@@ -621,7 +583,6 @@
 
     function removeFile(index) {
         selectedFiles.splice(index, 1);
-        photoGeoTags.splice(index, 1);
         renderPreviews();
     }
 
@@ -632,14 +593,6 @@
         const formData = new FormData(document.getElementById('inspectionForm'));
         selectedFiles.forEach((file, i) => {
             formData.append('evidencePhotos[]', file);
-            const geo = photoGeoTags[i];
-            if (geo && geo.lat && geo.lng) {
-                formData.append(`geo_lat_${i}`, geo.lat);
-                formData.append(`geo_lng_${i}`, geo.lng);
-            } else {
-                formData.append(`geo_lat_${i}`, '');
-                formData.append(`geo_lng_${i}`, '');
-            }
         });
 
         Swal.fire({ title: 'Uploading Data...', text: 'Submitting your report and evidence photos.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -652,7 +605,6 @@
                 Swal.fire({ icon: 'success', title: 'Inspection Submitted', text: 'Admin notified and photos uploaded.', showConfirmButton: false, timer: 1500 });
                 document.getElementById('inspectionForm').reset();
                 selectedFiles = [];
-                photoGeoTags  = [];
                 document.getElementById('reportIdField').value = '';
                 renderPreviews();
                 loadData();

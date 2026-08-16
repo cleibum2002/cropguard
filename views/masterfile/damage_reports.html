@@ -168,21 +168,6 @@
                     </div>
                 </div>
                 
-                <!-- ── GEOTAG LEGEND (applies to photos in both columns above) ──── -->
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_photographic_evidence">Photographic Evidence</h4>
-                    <span id="geoSummaryBadge" class="hidden text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full"></span>
-                </div>
-                <div class="flex items-center gap-4 mb-6">
-                    <span class="flex items-center gap-1 text-[9px] font-bold text-green-600">
-                        <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span> <span data-i18n="legend_gps_captured">GPS captured</span>
-                    </span>
-                    <span class="flex items-center gap-1 text-[9px] font-bold text-red-500">
-                        <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span> <span data-i18n="legend_no_gps">No GPS data</span>
-                    </span>
-                    <span class="text-[9px] text-gray-400 italic" data-i18n="legend_click_coords">Click coordinates to open in Google Maps</span>
-                </div>
-
                 <div id="reliefCalculationSection" class="mt-6 pt-6 border-t border-gray-100">
                     <h4 class="text-[10px] font-black text-green-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-seedling"></i> <span data-i18n="label_relief_calc">Automated Relief Calculation</span>
@@ -728,42 +713,22 @@
             document.getElementById("nextBtn").disabled = end >= filteredData.length;
         }
 
-        // ─── GEOTAGGED GALLERY RENDERER ───────────────────────────────────────
-        function renderGeoGallery(containerId, images, summaryBadgeId) {
+        // ─── PHOTO GALLERY RENDERER ───────────────────────────────────────
+        function renderGeoGallery(containerId, images) {
             const gallery = document.getElementById(containerId);
             gallery.innerHTML = '';
             if (!images || !images.length) {
                 gallery.innerHTML = `<p class="text-sm text-gray-400 italic bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">${t('no_photo_evidence')}</p>`;
-                if (summaryBadgeId) document.getElementById(summaryBadgeId).classList.add('hidden');
                 return;
             }
-            let geoCount = 0;
             images.forEach((img, idx) => {
-                const hasGeo  = img.geo_lat && img.geo_lng;
-                if (hasGeo) geoCount++;
-                const mapUrl  = hasGeo ? `https://www.google.com/maps?q=${img.geo_lat},${img.geo_lng}` : null;
-                const latText = hasGeo ? parseFloat(img.geo_lat).toFixed(5) : null;
-                const lngText = hasGeo ? parseFloat(img.geo_lng).toFixed(5) : null;
                 const card = document.createElement('div');
                 card.className = 'geo-photo-card';
                 card.innerHTML = `
                     <a href="${img.path || img}" target="_blank"><img src="${img.path || img}" alt="${t('label_evidence_photo')} ${idx + 1}" loading="lazy"></a>
-                    <div class="geo-dot ${hasGeo ? 'ok' : 'none'}" title="${hasGeo ? t('legend_gps_captured') : t('legend_no_gps')}">
-                        <i class="fa-solid ${hasGeo ? 'fa-location-dot' : 'fa-location-slash'}" style="font-size:7px;"></i>
-                    </div>
-                    <div class="geo-info ${hasGeo ? 'geotagged' : 'no-geo'}">
-                        ${hasGeo ? `<a href="${mapUrl}" target="_blank"><i class="fa-solid fa-location-dot"></i> ${latText}, ${lngText}</a>` : `<i class="fa-solid fa-triangle-exclamation"></i> ${t('legend_no_gps')}`}
-                    </div>
                 `;
                 gallery.appendChild(card);
             });
-            if (summaryBadgeId) {
-                const badge = document.getElementById(summaryBadgeId);
-                badge.classList.remove('hidden');
-                if (geoCount === images.length)  { badge.textContent = t('badge_all_geotagged').replace('{n}', geoCount); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
-                else if (geoCount === 0)          { badge.textContent = t('badge_no_geotagged'); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
-                else                              { badge.textContent = t('badge_partial_geotagged').replace('{a}', geoCount).replace('{b}', images.length); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
-            }
         }
 
         // ─── REVIEW MODAL ─────────────────────────────────────────────────────
@@ -779,7 +744,6 @@
             document.getElementById('reviewTechGallery').innerHTML = "";
             document.getElementById('adminReviewProfile').innerHTML = `<p class="italic text-gray-400 col-span-3">${t('loading_profile')}</p>`;
            resetMultiAidForm();
-            document.getElementById('geoSummaryBadge').classList.add('hidden');
 
             const footer     = document.getElementById('reviewModalFooter');
             const aidSection = document.getElementById('aidAllocationSection');
@@ -868,22 +832,12 @@
                         // photos land in the farmer column and technician photos land in the technician
                         // column, instead of one mixed pile.
                         const imagesNormalized = (data.images || []).map(img =>
-                            typeof img === 'string' ? { path: img, geo_lat: null, geo_lng: null, uploaded_by: 'Farmer' } : img
+                            typeof img === 'string' ? { path: img, uploaded_by: 'Farmer' } : img
                         );
                         const farmerImages = imagesNormalized.filter(img => (img.uploaded_by || 'Farmer') !== 'Technician');
                         const techImages   = imagesNormalized.filter(img => img.uploaded_by === 'Technician');
-                        renderGeoGallery('reviewFarmerGallery', farmerImages, null);
-                        renderGeoGallery('reviewTechGallery', techImages, null);
-
-                        // Overall GPS-tagged summary badge covers every photo on the report, farmer + technician combined
-                        if (imagesNormalized.length > 0) {
-                            const geoCount = imagesNormalized.filter(img => img.geo_lat && img.geo_lng).length;
-                            const badge = document.getElementById('geoSummaryBadge');
-                            badge.classList.remove('hidden');
-                            if (geoCount === imagesNormalized.length) { badge.textContent = t('badge_all_geotagged').replace('{n}', geoCount); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-green-100 text-green-700'; }
-                            else if (geoCount === 0)                  { badge.textContent = t('badge_no_geotagged'); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-red-100 text-red-700'; }
-                            else                                      { badge.textContent = t('badge_partial_geotagged').replace('{a}', geoCount).replace('{b}', imagesNormalized.length); badge.className = 'text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-amber-100 text-amber-700'; }
-                        }
+                        renderGeoGallery('reviewFarmerGallery', farmerImages);
+                        renderGeoGallery('reviewTechGallery', techImages);
                     } else {
                         document.getElementById('reviewFarmerNotes').innerText = t('error_loading_details');
                     }

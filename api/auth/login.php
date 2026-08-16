@@ -11,7 +11,7 @@ if (isset($input['email'], $input['password'])) {
     $password = $input['password'];
 
     // --- ONLY ONE QUERY NEEDED NOW ---
-    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS FROM users WHERE Email = ?");
+    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS FROM users WHERE BINARY Email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $res = $stmt->get_result();

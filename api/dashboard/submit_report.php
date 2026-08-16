@@ -40,12 +40,35 @@ try {
         $stmt_geo->execute();
     }
     
-    // Update Crop Details
-    if ($crop_id) {
-        $sql_crop = "UPDATE crop SET Type_ID = ?, Planting_Date = ?, Area_Hectares = ? WHERE Crop_ID = ?";
-        $stmt_crop = $conn->prepare($sql_crop);
-        $stmt_crop->bind_param("isdi", $type_id, $planting_date, $area, $crop_id);
-        $stmt_crop->execute();
+    // Find-or-create the actual `crop` row for this Farmer + Location + Type combo.
+    // The dropdown now sends a Type_ID (from the farm's own registration), not a
+    // guaranteed-to-exist Crop_ID — so we resolve it into a real Crop_ID here.
+    if ($type_id && $location_id) {
+        $findCrop = $conn->prepare("SELECT Crop_ID FROM crop WHERE Farmer_ID = ? AND Location_ID = ? AND Type_ID = ? LIMIT 1");
+        $findCrop->bind_param("iii", $farmer_id, $location_id, $type_id);
+        $findCrop->execute();
+        $existing = $findCrop->get_result()->fetch_assoc();
+        $findCrop->close();
+
+        if ($existing) {
+            $crop_id = $existing['Crop_ID'];
+            $sql_crop = "UPDATE crop SET Planting_Date = ?, Area_Hectares = ? WHERE Crop_ID = ?";
+            $stmt_crop = $conn->prepare($sql_crop);
+            $stmt_crop->bind_param("sdi", $planting_date, $area, $crop_id);
+            $stmt_crop->execute();
+        } else {
+            $cropNameStmt = $conn->prepare("SELECT Crop_Name FROM crop_type WHERE Type_ID = ?");
+            $cropNameStmt->bind_param("i", $type_id);
+            $cropNameStmt->execute();
+            $crop_name = $cropNameStmt->get_result()->fetch_assoc()['Crop_Name'] ?? 'Registered Crop';
+            $cropNameStmt->close();
+
+            $insertCrop = $conn->prepare("INSERT INTO crop (Crop_Name, Type_ID, Planting_Date, Area_Hectares, Farmer_ID, Location_ID) VALUES (?, ?, ?, ?, ?, ?)");
+            $insertCrop->bind_param("sisdii", $crop_name, $type_id, $planting_date, $area, $farmer_id, $location_id);
+            $insertCrop->execute();
+            $crop_id = $insertCrop->insert_id;
+            $insertCrop->close();
+        }
     }
 
     // 4. INSERT OR UPDATE (FIXED: Added Type_ID to INSERT)

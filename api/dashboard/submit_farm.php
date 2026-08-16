@@ -58,8 +58,10 @@ try {
     $crop_name = $cropTypeResult['Crop_Name'] ?? 'Registered Crop';
     $cropNameStmt->close();
 
-    $insertCrop = $conn->prepare("INSERT INTO crop (Crop_Name, Type_ID, Area_Hectares, Farmer_ID) VALUES (?, ?, ?, ?)");
-    $insertCrop->bind_param("sidi", $crop_name, $type_id, $area, $farmer_id);
+    $new_location_id = $conn->insert_id;
+
+    $insertCrop = $conn->prepare("INSERT INTO crop (Crop_Name, Type_ID, Area_Hectares, Farmer_ID, Location_ID) VALUES (?, ?, ?, ?, ?)");
+    $insertCrop->bind_param("sidii", $crop_name, $type_id, $area, $farmer_id, $new_location_id);
     $insertCrop->execute();
     $insertCrop->close();
 
