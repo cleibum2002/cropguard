@@ -117,7 +117,7 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
+    <aside class="hidden md:flex bg-[#11542e] w-64 min-h-screen flex-col shadow-2xl z-30 flex-shrink-0">
         <div class="p-6 border-b border-white/10 flex flex-col items-center gap-3">
             <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
                 <i class="fa-solid fa-wheat-awn text-2xl text-[#f1c40f]"></i>
@@ -152,45 +152,54 @@
     </aside>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-8 bg-white border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-user-circle text-[#11542e] text-lg"></i>
-                <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">My Profile</span>
+        <header class="h-16 flex items-center justify-between px-4 sm:px-8 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+                <a id="backBtnMobile" href="#" class="md:hidden w-8 h-8 flex-shrink-0 flex items-center justify-center text-gray-500 hover:text-[#11542e] -ml-1">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <i class="hidden md:inline-block fa-solid fa-user-circle text-[#11542e] text-lg"></i>
+                <span class="text-sm sm:text-base font-black text-gray-800 tracking-tight truncate" data-i18n="header_title">My Profile</span>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                 <div id="langSwitcher" class="hidden flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link hidden sm:inline" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link sm:hidden" data-lang="en" onclick="setLanguage('en')">EN</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link hidden sm:inline" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link sm:hidden" data-lang="tl" onclick="setLanguage('tl')">TL</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                    <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                    <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
                 </div>
-                <span class="text-xs text-gray-400 font-bold uppercase tracking-widest" data-i18n="header_sub">Account Settings</span>
+                <span class="hidden sm:inline text-xs text-gray-400 font-bold uppercase tracking-widest" data-i18n="header_sub">Account Settings</span>
+                <button onclick="confirmLogout()" class="md:hidden w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 pb-8 custom-scrollbar">
             <div class="max-w-3xl mx-auto space-y-6">
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
 
-                    <div class="bg-gradient-to-r from-[#11542e] to-[#1a7a42] h-28 relative">
-                        <div class="absolute -bottom-10 left-8">
-                            <div id="avatarCircle" class="w-20 h-20 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center text-[#11542e] font-black text-3xl">
+                    <div class="bg-gradient-to-r from-[#11542e] to-[#1a7a42] h-24 sm:h-28 relative">
+                        <div class="absolute -bottom-8 sm:-bottom-10 left-4 sm:left-8">
+                            <div id="avatarCircle" class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center text-[#11542e] font-black text-2xl sm:text-3xl">
                                 ?
                             </div>
                         </div>
                     </div>
 
-                    <div class="pt-14 px-8 pb-6 border-b border-gray-100">
-                        <h2 id="profileDisplayName" class="text-xl font-black text-gray-800">Loading...</h2>
+                    <div class="pt-11 sm:pt-14 px-4 sm:px-8 pb-6 border-b border-gray-100">
+                        <h2 id="profileDisplayName" class="text-lg sm:text-xl font-black text-gray-800">Loading...</h2>
                         <div class="flex items-center gap-2 mt-1">
                             <span id="profileRoleBadge" class="bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">—</span>
                             <span id="profileStatusBadge" class="bg-gray-100 text-gray-500 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">—</span>
                         </div>
                     </div>
 
-                    <div class="p-8 space-y-6">
+                    <div class="p-4 sm:p-8 space-y-6">
                         <div>
                             <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <i class="fa-solid fa-id-card text-[#11542e]"></i> <span data-i18n="section_basic_info">Basic Information</span>
@@ -247,8 +256,8 @@
                             </div>
                         </div>
 
-                        <div class="flex justify-end pt-2">
-                            <button onclick="saveProfile()" class="bg-[#11542e] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-green-800 transition-all flex items-center gap-2">
+                        <div class="flex justify-stretch sm:justify-end pt-2">
+                            <button onclick="saveProfile()" class="w-full sm:w-auto justify-center bg-[#11542e] text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-green-800 transition-all flex items-center gap-2">
                                 <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">Save Changes</span>
                             </button>
                         </div>
@@ -268,7 +277,9 @@
                 'Farmer':     '../../views/farmers/index.html',
                 'Encoder':    '../../views/encoder/dashboard.html'
             };
-            document.getElementById('backBtn').href = routes[role] || '../../auth.html';
+            const backRoute = routes[role] || '../../auth.html';
+            document.getElementById('backBtn').href = backRoute;
+            document.getElementById('backBtnMobile').href = backRoute;
 
             if (role === 'Farmer') document.getElementById('rsbaField').classList.remove('hidden');
             if (role === 'Technician' || role === 'MAO') document.getElementById('areaField').classList.remove('hidden');

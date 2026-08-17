@@ -74,6 +74,7 @@
         .user-item:hover { background-color: rgba(17,84,46,0.08); }
         .user-item.active { background-color: rgba(17,84,46,0.15); border-left: 3px solid #11542e; }
         .message-bubble { max-width: 70%; }
+        @media (max-width: 767px) { .message-bubble { max-width: 85%; } }
         .chat-area { height: calc(100vh - 180px); }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
@@ -86,7 +87,7 @@
     <div class="flex w-full h-screen">
 
         <!-- LEFT PANEL: User List -->
-        <div class="w-80 bg-white border-r border-gray-100 flex flex-col flex-shrink-0 shadow-sm">
+        <div id="userListPanel" class="flex w-full md:w-80 bg-white border-r border-gray-100 flex-col md:flex flex-shrink-0 shadow-sm">
             
             <!-- Header -->
             <div class="p-4 border-b border-gray-100 bg-[#11542e]">
@@ -100,9 +101,11 @@
                             <p id="currentUserName" class="text-white/50 text-[10px]">Loading...</p>
                         </div>
                     </div>
-                    <div id="langSwitcher" class="hidden flex flex-col items-end gap-0.5 text-[10px] font-bold text-white/50">
+                    <div id="langSwitcher" class="hidden flex items-center gap-1.5 text-[10px] font-bold text-white/50 flex-shrink-0">
                         <span class="lang-link" data-lang="en" onclick="setLanguage('en')">EN</span>
+                        <span>|</span>
                         <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">TL</span>
+                        <span>|</span>
                         <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
                     </div>
                 </div>
@@ -125,7 +128,7 @@
         </div>
 
         <!-- RIGHT PANEL: Chat Window -->
-        <div class="flex-1 flex flex-col">
+        <div id="rightPanel" class="hidden md:flex flex-1 flex-col w-full">
 
             <!-- No conversation selected -->
             <div id="noChatSelected" class="flex-1 flex flex-col items-center justify-center text-center p-8">
@@ -140,10 +143,13 @@
             <div id="chatWindow" class="flex-1 flex flex-col hidden">
 
                 <!-- Chat Header -->
-                <div class="h-16 bg-white border-b border-gray-100 flex items-center px-6 gap-4 flex-shrink-0 shadow-sm">
+                <div class="h-16 bg-white border-b border-gray-100 flex items-center px-4 sm:px-6 gap-3 sm:gap-4 flex-shrink-0 shadow-sm">
+                    <button onclick="closeChatMobile()" class="md:hidden w-8 h-8 flex-shrink-0 flex items-center justify-center text-gray-500 hover:text-[#11542e] -ml-1">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
                     <div class="w-9 h-9 bg-[#11542e] text-white rounded-full flex items-center justify-center font-black text-sm flex-shrink-0" id="chatAvatar">?</div>
-                    <div>
-                        <p id="chatName" class="text-sm font-black text-gray-800" data-i18n="select_user_default">Select a user</p>
+                    <div class="min-w-0">
+                        <p id="chatName" class="text-sm font-black text-gray-800 truncate" data-i18n="select_user_default">Select a user</p>
                         <p id="chatRole" class="text-[10px] text-gray-400 uppercase font-bold"></p>
                     </div>
                 </div>
@@ -263,6 +269,14 @@
             document.getElementById('noChatSelected').classList.add('hidden');
             document.getElementById('chatWindow').classList.remove('hidden');
 
+            // Mobile: swap from the user list to a full-screen chat view.
+            // md:flex/md:w-80 in the base classes keep desktop showing both
+            // panels side by side regardless of these toggles.
+            document.getElementById('userListPanel').classList.remove('flex');
+            document.getElementById('userListPanel').classList.add('hidden');
+            document.getElementById('rightPanel').classList.remove('hidden');
+            document.getElementById('rightPanel').classList.add('flex');
+
             // Load messages
             loadMessages();
 
@@ -272,6 +286,17 @@
             // Start auto refresh
             if (refreshInterval) clearInterval(refreshInterval);
             refreshInterval = setInterval(loadMessages, 3000);
+        }
+
+        // Mobile only: the chat header's back arrow calls this to return to the
+        // user list without leaving the Communication page. Has no effect on
+        // desktop, since the user list is always visible there anyway.
+        function closeChatMobile() {
+            document.getElementById('rightPanel').classList.remove('flex');
+            document.getElementById('rightPanel').classList.add('hidden');
+            document.getElementById('userListPanel').classList.remove('hidden');
+            document.getElementById('userListPanel').classList.add('flex');
+            if (refreshInterval) { clearInterval(refreshInterval); refreshInterval = null; }
         }
 
         async function loadMessages() {

@@ -24,8 +24,18 @@ try {
     if (!$stmt) throw new Exception("Database prepare failed: " . $conn->error);
 
     // Prepare data
-    $lat = !empty($data->latitude) ? (float)$data->latitude : null;
-    $lng = !empty($data->longitude) ? (float)$data->longitude : null;
+    // GPS is now required (captured only via the "Use My Location" button on the
+    // frontend, which the farmer can no longer type over) - this stops bad manual
+    // test values like "26, 33" from ever landing in farm_location again, since a
+    // farm with no/garbage coordinates is what was causing random pins on the MAO heatmap.
+    if (empty($data->latitude) || empty($data->longitude)) {
+        throw new Exception('GPS coordinates are required. Please use the "Use My Location" button.');
+    }
+    $lat = (float)$data->latitude;
+    $lng = (float)$data->longitude;
+    if ($lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
+        throw new Exception('Invalid GPS coordinates received.');
+    }
     $area = (float)$data->area_size;
     $type_id = (int)$data->type_id;
 

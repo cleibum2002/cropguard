@@ -20,7 +20,7 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
+    <aside class="hidden md:flex bg-[#11542e] w-64 min-h-screen flex-col shadow-2xl z-30 flex-shrink-0">
         <div class="p-6 border-b border-white/10 flex flex-col items-center gap-3">
             <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
                 <i class="fa-solid fa-seedling text-2xl text-[#f1c40f]"></i>
@@ -50,29 +50,57 @@
         </nav>
     </aside>
 
+    <!-- Mobile Bottom Navigation - visible only on phones/small tablets -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#11542e] border-t border-white/10 flex items-stretch justify-around h-16 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
+        <a href="index.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-table-columns text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_dashboard_short">Dashboard</span>
+        </a>
+        <a href="my_farms.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-[#f1c40f]">
+            <i class="fa-solid fa-map-location-dot text-lg"></i>
+            <span class="text-[10px] font-bold" data-i18n="nav_farms_short">Farms</span>
+        </a>
+        <a href="request_seeds.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-leaf text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_seeds_short">Seeds</span>
+        </a>
+        <a href="../communication/index.html" class="relative flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-message text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_comm_short">Messages</span>
+            <span id="commRedDotMobile" class="hidden absolute top-1 right-[30%] w-2 h-2 bg-red-500 rounded-full"></span>
+        </a>
+        <a href="../profile/profile.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_profile_short">Profile</span>
+        </a>
+    </nav>
+
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
-            <span class="text-base font-black text-gray-800" data-i18n="header_title">Registered Farm Locations</span>
-            <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+        <header class="h-16 flex items-center justify-between gap-3 px-4 sm:px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <span class="text-sm sm:text-base font-black text-gray-800 truncate" data-i18n="header_title">Registered Farm Locations</span>
+            <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400 flex-shrink-0">
+                <span class="lang-link hidden sm:inline" data-lang="en" onclick="setLanguage('en')">English</span>
+                <span class="lang-link sm:hidden" data-lang="en" onclick="setLanguage('en')">EN</span>
                 <span>|</span>
-                <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                <span class="lang-link hidden sm:inline" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                <span class="lang-link sm:hidden" data-lang="tl" onclick="setLanguage('tl')">TL</span>
                 <span>|</span>
-                <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6 bg-[#f0f2f0]">
             <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-end mb-6">
+                <div class="flex justify-between items-end mb-5 sm:mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Farm Directory</h2>
-                        <p class="text-gray-400 text-sm" data-i18n="page_sub">View and manage the exact coordinates and details of your registered land.</p>
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Farm Directory</h2>
+                        <p class="text-gray-400 text-xs sm:text-sm mt-0.5" data-i18n="page_sub">View and manage the exact coordinates and details of your registered land.</p>
                     </div>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="overflow-x-auto">
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60 border-b border-gray-100">
                                 <tr>
@@ -86,6 +114,9 @@
                                 <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic text-sm">Loading farms...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div id="farmCardsList" class="md:hidden divide-y divide-gray-50">
+                        <div class="px-4 py-10 text-center text-gray-400 italic text-sm">Loading farms...</div>
                     </div>
                 </div>
             </div>
@@ -148,37 +179,60 @@
                 .then(res => res.json())
                 .then(data => {
                     const tbody = document.getElementById('farmTableBody');
+                    const cardsList = document.getElementById('farmCardsList');
                     if (data.status === 'success') {
                         if (data.locations.length === 0) {
                             tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</td></tr>';
+                            cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</div>';
                             return;
                         }
                         
                         tbody.innerHTML = '';
+                        cardsList.innerHTML = '';
                         data.locations.forEach(loc => {
                             // Format coordinates or show N/A
                             let coords = (loc.Latitude && loc.Longitude) 
                                 ? `<a href="https://www.google.com/maps?q=${loc.Latitude},${loc.Longitude}" target="_blank" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-location-crosshairs mr-1"></i> ${t('view_on_map')}</a><br><span class="text-[10px] text-gray-400">${loc.Latitude}, ${loc.Longitude}</span>` 
                                 : `<span class="text-[10px] text-gray-400 italic">${t('no_coords')}</span>`;
 
+                            const brgyText = `${t('brgy_prefix')} ${loc.Barangay || t('na_text')}`;
+                            const rsbaText = `${t('rsba_label')} ${loc.RSBA_Reference_No || t('unregistered')}`;
+                            const areaText = `${loc.Area_Size || '0.00'} ${t('hectares_label')}`;
+                            const landType = landTypeLabel(loc.Land_Type);
+                            const cropName = loc.Crop_Name || t('not_set');
+                            const cycleText = `${t('cycle_label')} ${loc.Cropping_Period || t('na_text')}`;
+
                             tbody.innerHTML += `
                                 <tr class="hover:bg-gray-50/60 transition-all">
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-2"></i>${t('brgy_prefix')} ${loc.Barangay || t('na_text')}</p>
-                                        <p class="text-[10px] text-gray-500 mt-1">${t('rsba_label')} ${loc.RSBA_Reference_No || t('unregistered')}</p>
+                                        <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-2"></i>${brgyText}</p>
+                                        <p class="text-[10px] text-gray-500 mt-1">${rsbaText}</p>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-700">${loc.Area_Size || '0.00'} ${t('hectares_label')}</p>
-                                        <span class="px-2 py-1 mt-1 inline-block bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landTypeLabel(loc.Land_Type)}</span>
+                                        <p class="text-sm font-bold text-gray-700">${areaText}</p>
+                                        <span class="px-2 py-1 mt-1 inline-block bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landType}</span>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-700">${loc.Crop_Name || t('not_set')}</p>
-                                        <p class="text-[10px] text-gray-500">${t('cycle_label')} ${loc.Cropping_Period || t('na_text')}</p>
+                                        <p class="text-sm font-bold text-gray-700">${cropName}</p>
+                                        <p class="text-[10px] text-gray-500">${cycleText}</p>
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         ${coords}
                                     </td>
                                 </tr>
+                            `;
+
+                            cardsList.innerHTML += `
+                                <div class="px-4 py-3">
+                                    <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-1.5"></i>${brgyText}</p>
+                                    <p class="text-[10px] text-gray-500 mt-0.5 ml-5">${rsbaText}</p>
+                                    <div class="flex items-center gap-2 mt-2 ml-5">
+                                        <span class="text-xs font-bold text-gray-700">${areaText}</span>
+                                        <span class="px-2 py-0.5 bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landType}</span>
+                                    </div>
+                                    <p class="text-xs text-gray-600 mt-2 ml-5"><span class="font-bold">${cropName}</span> · ${cycleText}</p>
+                                    <div class="text-xs mt-2 ml-5">${coords}</div>
+                                </div>
                             `;
                         });
                     }
@@ -210,8 +264,11 @@ resetIdleTimer();
             fetch('../../api/messages/get_unread.php')
                 .then(res => res.json())
                 .then(data => {
+                    const hasUnread = !!(data.status === 'success' && data.unread > 0);
                     const dot = document.getElementById('commRedDot');
-                    if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+                    if (dot) dot.classList.toggle('hidden', !hasUnread);
+                    const dotMobile = document.getElementById('commRedDotMobile');
+                    if (dotMobile) dotMobile.classList.toggle('hidden', !hasUnread);
                 })
                 .catch(() => {});
         }

@@ -10,10 +10,11 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body {
             background-image: url('https://images.unsplash.com/photo-1625246333195-58f21a408358?q=80&w=1920&auto=format&fit=crop');
-            background-size: cover; background-position: center; height: 100vh;
+            background-size: cover; background-position: center; min-height: 100vh;
             display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
+            padding: 16px;
         }
-        .container { display: flex; width: 900px; min-height: 600px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 25px rgba(0,0,0,0.5); transition: all 0.3s ease; }
+        .container { display: flex; width: 100%; max-width: 900px; min-height: 600px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 25px rgba(0,0,0,0.5); transition: all 0.3s ease; }
         .left-panel { flex: 1; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
         .logo-img { width: 150px; height: 150px; background: url('assets/images/DA.png') no-repeat center; background-size: contain; margin-bottom: 20px; }
         .left-panel h2 { color: #333; font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
@@ -39,6 +40,18 @@
         .msg-box { font-size: 0.85rem; text-align: center; margin-bottom: 15px; font-weight: bold; }
         .error { color: red; }
         .success { color: green; }
+
+        /* ── Mobile layout: stack panels instead of side-by-side, shrink oversized branding ── */
+        @media (max-width: 700px) {
+            body { padding: 0; align-items: flex-start; }
+            .container { flex-direction: column; width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; background: var(--light-green); }
+            .left-panel { background: var(--light-green); padding: 36px 20px 4px; }
+            .logo-img { width: 90px; height: 90px; margin-bottom: 10px; }
+            .left-panel h2 { color: var(--primary-green); font-size: 1.15rem; }
+            .left-panel p { font-size: 0.85rem; color: #3a5c4c; }
+            .right-panel { background: transparent; padding: 0 24px 36px; justify-content: flex-start; }
+            h1 { font-size: 1.3rem; margin-bottom: 16px; }
+        }
     </style>
 </head>
 <body>

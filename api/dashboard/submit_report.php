@@ -29,17 +29,6 @@ try {
     $severity      = $_POST['severity'];
     $description   = $_POST['description'] ?? '';
 
-    // Geotagging data
-    $geo_lat = !empty($_POST['geo_lat']) ? (float)$_POST['geo_lat'] : null;
-    $geo_lng = !empty($_POST['geo_lng']) ? (float)$_POST['geo_lng'] : null;
-
-    if ($location_id && $geo_lat && $geo_lng) {
-        $sql_geo = "UPDATE farm_location SET Latitude = ?, Longitude = ? WHERE Location_ID = ?";
-        $stmt_geo = $conn->prepare($sql_geo);
-        $stmt_geo->bind_param("ddi", $geo_lat, $geo_lng, $location_id);
-        $stmt_geo->execute();
-    }
-    
     // Find-or-create the actual `crop` row for this Farmer + Location + Type combo.
     // The dropdown now sends a Type_ID (from the farm's own registration), not a
     // guaranteed-to-exist Crop_ID — so we resolve it into a real Crop_ID here.

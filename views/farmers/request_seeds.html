@@ -21,7 +21,7 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
+    <aside class="hidden md:flex bg-[#11542e] w-64 min-h-screen flex-col shadow-2xl z-30 flex-shrink-0">
         <div class="p-6 border-b border-white/10 flex flex-col items-center gap-3">
             <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
                 <i class="fa-solid fa-seedling text-2xl text-[#f1c40f]"></i>
@@ -66,44 +66,75 @@
         </div>
     </aside>
 
+    <!-- Mobile Bottom Navigation - visible only on phones/small tablets -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#11542e] border-t border-white/10 flex items-stretch justify-around h-16 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
+        <a href="index.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-table-columns text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_dashboard_short">Dashboard</span>
+        </a>
+        <a href="my_farms.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-map-location-dot text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_farms_short">Farms</span>
+        </a>
+        <a href="request_seeds.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-[#f1c40f]">
+            <i class="fa-solid fa-leaf text-lg"></i>
+            <span class="text-[10px] font-bold" data-i18n="nav_seeds_short">Seeds</span>
+        </a>
+        <a href="../communication/index.html" class="relative flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-message text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_comm_short">Messages</span>
+            <span id="commRedDotMobile" class="hidden absolute top-1 right-[30%] w-2 h-2 bg-red-500 rounded-full"></span>
+        </a>
+        <a href="../profile/profile.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_profile_short">Profile</span>
+        </a>
+    </nav>
+
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800" data-i18n="header_title">Seed Requests</span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="header_badge">Farmer Mode</span>
+        <header class="h-16 flex items-center justify-between px-4 sm:px-6 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-2 sm:gap-4 min-w-0">
+                <span class="text-sm sm:text-base font-black text-gray-800 truncate" data-i18n="header_title">Seed Requests</span>
+                <span class="hidden sm:inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide flex-shrink-0" data-i18n="header_badge">Farmer Mode</span>
             </div>
-            <div class="flex items-center gap-3 relative">
+            <div class="flex items-center gap-2 sm:gap-3 relative flex-shrink-0">
                 <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link hidden sm:inline" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link sm:hidden" data-lang="en" onclick="setLanguage('en')">EN</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link hidden sm:inline" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link sm:hidden" data-lang="tl" onclick="setLanguage('tl')">TL</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                    <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                    <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
                 </div>
                 <button class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
                     <i class="fa-regular fa-bell text-sm"></i>
                 </button>
+                <button onclick="confirmLogout()" class="md:hidden w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6 bg-[#f0f2f0]">
             <div class="max-w-6xl mx-auto">
                 
-                <div class="flex justify-between items-end mb-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4 mb-5 sm:mb-6">
                     <div>
-                        <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Request New Seeds</h2>
-                        <p class="text-gray-500 text-sm mt-1" data-i18n="page_sub">Submit a request to the DA for seeds or crop varieties not yet available.</p>
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Request New Seeds</h2>
+                        <p class="text-gray-500 text-xs sm:text-sm mt-0.5 sm:mt-1" data-i18n="page_sub">Submit a request to the DA for seeds or crop varieties not yet available.</p>
                     </div>
-                    <button onclick="openRequestModal()" class="bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
+                    <button onclick="openRequestModal()" class="w-full sm:w-auto justify-center bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-paper-plane"></i> <span data-i18n="btn_send_request">Send Request</span>
                     </button>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div class="px-6 py-4 border-b border-gray-50">
-                        <h3 class="font-black text-gray-800" data-i18n="history_title">My Request History</h3>
+                    <div class="px-4 sm:px-6 py-4 border-b border-gray-50">
+                        <h3 class="font-black text-gray-800 text-sm sm:text-base" data-i18n="history_title">My Request History</h3>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
@@ -118,6 +149,9 @@
                                 <tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">Loading requests...</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                    <div id="requestCardsList" class="md:hidden divide-y divide-gray-50">
+                        <div class="px-4 py-10 text-center text-gray-400 italic text-sm">Loading requests...</div>
                     </div>
                 </div>
 
@@ -234,7 +268,9 @@
 
         function loadRequests() {
             const tbody = document.getElementById("requestTableBody");
+            const cardsList = document.getElementById("requestCardsList");
             tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('loading_requests') + '</td></tr>';
+            cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('loading_requests') + '</div>';
 
             fetch('../../api/farmer/get_seed_requests.php')
             .then(res => res.json())
@@ -242,19 +278,23 @@
                 if (data.status === 'success') {
                     if (data.data.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('no_requests') + '</td></tr>';
+                        cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('no_requests') + '</div>';
                         return;
                     }
 
                     tbody.innerHTML = '';
+                    cardsList.innerHTML = '';
                     data.data.forEach(req => {
                         let statusBadge = '';
                         if(req.Status === 'Pending') statusBadge = 'bg-amber-100 text-amber-700';
                         else if(req.Status === 'Approved') statusBadge = 'bg-green-100 text-green-700';
                         else statusBadge = 'bg-red-100 text-red-700';
 
+                        const reqIdLabel = '#REQ-' + String(req.Request_ID).padStart(3, '0');
+
                         tbody.innerHTML += `
                             <tr class="hover:bg-gray-50/60 transition-all">
-                                <td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REQ-${String(req.Request_ID).padStart(3, '0')}</td>
+                                <td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">${reqIdLabel}</td>
                                 <td class="px-6 py-4 text-sm text-gray-600">${req.DateStr}</td>
                                 <td class="px-6 py-4 font-bold text-gray-700 text-sm">${req.Requested_Seed}</td>
                                 <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate" title="${req.Description}">${req.Description}</td>
@@ -263,13 +303,27 @@
                                 </td>
                             </tr>
                         `;
+
+                        cardsList.innerHTML += `
+                            <div class="px-4 py-3">
+                                <div class="flex justify-between items-start gap-2 mb-1.5">
+                                    <span class="text-xs font-bold text-gray-400">${reqIdLabel}</span>
+                                    <span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">${statusLabel(req.Status)}</span>
+                                </div>
+                                <p class="font-bold text-gray-800 text-sm">${req.Requested_Seed}</p>
+                                <p class="text-xs text-gray-500 mt-1">${req.Description}</p>
+                                <p class="text-[10px] text-gray-400 mt-2"><i class="fa-regular fa-calendar mr-1"></i>${req.DateStr}</p>
+                            </div>
+                        `;
                     });
                 } else {
                     tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-400 text-sm">${data.message}</td></tr>`;
+                    cardsList.innerHTML = `<div class="px-4 py-10 text-center text-red-400 text-sm">${data.message}</div>`;
                 }
             })
             .catch(err => {
                 tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-red-400 text-sm">${t('connect_failed')}</td></tr>`;
+                cardsList.innerHTML = `<div class="px-4 py-10 text-center text-red-400 text-sm">${t('connect_failed')}</div>`;
             });
         }
 
@@ -340,8 +394,11 @@
             fetch('../../api/messages/get_unread.php')
                 .then(res => res.json())
                 .then(data => {
+                    const hasUnread = !!(data.status === 'success' && data.unread > 0);
                     const dot = document.getElementById('commRedDot');
-                    if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+                    if (dot) dot.classList.toggle('hidden', !hasUnread);
+                    const dotMobile = document.getElementById('commRedDotMobile');
+                    if (dotMobile) dotMobile.classList.toggle('hidden', !hasUnread);
                 })
                 .catch(() => {});
         }

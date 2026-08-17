@@ -46,7 +46,7 @@
 </head>
 <body class="h-screen flex overflow-hidden">
 
-    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
+    <aside class="hidden md:flex bg-[#11542e] w-64 min-h-screen flex-col shadow-2xl z-30 flex-shrink-0">
         <div class="p-6 border-b border-white/10 flex flex-col items-center gap-3">
             <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20">
                 <i class="fa-solid fa-clipboard-check text-2xl text-[#f1c40f]"></i>
@@ -84,22 +84,46 @@
         </div>
     </aside>
 
+    <!-- Mobile Bottom Navigation - visible only on phones/small tablets -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#11542e] border-t border-white/10 flex items-stretch justify-around h-16 shadow-[0_-4px_12px_rgba(0,0,0,0.15)] no-print">
+        <a href="dashboard.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-clipboard-list text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_assignments_short">Assignments</span>
+        </a>
+        <a href="tech_reports.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-[#f1c40f]">
+            <i class="fa-solid fa-file-signature text-lg"></i>
+            <span class="text-[10px] font-bold" data-i18n="nav_reports_short">Reports</span>
+        </a>
+        <a href="../communication/index.html" class="relative flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-message text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_comm_short">Messages</span>
+            <span id="commRedDotMobile" class="hidden absolute top-1 right-[30%] w-2 h-2 bg-red-500 rounded-full"></span>
+        </a>
+        <a href="../profile/profile.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_profile_short">Profile</span>
+        </a>
+    </nav>
+
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0 no-print">
-            <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Field Assessment Engine</span>
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+        <header class="h-16 flex items-center justify-between px-4 sm:px-6 bg-white border-b border-gray-100 flex-shrink-0 no-print">
+            <span class="text-sm sm:text-base font-black text-gray-800 tracking-tight truncate" data-i18n="header_title">Field Assessment Engine</span>
+            <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+                <div class="hidden sm:flex items-center gap-1.5 text-xs font-bold text-gray-400">
                     <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
                     <span>|</span>
                     <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
                 </div>
-                <button onclick="window.print()" class="bg-[#11542e] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:bg-green-800">
-                    <i class="fa-solid fa-print mr-2"></i> <span data-i18n="btn_print_report">Print Field Report</span>
+                <button onclick="window.print()" class="bg-[#11542e] text-white px-3 sm:px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:bg-green-800 whitespace-nowrap">
+                    <i class="fa-solid fa-print sm:mr-2"></i> <span class="hidden sm:inline" data-i18n="btn_print_report">Print Field Report</span>
+                </button>
+                <button onclick="confirmLogout()" class="md:hidden w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
                 </button>
             </div>
         </header>
 
-        <main id="mainContent" class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
+        <main id="mainContent" class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6 bg-[#f0f2f0] custom-scrollbar">
             <div class="max-w-5xl mx-auto space-y-6">
 
                 <div class="print-header hidden text-center mb-8 border-b-2 border-gray-800 pb-4">
@@ -108,7 +132,7 @@
                     <p class="text-xs text-gray-500 mt-2">Report Summary Generated: <span id="printDate"></span></p>
                 </div>
 
-                <div id="reportConfigCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
+                <div id="reportConfigCard" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
                     <div class="flex items-center gap-4 mb-5">
                         <div class="w-10 h-10 bg-blue-50 text-blue-700 rounded-xl flex items-center justify-center"><i class="fa-solid fa-filter"></i></div>
                         <div>
@@ -146,23 +170,24 @@
                     </div>
                 </div>
 
-                <div id="reportPreviewCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 min-h-[600px]">
-                    <div class="grid grid-cols-3 gap-6 mb-10 pb-10 border-b border-gray-100">
-                        <div class="text-center border-r">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_active_assignments">Active Assignments</p>
-                            <p id="repAssigned" class="text-4xl font-black text-gray-800 mt-2">0</p>
+                <div id="reportPreviewCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-10 min-h-[600px]">
+                    <div class="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-10 pb-6 sm:pb-10 border-b border-gray-100">
+                        <div class="text-center sm:border-r">
+                            <p class="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight" data-i18n="stat_active_assignments">Active Assignments</p>
+                            <p id="repAssigned" class="text-lg sm:text-4xl font-black text-gray-800 mt-1 sm:mt-2">0</p>
                         </div>
-                        <div class="text-center border-r">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_inspections_completed">Inspections Completed</p>
-                            <p id="repInspected" class="text-4xl font-black text-green-600 mt-2">0</p>
+                        <div class="text-center sm:border-r">
+                            <p class="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight" data-i18n="stat_inspections_completed">Inspections Completed</p>
+                            <p id="repInspected" class="text-lg sm:text-4xl font-black text-green-600 mt-1 sm:mt-2">0</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_urgent_severity">Urgent/High Severity</p>
-                            <p id="repSevere" class="text-4xl font-black text-red-600 mt-2">0</p>
+                            <p class="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight" data-i18n="stat_urgent_severity">Urgent/High Severity</p>
+                            <p id="repSevere" class="text-lg sm:text-4xl font-black text-red-600 mt-1 sm:mt-2">0</p>
                         </div>
                     </div>
 
                     <h4 class="text-xs font-black text-gray-800 uppercase mb-4 border-l-4 border-blue-700 pl-3" data-i18n="label_task_ledger">Technician Task Ledger</h4>
+                    <div class="hidden md:block overflow-x-auto">
                     <table class="w-full text-left text-[11px] border-collapse">
                         <thead>
                             <tr class="border-b-2 border-gray-800 text-gray-800 font-black">
@@ -176,6 +201,8 @@
                         <tbody id="reportTableBody" class="divide-y divide-gray-100 text-gray-600">
                             </tbody>
                     </table>
+                    </div>
+                    <div id="ledgerCardsList" class="md:hidden divide-y divide-gray-100 text-gray-600 no-print"></div>
 
                     <div class="print-signatures hidden mt-20 pt-8 flex justify-between px-10 border-t border-gray-100">
                         <div class="text-center">
@@ -218,6 +245,7 @@
             },
             tl: {
                 nav_my_profile: "Aking Profile", nav_assigned_reports: "Itinalagang Ulat", nav_inspection_reports: "Ulat ng Inspeksyon", nav_communication: "Komunikasyon",
+                nav_assignments_short: "Atas", nav_reports_short: "Ulat", nav_comm_short: "Mensahe", nav_profile_short: "Profile",
                 label_field_technician: "Field Technician", header_title: "Field Assessment Engine", btn_print_report: "I-print ang Field Report",
                 label_summary_generator: "Tagabuo ng Buod ng Inspeksyon", label_status_tracking: "Pagsubaybay ng Katayuan ng mga Atas",
                 stat_active_assignments: "Aktibong Atas", stat_inspections_completed: "Natapos na Inspeksyon", stat_urgent_severity: "Madalian/Mataas na Kalubhaan",
@@ -347,9 +375,12 @@
             });
 
             const tbody = document.getElementById('reportTableBody');
+            const cardsList = document.getElementById('ledgerCardsList');
+
             if (!filtered.length) {
                 const msg = allLedgerRows.length ? t('label_no_match_filters') : t('label_no_tasks_found');
                 tbody.innerHTML = `<tr><td colspan="5" class="py-20 text-center text-gray-400 italic">${msg}</td></tr>`;
+                cardsList.innerHTML = `<div class="py-20 text-center text-gray-400 italic">${msg}</div>`;
                 return;
             }
 
@@ -379,6 +410,32 @@
                                 <span class="font-black uppercase text-[9px] text-amber-500">${t('label_awaiting_inspection')}</span>
                             </td>
                         </tr>`;
+                }
+            }).join('');
+
+            cardsList.innerHTML = filtered.map(r => {
+                if (r.isCompleted) {
+                    return `
+                        <div class="px-2 py-3 bg-gray-50/50">
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="font-mono text-gray-400 text-xs">#REP-${r.id}</span>
+                                <span class="flex-shrink-0 font-black uppercase text-[9px] text-green-600">${ledgerStatusLabel(r.status)}</span>
+                            </div>
+                            <p class="font-black text-gray-800 text-sm mt-1">${r.farmer_name || t('label_verified_inspection')}</p>
+                            <p class="text-xs text-gray-500">${r.crop_name || t('label_inspection_data')}</p>
+                            <p class="text-[11px] italic text-gray-400 mt-1">${t('label_severity_prefix')}: ${r.severity}</p>
+                        </div>`;
+                } else {
+                    return `
+                        <div class="px-2 py-3">
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="font-mono text-gray-400 text-xs">#REP-${r.id}</span>
+                                <span class="flex-shrink-0 font-black uppercase text-[9px] text-amber-500">${t('label_awaiting_inspection')}</span>
+                            </div>
+                            <p class="font-black text-gray-800 text-sm mt-1">${r.farmer_name}</p>
+                            <p class="text-[9px] text-gray-400 uppercase">${r.barangay}</p>
+                            <p class="text-xs mt-1"><span class="font-bold text-blue-600">${r.crop_name || t('label_unspecified')}</span> <span class="text-gray-400">· ${r.damage_type || t('label_in_progress')}</span></p>
+                        </div>`;
                 }
             }).join('');
         }
@@ -413,8 +470,11 @@
             fetch('../../api/messages/get_unread.php')
                 .then(res => res.json())
                 .then(data => {
+                    const hasUnread = !!(data.status === 'success' && data.unread > 0);
                     const dot = document.getElementById('commRedDot');
-                    if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+                    if (dot) dot.classList.toggle('hidden', !hasUnread);
+                    const dotMobile = document.getElementById('commRedDotMobile');
+                    if (dotMobile) dotMobile.classList.toggle('hidden', !hasUnread);
                 })
                 .catch(() => {});
         }

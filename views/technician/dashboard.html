@@ -44,7 +44,7 @@
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <aside class="w-64 bg-[#11542e] text-white flex flex-col shadow-2xl z-30">
+    <aside class="hidden md:flex w-64 bg-[#11542e] text-white flex-col shadow-2xl z-30">
         <div class="p-8 border-b border-white/10 flex flex-col items-center gap-4">
             <div class="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 mb-2">
                 <i class="fa-solid fa-map-location-dot text-2xl text-[#f1c40f]"></i>
@@ -84,52 +84,78 @@
         </div>
     </aside>
 
+    <!-- Mobile Bottom Navigation - visible only on phones/small tablets -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#11542e] border-t border-white/10 flex items-stretch justify-around h-16 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
+        <a href="dashboard.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-[#f1c40f]">
+            <i class="fa-solid fa-clipboard-list text-lg"></i>
+            <span class="text-[10px] font-bold" data-i18n="nav_assignments_short">Assignments</span>
+        </a>
+        <a href="tech_reports.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-file-signature text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_reports_short">Reports</span>
+        </a>
+        <a href="../communication/index.html" class="relative flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-message text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_comm_short">Messages</span>
+            <span id="commRedDotMobile" class="hidden absolute top-1 right-[30%] w-2 h-2 bg-red-500 rounded-full"></span>
+        </a>
+        <a href="../profile/profile.html" class="flex flex-col items-center justify-center flex-1 gap-1 text-white/60">
+            <i class="fa-solid fa-user-circle text-lg"></i>
+            <span class="text-[10px] font-semibold" data-i18n="nav_profile_short">Profile</span>
+        </a>
+    </nav>
+
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8">
-            <div class="flex items-center gap-4 text-[11px] font-black text-gray-400 uppercase tracking-widest">
-                <span data-i18n="header_title">Technician Portal</span>
-                <span class="bg-blue-50 text-blue-500 px-3 py-1 rounded-full border border-blue-100" data-i18n="badge_field_mode">Field Mode</span>
+        <header class="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-4 sm:px-8">
+            <div class="flex items-center gap-2 sm:gap-4 text-[11px] font-black text-gray-400 uppercase tracking-widest min-w-0">
+                <span class="truncate" data-i18n="header_title">Technician Portal</span>
+                <span class="hidden sm:inline-block bg-blue-50 text-blue-500 px-3 py-1 rounded-full border border-blue-100 flex-shrink-0" data-i18n="badge_field_mode">Field Mode</span>
             </div>
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 sm:gap-6 flex-shrink-0">
                 <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link hidden sm:inline" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link sm:hidden" data-lang="en" onclick="setLanguage('en')">EN</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link hidden sm:inline" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link sm:hidden" data-lang="tl" onclick="setLanguage('tl')">TL</span>
                 </div>
-                <div class="flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1 rounded-full border border-green-100 text-[10px] font-bold">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span data-i18n="badge_on_duty">On Duty</span>
+                <div class="flex items-center gap-2 bg-green-50 text-green-600 px-2 sm:px-3 py-1 rounded-full border border-green-100 text-[10px] font-bold">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> <span class="hidden sm:inline" data-i18n="badge_on_duty">On Duty</span>
                 </div>
+                <button onclick="confirmLogout()" class="md:hidden w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors flex-shrink-0">
+                    <i class="fa-solid fa-right-from-bracket text-sm"></i>
+                </button>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-10">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-10 pb-24 md:pb-10">
             <div class="max-w-5xl mx-auto">
                 <div class="flex justify-end mb-4">
                     
                 </div>
-                <h2 class="text-3xl font-black text-gray-800 mb-2" data-i18n="page_title">Technician Dashboard</h2>
-                <p class="text-gray-400 text-sm mb-10" data-i18n="page_sub">Manage your assigned field validations and inspection logs.</p>
+                <h2 class="text-xl sm:text-3xl font-black text-gray-800 mb-2" data-i18n="page_title">Technician Dashboard</h2>
+                <p class="text-gray-400 text-xs sm:text-sm mb-6 sm:mb-10" data-i18n="page_sub">Manage your assigned field validations and inspection logs.</p>
 
-                <div class="flex gap-10 border-b border-gray-100 mb-10">
-                    <button onclick="switchTab('assignments')" id="btnAssignments" class="tab-btn active pb-4 text-xs font-black uppercase tracking-widest transition-all" data-i18n="tab_my_assignments">My Assignments</button>
-                    <button onclick="switchTab('validation')"  id="btnValidation"  class="tab-btn pb-4 text-xs font-black uppercase tracking-widest text-gray-400 transition-all" data-i18n="tab_field_validation">Field Validation</button>
-                    <button onclick="switchTab('completed')"   id="btnCompleted"   class="tab-btn pb-4 text-xs font-black uppercase tracking-widest text-gray-400 transition-all" data-i18n="tab_completed">Completed</button>
+                <div class="flex gap-6 sm:gap-10 border-b border-gray-100 mb-6 sm:mb-10 overflow-x-auto">
+                    <button onclick="switchTab('assignments')" id="btnAssignments" class="tab-btn active pb-4 text-[11px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap" data-i18n="tab_my_assignments">My Assignments</button>
+                    <button onclick="switchTab('validation')"  id="btnValidation"  class="tab-btn pb-4 text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400 transition-all whitespace-nowrap" data-i18n="tab_field_validation">Field Validation</button>
+                    <button onclick="switchTab('completed')"   id="btnCompleted"   class="tab-btn pb-4 text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400 transition-all whitespace-nowrap" data-i18n="tab_completed">Completed</button>
                 </div>
 
                 <!-- ── ASSIGNMENTS TAB ── -->
                 <div id="sectionAssignments">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                        <div class="bg-blue-50/50 p-6 rounded-3xl border border-blue-100">
-                            <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2" data-i18n="stat_assigned_reports">Assigned Reports</p>
-                            <h3 id="statAssigned" class="text-4xl font-black text-blue-600">0</h3>
+                    <div class="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-10">
+                        <div class="bg-blue-50/50 p-3 sm:p-6 rounded-xl sm:rounded-3xl border border-blue-100">
+                            <p class="text-[8px] sm:text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_assigned_reports">Assigned Reports</p>
+                            <h3 id="statAssigned" class="text-lg sm:text-4xl font-black text-blue-600">0</h3>
                         </div>
-                        <div class="bg-amber-50/50 p-6 rounded-3xl border border-amber-100">
-                            <p class="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-2" data-i18n="stat_urgent_tasks">Urgent Tasks</p>
-                            <h3 id="statUrgent" class="text-4xl font-black text-amber-600">0</h3>
+                        <div class="bg-amber-50/50 p-3 sm:p-6 rounded-xl sm:rounded-3xl border border-amber-100">
+                            <p class="text-[8px] sm:text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_urgent_tasks">Urgent Tasks</p>
+                            <h3 id="statUrgent" class="text-lg sm:text-4xl font-black text-amber-600">0</h3>
                         </div>
-                        <div class="bg-green-50/50 p-6 rounded-3xl border border-green-100">
-                            <p class="text-[10px] font-black text-green-400 uppercase tracking-widest mb-2" data-i18n="stat_inspections_done">Inspections Done</p>
-                            <h3 id="statDone" class="text-4xl font-black text-green-600">0</h3>
+                        <div class="bg-green-50/50 p-3 sm:p-6 rounded-xl sm:rounded-3xl border border-green-100">
+                            <p class="text-[8px] sm:text-[10px] font-black text-green-400 uppercase tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_inspections_done">Inspections Done</p>
+                            <h3 id="statDone" class="text-lg sm:text-4xl font-black text-green-600">0</h3>
                         </div>
                     </div>
 
@@ -139,25 +165,25 @@
 
                 <!-- ── VALIDATION TAB ── -->
                 <div id="sectionValidation" class="hidden">
-                    <div class="bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden max-w-3xl">
-                        <div class="bg-blue-600 p-8 text-white flex items-center justify-between">
+                    <div class="bg-white rounded-2xl sm:rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden max-w-3xl">
+                        <div class="bg-blue-600 p-4 sm:p-8 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl">
+                                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-2xl flex items-center justify-center text-lg sm:text-xl flex-shrink-0">
                                     <i class="fa-solid fa-file-signature"></i>
                                 </div>
                                 <div>
                                     <h5 id="formReportID" class="text-[10px] font-black uppercase tracking-widest opacity-60">Report #0000</h5>
-                                    <p id="formReportTitle" class="text-lg font-bold" data-i18n="label_crop_damage_inspection">Crop Damage Inspection</p>
+                                    <p id="formReportTitle" class="text-base sm:text-lg font-bold" data-i18n="label_crop_damage_inspection">Crop Damage Inspection</p>
                                 </div>
                             </div>
-                            <div class="text-right">
+                            <div class="text-left sm:text-right">
                                 <p id="formBrgy" class="text-sm font-bold" data-i18n="label_brgy_loading">Brgy. Loading...</p>
                                 <p class="text-[10px] opacity-60 uppercase font-black" data-i18n="label_location">Location</p>
                                 <p id="formVisitDate" class="text-[10px] opacity-80 font-bold mt-1"></p>
                             </div>
                         </div>
 
-                        <form id="inspectionForm" onsubmit="submitForm(event)" class="p-10 space-y-10" enctype="multipart/form-data">
+                        <form id="inspectionForm" onsubmit="submitForm(event)" class="p-4 sm:p-10 space-y-6 sm:space-y-10" enctype="multipart/form-data">
                             <input type="hidden" id="reportIdField" name="id">
 
                             <div>
@@ -255,6 +281,7 @@
     const translations = {
         en: {
             nav_my_profile: "My Profile", nav_my_assignments: "My Assignments", nav_inspection_reports: "Inspection Reports", nav_communication: "Communication",
+            nav_assignments_short: "Assignments", nav_reports_short: "Reports", nav_comm_short: "Messages", nav_profile_short: "Profile",
             label_technician: "Technician", header_title: "Technician Portal", badge_field_mode: "Field Mode", badge_on_duty: "On Duty",
             page_title: "Technician Dashboard", page_sub: "Manage your assigned field validations and inspection logs.",
             tab_my_assignments: "My Assignments", tab_field_validation: "Field Validation", tab_completed: "Completed",
@@ -293,6 +320,7 @@
         },
         tl: {
             nav_my_profile: "Aking Profile", nav_my_assignments: "Aking mga Atas", nav_inspection_reports: "Ulat ng Inspeksyon", nav_communication: "Komunikasyon",
+            nav_assignments_short: "Atas", nav_reports_short: "Ulat", nav_comm_short: "Mensahe", nav_profile_short: "Profile",
             label_technician: "Technician", header_title: "Portal ng Technician", badge_field_mode: "Field Mode", badge_on_duty: "Nasa Trabaho",
             page_title: "Dashboard ng Technician", page_sub: "Pamahalaan ang mga itinalagang field validation at talaan ng inspeksyon.",
             tab_my_assignments: "Aking mga Atas", tab_field_validation: "Field Validation", tab_completed: "Tapos na",
@@ -396,25 +424,25 @@
                     list.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_pending_assignments')}</p>`;
                 } else {
                     list.innerHTML = data.assignments.map(a => `
-                        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 hover:shadow-md transition-all">
-                            <div class="flex items-start justify-between gap-4">
+                        <div class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-50 hover:shadow-md transition-all">
+                            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                 <div class="flex-1">
                                     <span class="bg-red-50 text-red-500 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter mb-3 inline-block border border-red-100">
                                         ${t('badge_pending_inspection')}
                                     </span>
-                                    <h5 class="text-xl font-black text-gray-800 mb-1">${a.crop_name} Damage</h5>
+                                    <h5 class="text-lg sm:text-xl font-black text-gray-800 mb-1">${a.crop_name} Damage</h5>
                                     <p class="text-sm text-gray-400 font-medium mb-4">
                                         ${t('label_reported_by')} <span class="font-bold text-gray-600">${a.farmer_name}</span>
                                         &nbsp;·&nbsp; ${a.barangay}
                                     </p>
                                     <div>${visitDateBadge(a.visit_date)}</div>
                                 </div>
-                                <div class="flex flex-col gap-2 flex-shrink-0">
-                                    <button onclick="viewReportDetails(${a.id})" class="bg-blue-50 text-blue-600 border border-blue-200 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
+                                <div class="flex flex-row sm:flex-col gap-2 flex-shrink-0">
+                                    <button onclick="viewReportDetails(${a.id})" class="flex-1 sm:flex-none bg-blue-50 text-blue-600 border border-blue-200 px-4 sm:px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-eye"></i> ${t('btn_view_details')}
                                     </button>
                                     <button onclick="openValidation(${a.id}, '${a.crop_name}', '${a.barangay}', '${a.visit_date || ''}')"
-                                        class="bg-[#11542e] text-white px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0c3d22] transition-all shadow-md shadow-green-900/10 flex items-center justify-center gap-2">
+                                        class="flex-1 sm:flex-none bg-[#11542e] text-white px-4 sm:px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0c3d22] transition-all shadow-md shadow-green-900/10 flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-magnifying-glass-location"></i> ${t('btn_inspect_area')}
                                     </button>
                                 </div>
@@ -425,17 +453,17 @@
 
                 const cList = document.getElementById('completedList');
                 cList.innerHTML = data.completed_list.map(c => `
-                    <div class="bg-white px-8 py-6 rounded-2xl border border-gray-100 flex justify-between items-center hover:bg-gray-50 transition-colors">
-                        <div class="flex items-center gap-5">
-                            <div class="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-lg">
+                    <div class="bg-white px-4 sm:px-8 py-4 sm:py-6 rounded-2xl border border-gray-100 flex justify-between items-center gap-3 hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center gap-3 sm:gap-5 min-w-0">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
                                 <i class="fa-solid fa-check-double"></i>
                             </div>
-                            <div>
-                                <h6 class="font-black text-gray-800">#REP-${c.id}</h6>
-                                <p class="text-[10px] text-gray-400 uppercase font-black">${c.date} · ${t('label_final_assessment')}: ${c.severity}</p>
+                            <div class="min-w-0">
+                                <h6 class="font-black text-gray-800 text-sm sm:text-base">#REP-${c.id}</h6>
+                                <p class="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black truncate">${c.date} · ${t('label_final_assessment')}: ${c.severity}</p>
                             </div>
                         </div>
-                        <span class="text-[10px] font-black bg-green-100 text-green-700 border border-green-200 px-4 py-1.5 rounded-full uppercase tracking-widest">${t('badge_inspected')}</span>
+                        <span class="flex-shrink-0 text-[9px] sm:text-[10px] font-black bg-green-100 text-green-700 border border-green-200 px-2.5 sm:px-4 py-1.5 rounded-full uppercase tracking-widest">${t('badge_inspected')}</span>
                     </div>
                 `).join('') || `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_completed')}</p>`;
             }
@@ -467,7 +495,7 @@
                 const locationStr = r.Barangay ? r.Barangay : t('label_location_missing');
 
                 document.getElementById('reportModalContent').innerHTML = `
-                    <div class="grid grid-cols-2 gap-y-6 gap-x-4 mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-6 gap-x-4 mb-8 bg-gray-50 p-4 sm:p-6 rounded-2xl border border-gray-100">
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_farmer')}</p><p class="font-bold text-gray-800">${r.FarmerName || t('label_na')}</p></div>
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_crop_variety')}</p><p class="font-bold text-gray-800">${r.Crop_Name || t('label_na')}</p></div>
                         <div class="col-span-2"><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_farm_location')}</p><p class="font-bold text-gray-800">${locationStr}</p></div>
@@ -483,7 +511,7 @@
                     
                     <div>
                         <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('label_attached_evidence')}</p>
-                        <div class="grid grid-cols-3 gap-3">${imgs}</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${imgs}</div>
                     </div>
                 `;
                 document.getElementById('reportModal').classList.remove('hidden');
@@ -650,8 +678,11 @@
             fetch('../../api/messages/get_unread.php')
                 .then(res => res.json())
                 .then(data => {
+                    const hasUnread = !!(data.status === 'success' && data.unread > 0);
                     const dot = document.getElementById('commRedDot');
-                    if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
+                    if (dot) dot.classList.toggle('hidden', !hasUnread);
+                    const dotMobile = document.getElementById('commRedDotMobile');
+                    if (dotMobile) dotMobile.classList.toggle('hidden', !hasUnread);
                 })
                 .catch(() => {});
         }
