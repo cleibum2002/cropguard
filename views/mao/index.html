@@ -211,7 +211,7 @@
                 } else {
                     window.location.href = '../../auth.html';
                 }
-            });
+            }).catch(() => window.location.href = '../../auth.html');
             loadDynamicDashboard();
             loadSeedRequests();
             initMap();
