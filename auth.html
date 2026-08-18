@@ -101,9 +101,10 @@
             </div>
 
             <div class="input-group">
-                <input type="password" id="regPass" placeholder="Password" required>
+                <input type="password" id="regPass" placeholder="Password" required minlength="8">
                 <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('regPass', this)"></i>
             </div>
+            <p style="font-size: 0.75rem; color: #666; margin-top: -10px; margin-bottom: 15px;">Minimum 8 characters, must include at least 1 special character.</p>
             
             <div class="input-group">
                 <input type="password" id="regPassConfirm" placeholder="Repeat Password" required>
@@ -173,6 +174,17 @@
         }
     }
 
+    function validatePasswordStrength(password) {
+        if (password.length < 8) {
+            return { valid: false, message: 'Password must be at least 8 characters long.' };
+        }
+        const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password);
+        if (!hasSpecialChar) {
+            return { valid: false, message: 'Password must include at least one special character (e.g. ! @ # $ %).' };
+        }
+        return { valid: true, message: '' };
+    }
+
     async function handleRegister() {
         const name = document.getElementById('regName').value;
         const contact = document.getElementById('regContact').value;
@@ -185,6 +197,13 @@
         if (pass !== passConfirm) {
             msgBox.className = 'msg-box error';
             msgBox.innerText = "Passwords do not match!";
+            return;
+        }
+
+        const strength = validatePasswordStrength(pass);
+        if (!strength.valid) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = strength.message;
             return;
         }
 

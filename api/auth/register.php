@@ -3,6 +3,16 @@
 header('Content-Type: application/json');
 require_once '../config/db_connection.php'; // Adjust this path if your config is located elsewhere
 
+function validatePasswordStrength($password) {
+    if (strlen($password) < 8) {
+        return 'Password must be at least 8 characters long.';
+    }
+    if (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\'":\\\\|,.<>\/?~`]/', $password)) {
+        return 'Password must include at least one special character (e.g. ! @ # $ %).';
+    }
+    return null;
+}
+
 try {
     // 1. Get the JSON payload
     $data = json_decode(file_get_contents("php://input"));
@@ -10,6 +20,12 @@ try {
     // 2. Validate inputs
     if (empty($data->full_name) || empty($data->contact_number) || empty($data->email) || empty($data->password)) {
         echo json_encode(['status' => 'error', 'message' => 'Please fill in all required fields.']);
+        exit;
+    }
+
+    $password_error = validatePasswordStrength($data->password);
+    if ($password_error) {
+        echo json_encode(['status' => 'error', 'message' => $password_error]);
         exit;
     }
 

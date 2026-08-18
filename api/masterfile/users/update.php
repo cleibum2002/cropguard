@@ -12,12 +12,27 @@ require_once '../../config/db_connection.php';
 
 $data = json_decode(file_get_contents("php://input"));
 
+function validatePasswordStrength($password) {
+    if (strlen($password) < 8) {
+        return 'Password must be at least 8 characters long.';
+    }
+    if (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\'":\\\\|,.<>\/?~`]/', $password)) {
+        return 'Password must include at least one special character (e.g. ! @ # $ %).';
+    }
+    return null;
+}
+
 if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
     try {
         $contact = $data->contact_number ?? null;
 
         // If the admin typed a new password, update it. Otherwise, ignore the password column.
         if (!empty($data->password)) {
+            $password_error = validatePasswordStrength($data->password);
+            if ($password_error) {
+                echo json_encode(['status' => 'error', 'message' => $password_error]);
+                exit;
+            }
             $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
             $query = "UPDATE users SET Fullname=?, Email=?, Contact_Number=?, Password=?, Role=?, STATUS=? WHERE User_ID=?";
             $stmt = $conn->prepare($query);
