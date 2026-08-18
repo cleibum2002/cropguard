@@ -224,7 +224,7 @@
                     <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
                     <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
                 </div>
-                <button onclick="toggleNotifications()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                <button id="notifBellBtn" onclick="toggleNotifications()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
                     <i class="fa-regular fa-bell text-sm"></i>
                     <span id="notifBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
@@ -1547,7 +1547,7 @@
 
         document.addEventListener('click', function(event) {
             const dropdown = document.getElementById('notifDropdown');
-            const bell     = dropdown ? dropdown.previousElementSibling : null;
+            const bell     = document.getElementById('notifBellBtn');
             if (dropdown && bell && !dropdown.contains(event.target) && !bell.contains(event.target))
                 dropdown.classList.add('hidden');
         });

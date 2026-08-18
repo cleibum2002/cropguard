@@ -108,12 +108,21 @@
                     <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
                     <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
                 </div>
-                <button class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                <button id="notifBellBtn" onclick="toggleNotifications()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
                     <i class="fa-regular fa-bell text-sm"></i>
+                    <span id="notifBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                 </button>
                 <button onclick="confirmLogout()" class="md:hidden w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors">
                     <i class="fa-solid fa-right-from-bracket text-sm"></i>
                 </button>
+                <div id="notifDropdown" class="hidden absolute top-12 right-0 w-[88vw] max-w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                    <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
+                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider" data-i18n="notif_title">Notifications</h4>
+                    </div>
+                    <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                        <div class="px-4 py-6 text-center text-gray-400 text-xs italic">Loading...</div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -209,7 +218,8 @@
                 reason_placeholder: "Briefly describe why you are requesting this seed and your intended planting area...",
                 btn_cancel: "Cancel", btn_submit: "Submit",
                 sw_sent_title: "Sent!", sw_error_title: "Error", sw_conn_error_text: "Connection failed. Please try again.",
-                sw_signout_title: "Sign Out?"
+                sw_signout_title: "Sign Out?",
+                notif_title: "Notifications", notif_empty: "No notifications yet.", just_now: "Just now"
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
@@ -227,7 +237,8 @@
                 reason_placeholder: "Maikling ilarawan kung bakit humihiling ka ng binhing ito at ang lugar na balak mong tamnan...",
                 btn_cancel: "Kanselahin", btn_submit: "Isumite",
                 sw_sent_title: "Naipadala!", sw_error_title: "Error", sw_conn_error_text: "Nabigo ang koneksyon. Subukang muli.",
-                sw_signout_title: "Mag-sign Out?"
+                sw_signout_title: "Mag-sign Out?",
+                notif_title: "Mga Abiso", notif_empty: "Wala pang abiso.", just_now: "Ngayon lang"
             },
             ceb: {
                 nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
@@ -245,7 +256,8 @@
                 reason_placeholder: "Isaysay sa mubo kung ngano ka nangayo ani nga binhi ug ang lugar nga imong tanoman...",
                 btn_cancel: "Kanselahon", btn_submit: "I-submit",
                 sw_sent_title: "Napadala!", sw_error_title: "Error", sw_conn_error_text: "Napakyas ang koneksyon. Sulayi pag-usab.",
-                sw_signout_title: "Mo-sign Out?"
+                sw_signout_title: "Mo-sign Out?",
+                notif_title: "Mga Pahibalo", notif_empty: "Wala pay pahibalo.", just_now: "Bag-o lang"
             }
         };
 
@@ -364,6 +376,38 @@
             });
         }
 
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                fetch('../../api/dashboard/farmer_notifications.php?action=read')
+                    .then(() => { document.getElementById('notifBadge').classList.add('hidden'); setTimeout(fetchNotifications, 1000); });
+            }
+        }
+
+        function fetchNotifications() {
+            fetch('../../api/dashboard/farmer_notifications.php?action=fetch').then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    data.unread > 0 ? document.getElementById('notifBadge').classList.remove('hidden') : document.getElementById('notifBadge').classList.add('hidden');
+                    const list = document.getElementById('notifList');
+                    if (!data.data.length) { list.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 text-xs italic">' + t('notif_empty') + '</div>'; return; }
+                    list.innerHTML = '';
+                    data.data.forEach(n => {
+                        const bg  = n.Is_Read == 0 ? 'bg-green-50/30' : '';
+                        const dot = n.Is_Read == 0 ? '<div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>' : '';
+                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div></div>';
+                    });
+                }
+            }).catch(err => console.error("Notifications error:", err));
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notifDropdown');
+            const bell     = document.getElementById('notifBellBtn');
+            if (dropdown && bell && !dropdown.contains(event.target) && !bell.contains(event.target))
+                dropdown.classList.add('hidden');
+        });
+
         function confirmLogout() {
             Swal.fire({
                 title: t('sw_signout_title'),
@@ -387,6 +431,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             loadRequests();
             fetchFarmerDetails();
+            fetchNotifications();
         });
     </script>
     <script>

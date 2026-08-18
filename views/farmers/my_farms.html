@@ -78,15 +78,29 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
         <header class="h-16 flex items-center justify-between gap-3 px-4 sm:px-6 bg-white border-b border-gray-100 flex-shrink-0">
             <span class="text-sm sm:text-base font-black text-gray-800 truncate" data-i18n="header_title">Registered Farm Locations</span>
-            <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400 flex-shrink-0">
-                <span class="lang-link hidden sm:inline" data-lang="en" onclick="setLanguage('en')">English</span>
-                <span class="lang-link sm:hidden" data-lang="en" onclick="setLanguage('en')">EN</span>
-                <span>|</span>
-                <span class="lang-link hidden sm:inline" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
-                <span class="lang-link sm:hidden" data-lang="tl" onclick="setLanguage('tl')">TL</span>
-                <span>|</span>
-                <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
-                <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
+            <div class="flex items-center gap-2 sm:gap-3 relative flex-shrink-0">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link hidden sm:inline" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link sm:hidden" data-lang="en" onclick="setLanguage('en')">EN</span>
+                    <span>|</span>
+                    <span class="lang-link hidden sm:inline" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link sm:hidden" data-lang="tl" onclick="setLanguage('tl')">TL</span>
+                    <span>|</span>
+                    <span class="lang-link hidden sm:inline" data-lang="ceb" onclick="setLanguage('ceb')">Cebuano</span>
+                    <span class="lang-link sm:hidden" data-lang="ceb" onclick="setLanguage('ceb')">CEB</span>
+                </div>
+                <button id="notifBellBtn" onclick="toggleNotifications()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span id="notifBadge" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div id="notifDropdown" class="hidden absolute top-12 right-0 w-[88vw] max-w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
+                    <div class="px-4 py-3 border-b border-gray-50 bg-gray-50/50">
+                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-wider" data-i18n="notif_title">Notifications</h4>
+                    </div>
+                    <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-gray-50">
+                        <div class="px-4 py-6 text-center text-gray-400 text-xs italic">Loading...</div>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -137,7 +151,8 @@
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Unregistered",
                 hectares_label: "Hectares", not_set: "Not Set", cycle_label: "Cycle:", na_text: "N/A",
                 opt_irrigated: "Irrigated", opt_rainfed: "Rainfed", opt_upland: "Upland",
-                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                notif_title: "Notifications", notif_empty: "No notifications yet.", just_now: "Just now"
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
@@ -151,7 +166,8 @@
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Hindi Nakarehistro",
                 hectares_label: "Ektarya", not_set: "Hindi Nakatakda", cycle_label: "Ikot:", na_text: "N/A",
                 opt_irrigated: "May Patubig", opt_rainfed: "Umaasa sa Ulan", opt_upland: "Kabundukan",
-                sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit."
+                sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit.",
+                notif_title: "Mga Abiso", notif_empty: "Wala pang abiso.", just_now: "Ngayon lang"
             },
             ceb: {
                 nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
@@ -165,7 +181,8 @@
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Wala Marehistro",
                 hectares_label: "Ektarya", not_set: "Wala Gitakda", cycle_label: "Ikot:", na_text: "N/A",
                 opt_irrigated: "May Tubig", opt_rainfed: "Nagsalig sa Ulan", opt_upland: "Bungtod",
-                sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan."
+                sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan.",
+                notif_title: "Mga Pahibalo", notif_empty: "Wala pay pahibalo.", just_now: "Bag-o lang"
             }
         };
 
@@ -240,12 +257,47 @@
                 .catch(err => console.error("Could not fetch farms:", err));
         }
 
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                fetch('../../api/dashboard/farmer_notifications.php?action=read')
+                    .then(() => { document.getElementById('notifBadge').classList.add('hidden'); setTimeout(fetchNotifications, 1000); });
+            }
+        }
+
+        function fetchNotifications() {
+            fetch('../../api/dashboard/farmer_notifications.php?action=fetch').then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    data.unread > 0 ? document.getElementById('notifBadge').classList.remove('hidden') : document.getElementById('notifBadge').classList.add('hidden');
+                    const list = document.getElementById('notifList');
+                    if (!data.data.length) { list.innerHTML = '<div class="px-4 py-6 text-center text-gray-400 text-xs italic">' + t('notif_empty') + '</div>'; return; }
+                    list.innerHTML = '';
+                    data.data.forEach(n => {
+                        const bg  = n.Is_Read == 0 ? 'bg-green-50/30' : '';
+                        const dot = n.Is_Read == 0 ? '<div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>' : '';
+                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div></div>';
+                    });
+                }
+            }).catch(err => console.error("Notifications error:", err));
+        }
+
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notifDropdown');
+            const bell     = document.getElementById('notifBellBtn');
+            if (dropdown && bell && !dropdown.contains(event.target) && !bell.contains(event.target))
+                dropdown.classList.add('hidden');
+        });
+
         // Called automatically by i18n.js whenever the user picks a new language
         function onLanguageChange() {
             loadFarms();
         }
 
-        document.addEventListener("DOMContentLoaded", loadFarms);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadFarms();
+            fetchNotifications();
+        });
 
 // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
 let idleTimer;
