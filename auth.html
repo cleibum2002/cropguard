@@ -185,6 +185,19 @@
         return { valid: true, message: '' };
     }
 
+    function validateEmailFormat(email) {
+        if (!email.includes('@')) {
+            return { valid: false, message: 'Email address must include an @ symbol.' };
+        }
+        // Same structural check the browser's own type="email" input uses -
+        // requires text, an @, more text, a dot, then a domain extension.
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            return { valid: false, message: 'Email address format is invalid (check the domain, e.g. name@example.com).' };
+        }
+        return { valid: true, message: '' };
+    }
+
     async function handleRegister() {
         const name = document.getElementById('regName').value;
         const contact = document.getElementById('regContact').value;
@@ -204,6 +217,13 @@
         if (!strength.valid) {
             msgBox.className = 'msg-box error';
             msgBox.innerText = strength.message;
+            return;
+        }
+
+        const emailCheck = validateEmailFormat(email);
+        if (!emailCheck.valid) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = emailCheck.message;
             return;
         }
 

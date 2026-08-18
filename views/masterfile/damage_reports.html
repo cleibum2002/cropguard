@@ -906,6 +906,7 @@
                     }
                     
                     allocations.push({
+                        item_id: selectedItem.id,
                         category: selectedItem.item_name,
                         quantity: qty,
                         unit: selectedItem.unit
@@ -938,7 +939,7 @@
                         for (const alloc of allocations) {
                             const res  = await fetch("../../api/masterfile/damage_report/approve_with_aid.php", {
                                 method: "POST", headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ report_id: reportId, category: alloc.category, quantity: alloc.quantity, unit: alloc.unit })
+                                body: JSON.stringify({ report_id: reportId, item_id: alloc.item_id, category: alloc.category, quantity: alloc.quantity, unit: alloc.unit })
                             });
                             const data = await res.json();
                             if (data.status !== 'success') {

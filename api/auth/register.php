@@ -13,6 +13,26 @@ function validatePasswordStrength($password) {
     return null;
 }
 
+function hashUserPassword($password) {
+    // password_hash() with PASSWORD_DEFAULT (bcrypt) already returns a salted,
+    // 60-character hash string - this just gives it the expected name.
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
+function validateEmailFormat($email) {
+    // Rejects structural errors specifically: missing @ symbol, or missing/incomplete domain extension.
+    // filter_var's FILTER_VALIDATE_EMAIL already enforces both of these correctly (it's the
+    // standard, RFC-822-aware way to do this in PHP) - this wrapper just gives it the name
+    // your test plan checks for, and a clear message for each failure case.
+    if (strpos($email, '@') === false) {
+        return 'Email address must include an @ symbol.';
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return 'Email address format is invalid (check the domain, e.g. name@example.com).';
+    }
+    return null;
+}
+
 try {
     // 1. Get the JSON payload
     $data = json_decode(file_get_contents("php://input"));
@@ -29,12 +49,18 @@ try {
         exit;
     }
 
+    $email_error = validateEmailFormat($data->email);
+    if ($email_error) {
+        echo json_encode(['status' => 'error', 'message' => $email_error]);
+        exit;
+    }
+
     // 3. Clean inputs to prevent SQL injection
     $name = $conn->real_escape_string($data->full_name);
     $contact = $conn->real_escape_string($data->contact_number);
     $email = $conn->real_escape_string($data->email);
     // Hash the password securely!
-    $hashed_pass = password_hash($data->password, PASSWORD_DEFAULT);
+    $hashed_pass = hashUserPassword($data->password);
     $role = 'Farmer';
 
     // 4. Check if the email is already registered (users table, not Farmer)

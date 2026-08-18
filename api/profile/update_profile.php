@@ -4,6 +4,10 @@ session_start();
 header('Content-Type: application/json');
 require_once '../config/db_connection.php';
 
+function hashUserPassword($password) {
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
 if (!isset($_SESSION['User_ID'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
     exit;
@@ -45,7 +49,7 @@ try {
     $checkStmt->close();
 
     if ($password) {
-        $hashed = password_hash($password, PASSWORD_DEFAULT);
+        $hashed = hashUserPassword($password);
         $stmt   = $conn->prepare(
             "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ? 
              WHERE User_ID = ?"

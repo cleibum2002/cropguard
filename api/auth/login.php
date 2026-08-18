@@ -34,7 +34,7 @@ if (isset($input['email'], $input['password'])) {
             $is_valid = true;
             
             // Since it's plain text, let's hash it and update the database right now!
-            $new_hash = password_hash($password, PASSWORD_DEFAULT);
+            $new_hash = hashUserPassword($password);
             $update_stmt = $conn->prepare("UPDATE users SET Password = ? WHERE User_ID = ?");
             $update_stmt->bind_param("si", $new_hash, $user['User_ID']);
             $update_stmt->execute();

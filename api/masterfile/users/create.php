@@ -22,15 +22,34 @@ function validatePasswordStrength($password) {
     return null;
 }
 
+function hashUserPassword($password) {
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
+function validateEmailFormat($email) {
+    if (strpos($email, '@') === false) {
+        return 'Email address must include an @ symbol.';
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return 'Email address format is invalid (check the domain, e.g. name@example.com).';
+    }
+    return null;
+}
+
 if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) {
     $password_error = validatePasswordStrength($data->password);
     if ($password_error) {
         echo json_encode(['status' => 'error', 'message' => $password_error]);
         exit;
     }
+    $email_error = validateEmailFormat($data->email);
+    if ($email_error) {
+        echo json_encode(['status' => 'error', 'message' => $email_error]);
+        exit;
+    }
     try {
         // Hash the password for security
-        $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
+        $hashed_password = hashUserPassword($data->password);
         $contact = $data->contact_number ?? null;
         
         $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS) VALUES (?, ?, ?, ?, ?, ?)";

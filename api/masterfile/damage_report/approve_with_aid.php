@@ -18,10 +18,29 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
     $cat = $input['category'];
     $qty = (float)$input['quantity'];
     $unit = $input['unit'];
+    // Optional for backward compatibility - older/other callers may not send this yet.
+    $item_id = !empty($input['item_id']) ? (int)$input['item_id'] : null;
 
     $conn->begin_transaction();
     
     try {
+        // If a real inventory item was selected, re-verify stock server-side
+        // (never trust the frontend's own stock check alone) and reserve it now.
+        if ($item_id) {
+            $stmtStock = $conn->prepare("SELECT current_stock FROM masterfile_items WHERE id = ? FOR UPDATE");
+            $stmtStock->bind_param("i", $item_id);
+            $stmtStock->execute();
+            $stockRow = $stmtStock->get_result()->fetch_assoc();
+            $stmtStock->close();
+
+            if (!$stockRow) throw new Exception("Selected inventory item no longer exists.");
+            if ((float)$stockRow['current_stock'] < $qty) throw new Exception("Not enough stock remaining for this item.");
+
+            $stmtDeduct = $conn->prepare("UPDATE masterfile_items SET current_stock = current_stock - ? WHERE id = ?");
+            $stmtDeduct->bind_param("di", $qty, $item_id);
+            $stmtDeduct->execute();
+            $stmtDeduct->close();
+        }
         // STEP 1: Get the Farmer_ID and Crop Name
         // We need the Farmer_ID for both the aid_distribution table and the notification
         $stmtInfo = $conn->prepare("SELECT dr.Farmer_ID, c.Crop_Name 
@@ -45,8 +64,8 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
 
         // STEP 3: Create the Aid Distribution record 
         // Added Farmer_ID to the insert to match your DB schema
-        $stmt2 = $conn->prepare("INSERT INTO aid_distribution (Damage_Report_ID, Farmer_ID, Category, Quantity, Unit, Distributed_By, Status) VALUES (?, ?, ?, ?, ?, ?, 'Pending Distribution')");
-        $stmt2->bind_param("iisdsi", $report_id, $farmer_id, $cat, $qty, $unit, $admin_id); 
+        $stmt2 = $conn->prepare("INSERT INTO aid_distribution (Damage_Report_ID, Farmer_ID, Category, Item_ID, Quantity, Unit, Distributed_By, Status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending Distribution')");
+        $stmt2->bind_param("iisidsi", $report_id, $farmer_id, $cat, $item_id, $qty, $unit, $admin_id); 
         $stmt2->execute();
 
         // STEP 4: Create the Farmer Notification

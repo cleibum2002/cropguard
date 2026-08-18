@@ -22,7 +22,22 @@ function validatePasswordStrength($password) {
     return null;
 }
 
+function validateEmailFormat($email) {
+    if (strpos($email, '@') === false) {
+        return 'Email address must include an @ symbol.';
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return 'Email address format is invalid (check the domain, e.g. name@example.com).';
+    }
+    return null;
+}
+
 if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
+    $email_error = validateEmailFormat($data->email);
+    if ($email_error) {
+        echo json_encode(['status' => 'error', 'message' => $email_error]);
+        exit;
+    }
     try {
         $contact = $data->contact_number ?? null;
 

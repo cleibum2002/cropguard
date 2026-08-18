@@ -25,6 +25,7 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .tab-btn { border-bottom: 2px solid transparent; }
+
         .tab-active { border-bottom: 2px solid #11542e; color: #11542e; font-weight: 700; }
         .report-card.selected { border: 2px solid #11542e; background-color: #f0fdf4; }
         .lang-link { cursor: pointer; }
@@ -135,7 +136,7 @@
             nav_profile: "My Profile", nav_dashboard: "MAO Dashboard", nav_reports: "Report Management",
             nav_inventory: "Inventory & Aid", nav_analytics: "Distribution Reports", nav_comm: "Communication",
             sidebar_role: "MAO Officer",
-            header_title: "Report Management", search_placeholder: "Search farmer or ID...",
+            header_title: "Report Management", search_placeholder: "Search farmer, crop, or ID...",
             tab_pending: "Pending Approval", tab_validated: "Validated", tab_all: "All Reports",
             empty_state_text: "Select a report to view details", loading_details: "Loading validation details...",
             no_matching_records: "No matching records", crop_report_fallback: "Crop Report",
@@ -171,7 +172,7 @@
             nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
             nav_inventory: "Imbentaryo at Tulong", nav_analytics: "Ulat ng Pamamahagi", nav_comm: "Komunikasyon",
             sidebar_role: "Opisyal ng MAO",
-            header_title: "Pamamahala ng Ulat", search_placeholder: "Maghanap ng magsasaka o ID...",
+            header_title: "Pamamahala ng Ulat", search_placeholder: "Maghanap ng magsasaka, pananim, o ID...",
             tab_pending: "Naghihintay ng Pag-apruba", tab_validated: "Napatunayan", tab_all: "Lahat ng Ulat",
             empty_state_text: "Pumili ng ulat para makita ang detalye", loading_details: "Nilo-load ang mga detalye ng pagpapatunay...",
             no_matching_records: "Walang tumugmang record", crop_report_fallback: "Ulat ng Pananim",
@@ -219,6 +220,17 @@
         if (deepLinkId) {
             setTab('All'); // make sure the report is visible regardless of its current status
             viewReport(parseInt(deepLinkId, 10));
+        }
+
+        // Attached here instead of relying solely on the inline oninput="filterReports()"
+        // attribute on the <input> tag - this guarantees the listener binds even if that
+        // attribute is ever missing, misspelled, or stripped by an edit.
+        const searchBox = document.getElementById('searchInput');
+        if (searchBox) {
+            searchBox.addEventListener('input', filterReports);
+            searchBox.addEventListener('keyup', filterReports);
+        } else {
+            console.warn('searchInput element not found - search box will not filter.');
         }
     });
 
@@ -358,9 +370,16 @@
             const matchesTab = (activeTab === 'All') || (r.displayStatus === activeTab);
             // Status dropdown only applies while on the "All Reports" tab
             const matchesStatus = (activeTab !== 'All') || !statusFilter || r.displayStatus === statusFilter;
-            const idStr = (r.normalizedId || "").toString();
+            const idStr = (r.normalizedId || "").toString().toLowerCase();
+            const idStrWithPrefix = 'rep-' + idStr; // so typing the visible "#REP-73" label actually matches
             const name = (r.farmer || r.FarmerName || "").toLowerCase();
-            const matchesSearch = idStr.includes(query) || name.includes(query);
+            const crop = (r.crop_name || "").toLowerCase();
+            const queryClean = query.replace(/^#/, ''); // tolerate a leading # too
+            const matchesSearch = !queryClean
+                || idStr.includes(queryClean)
+                || idStrWithPrefix.includes(queryClean)
+                || name.includes(queryClean)
+                || crop.includes(queryClean);
 
             const matchesDamageType = !damageTypeFilter || r.damage_type === damageTypeFilter;
             const matchesSeverity   = !severityFilter || r.severity === severityFilter;

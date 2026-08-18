@@ -15,6 +15,21 @@ if (!$report_id) {
     exit;
 }
 
+// Farmers may only look up their own reports. Admin/MAO/Technician legitimately
+// need to look up any report (that's their job), so they're not restricted here.
+if ($_SESSION['Role'] === 'Farmer') {
+    $ownerCheck = $conn->prepare("SELECT Farmer_ID FROM damage_report WHERE Damage_Report_ID = ?");
+    $ownerCheck->bind_param("i", $report_id);
+    $ownerCheck->execute();
+    $ownerRow = $ownerCheck->get_result()->fetch_assoc();
+    $ownerCheck->close();
+
+    if (!$ownerRow || (int)$ownerRow['Farmer_ID'] !== (int)$_SESSION['User_ID']) {
+        echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+        exit;
+    }
+}
+
 $severity_multipliers = [
     'Minimal'    => 0.10,
     'Light'      => 0.30,

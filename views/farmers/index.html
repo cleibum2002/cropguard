@@ -1263,8 +1263,9 @@
                                 actionButtonsMobile = '<span class="text-gray-300 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-lock"></i> ' + t('action_locked') + '</span>';
                             }
                             const sevColor = (r.severity === 'High' || r.severity === 'Total Loss') ? 'text-red-500' : 'text-amber-500';
+                            const costText = r.estimated_loss ? ('\u20b1' + r.estimated_loss) : 'N/A';
 
-                            tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4"><p id="cost-' + r.id + '" class="text-sm font-black text-red-600">...</p><p class="text-[10px] text-gray-400">' + t('label_est_loss') + '</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
+                            tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4"><p class="text-sm font-black text-red-600">' + costText + '</p><p class="text-[10px] text-gray-400">' + t('label_est_loss') + '</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
 
                             cardsList.innerHTML += '<div class="px-4 py-3">' +
                                 '<div class="flex justify-between items-start gap-2 mb-1.5">' +
@@ -1278,26 +1279,10 @@
                                     '<span class="text-[11px] font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</span>' +
                                 '</div>' +
                                 '<div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-50">' +
-                                    '<p class="text-sm font-black text-red-600">' + t('label_est_loss') + ': <span id="cost-mobile-' + r.id + '">...</span></p>' +
+                                    '<p class="text-sm font-black text-red-600">' + t('label_est_loss') + ': ' + costText + '</p>' +
                                     actionButtonsMobile +
                                 '</div>' +
                             '</div>';
-                        });
-                        data.reports.forEach(r => {
-                            fetch('../../api/dashboard/calculate_cost.php?report_id=' + r.id)
-                                .then(res => res.json())
-                                .then(cost => {
-                                    const costText = cost.status === 'success' ? '\u20b1' + cost.estimated_loss : 'N/A';
-                                    const cell = document.getElementById('cost-' + r.id);
-                                    if (cell) cell.innerText = costText;
-                                    const cellMobile = document.getElementById('cost-mobile-' + r.id);
-                                    if (cellMobile) cellMobile.innerText = costText;
-                                }).catch(() => {
-                                    const cell = document.getElementById('cost-' + r.id);
-                                    if (cell) cell.innerText = 'N/A';
-                                    const cellMobile = document.getElementById('cost-mobile-' + r.id);
-                                    if (cellMobile) cellMobile.innerText = 'N/A';
-                                });
                         });
                     }
                 }).catch(err => console.error("Error loading dashboard:", err));
