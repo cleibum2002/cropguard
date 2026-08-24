@@ -4,6 +4,14 @@ ob_start();
 session_start();
 header('Content-Type: application/json');
 
+// Strips ALL HTML tags (not just <script>) - the safe default for a plain-text
+// field like a damage report description, which should never contain markup at
+// all. This is stronger than only blocking <script>, which is easy to bypass
+// with other tags (<img onerror=...>, <svg onload=...>, etc.).
+function sanitizeHtmlInput($input) {
+    return strip_tags(trim($input));
+}
+
 try {
     require_once '../config/db_connection.php';
 
@@ -25,9 +33,9 @@ try {
     $type_id       = !empty($_POST['type_id']) ? (int)$_POST['type_id'] : null;
     $planting_date = !empty($_POST['planting_date']) ? $_POST['planting_date'] : null;
     $area          = !empty($_POST['area']) ? (float)$_POST['area'] : 0.00;
-    $damage_type   = $_POST['damage_type'];
-    $severity      = $_POST['severity'];
-    $description   = $_POST['description'] ?? '';
+    $damage_type   = sanitizeHtmlInput($_POST['damage_type']);
+    $severity      = sanitizeHtmlInput($_POST['severity']);
+    $description   = sanitizeHtmlInput($_POST['description'] ?? '');
 
     // Find-or-create the actual `crop` row for this Farmer + Location + Type combo.
     // The dropdown now sends a Type_ID (from the farm's own registration), not a

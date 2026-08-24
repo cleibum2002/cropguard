@@ -8,10 +8,14 @@ if (!isset($_SESSION['User_ID'])) {
     exit;
 }
 
+function sanitizeHtmlInput($input) {
+    return strip_tags(trim($input));
+}
+
 $input       = json_decode(file_get_contents('php://input'), true);
 $sender_id   = $_SESSION['User_ID'];
 $receiver_id = isset($input['receiver_id']) ? (int)$input['receiver_id'] : 0;
-$message     = trim($input['message'] ?? '');
+$message     = sanitizeHtmlInput($input['message'] ?? '');
 
 if (!$receiver_id || empty($message)) {
     echo json_encode(['status' => 'error', 'message' => 'Missing required fields.']);

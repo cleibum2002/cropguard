@@ -1,10 +1,25 @@
 <?php
 // api/config/db_connection.php
 
-$host = "localhost";
-$username = "root";
-$password = "";
-$dbname = "crop_damage_system";
+// Auto-detects which environment this is running in (local XAMPP vs. live
+// InfinityFree hosting) based on the domain being requested, so this SAME file
+// works correctly in both places without ever needing to be edited when you
+// switch between working locally and updating the live deployed site.
+$host_name = $_SERVER['HTTP_HOST'] ?? '';
+
+if (strpos($host_name, 'infinityfreeapp.com') !== false) {
+    // Live deployment on InfinityFree
+    $host     = "sql107.infinityfree.com";
+    $username = "if0_42694163";
+    $password = "REMOVED_DB_PASSWORD";
+    $dbname   = "if0_42694163_crop_damage";
+} else {
+    // Local XAMPP development (unchanged from before)
+    $host     = "localhost";
+    $username = "root";
+    $password = "";
+    $dbname   = "crop_damage_system";
+}
 
 $conn = new mysqli($host, $username, $password, $dbname);
 

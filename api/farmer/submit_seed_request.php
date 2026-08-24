@@ -18,10 +18,14 @@ if (!$farmer_id) {
     exit();
 }
 
+function sanitizeHtmlInput($input) {
+    return strip_tags(trim($input));
+}
+
 $data = json_decode(file_get_contents("php://input"), true);
 
-$requested_seed = $data['requested_seed'] ?? '';
-$description = $data['description'] ?? '';
+$requested_seed = sanitizeHtmlInput($data['requested_seed'] ?? '');
+$description = sanitizeHtmlInput($data['description'] ?? '');
 
 if (empty($requested_seed) || empty($description)) {
     echo json_encode(['status' => 'error', 'message' => 'Please fill in all required fields.']);
