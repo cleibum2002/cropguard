@@ -17,6 +17,7 @@
             } else {
                 window.addEventListener('load', () => {
                     document.getElementById('adminName').innerText = data.user.fullname;
+                    document.getElementById('adminNameSidebar').innerText = data.user.fullname;
                 });
             }
         }).catch(() => window.location.href = '../../auth.html');
