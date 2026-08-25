@@ -47,13 +47,13 @@ function loadMaoNavbar(currentPage) {
         </nav>
         
         <div class="p-4 border-t border-white/10">
-            <div class="flex items-center gap-3 bg-white/5 px-3 py-3 rounded-2xl cursor-pointer hover:bg-white/10 transition-colors" onclick="confirmLogout()">
+            <div class="flex items-center gap-3 bg-white/5 px-3 py-3 rounded-2xl">
                 <div class="w-9 h-9 bg-[#f1c40f]/20 text-[#f1c40f] rounded-full flex items-center justify-center font-black text-sm flex-shrink-0">MA</div>
                 <div class="overflow-hidden flex-1 text-white">
                     <p id="maoNameSidebar" class="text-xs font-bold truncate">Loading...</p>
                     <p class="text-white/40 text-[10px] truncate">MAO Officer</p>
                 </div>
-                <button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-colors">
+                <button onclick="confirmLogout()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-colors">
                     <i class="fa-solid fa-right-from-bracket text-sm"></i>
                 </button>
             </div>

@@ -66,6 +66,7 @@ function loadAdminNavbar(currentPage) {
                 <div class="w-9 h-9 bg-[#f1c40f]/20 text-[#f1c40f] rounded-full flex items-center justify-center font-black text-sm">A</div>
                 <div class="overflow-hidden flex-1">
                     <p id="adminNameSidebar" class="text-white text-xs font-bold truncate">Loading...</p>
+                    <p class="text-white/40 text-[10px] uppercase font-black">Administrator</p>
                 </div>
                 <button onclick="confirmLogout()" class="text-white/30 hover:text-red-400 transition-all">
                     <i class="fa-solid fa-right-from-bracket text-sm"></i>

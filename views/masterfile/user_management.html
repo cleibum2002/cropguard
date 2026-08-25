@@ -15,10 +15,20 @@
             if (data.status !== 'active' || data.role.toLowerCase() !== 'admin') {
                 window.location.href = '../../auth.html';
             } else {
-                window.addEventListener('load', () => {
-                    document.getElementById('adminName').innerText = data.user.fullname;
-                    document.getElementById('adminNameSidebar').innerText = data.user.fullname;
-                });
+                function applyAdminName() {
+                    const nameEl = document.getElementById('adminName');
+                    const sidebarNameEl = document.getElementById('adminNameSidebar');
+                    if (nameEl) nameEl.innerText = data.user.fullname;
+                    if (sidebarNameEl) sidebarNameEl.innerText = data.user.fullname;
+                }
+                // The page may already be fully loaded by the time this fetch resolves —
+                // in that case 'load' has already fired and a listener added now would
+                // never run. Check readyState first instead of blindly waiting for it.
+                if (document.readyState === 'complete') {
+                    applyAdminName();
+                } else {
+                    window.addEventListener('load', applyAdminName);
+                }
             }
         }).catch(() => window.location.href = '../../auth.html');
     </script>
