@@ -1,9 +1,11 @@
 <?php
-// File Location: api/dashboard/barangay_heatmap_data.php
+// api/dashboard/barangay_heatmap_data.php
 // Purpose: Feeds the Region View (barangay-colored) map on the MAO dashboard.
 // Unlike heatmap_data.php, this endpoint:
 //   1. Requires an MAO/Admin login (the original heatmap_data.php had no auth check at all)
-//   2. Includes 'Pending' reports so MAO sees a location as soon as the farmer submits it
+//   2. Only shows reports that are BOTH Approved AND actually confirmed by a technician's
+//      field inspection (Is_Inspected = 1) - matches heatmap_data.php's rule as of the
+//      "give the heatmap real purpose" change. Pending/unverified reports are no longer shown.
 //   3. Returns one row per report (not pre-summed) - grouping by barangay is done in the
 //      browser using the boundary shapes in assets/geo/balingasag_barangays.json
 ob_start();
@@ -20,8 +22,7 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['MAO', 'Admin'
 require_once '../config/db_connection.php';
 
 try {
-    // Show every report that isn't Rejected/Archived, including Pending ones,
-    // so MAO sees the pin the moment a farmer submits (this was the original ask).
+    // Only Approved + technician-inspected reports feed this map now (see comment above).
     // Latitude/Longitude bounds check filters out invalid placeholder coordinates
     // (e.g. Latitude > 90 or Longitude > 180, which cannot be real GPS values).
     $sql = "SELECT
@@ -37,7 +38,8 @@ try {
             FROM damage_report dr
             JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
             LEFT JOIN users u     ON dr.Farmer_ID    = u.User_ID
-            WHERE dr.Status NOT IN ('Rejected', 'Archived')
+            WHERE dr.Status = 'Approved'
+              AND dr.Is_Inspected = 1
               AND fl.Latitude  IS NOT NULL AND fl.Latitude  BETWEEN -90  AND 90
               AND fl.Longitude IS NOT NULL AND fl.Longitude BETWEEN -180 AND 180";
 

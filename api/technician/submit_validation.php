@@ -27,7 +27,8 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         $query = "UPDATE damage_report 
                   SET Description = CONCAT(IFNULL(Description, ''), '\n\n--- TECH FINDINGS ---\n', ?), 
                       Damage_Severity = ?, 
-                      Status = 'Inspected' 
+                      Status = 'Inspected',
+                      Is_Inspected = 1
                   WHERE Damage_Report_ID = ? AND Technician_ID = ?";
                 
         $stmt = $conn->prepare($query);

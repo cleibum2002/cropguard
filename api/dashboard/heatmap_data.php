@@ -11,7 +11,10 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'
 require_once '../config/db_connection.php';
 
 try {   
-    // We only show reports that have been Inspected or Approved on the map
+    // Only reports that are BOTH Approved AND actually confirmed by a technician's
+    // field inspection (Is_Inspected = 1) feed the heatmap now - this gives the map
+    // real meaning (confirmed damage only) instead of counting unverified/Pending
+    // reports or reports that were Direct-Approved without ever being inspected.
     // Also filter out invalid coordinates (Latitude must be between -90 and 90, Longitude between -180 and 180)
     $sql = "SELECT fl.Latitude, fl.Longitude, 
                 SUM(CASE 
@@ -26,7 +29,8 @@ try {
                 END) as Total_Intensity
             FROM damage_report dr
             JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
-            WHERE dr.Status NOT IN ('Rejected', 'Archived') 
+            WHERE dr.Status = 'Approved'
+            AND dr.Is_Inspected = 1
             AND fl.Latitude IS NOT NULL
             AND fl.Latitude BETWEEN -90 AND 90
             AND fl.Longitude IS NOT NULL
