@@ -18,11 +18,14 @@ try {
                 (SELECT COUNT(*) FROM messages m 
                  WHERE m.Sender_ID = u.User_ID 
                  AND m.Receiver_ID = $current_user 
-                 AND m.Is_Read = 0) as unread
+                 AND m.Is_Read = 0) as unread,
+                (SELECT MAX(m2.Created_At) FROM messages m2
+                 WHERE (m2.Sender_ID = u.User_ID AND m2.Receiver_ID = $current_user)
+                    OR (m2.Sender_ID = $current_user AND m2.Receiver_ID = u.User_ID)) as last_message_time
               FROM users u
               WHERE u.User_ID != $current_user
               AND u.STATUS = 'Active'
-              ORDER BY u.Role, u.Fullname ASC";
+              ORDER BY last_message_time DESC, u.Role, u.Fullname ASC";
 
     $result = $conn->query($query);
     $data = [];

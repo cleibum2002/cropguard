@@ -191,11 +191,24 @@
                 const data = await res.json();
                 if (data.status === 'success') {
                     allUsers = data.data;
-                    renderUsers(allUsers);
+                    // Re-apply whatever's currently typed in the search box instead of
+                    // overwriting it — this now also runs on a background timer, so it
+                    // must not stomp on an active search while someone's typing.
+                    const searchBox = document.getElementById('searchUser');
+                    if (searchBox && searchBox.value.trim() !== '') {
+                        filterUsers();
+                    } else {
+                        renderUsers(allUsers);
+                    }
                     maybeAutoSelectFromQuery();
                 }
             } catch(e) { console.error('Failed to load users', e); }
         }
+
+        // Keep the conversation list itself live — so when a message arrives from
+        // someone who is NOT the chat currently open, they still jump to the top
+        // of the list without needing a manual page reload.
+        setInterval(loadUsers, 5000);
 
         // "Message Admin" (MAO sidebar shortcut) links here as index.html?to=admin
         // so MAO officers land straight in a chat with an Admin instead of having
@@ -354,6 +367,7 @@
                     body: JSON.stringify({ receiver_id: selectedUserId, message })
                 });
                 loadMessages();
+                loadUsers(); // move this conversation to the top of the list right away
             } catch(e) { console.error('Failed to send message', e); }
         }
 
