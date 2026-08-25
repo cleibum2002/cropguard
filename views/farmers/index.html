@@ -323,6 +323,53 @@
                     <div class="px-4 sm:px-6 py-4 border-b border-gray-50">
                         <h3 class="font-black text-gray-800 text-sm sm:text-base" data-i18n="reports_title">My Recent Reports</h3>
                     </div>
+
+                    <div class="px-4 sm:px-6 py-3 border-b border-gray-50 flex flex-wrap items-end gap-3">
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_status_label">Status</label>
+                            <select id="filterStatus" onchange="applyReportFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
+                                <option value="" data-i18n="filter_all_statuses">All Statuses</option>
+                                <option value="Pending" data-i18n="status_pending">Pending</option>
+                                <option value="Validated" data-i18n="status_validated">Validated</option>
+                                <option value="Inspected" data-i18n="status_inspected">Inspected</option>
+                                <option value="Approved" data-i18n="status_approved">Approved</option>
+                                <option value="Completed" data-i18n="status_completed">Completed</option>
+                                <option value="Rejected" data-i18n="status_rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_damage_type_label">Damage Type</label>
+                            <select id="filterDamageType" onchange="applyReportFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
+                                <option value="" data-i18n="filter_all_types">All Types</option>
+                                <option value="Flood" data-i18n="opt_flood">Flood</option>
+                                <option value="Typhoon" data-i18n="opt_typhoon">Typhoon</option>
+                                <option value="Pest Infestation" data-i18n="opt_pest">Pest Infestation</option>
+                                <option value="Drought" data-i18n="opt_drought">Drought</option>
+                            </select>
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_severity_label">Severity</label>
+                            <select id="filterSeverity" onchange="applyReportFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
+                                <option value="" data-i18n="filter_all_severities">All Severities</option>
+                                <option value="Low" data-i18n="opt_low">Low</option>
+                                <option value="Moderate" data-i18n="opt_moderate">Moderate</option>
+                                <option value="High" data-i18n="opt_high">High</option>
+                                <option value="Total Loss" data-i18n="opt_total_loss">Total Loss</option>
+                            </select>
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_from_label">From</label>
+                            <input type="date" id="filterDateFrom" onchange="applyReportFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_to_label">To</label>
+                            <input type="date" id="filterDateTo" onchange="applyReportFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                        </div>
+                        <button onclick="clearReportFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear</span>
+                        </button>
+                    </div>
+
                     <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
@@ -344,6 +391,8 @@
                     <div id="reportsCardsList" class="md:hidden divide-y divide-gray-50">
                         <div class="px-4 py-10 text-center text-gray-400 italic text-sm">Loading reports...</div>
                     </div>
+
+                    <div id="reportsPagination" class="px-4 sm:px-6 py-4 flex items-center justify-center gap-1.5 border-t border-gray-50"></div>
                 </div>
             </div>
         </main>
@@ -636,6 +685,11 @@
                 stat_total: "Total Reports Filed", stat_pending: "Pending Validation", stat_resolved: "Resolved / Approved",
                 tracker_title: "Seed Request Tracker", tracker_sub: "Track the real-time status of your seed requests", tracker_viewall: "View All",
                 reports_title: "My Recent Reports",
+                filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
+                filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear",
+                filter_all_statuses: "All Statuses", filter_all_types: "All Types", filter_all_severities: "All Severities",
+                status_inspected: "Inspected",
+                pagination_page: "Page", pagination_of: "of",
                 th_date: "Date Filed", th_crop: "Crop Details", th_incident: "Incident", th_loss: "Est. Loss", th_status: "Status", th_actions: "Actions",
                 modal_report_title: "File Crop Damage Report",
                 label_farm_location: "Farm Location", label_crop_picker: "Which Crop Was Damaged?",
@@ -705,6 +759,11 @@
                 stat_total: "Kabuuang Isinumiteng Ulat", stat_pending: "Naghihintay ng Validation", stat_resolved: "Naresolba / Naaprubahan",
                 tracker_title: "Tagasubaybay ng Kahilingan sa Binhi", tracker_sub: "Subaybayan ang real-time na katayuan ng iyong mga kahilingan sa binhi", tracker_viewall: "Tingnan Lahat",
                 reports_title: "Ang Aking mga Kamakailang Ulat",
+                filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
+                filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear",
+                filter_all_statuses: "Lahat ng Katayuan", filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan",
+                status_inspected: "Sinuri na",
+                pagination_page: "Pahina", pagination_of: "ng",
                 th_date: "Petsa ng Pagsumite", th_crop: "Detalye ng Pananim", th_incident: "Insidente", th_loss: "Tinatayang Pagkalugi", th_status: "Katayuan", th_actions: "Aksyon",
                 modal_report_title: "Maghain ng Ulat ng Pinsala sa Pananim",
                 label_farm_location: "Lokasyon ng Sakahan", label_crop_picker: "Aling Pananim ang Nasira?",
@@ -1222,11 +1281,16 @@
             return map[val] ? t(map[val]) : (val || t('na_text'));
         }
         function statusLabel(val) {
-            const map = { 'Pending': 'status_pending', 'Validated': 'status_validated', 'Approved': 'status_approved', 'Completed': 'status_completed', 'Rejected': 'status_rejected', 'Archived': 'status_archived' };
+            const map = { 'Pending': 'status_pending', 'Validated': 'status_validated', 'Inspected': 'status_inspected', 'Approved': 'status_approved', 'Completed': 'status_completed', 'Rejected': 'status_rejected', 'Archived': 'status_archived' };
             return map[val] ? t(map[val]) : (val || t('status_pending'));
         }
 
         // ─── DASHBOARD DATA ───────────────────────────────────────────────────
+        let allReportsData = [];
+        let filteredReportsData = [];
+        let currentReportsPage = 1;
+        const REPORTS_PER_PAGE = 5;
+
         function loadDashboardData() {
             fetch('../../api/dashboard/farmer_dashboard_data.php')
                 .then(res => res.json())
@@ -1240,52 +1304,121 @@
                         document.getElementById('statPending').innerText  = data.stats.pending;
                         document.getElementById('statResolved').innerText = data.stats.resolved;
 
-                        const tbody = document.getElementById("tableBody");
-                        const cardsList = document.getElementById("reportsCardsList");
-                        if (!data.reports.length) {
-                            tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('table_empty') + '</td></tr>';
-                            cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('table_empty') + '</div>';
-                            return;
-                        }
-                        tbody.innerHTML = "";
-                        cardsList.innerHTML = "";
-                        data.reports.forEach(r => {
-                            let statusBadge = '', actionButtons = '', actionButtonsMobile = '';
-                            if (r.status === 'Pending') {
-                                statusBadge = 'bg-amber-100 text-amber-700';
-                                actionButtons = '<div class="flex items-center justify-end gap-3"><button onclick="editReport(' + r.id + ')" class="text-blue-500 hover:text-blue-700" title="' + t('action_edit') + '"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 hover:text-red-700" title="' + t('action_delete') + '"><i class="fa-solid fa-trash"></i></button></div>';
-                                actionButtonsMobile = '<div class="flex items-center gap-4"><button onclick="editReport(' + r.id + ')" class="text-blue-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> ' + t('action_edit') + '</button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-trash"></i> ' + t('action_delete') + '</button></div>';
-                            } else {
-                                if (r.status === 'Validated')                                 statusBadge = 'bg-blue-100 text-blue-700';
-                                else if (r.status === 'Approved' || r.status === 'Completed') statusBadge = 'bg-green-100 text-green-700';
-                                else                                                           statusBadge = 'bg-red-100 text-red-700';
-                                actionButtons = '<span class="text-gray-300" title="' + t('action_locked') + '"><i class="fa-solid fa-lock"></i></span>';
-                                actionButtonsMobile = '<span class="text-gray-300 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-lock"></i> ' + t('action_locked') + '</span>';
-                            }
-                            const sevColor = (r.severity === 'High' || r.severity === 'Total Loss') ? 'text-red-500' : 'text-amber-500';
-                            const costText = r.estimated_loss ? ('\u20b1' + r.estimated_loss) : 'N/A';
-
-                            tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4"><p class="text-sm font-black text-red-600">' + costText + '</p><p class="text-[10px] text-gray-400">' + t('label_est_loss') + '</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
-
-                            cardsList.innerHTML += '<div class="px-4 py-3">' +
-                                '<div class="flex justify-between items-start gap-2 mb-1.5">' +
-                                    '<span class="text-xs font-bold text-gray-400">#REP-' + r.id + '</span>' +
-                                    '<span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span>' +
-                                '</div>' +
-                                '<p class="font-bold text-gray-800 text-sm">' + (r.crop_name || t('na_text')) + '</p>' +
-                                '<p class="text-[11px] text-gray-500 mt-0.5">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha \u00b7 ' + (r.date || t('na_text')) + '</p>' +
-                                '<div class="flex items-center gap-2 mt-2">' +
-                                    '<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span>' +
-                                    '<span class="text-[11px] font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</span>' +
-                                '</div>' +
-                                '<div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-50">' +
-                                    '<p class="text-sm font-black text-red-600">' + t('label_est_loss') + ': ' + costText + '</p>' +
-                                    actionButtonsMobile +
-                                '</div>' +
-                            '</div>';
-                        });
+                        allReportsData = data.reports || [];
+                        applyReportFilters();
                     }
                 }).catch(err => console.error("Error loading dashboard:", err));
+        }
+
+        // ─── REPORT FILTERS ───────────────────────────────────────────────────
+        function applyReportFilters() {
+            const statusFilter     = document.getElementById('filterStatus').value;
+            const damageTypeFilter = document.getElementById('filterDamageType').value;
+            const severityFilter   = document.getElementById('filterSeverity').value;
+            const dateFrom         = document.getElementById('filterDateFrom').value;
+            const dateTo           = document.getElementById('filterDateTo').value;
+
+            filteredReportsData = allReportsData.filter(r => {
+                const matchesStatus = !statusFilter     || r.status === statusFilter;
+                const matchesType   = !damageTypeFilter || r.damage_type === damageTypeFilter;
+                const matchesSev    = !severityFilter   || r.severity === severityFilter;
+                const matchesFrom   = !dateFrom || (r.date && r.date >= dateFrom);
+                const matchesTo     = !dateTo   || (r.date && r.date <= dateTo);
+                return matchesStatus && matchesType && matchesSev && matchesFrom && matchesTo;
+            });
+
+            currentReportsPage = 1;
+            renderReportsPage();
+        }
+
+        function clearReportFilters() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterDamageType').value = '';
+            document.getElementById('filterSeverity').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            applyReportFilters();
+        }
+
+        // ─── REPORT RENDERING (one page's worth at a time) ─────────────────────
+        function renderReportsPage() {
+            const tbody = document.getElementById("tableBody");
+            const cardsList = document.getElementById("reportsCardsList");
+
+            if (!filteredReportsData.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('table_empty') + '</td></tr>';
+                cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('table_empty') + '</div>';
+                document.getElementById('reportsPagination').innerHTML = '';
+                return;
+            }
+
+            const start = (currentReportsPage - 1) * REPORTS_PER_PAGE;
+            const pageItems = filteredReportsData.slice(start, start + REPORTS_PER_PAGE);
+
+            tbody.innerHTML = "";
+            cardsList.innerHTML = "";
+            pageItems.forEach(r => {
+                let statusBadge = '', actionButtons = '', actionButtonsMobile = '';
+                if (r.status === 'Pending') {
+                    statusBadge = 'bg-amber-100 text-amber-700';
+                    actionButtons = '<div class="flex items-center justify-end gap-3"><button onclick="editReport(' + r.id + ')" class="text-blue-500 hover:text-blue-700" title="' + t('action_edit') + '"><i class="fa-solid fa-pen-to-square"></i></button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 hover:text-red-700" title="' + t('action_delete') + '"><i class="fa-solid fa-trash"></i></button></div>';
+                    actionButtonsMobile = '<div class="flex items-center gap-4"><button onclick="editReport(' + r.id + ')" class="text-blue-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> ' + t('action_edit') + '</button><button onclick="deleteReport(' + r.id + ')" class="text-red-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-trash"></i> ' + t('action_delete') + '</button></div>';
+                } else {
+                    if (r.status === 'Validated' || r.status === 'Inspected')             statusBadge = 'bg-blue-100 text-blue-700';
+                    else if (r.status === 'Approved' || r.status === 'Completed')         statusBadge = 'bg-green-100 text-green-700';
+                    else                                                                   statusBadge = 'bg-red-100 text-red-700';
+                    actionButtons = '<span class="text-gray-300" title="' + t('action_locked') + '"><i class="fa-solid fa-lock"></i></span>';
+                    actionButtonsMobile = '<span class="text-gray-300 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-lock"></i> ' + t('action_locked') + '</span>';
+                }
+                const sevColor = (r.severity === 'High' || r.severity === 'Total Loss') ? 'text-red-500' : 'text-amber-500';
+                const costText = r.estimated_loss ? ('\u20b1' + r.estimated_loss) : 'N/A';
+
+                tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4"><p class="text-sm font-black text-red-600">' + costText + '</p><p class="text-[10px] text-gray-400">' + t('label_est_loss') + '</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
+
+                cardsList.innerHTML += '<div class="px-4 py-3">' +
+                    '<div class="flex justify-between items-start gap-2 mb-1.5">' +
+                        '<span class="text-xs font-bold text-gray-400">#REP-' + r.id + '</span>' +
+                        '<span class="flex-shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span>' +
+                    '</div>' +
+                    '<p class="font-bold text-gray-800 text-sm">' + (r.crop_name || t('na_text')) + '</p>' +
+                    '<p class="text-[11px] text-gray-500 mt-0.5">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha \u00b7 ' + (r.date || t('na_text')) + '</p>' +
+                    '<div class="flex items-center gap-2 mt-2">' +
+                        '<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span>' +
+                        '<span class="text-[11px] font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</span>' +
+                    '</div>' +
+                    '<div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-50">' +
+                        '<p class="text-sm font-black text-red-600">' + t('label_est_loss') + ': ' + costText + '</p>' +
+                        actionButtonsMobile +
+                    '</div>' +
+                '</div>';
+            });
+
+            renderPagination(filteredReportsData.length);
+        }
+
+        // ─── PAGINATION (numbered pages) ────────────────────────────────────────
+        function renderPagination(totalItems) {
+            const container = document.getElementById('reportsPagination');
+            const totalPages = Math.ceil(totalItems / REPORTS_PER_PAGE);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = '<button onclick="goToReportsPage(' + (currentReportsPage - 1) + ')" ' + (currentReportsPage === 1 ? 'disabled' : '') +
+                ' class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (currentReportsPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100') + '"><i class="fa-solid fa-chevron-left"></i></button>';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const active = i === currentReportsPage;
+                html += '<button onclick="goToReportsPage(' + i + ')" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (active ? 'bg-[#11542e] text-white' : 'text-gray-500 hover:bg-gray-100') + '">' + i + '</button>';
+            }
+
+            html += '<button onclick="goToReportsPage(' + (currentReportsPage + 1) + ')" ' + (currentReportsPage === totalPages ? 'disabled' : '') +
+                ' class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (currentReportsPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100') + '"><i class="fa-solid fa-chevron-right"></i></button>';
+
+            container.innerHTML = html;
+        }
+
+        function goToReportsPage(page) {
+            currentReportsPage = page;
+            renderReportsPage();
         }
 
         // ─── DROPDOWNS ────────────────────────────────────────────────────────
