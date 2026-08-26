@@ -4,6 +4,16 @@ session_start();
 header('Content-Type: application/json');
 require_once '../config/db_connection.php';
 
+// Same 8-character + special-symbol rule enforced at registration and by Admin/MAO's
+// user management (api/auth/register.php, api/masterfile/users/create.php|update.php).
+// This can ONLY be checked here, at login - passwords are stored as one-way hashes, so
+// this is the one moment the real plaintext password is ever available to check against.
+function isPasswordWeak($password) {
+    if (strlen($password) < 8) return true;
+    if (!preg_match('/[!@#$%^&*()_+\-=\[\]{};\'":\\\\|,.<>\/?~`]/', $password)) return true;
+    return false;
+}
+
 $input = json_decode(file_get_contents("php://input"), true);
 
 if (isset($input['email'], $input['password'])) {
@@ -71,6 +81,10 @@ if (isset($input['email'], $input['password'])) {
             $_SESSION['User_ID'] = $user['User_ID'];
             $_SESSION['Fullname'] = $user['Fullname'];
             $_SESSION['Role'] = $role;
+            // Re-evaluated fresh on every login using the plaintext just submitted above -
+            // this naturally makes the weak-password alert reappear on every login until
+            // the person actually changes to a password that passes the rule.
+            $_SESSION['Weak_Password'] = isPasswordWeak($password);
 
                         // Log the action
             require_once '../audit/log_action.php';
