@@ -33,6 +33,10 @@ try {
     $type_id       = !empty($_POST['type_id']) ? (int)$_POST['type_id'] : null;
     $planting_date = !empty($_POST['planting_date']) ? $_POST['planting_date'] : null;
     $area          = !empty($_POST['area']) ? (float)$_POST['area'] : 0.00;
+    if ($area <= 0) {
+        echo json_encode(["status" => "error", "message" => "Affected area must be greater than 0."]);
+        exit;
+    }
     $damage_type   = sanitizeHtmlInput($_POST['damage_type']);
     $severity      = sanitizeHtmlInput($_POST['severity']);
     $description   = sanitizeHtmlInput($_POST['description'] ?? '');

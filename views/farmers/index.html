@@ -438,8 +438,9 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_affected_area">Affected Area (Ha)</label>
-                            <input type="number" step="0.01" id="landArea" required oninput="validateArea()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700" placeholder="0.00">
+                            <input type="number" step="0.01" min="0.01" id="landArea" required oninput="validateArea()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700" placeholder="0.00">
                             <small id="areaWarning" class="text-red-500 font-bold hidden text-[10px] mt-1" data-i18n="area_warning">Cannot exceed total farm size!</small>
+                            <small id="areaNegativeWarning" class="text-red-500 font-bold hidden text-[10px] mt-1" data-i18n="area_negative_warning">Area must be greater than 0.</small>
                         </div>
                     </div>
                     
@@ -694,6 +695,7 @@
                 modal_report_title: "File Crop Damage Report",
                 label_farm_location: "Farm Location", label_crop_picker: "Which Crop Was Damaged?",
                 label_planting_date: "Planting Date", label_affected_area: "Affected Area (Ha)", area_warning: "Cannot exceed total farm size!",
+                area_negative_warning: "Area must be greater than 0.",
                 label_damage_type: "Damage Type", opt_flood: "Flood", opt_typhoon: "Typhoon", opt_pest: "Pest Infestation", opt_drought: "Drought",
                 label_severity: "Severity", opt_low: "Low", opt_moderate: "Moderate", opt_high: "High", opt_total_loss: "Total Loss",
                 label_description: "Description of Damage", desc_placeholder: "Describe what happened...",
@@ -768,6 +770,7 @@
                 modal_report_title: "Maghain ng Ulat ng Pinsala sa Pananim",
                 label_farm_location: "Lokasyon ng Sakahan", label_crop_picker: "Aling Pananim ang Nasira?",
                 label_planting_date: "Petsa ng Pagtatanim", label_affected_area: "Apektadong Lugar (Ha)", area_warning: "Hindi maaaring lumampas sa kabuuang sukat ng sakahan!",
+                area_negative_warning: "Ang lugar ay dapat higit sa 0.",
                 label_damage_type: "Uri ng Pinsala", opt_flood: "Baha", opt_typhoon: "Bagyo", opt_pest: "Peste", opt_drought: "Tagtuyot",
                 label_severity: "Kalubhaan", opt_low: "Mababa", opt_moderate: "Katamtaman", opt_high: "Mataas", opt_total_loss: "Kumpletong Pagkalugi",
                 label_description: "Paglalarawan ng Pinsala", desc_placeholder: "Ilarawan kung ano ang nangyari...",
@@ -837,6 +840,7 @@
                 modal_report_title: "Pag-file og Report sa Kadaot sa Tanom",
                 label_farm_location: "Lokasyon sa Uma", label_crop_picker: "Unsa nga Tanom ang Naguba?",
                 label_planting_date: "Petsa sa Pagtanom", label_affected_area: "Naapektuhan nga Sukod (Ha)", area_warning: "Dili pwede molapas sa total nga sukod sa uma!",
+                area_negative_warning: "Ang sukod kinahanglan labaw sa 0.",
                 label_damage_type: "Klase sa Kadaot", opt_flood: "Baha", opt_typhoon: "Bagyo", opt_pest: "Peste", opt_drought: "Hulaw",
                 label_severity: "Grabe sa Kadaot", opt_low: "Gamay", opt_moderate: "Kasarangan", opt_high: "Grabe", opt_total_loss: "Total nga Kadaot",
                 label_description: "Deskripsyon sa Kadaot", desc_placeholder: "Isaysay kung unsa ang nahitabo...",
@@ -1512,15 +1516,22 @@
         }
 
         function validateArea() {
-            const input     = document.getElementById("landArea");
-            const warning   = document.getElementById("areaWarning");
-            const submitBtn = document.getElementById("submitReportBtn");
-            const val       = parseFloat(input.value);
-            if (currentMaxArea > 0 && val > currentMaxArea) {
-                warning.classList.remove("hidden"); input.classList.add("border-red-500");
+            const input       = document.getElementById("landArea");
+            const warning     = document.getElementById("areaWarning");
+            const negWarning  = document.getElementById("areaNegativeWarning");
+            const submitBtn   = document.getElementById("submitReportBtn");
+            const val         = parseFloat(input.value);
+
+            const tooBig   = currentMaxArea > 0 && val > currentMaxArea;
+            const tooSmall = isNaN(val) || val <= 0;
+
+            warning.classList.toggle("hidden", !tooBig);
+            negWarning.classList.toggle("hidden", !tooSmall);
+            input.classList.toggle("border-red-500", tooBig || tooSmall);
+
+            if (tooBig || tooSmall) {
                 submitBtn.disabled = true; submitBtn.classList.add("opacity-50", "cursor-not-allowed");
             } else {
-                warning.classList.add("hidden"); input.classList.remove("border-red-500");
                 submitBtn.disabled = false; submitBtn.classList.remove("opacity-50", "cursor-not-allowed");
             }
         }
