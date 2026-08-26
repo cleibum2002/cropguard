@@ -480,11 +480,20 @@
                             <p class="text-[10px] text-blue-600 font-semibold leading-relaxed" data-i18n="photo_info">Each photo will automatically capture your GPS location when taken. This helps admins verify the photo was taken at the declared farm location.</p>
                         </div>
                         
-                        <input type="file" id="damageImages" accept="image/*" multiple class="hidden" onchange="handleImageSelection(event)">
-                        
-                        <button type="button" onclick="document.getElementById('damageImages').click()" class="w-full py-4 border-2 border-dashed border-green-200 rounded-xl bg-green-50 text-green-700 font-bold text-sm hover:bg-green-100 hover:border-green-400 transition-all flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-camera text-lg"></i> <span data-i18n="btn_take_photo">Take Photo or Upload from Gallery</span>
-                        </button>
+                        <!-- capture="environment" forces the rear camera to open directly on mobile,
+                             rather than relying on the OS picker to maybe offer it - this is more
+                             reliable across different Android/iOS browser combinations. -->
+                        <input type="file" id="damageImagesCamera" accept="image/jpeg,image/png,image/jpg" capture="environment" class="hidden" onchange="handleImageSelection(event)">
+                        <input type="file" id="damageImagesGallery" accept="image/jpeg,image/png,image/jpg" multiple class="hidden" onchange="handleImageSelection(event)">
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="document.getElementById('damageImagesCamera').click()" class="py-4 border-2 border-dashed border-green-200 rounded-xl bg-green-50 text-green-700 font-bold text-sm hover:bg-green-100 hover:border-green-400 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-camera text-lg"></i> <span data-i18n="btn_take_photo">Take Photo</span>
+                            </button>
+                            <button type="button" onclick="document.getElementById('damageImagesGallery').click()" class="py-4 border-2 border-dashed border-green-200 rounded-xl bg-green-50 text-green-700 font-bold text-sm hover:bg-green-100 hover:border-green-400 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-images text-lg"></i> <span data-i18n="btn_upload_gallery">Upload from Gallery</span>
+                            </button>
+                        </div>
 
                         <p id="photoCount" class="text-[10px] text-gray-400 mt-1.5 hidden"></p>
                         
@@ -701,7 +710,9 @@
                 label_description: "Description of Damage", desc_placeholder: "Describe what happened...",
                 label_photos: "Photographic Evidence",
                 photo_info: "Upload clear photos showing the extent of the crop damage.",
-                btn_take_photo: "Take Photo or Upload from Gallery", btn_cancel: "Cancel", btn_submit_report: "Submit Report",
+                btn_take_photo: "Take Photo", btn_upload_gallery: "Upload from Gallery", btn_cancel: "Cancel", btn_submit_report: "Submit Report",
+                sw_bad_format_title: "Unsupported Photo Format", sw_bad_format_text_one: "That file was skipped - only JPG, JPEG, and PNG photos are allowed.",
+                sw_bad_format_text_many: "{n} files were skipped - only JPG, JPEG, and PNG photos are allowed.",
                 modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
                 label_specific_location: "Specific Location Details", label_street: "Street / Sitio / Purok / House No.",
                 label_zip: "Postal / ZIP Code", zip_hint: "Auto-filled when available",
@@ -776,7 +787,9 @@
                 label_description: "Paglalarawan ng Pinsala", desc_placeholder: "Ilarawan kung ano ang nangyari...",
                 label_photos: "Larawan bilang Ebidensya",
                 photo_info: "Mag-upload ng malinaw na mga larawan na nagpapakita ng lawak ng pinsala sa pananim.",
-                btn_take_photo: "Kumuha ng Larawan o Mag-upload mula sa Gallery", btn_cancel: "Kanselahin", btn_submit_report: "Isumite ang Ulat",
+                btn_take_photo: "Kumuha ng Larawan", btn_upload_gallery: "Mag-upload mula sa Gallery", btn_cancel: "Kanselahin", btn_submit_report: "Isumite ang Ulat",
+                sw_bad_format_title: "Hindi Suportadong Format", sw_bad_format_text_one: "Nalaktawan ang file na iyon - JPG, JPEG, at PNG lang ang pinapayagan.",
+                sw_bad_format_text_many: "{n} na file ang nalaktawan - JPG, JPEG, at PNG lang ang pinapayagan.",
                 modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
                 label_specific_location: "Detalye ng Tiyak na Lokasyon", label_street: "Kalye / Sitio / Purok / Numero ng Bahay",
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatikong nalalagay kapag available",
@@ -846,7 +859,9 @@
                 label_description: "Deskripsyon sa Kadaot", desc_placeholder: "Isaysay kung unsa ang nahitabo...",
                 label_photos: "Litrato nga Ebidensya",
                 photo_info: "Pag-upload og klaro nga mga litrato nga nagpakita sa gidak-on sa kadaot sa tanom.",
-                btn_take_photo: "Pagkuha og Litrato o Pag-upload gikan sa Gallery", btn_cancel: "Kanselahon", btn_submit_report: "I-submit ang Report",
+                btn_take_photo: "Pagkuha og Litrato", btn_upload_gallery: "Pag-upload gikan sa Gallery", btn_cancel: "Kanselahon", btn_submit_report: "I-submit ang Report",
+                sw_bad_format_title: "Dili Suportado nga Format", sw_bad_format_text_one: "Gilaktawan ang maong file - JPG, JPEG, ug PNG ra ang gitugotan.",
+                sw_bad_format_text_many: "{n} ka file ang gilaktawan - JPG, JPEG, ug PNG ra ang gitugotan.",
                 modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
                 label_specific_location: "Detalyado nga Lokasyon", label_street: "Dalan / Sitio / Purok / Numero sa Balay",
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatik ma-fill kung naa",
@@ -1043,16 +1058,31 @@
         }
 
         // ── Per-photo geo state ──────────────────────────────────────────────
+        const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
+
         function handleImageSelection(event) {
             const newFiles = Array.from(event.target.files);
             if (!newFiles.length) return;
 
+            let rejectedCount = 0;
             newFiles.forEach(f => {
+                if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
+                    rejectedCount++;
+                    return;
+                }
                 const isDupe = selectedFiles.some(s => s.name === f.name && s.size === f.size);
                 if (!isDupe) {
                     selectedFiles.push(f);
                 }
             });
+
+            if (rejectedCount > 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: t('sw_bad_format_title'),
+                    text: rejectedCount === 1 ? t('sw_bad_format_text_one') : t('sw_bad_format_text_many').replace('{n}', rejectedCount)
+                });
+            }
 
             event.target.value = '';
             renderPreviews();
