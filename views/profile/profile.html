@@ -25,6 +25,7 @@
             label_confirm_password: "Confirm Password", ph_confirm_password: "Confirm new password",
             btn_save: "Save Changes",
             sw_missing_title: "Missing Fields", sw_missing_text: "Full name and email are required.",
+            sw_invalid_contact_title: "Invalid Contact Number", sw_invalid_contact_text: "Contact number must be exactly 10 digits (e.g. 9171234567).",
             sw_mismatch_title: "Password Mismatch", sw_mismatch_text: "Passwords do not match.",
             sw_weak_title: "Weak Password", sw_weak_text: "Password must be at least 6 characters.",
             sw_updated_title: "Profile Updated!", sw_updated_text: "Your changes have been saved.",
@@ -45,6 +46,7 @@
             label_confirm_password: "Kumpirmahin ang Password", ph_confirm_password: "Kumpirmahin ang bagong password",
             btn_save: "I-save ang mga Pagbabago",
             sw_missing_title: "Kulang na Impormasyon", sw_missing_text: "Kailangan ang buong pangalan at email.",
+            sw_invalid_contact_title: "Maling Numero", sw_invalid_contact_text: "Ang numero ng contact ay dapat eksaktong 10 digit (hal. 9171234567).",
             sw_mismatch_title: "Hindi Tugma ang Password", sw_mismatch_text: "Hindi magkatugma ang mga password.",
             sw_weak_title: "Mahinang Password", sw_weak_text: "Dapat hindi bababa sa 6 na karakter ang password.",
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang iyong mga pagbabago.",
@@ -65,6 +67,7 @@
             label_confirm_password: "Kumpirmaha ang Password", ph_confirm_password: "Kumpirmaha ang bag-ong password",
             btn_save: "I-save ang mga Kausaban",
             sw_missing_title: "Kulang nga Impormasyon", sw_missing_text: "Gikinahanglan ang tibuok ngalan ug email.",
+            sw_invalid_contact_title: "Sayop nga Numero", sw_invalid_contact_text: "Ang numero sa contact kinahanglan eksakto nga 10 ka digit (pananglitan 9171234567).",
             sw_mismatch_title: "Dili Tugma ang Password", sw_mismatch_text: "Dili magkatugma ang mga password.",
             sw_weak_title: "Huyang nga Password", sw_weak_text: "Dapat dili ubos sa 6 ka karakter ang password.",
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang imong mga kausaban.",
@@ -215,7 +218,13 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_contact">Contact Number</label>
-                                    <input type="text" id="inputContact" class="input-field" placeholder="09xxxxxxxxx">
+                                    <div class="flex items-stretch gap-2">
+                                        <span class="flex items-center gap-1.5 px-3 bg-gray-100 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 flex-shrink-0">
+                                            <span>🇵🇭</span> <span>+63</span>
+                                        </span>
+                                        <input type="text" id="inputContact" class="input-field flex-1" placeholder="9xxxxxxxxx" inputmode="numeric" maxlength="10"
+                                               oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10);">
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_role">Role</label>
@@ -304,7 +313,10 @@
 
                     document.getElementById('inputFullname').value = u.Fullname       ?? '';
                     document.getElementById('inputEmail').value    = u.Email          ?? '';
-                    document.getElementById('inputContact').value  = u.Contact_Number ?? '';
+                    // Existing numbers may be stored as "09xxxxxxxxx", "+639xxxxxxxxx", or "639xxxxxxxxx" -
+                    // strip whatever prefix is there and keep just the last 10 digits for the new input box.
+                    const rawContact = (u.Contact_Number ?? '').replace(/\D/g, '');
+                    document.getElementById('inputContact').value = rawContact.slice(-10);
                     document.getElementById('inputRole').value     = u.Role           ?? '';
                     document.getElementById('inputRSBA').value     = u.RSBA_No        ?? '';
                     document.getElementById('inputArea').value     = u.Assigned_Area  ?? '';
@@ -315,7 +327,8 @@
         async function saveProfile() {
             const fullname = document.getElementById('inputFullname').value.trim();
             const email    = document.getElementById('inputEmail').value.trim();
-            const contact  = document.getElementById('inputContact').value.trim();
+            const contactDigits = document.getElementById('inputContact').value.trim();
+            const contact  = contactDigits ? ('+63' + contactDigits) : '';
             const rsba     = document.getElementById('inputRSBA').value.trim();
             const area     = document.getElementById('inputArea').value.trim();
             const password = document.getElementById('inputPassword').value;
@@ -323,6 +336,10 @@
 
             if (!fullname || !email) {
                 Swal.fire(t('sw_missing_title'), t('sw_missing_text'), 'warning');
+                return;
+            }
+            if (contactDigits && contactDigits.length !== 10) {
+                Swal.fire(t('sw_invalid_contact_title'), t('sw_invalid_contact_text'), 'warning');
                 return;
             }
             if (password && password !== confirm) {
