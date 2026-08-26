@@ -39,11 +39,13 @@ try {
         $crop_id = $conn->insert_id;
         $stmtCrop->close();
 
-        $queryReport = "INSERT INTO damage_report (Farmer_ID, Crop_ID, Damage_Type, Damage_Severity, Description, Status) VALUES (?, ?, ?, ?, ?, 'Pending')";
+        $queryReport = "INSERT INTO damage_report (Farmer_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status) VALUES (?, ?, ?, ?, ?, ?, 'Validated')";
         $stmtReport = $conn->prepare($queryReport);
         if (!$stmtReport) throw new Exception("Report Insert Error: " . $conn->error);
         
-        $stmtReport->bind_param("iisss", $farmer_id, $crop_id, $data->damage_type, $data->severity, $data->description);
+        // Farmer_Reported_Severity permanently snapshots the original value — Damage_Severity
+        // gets overwritten later once a technician inspects the farm.
+        $stmtReport->bind_param("iissss", $farmer_id, $crop_id, $data->damage_type, $data->severity, $data->severity, $data->description);
         
         if ($stmtReport->execute()) {
             echo json_encode(["status" => "success", "message" => "Damage Report successfully submitted."]);
