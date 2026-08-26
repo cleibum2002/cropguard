@@ -1736,6 +1736,13 @@
         }
         // Also listen for touch events for mobile users
         ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+        // Taking a photo backgrounds the tab while the phone's camera app is open - no
+        // mousemove/touch events fire during that time, so without this the idle timer
+        // can silently expire the session while someone's just framing a photo, not
+        // actually idle. Resetting on tab-focus-return covers that gap.
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') resetIdleTimer();
+        });
         resetIdleTimer();
 
         // Poll for new big alerts every 30 seconds
