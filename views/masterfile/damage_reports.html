@@ -98,6 +98,54 @@
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-3 border-b border-gray-50 flex flex-wrap items-end gap-3">
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_status_label">Status</label>
+                            <select id="filterStatus" onchange="filterTable()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
+                                <option value="" data-i18n="filter_all_statuses">All Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Validated">Validated</option>
+                                <option value="Inspected">Inspected</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Rejected">Rejected</option>
+                                <option value="Archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_damage_type_label">Damage Type</label>
+                            <select id="filterDamageType" onchange="filterTable()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
+                                <option value="" data-i18n="filter_all_types">All Types</option>
+                                <option value="Flood">Flood</option>
+                                <option value="Typhoon">Typhoon</option>
+                                <option value="Pest Infestation">Pest Infestation</option>
+                                <option value="Drought">Drought</option>
+                            </select>
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_severity_label">Severity</label>
+                            <select id="filterSeverity" onchange="filterTable()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
+                                <option value="" data-i18n="filter_all_severities">All Severities</option>
+                                <option value="Low">Low</option>
+                                <option value="Minimal">Minimal</option>
+                                <option value="Light">Light</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="High">High</option>
+                                <option value="Severe">Severe</option>
+                                <option value="Total Loss">Total Loss</option>
+                            </select>
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_from_label">From</label>
+                            <input type="date" id="filterDateFrom" onchange="filterTable()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                        </div>
+                        <div class="w-[47%] sm:w-auto">
+                            <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_to_label">To</label>
+                            <input type="date" id="filterDateTo" onchange="filterTable()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                        </div>
+                        <button onclick="clearReportFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear</span>
+                        </button>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
@@ -351,6 +399,9 @@
             en: {
                 header_title: "Incident Validation", badge_admin_mode: "Admin Mode",
                 search_placeholder: "Search farmer or crop...", role_admin: "Admin",
+                filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
+                filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear",
+                filter_all_statuses: "All Statuses", filter_all_types: "All Types", filter_all_severities: "All Severities",
                 page_title: "Damage Reports Processing", page_sub: "Review incoming reports and assign technicians for field inspection.",
                 page_title_archive: "Archived Reports", page_sub_archive: "Approved, rejected, and manually archived reports.",
                 btn_view_archive: "View Archive", btn_back_to_active: "Back to Active Reports",
@@ -398,7 +449,7 @@
                 placeholder_select: "Select...", damage_flood: "Flood", damage_typhoon: "Typhoon", damage_pest: "Pest Infestation", damage_drought: "Drought",
                 label_severity: "Severity", severity_low: "Low", severity_moderate: "Moderate", severity_high: "High", severity_total_loss: "Total Loss",
                 label_description: "Description", placeholder_walkin_description: "Additional notes about the damage...",
-                hint_walkin_pending: 'This report will be submitted with status "Pending", same as if the farmer submitted it directly.', btn_submit_report: "Submit Report",
+                hint_walkin_pending: 'This report will be submitted with status "Validated" immediately — since you\'re entering it directly, it skips the initial MAO review step a farmer-submitted report would normally need.', btn_submit_report: "Submit Report",
                 sw_return_title: "Return to Technician?", sw_return_html: 'The report will go back to "Pending Inspection" for the assigned technician to redo the field validation.',
                 sw_return_input_label: "Reason (optional)", sw_return_input_placeholder: "e.g. Please provide clearer photos of the affected area...",
                 sw_return_confirm: "Yes, Return It", sw_returned_title: "Returned!", sw_error_title: "Error", sw_server_failed: "Server connection failed.",
@@ -423,6 +474,9 @@
             tl: {
                 header_title: "Pagpapatunay ng Insidente", badge_admin_mode: "Admin Mode",
                 search_placeholder: "Maghanap ng magsasaka o pananim...", role_admin: "Admin",
+                filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
+                filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear",
+                filter_all_statuses: "Lahat ng Katayuan", filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan",
                 page_title: "Pagproseso ng mga Ulat ng Pinsala", page_sub: "Suriin ang mga papasok na ulat at magtalaga ng technician para sa field inspection.",
                 page_title_archive: "Mga Naka-archive na Ulat", page_sub_archive: "Mga naaprubahan, tinanggihan, at manwal na naka-archive na ulat.",
                 btn_view_archive: "Tingnan ang Archive", btn_back_to_active: "Bumalik sa Aktibong mga Ulat",
@@ -1016,9 +1070,34 @@
         }
 
         function filterTable() {
-            const q = document.getElementById("searchInput").value.toLowerCase();
-            filteredData = allData.filter(i => (i.farmer && i.farmer.toLowerCase().includes(q)) || (i.crop_name && i.crop_name.toLowerCase().includes(q)) || (i.status && i.status.toLowerCase().includes(q)));
+            const q               = document.getElementById("searchInput").value.toLowerCase();
+            const statusFilter    = document.getElementById("filterStatus").value;
+            const damageTypeFilter = document.getElementById("filterDamageType").value;
+            const severityFilter  = document.getElementById("filterSeverity").value;
+            const dateFrom        = document.getElementById("filterDateFrom").value;
+            const dateTo          = document.getElementById("filterDateTo").value;
+
+            filteredData = allData.filter(i => {
+                const matchesSearch = !q || (i.farmer && i.farmer.toLowerCase().includes(q)) || (i.crop_name && i.crop_name.toLowerCase().includes(q)) || (i.status && i.status.toLowerCase().includes(q));
+                const matchesStatus = !statusFilter || i.status === statusFilter;
+                const matchesType   = !damageTypeFilter || i.damage_type === damageTypeFilter;
+                const matchesSev    = !severityFilter || i.severity === severityFilter;
+                const matchesFrom   = !dateFrom || (i.date && i.date >= dateFrom);
+                const matchesTo     = !dateTo || (i.date && i.date <= dateTo);
+                return matchesSearch && matchesStatus && matchesType && matchesSev && matchesFrom && matchesTo;
+            });
+
             currentPage = 1; renderTable();
+        }
+
+        function clearReportFilters() {
+            document.getElementById("searchInput").value = '';
+            document.getElementById("filterStatus").value = '';
+            document.getElementById("filterDamageType").value = '';
+            document.getElementById("filterSeverity").value = '';
+            document.getElementById("filterDateFrom").value = '';
+            document.getElementById("filterDateTo").value = '';
+            filterTable();
         }
 
         function changePage(dir) { currentPage += dir; renderTable(); }
