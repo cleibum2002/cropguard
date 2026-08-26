@@ -1,11 +1,12 @@
 // Shared weak-password nudge, used by all 5 role dashboards.
 // Shows a dismissible sliding banner if session_check.php reports the account's
 // current password doesn't meet the 8-character + special-symbol rule.
-// Dismissing hides it for the rest of THIS login (sessionStorage) - it comes back
-// fresh on the next login, since login.php re-checks the real password every time.
+// Dismissal is tracked server-side in the PHP session (see dismiss_weak_password_alert.php),
+// NOT in the browser - sessionStorage has no idea when a login actually happens, so it
+// wrongly stayed dismissed across logouts/different accounts in the same tab. login.php
+// resets the dismissal flag on every fresh login, so this now correctly reappears every
+// login until the password actually changes.
 (function () {
-    const DISMISS_KEY = 'weakPasswordAlertDismissed';
-
     function injectStyles() {
         if (document.getElementById('weakPasswordAlertStyles')) return;
         const style = document.createElement('style');
@@ -18,7 +19,6 @@
     }
 
     function showAlert() {
-        if (sessionStorage.getItem(DISMISS_KEY) === '1') return;
         if (document.getElementById('weakPasswordAlert')) return;
 
         injectStyles();
@@ -37,7 +37,7 @@
         document.body.prepend(bar);
 
         document.getElementById('weakPasswordAlertClose').addEventListener('click', () => {
-            sessionStorage.setItem(DISMISS_KEY, '1');
+            fetch('/api/auth/dismiss_weak_password_alert.php', { method: 'POST' }).catch(() => {});
             bar.remove();
         });
     }

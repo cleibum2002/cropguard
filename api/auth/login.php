@@ -85,6 +85,7 @@ if (isset($input['email'], $input['password'])) {
             // this naturally makes the weak-password alert reappear on every login until
             // the person actually changes to a password that passes the rule.
             $_SESSION['Weak_Password'] = isPasswordWeak($password);
+            $_SESSION['Weak_Password_Alert_Dismissed'] = false;
 
                         // Log the action
             require_once '../audit/log_action.php';
