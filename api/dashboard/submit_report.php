@@ -113,6 +113,7 @@ try {
     }
 
     // 5. PROCESS IMAGE UPLOADS
+    $skipped_uploads = 0;
     if (isset($_FILES['images']) && is_array($_FILES['images']['name'])) {
         $upload_dir = '../../uploads/reports/'; 
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
@@ -131,13 +132,24 @@ try {
                         $stmt_img = $conn->prepare("INSERT INTO damage_report_images (Damage_Report_ID, Image_Path, geo_lat, geo_lng) VALUES (?, ?, ?, ?)");
                         $stmt_img->bind_param("isdd", $report_id, $db_path, $lat, $lng);
                         $stmt_img->execute();
+                    } else {
+                        $skipped_uploads++;
                     }
+                } else {
+                    $skipped_uploads++;
                 }
+            } else {
+                // UPLOAD_ERR_INI_SIZE (or similar) - the file was rejected before it even
+                // reached this script, most commonly because it exceeded upload_max_filesize.
+                $skipped_uploads++;
             }
         }
     }
 
     $conn->commit();
+    if ($skipped_uploads > 0) {
+        $success_message .= ' (' . $skipped_uploads . ' photo' . ($skipped_uploads > 1 ? 's' : '') . ' could not be uploaded and were skipped - please check file size and try again if needed.)';
+    }
     echo json_encode(['status' => 'success', 'message' => $success_message]);
 
 } catch (Exception $e) {
