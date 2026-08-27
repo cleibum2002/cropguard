@@ -39,4 +39,14 @@ function safeErrorMessage($e) {
     error_log('[' . date('Y-m-d H:i:s') . '] ' . $e->getMessage());
     return 'A server error occurred. Please try again or contact the administrator.';
 }
+
+// Reusable check for any expiring token/timestamp stored in the database
+// (e.g. Verification_Token_Expiry). Returns true if the given timestamp
+// is already in the past relative to the current server time.
+function isTokenExpired($expiryTimestamp) {
+    if (empty($expiryTimestamp)) {
+        return true; // no expiry value at all counts as expired/invalid
+    }
+    return strtotime($expiryTimestamp) < time();
+}
 ?>
