@@ -16,6 +16,13 @@
         .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.06); }
         .lang-link { cursor: pointer; }
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
+        .step-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.5rem; height: 1.5rem; border-radius: 9999px;
+            font-size: 0.65rem; font-weight: 900;
+            background: #11542e; color: white; flex-shrink: 0;
+        }
+        .step-badge.inactive { background: #e5e7eb; color: #9ca3af; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -106,11 +113,14 @@
 
         <main class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6 bg-[#f0f2f0]">
             <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-end mb-5 sm:mb-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-5 sm:mb-6">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Farm Directory</h2>
                         <p class="text-gray-400 text-xs sm:text-sm mt-0.5" data-i18n="page_sub">View and manage the exact coordinates and details of your registered land.</p>
                     </div>
+                    <button onclick="openFarmModal()" class="bg-[#11542e] text-white px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm w-fit">
+                        <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_farm">Add Farm</span>
+                    </button>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -137,6 +147,178 @@
         </main>
     </div>
 
+    <!-- ─── ADD FARM MODAL ──────────────────────────────────────────────── -->
+    <div id="farmModal" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xl rounded-xl shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 flex justify-between items-center border-b border-gray-100 bg-[#11542e]">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-map-location-dot text-[#f1c40f] text-lg"></i>
+                    <h3 class="text-base font-bold text-white" data-i18n="modal_farm_title">Add Farm Location</h3>
+                </div>
+                <button onclick="closeFarmModal()" class="text-white/70 hover:text-white text-xl font-medium">&times;</button>
+            </div>
+
+            <form id="farmForm" onsubmit="submitFarm(event)">
+                <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
+
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-location-dot text-[#11542e] text-sm"></i>
+                            <h4 class="text-xs font-black text-gray-700 uppercase tracking-widest" data-i18n="label_farm_address">Farm Address</h4>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge" id="badge-region">A</span>
+                                <label class="text-sm font-semibold text-gray-700" data-i18n="label_region">Region</label>
+                            </div>
+                            <div class="w-full px-3 py-2 bg-green-50 border border-green-200 rounded-md text-sm text-[#11542e] font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-lock text-xs text-green-400"></i>
+                                Region X &ndash; Northern Mindanao
+                            </div>
+                            <select id="addrRegion" class="hidden">
+                                <option value="100000000" selected>Region X</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge inactive" id="badge-province">B</span>
+                                <label class="text-sm font-semibold text-gray-500" id="label-province">
+                                    Province <span class="text-[10px] font-normal text-gray-400">(loading...)</span>
+                                </label>
+                            </div>
+                            <select id="addrProvince" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-400 cursor-not-allowed">
+                                <option value="">— Select Province —</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge inactive" id="badge-city">C</span>
+                                <label class="text-sm font-semibold text-gray-500" id="label-city">
+                                    City / Municipality <span class="text-[10px] font-normal text-gray-400">(select province first)</span>
+                                </label>
+                            </div>
+                            <select id="addrCity" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-400 cursor-not-allowed">
+                                <option value="">— Select City / Municipality —</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <span class="step-badge inactive" id="badge-brgy">D</span>
+                                <label class="text-sm font-semibold text-gray-500" id="label-brgy">
+                                    Barangay <span class="text-[10px] font-normal text-gray-400">(select city first)</span>
+                                </label>
+                            </div>
+                            <select id="addrBarangay" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-400 cursor-not-allowed">
+                                <option value="">— Select Barangay —</option>
+                            </select>
+                        </div>
+
+                        <div id="manualAddressFields" class="hidden space-y-3 mt-4 pt-4 border-t border-gray-100">
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest" data-i18n="label_specific_location">Specific Location Details</p>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_street">Street / Sitio / Purok / House No.</label>
+                                <input type="text" id="addrStreet"
+                                       class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
+                                       placeholder="e.g. Zone 2, Purok Sampaguita, Lot 12">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_zip">Postal / ZIP Code</label>
+                                    <input type="text" id="addrZip" maxlength="4" pattern="[0-9]{4}"
+                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
+                                           placeholder="e.g. 9000">
+                                    <p class="text-[10px] text-gray-400 mt-0.5" data-i18n="zip_hint">Auto-filled when available</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-1"><span data-i18n="label_landmark">Landmark</span> <span class="text-gray-400 font-normal" data-i18n="label_optional">(optional)</span></label>
+                                    <input type="text" id="addrLandmark"
+                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm text-gray-700"
+                                           placeholder="e.g. Near school, yellow gate">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <div class="flex-1 h-px bg-gray-100"></div>
+                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">Farm Details</span>
+                        <div class="flex-1 h-px bg-gray-100"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_main_crop">Main Crop Type</label>
+                            <select id="farmCropType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
+                                <option value="" data-i18n="opt_select_type">Select Type...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Period</label>
+                            <input type="text" id="farmCroppingPeriod" required
+                                   class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                                   placeholder="e.g. May - October">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_area_size">Area Size (Ha)</label>
+                            <input type="number" step="0.01" id="farmArea" required
+                                   class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                                   placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_land_type">Land Type</label>
+                            <select id="farmLandType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
+                                <option value="Irrigated" data-i18n="opt_irrigated">Irrigated</option>
+                                <option value="Rainfed" data-i18n="opt_rainfed">Rainfed</option>
+                                <option value="Upland" data-i18n="opt_upland">Upland</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">GPS Coordinates <span class="font-normal normal-case text-red-500" data-i18n="label_gps_required">(required)</span></p>
+                            <button type="button" onclick="detectGPS()" class="text-[10px] font-bold text-[#11542e] hover:underline flex items-center gap-1">
+                                <i class="fa-solid fa-location-crosshairs text-xs"></i> <span data-i18n="btn_use_location">Use My Location</span>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_latitude">Latitude</label>
+                                <input type="number" step="any" id="farmLat" readonly
+                                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md outline-none text-sm text-gray-700 cursor-not-allowed"
+                                       placeholder="8.74154200">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_longitude">Longitude</label>
+                                <input type="number" step="any" id="farmLng" readonly
+                                       class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md outline-none text-sm text-gray-700 cursor-not-allowed"
+                                       placeholder="124.77421500">
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1.5" data-i18n="gps_required_hint">Tap "Use My Location" above — this pinpoints your farm correctly on the map.</p>
+                    </div>
+
+                </div>
+
+                <div class="px-6 py-4 flex justify-end items-center gap-4 bg-gray-50 border-t border-gray-100">
+                    <button type="button" onclick="closeFarmModal()" class="text-sm font-semibold text-gray-600 hover:text-gray-800" data-i18n="btn_cancel">Cancel</button>
+                    <button type="submit" class="px-5 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_farm">Save Farm Location</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const translations = {
             en: {
@@ -146,13 +328,33 @@
                 page_title: "Farm Directory", page_sub: "View and manage the exact coordinates and details of your registered land.",
                 th_location: "Location Details", th_land_info: "Land Info", th_main_crop: "Main Crop", th_coordinates: "Coordinates",
                 loading_farms: "Loading farms...",
-                no_farms: "You have no registered farm locations yet. Add one on your Dashboard!",
+                no_farms: "You have no registered farm locations yet. Add one above!",
                 view_on_map: "View on Map", no_coords: "No coordinates set",
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Unregistered",
                 hectares_label: "Hectares", not_set: "Not Set", cycle_label: "Cycle:", na_text: "N/A",
                 opt_irrigated: "Irrigated", opt_rainfed: "Rainfed", opt_upland: "Upland",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
-                notif_title: "Notifications", notif_empty: "No notifications yet.", just_now: "Just now"
+                notif_title: "Notifications", notif_empty: "No notifications yet.", just_now: "Just now",
+                btn_add_farm: "Add Farm", btn_cancel: "Cancel",
+                modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
+                label_specific_location: "Specific Location Details", label_street: "Street / Sitio / Purok / House No.",
+                label_zip: "Postal / ZIP Code", zip_hint: "Auto-filled when available",
+                label_landmark: "Landmark", label_optional: "(optional)",
+                label_main_crop: "Main Crop Type", opt_select_type: "Select Type...",
+                label_cropping_period: "Cropping Period", label_area_size: "Area Size (Ha)",
+                label_land_type: "Land Type",
+                btn_use_location: "Use My Location", label_latitude: "Latitude", label_longitude: "Longitude",
+                btn_save_farm: "Save Farm Location",
+                label_region: "Region", opt_select_province: "— Select Province —", opt_select_city: "— Select City / Municipality —", opt_select_barangay: "— Select Barangay —",
+                loading_provinces: "Loading provinces...", loading_cities: "Loading cities/municipalities...", loading_barangays: "Loading barangays...",
+                failed_provinces: "Failed to load provinces", failed_cities: "Failed to load cities", failed_barangays: "Failed to load barangays",
+                suffix_select_province_first: "(select province first)", suffix_select_city_first: "(select city first)", suffix_loading: "(loading...)",
+                sw_not_supported_title: "Not Supported", sw_not_supported_text: "Your browser does not support geolocation.",
+                sw_detecting_title: "Detecting location...", sw_location_detected_title: "Location detected!",
+                sw_gps_error_title: "Error", sw_gps_error_text: "Could not detect your location. Please check your device's location settings and try again.",
+                sw_gps_required_title: "Location Needed", sw_gps_required_text: "Please tap \"Use My Location\" to save this farm's GPS coordinates. This is required so it shows up correctly on the MAO map.",
+                sw_required_title: "Required", sw_required_text: "Please complete the address up to Barangay level.",
+                sw_farm_saved_title: "Farm Saved!", sw_generic_error_title: "Error", sw_connect_error_text: "Could not connect to server."
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
@@ -161,13 +363,33 @@
                 page_title: "Direktoryo ng Sakahan", page_sub: "Tingnan at pamahalaan ang eksaktong coordinates at detalye ng iyong nakarehistrong lupa.",
                 th_location: "Detalye ng Lokasyon", th_land_info: "Impormasyon ng Lupa", th_main_crop: "Pangunahing Pananim", th_coordinates: "Coordinates",
                 loading_farms: "Nilo-load ang mga sakahan...",
-                no_farms: "Wala ka pang nakarehistrong lokasyon ng sakahan. Magdagdag sa iyong Dashboard!",
+                no_farms: "Wala ka pang nakarehistrong lokasyon ng sakahan. Magdagdag sa itaas!",
                 view_on_map: "Tingnan sa Mapa", no_coords: "Walang nakatakdang coordinates",
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Hindi Nakarehistro",
                 hectares_label: "Ektarya", not_set: "Hindi Nakatakda", cycle_label: "Ikot:", na_text: "N/A",
                 opt_irrigated: "May Patubig", opt_rainfed: "Umaasa sa Ulan", opt_upland: "Kabundukan",
                 sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit.",
-                notif_title: "Mga Abiso", notif_empty: "Wala pang abiso.", just_now: "Ngayon lang"
+                notif_title: "Mga Abiso", notif_empty: "Wala pang abiso.", just_now: "Ngayon lang",
+                btn_add_farm: "Magdagdag ng Sakahan", btn_cancel: "Kanselahin",
+                modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
+                label_specific_location: "Detalye ng Tiyak na Lokasyon", label_street: "Kalye / Sitio / Purok / Numero ng Bahay",
+                label_zip: "Postal / ZIP Code", zip_hint: "Awtomatikong nalalagay kapag available",
+                label_landmark: "Palatandaan", label_optional: "(opsyonal)",
+                label_main_crop: "Pangunahing Uri ng Pananim", opt_select_type: "Pumili ng Uri...",
+                label_cropping_period: "Panahon ng Pagtatanim", label_area_size: "Sukat ng Lugar (Ha)",
+                label_land_type: "Uri ng Lupa",
+                btn_use_location: "Gamitin ang Aking Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
+                btn_save_farm: "I-save ang Lokasyon ng Sakahan",
+                label_region: "Rehiyon", opt_select_province: "— Pumili ng Probinsya —", opt_select_city: "— Pumili ng Lungsod / Munisipalidad —", opt_select_barangay: "— Pumili ng Barangay —",
+                loading_provinces: "Nilo-load ang mga probinsya...", loading_cities: "Nilo-load ang mga lungsod/munisipalidad...", loading_barangays: "Nilo-load ang mga barangay...",
+                failed_provinces: "Hindi na-load ang mga probinsya", failed_cities: "Hindi na-load ang mga lungsod", failed_barangays: "Hindi na-load ang mga barangay",
+                suffix_select_province_first: "(pumili muna ng probinsya)", suffix_select_city_first: "(pumili muna ng lungsod)", suffix_loading: "(naglo-load...)",
+                sw_not_supported_title: "Hindi Suportado", sw_not_supported_text: "Hindi sinusuportahan ng iyong browser ang geolocation.",
+                sw_detecting_title: "Kinukuha ang lokasyon...", sw_location_detected_title: "Nakuha ang lokasyon!",
+                sw_gps_error_title: "Error", sw_gps_error_text: "Hindi makuha ang iyong lokasyon. Pakisuri ang location settings ng iyong device at subukan muli.",
+                sw_gps_required_title: "Kailangan ang Lokasyon", sw_gps_required_text: "Pakipindot ang \"Use My Location\" para ma-save ang GPS coordinates ng sakahang ito. Kailangan ito para tama ang lalabas sa MAO map.",
+                sw_required_title: "Kailangan", sw_required_text: "Pakikumpleto ang address hanggang antas ng Barangay.",
+                sw_farm_saved_title: "Na-save ang Sakahan!", sw_generic_error_title: "Error", sw_connect_error_text: "Hindi makakonekta sa server."
             },
             ceb: {
                 nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
@@ -176,19 +398,241 @@
                 page_title: "Direktoryo sa Uma", page_sub: "Tan-awa ug dumalahi ang eksaktong coordinates ug detalye sa imong narehistro nga yuta.",
                 th_location: "Detalye sa Lokasyon", th_land_info: "Impormasyon sa Yuta", th_main_crop: "Pangunang Tanom", th_coordinates: "Coordinates",
                 loading_farms: "Ginaload ang mga uma...",
-                no_farms: "Wala ka pay narehistro nga lokasyon sa uma. Pagdugang sa imong Dashboard!",
+                no_farms: "Wala ka pay narehistro nga lokasyon sa uma. Pagdugang sa taas!",
                 view_on_map: "Tan-awa sa Mapa", no_coords: "Walay gitakda nga coordinates",
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Wala Marehistro",
                 hectares_label: "Ektarya", not_set: "Wala Gitakda", cycle_label: "Ikot:", na_text: "N/A",
                 opt_irrigated: "May Tubig", opt_rainfed: "Nagsalig sa Ulan", opt_upland: "Bungtod",
                 sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan.",
-                notif_title: "Mga Pahibalo", notif_empty: "Wala pay pahibalo.", just_now: "Bag-o lang"
+                notif_title: "Mga Pahibalo", notif_empty: "Wala pay pahibalo.", just_now: "Bag-o lang",
+                btn_add_farm: "Pagdugang og Uma", btn_cancel: "Kanselahon",
+                modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
+                label_specific_location: "Detalyado nga Lokasyon", label_street: "Dalan / Sitio / Purok / Numero sa Balay",
+                label_zip: "Postal / ZIP Code", zip_hint: "Awtomatik ma-fill kung naa",
+                label_landmark: "Landmark", label_optional: "(opsyonal)",
+                label_main_crop: "Pangunang Klase sa Tanom", opt_select_type: "Pilia ang Klase...",
+                label_cropping_period: "Panahon sa Pagtanom", label_area_size: "Sukod sa Uma (Ha)",
+                label_land_type: "Klase sa Yuta",
+                btn_use_location: "Gamiton ang Akong Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
+                btn_save_farm: "I-save ang Lokasyon sa Uma",
+                label_region: "Rehiyon", opt_select_province: "— Pilia ang Probinsya —", opt_select_city: "— Pilia ang Siyudad / Munisipyo —", opt_select_barangay: "— Pilia ang Barangay —",
+                loading_provinces: "Ginaload ang mga probinsya...", loading_cities: "Ginaload ang mga siyudad/munisipyo...", loading_barangays: "Ginaload ang mga barangay...",
+                failed_provinces: "Wala ma-load ang mga probinsya", failed_cities: "Wala ma-load ang mga siyudad", failed_barangays: "Wala ma-load ang mga barangay",
+                suffix_select_province_first: "(pilia una ang probinsya)", suffix_select_city_first: "(pilia una ang siyudad)", suffix_loading: "(nagaload...)",
+                sw_not_supported_title: "Wala Ma-support", sw_not_supported_text: "Ang imong browser dili mo-support sa geolocation.",
+                sw_detecting_title: "Ginakuha ang lokasyon...", sw_location_detected_title: "Nakuha ang lokasyon!",
+                sw_gps_error_title: "Error", sw_gps_error_text: "Dili makuha ang imong lokasyon. Palihug susiha ang location settings sa imong device ug sulayi pag-usab.",
+                sw_gps_required_title: "Gikinahanglan ang Lokasyon", sw_gps_required_text: "Palihug pindota ang \"Use My Location\" para ma-save ang GPS coordinates niini nga uma. Gikinahanglan kini aron sakto ang mapakita sa MAO map.",
+                sw_required_title: "Gikinahanglan", sw_required_text: "Palihug kompletoha ang address hangtod sa Barangay.",
+                sw_farm_saved_title: "Na-save ang Uma!", sw_generic_error_title: "Error", sw_connect_error_text: "Dili maka-connect sa server."
             }
         };
 
         function landTypeLabel(val) {
             const map = { 'Irrigated': 'opt_irrigated', 'Rainfed': 'opt_rainfed', 'Upland': 'opt_upland' };
             return map[val] ? t(map[val]) : (val || t('na_text'));
+        }
+
+        // ─── ADD FARM MODAL (ported from index.html) ────────────────────────────
+        const PSGC = 'https://psgc.cloud/api';
+        const REGION_X_CODE = '1000000000';
+        const REGION_X_NAME = 'Region X \u2013 Northern Mindanao';
+
+        async function loadRegions() {
+            document.getElementById('addrRegion').value = REGION_X_CODE;
+            await loadProvincesForRegionX();
+        }
+
+        async function loadProvincesForRegionX() {
+            resetFrom('province');
+            const sel = document.getElementById('addrProvince');
+            setSelectLoading(sel, t('loading_provinces'));
+            try {
+                const res  = await fetch(`${PSGC}/regions/${REGION_X_CODE}/provinces`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">' + t('opt_select_province') + '</option>';
+                data.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(p => sel.appendChild(new Option(p.name, p.code)));
+                enableSelect('addrProvince', 'badge-province', 'label-province', t('label_province') || 'Province');
+                sel.addEventListener('change', onProvinceChange);
+            } catch (e) {
+                sel.innerHTML = '<option value="">' + t('failed_provinces') + '</option>';
+                enableSelect('addrProvince', 'badge-province', 'label-province', t('label_province') || 'Province');
+            }
+        }
+
+        async function onProvinceChange() {
+            const provinceCode = document.getElementById('addrProvince').value;
+            resetFrom('city');
+            if (!provinceCode) return;
+            const sel = document.getElementById('addrCity');
+            setSelectLoading(sel, t('loading_cities'));
+            try {
+                const res  = await fetch(`${PSGC}/provinces/${provinceCode}/cities-municipalities`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">' + t('opt_select_city') + '</option>';
+                data.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(c => sel.appendChild(new Option(c.name, c.code)));
+                enableSelect('addrCity', 'badge-city', 'label-city', t('label_city'));
+                sel.addEventListener('change', onCityChange);
+            } catch (e) {
+                sel.innerHTML = '<option value="">' + t('failed_cities') + '</option>';
+                enableSelect('addrCity', 'badge-city', 'label-city', t('label_city'));
+            }
+        }
+
+        async function onCityChange() {
+            const cityCode = document.getElementById('addrCity').value;
+            resetFrom('barangay');
+            if (!cityCode) return;
+            const sel = document.getElementById('addrBarangay');
+            setSelectLoading(sel, t('loading_barangays'));
+            try {
+                const res  = await fetch(`${PSGC}/cities-municipalities/${cityCode}/barangays`);
+                const data = await res.json();
+                sel.innerHTML = '<option value="">' + t('opt_select_barangay') + '</option>';
+                data.sort((a, b) => a.name.localeCompare(b.name))
+                    .forEach(b => sel.appendChild(new Option(b.name, b.code)));
+                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', t('label_barangay') || 'Barangay');
+                sel.addEventListener('change', () => {
+                    if (sel.value) {
+                        document.getElementById('manualAddressFields').classList.remove('hidden');
+                        const chosen = data.find(b => b.code === sel.value);
+                        if (chosen && chosen.zipCode) document.getElementById('addrZip').value = chosen.zipCode;
+                    } else {
+                        document.getElementById('manualAddressFields').classList.add('hidden');
+                    }
+                });
+            } catch (e) {
+                sel.innerHTML = '<option value="">' + t('failed_barangays') + '</option>';
+                enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', t('label_barangay') || 'Barangay');
+            }
+        }
+
+        function enableSelect(selectId, badgeId, labelId, labelText) {
+            const sel = document.getElementById(selectId);
+            sel.disabled = false;
+            sel.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+            sel.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+            const badge = document.getElementById(badgeId);
+            if (badge) badge.classList.remove('inactive');
+            const label = document.getElementById(labelId);
+            if (label) label.innerHTML = labelText;
+        }
+
+        function setSelectLoading(sel, placeholder) {
+            sel.innerHTML = '<option>' + placeholder + '</option>';
+            sel.disabled = true;
+            sel.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+            sel.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+        }
+
+        function resetFrom(level) {
+            const levels   = ['province', 'city', 'barangay'];
+            const idMap    = { province: 'addrProvince', city: 'addrCity', barangay: 'addrBarangay' };
+            const badgeMap = { province: 'badge-province', city: 'badge-city', barangay: 'badge-brgy' };
+            const labelMap = {
+                province: ['label-province', t('label_province') || 'Province',            'suffix_select_province_first_placeholder'],
+                city:     ['label-city',     t('label_city'), 'suffix_select_city_first_placeholder'],
+                barangay: ['label-brgy',     t('label_barangay') || 'Barangay',            'suffix_select_city_first_placeholder2']
+            };
+            const suffixMap = { province: t('suffix_loading'), city: t('suffix_select_province_first'), barangay: t('suffix_select_city_first') };
+            levels.slice(levels.indexOf(level)).forEach(l => {
+                const oldSel = document.getElementById(idMap[l]);
+                const newSel = oldSel.cloneNode(false);
+                newSel.innerHTML = '<option value="">\u2014 ' + labelMap[l][1] + ' \u2014</option>';
+                newSel.disabled = true;
+                newSel.classList.add('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                newSel.classList.remove('bg-white', 'border-gray-300', 'text-gray-700');
+                oldSel.parentNode.replaceChild(newSel, oldSel);
+                const badge = document.getElementById(badgeMap[l]);
+                if (badge) badge.classList.add('inactive');
+                const lbl = document.getElementById(labelMap[l][0]);
+                if (lbl) lbl.innerHTML = labelMap[l][1] + ' <span class="text-[10px] font-normal text-gray-400">' + suffixMap[l] + '</span>';
+            });
+            document.getElementById('manualAddressFields').classList.add('hidden');
+            document.getElementById('addrStreet').value   = '';
+            document.getElementById('addrZip').value      = '';
+            document.getElementById('addrLandmark').value = '';
+        }
+
+        function detectGPS() {
+            if (!navigator.geolocation) { Swal.fire(t('sw_not_supported_title'), t('sw_not_supported_text'), 'warning'); return; }
+            Swal.fire({ title: t('sw_detecting_title'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    document.getElementById('farmLat').value = pos.coords.latitude.toFixed(8);
+                    document.getElementById('farmLng').value = pos.coords.longitude.toFixed(8);
+                    Swal.fire({ icon: 'success', title: t('sw_location_detected_title'), timer: 1200, showConfirmButton: false });
+                },
+                () => Swal.fire(t('sw_gps_error_title'), t('sw_gps_error_text'), 'error')
+            );
+        }
+
+        function openFarmModal() {
+            document.getElementById("farmForm").reset();
+            resetFrom('province');
+            document.getElementById('manualAddressFields').classList.add('hidden');
+            loadRegions();
+            loadCropTypesForFarmModal();
+            document.getElementById("farmModal").classList.remove("hidden");
+        }
+
+        function loadCropTypesForFarmModal() {
+            const select = document.getElementById('farmCropType');
+            fetch('../../api/dashboard/get_crop_options.php')
+                .then(res => res.json())
+                .then(data => {
+                    select.innerHTML = '<option value="">' + t('opt_select_type') + '</option>';
+                    (data.types || []).forEach(t2 => {
+                        select.innerHTML += '<option value="' + t2.Type_ID + '">' + t2.Commodity_Type + ' \u2013 ' + t2.Crop_Name + '</option>';
+                    });
+                }).catch(() => {});
+        }
+        function closeFarmModal() { document.getElementById("farmModal").classList.add("hidden"); }
+
+        function submitFarm(e) {
+            e.preventDefault();
+            const getSelectedText = id => {
+                const s = document.getElementById(id);
+                return s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : '';
+            };
+            const barangayText = getSelectedText('addrBarangay');
+            if (!barangayText || barangayText.startsWith('\u2014')) {
+                Swal.fire(t('sw_required_title'), t('sw_required_text'), 'warning'); return;
+            }
+            const farmLatVal = document.getElementById('farmLat').value;
+            const farmLngVal = document.getElementById('farmLng').value;
+            if (!farmLatVal || !farmLngVal) {
+                Swal.fire(t('sw_gps_required_title'), t('sw_gps_required_text'), 'warning'); return;
+            }
+            const province = getSelectedText('addrProvince');
+            const city     = getSelectedText('addrCity');
+            const street   = document.getElementById('addrStreet').value.trim();
+            const zip      = document.getElementById('addrZip').value.trim();
+            const landmark = document.getElementById('addrLandmark').value.trim();
+            const addressParts = [barangayText, city, province, REGION_X_NAME].filter(Boolean).join(', ');
+            const detailParts  = [street, zip ? 'ZIP: ' + zip : '', landmark ? 'Landmark: ' + landmark : ''].filter(Boolean).join(' | ');
+            let fullAddress = addressParts;
+            if (detailParts) fullAddress += ' | ' + detailParts;
+            if (fullAddress.length > 100) fullAddress = fullAddress.substring(0, 97) + '...';
+            const payload = {
+                barangay: fullAddress,
+                type_id: document.getElementById('farmCropType').value,
+                cropping_period: document.getElementById('farmCroppingPeriod').value,
+                area_size: document.getElementById('farmArea').value,
+                land_type: document.getElementById('farmLandType').value,
+                latitude: document.getElementById('farmLat').value || null,
+                longitude: document.getElementById('farmLng').value || null
+            };
+            fetch('../../api/dashboard/submit_farm.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+            }).then(res => res.json()).then(data => {
+                if (data.status === 'success') {
+                    Swal.fire({ icon: 'success', title: t('sw_farm_saved_title'), timer: 1500, showConfirmButton: false });
+                    closeFarmModal(); loadFarms();
+                } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
+            }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
         }
 
         function loadFarms() {
