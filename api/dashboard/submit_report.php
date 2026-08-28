@@ -81,6 +81,28 @@ try {
         $stmt_report->bind_param("iisssii", $location_id, $crop_id, $damage_type, $severity, $description, $report_id, $farmer_id);
         $stmt_report->execute();
         $success_message = 'Report successfully updated!';
+
+        // Delete only the specific photos the farmer explicitly removed - ownership is
+        // re-checked here (Damage_Report_ID + Farmer_ID via the report itself) so a
+        // request can't be crafted to delete another farmer's photos.
+        if (!empty($_POST['removed_image_ids']) && is_array($_POST['removed_image_ids'])) {
+            foreach ($_POST['removed_image_ids'] as $imgId) {
+                $imgId = (int)$imgId;
+                $delStmt = $conn->prepare("SELECT Image_Path FROM damage_report_images WHERE Image_ID = ? AND Damage_Report_ID = ?");
+                $delStmt->bind_param("ii", $imgId, $report_id);
+                $delStmt->execute();
+                $imgRow = $delStmt->get_result()->fetch_assoc();
+                $delStmt->close();
+                if ($imgRow) {
+                    $filePath = '../../' . $imgRow['Image_Path'];
+                    if (file_exists($filePath)) unlink($filePath);
+                    $removeStmt = $conn->prepare("DELETE FROM damage_report_images WHERE Image_ID = ?");
+                    $removeStmt->bind_param("i", $imgId);
+                    $removeStmt->execute();
+                    $removeStmt->close();
+                }
+            }
+        }
     } else {
         // FIXED: Included Type_ID here so it isn't empty
         $sql_report = "INSERT INTO damage_report (Farmer_ID, Location_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status) 

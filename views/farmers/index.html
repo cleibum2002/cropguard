@@ -258,10 +258,7 @@
                         <h2 class="text-xl sm:text-2xl font-black text-gray-800 tracking-tight" data-i18n="welcome_title">Welcome back!</h2>
                         <p class="text-gray-400 text-xs sm:text-sm mt-0.5" data-i18n="welcome_sub">Track your filed reports and monitor their validation status.</p>
                     </div>
-                    <div class="grid grid-cols-2 sm:flex gap-2">
-                        <button onclick="openFarmModal()" class="bg-white border border-gray-200 text-gray-700 px-3 py-2.5 sm:px-5 sm:py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
-                            <i class="fa-solid fa-map-location-dot text-[#11542e]"></i> <span data-i18n="btn_manage_farms">Manage Farms</span>
-                        </button>
+                    <div class="flex gap-2">
                         <button onclick="openReportModal()" class="bg-[#11542e] text-white px-3 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
                             <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_report">File New Report</span>
                         </button>
@@ -917,7 +914,9 @@
         const REGION_X_CODE = '1000000000';
         const REGION_X_NAME = 'Region X \u2013 Northern Mindanao';
 
-        let selectedFiles = [];
+        let selectedFiles   = [];  // newly picked files, not yet uploaded
+        let existingImages  = [];  // {id, path} - already-saved photos, shown when editing
+        let removedImageIds = [];  // ids of existingImages the farmer explicitly removed
 
         document.addEventListener("DOMContentLoaded", () => {
             loadDashboardData();
@@ -1098,14 +1097,28 @@
             const countLabel = document.getElementById('photoCount');
             container.innerHTML = '';
 
-            if (!selectedFiles.length) {
+            const totalCount = existingImages.length + selectedFiles.length;
+            if (!totalCount) {
                 countLabel.classList.add('hidden');
                 return;
             }
 
-            countLabel.textContent = selectedFiles.length + ' photo' + (selectedFiles.length > 1 ? 's' : '') + ' selected — tap × to remove';
+            countLabel.textContent = totalCount + ' photo' + (totalCount > 1 ? 's' : '') + ' — tap × to remove';
             countLabel.classList.remove('hidden');
 
+            // Already-saved photos (only present when editing) - removing one just marks
+            // it for deletion on submit, it isn't deleted immediately.
+            existingImages.forEach((img, i) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'img-thumb';
+                wrap.innerHTML = `
+                    <img src="${img.path}" alt="Existing photo ${i + 1}">
+                    <button type="button" class="remove-btn" onclick="removeExistingPhoto(${img.id})" title="Remove photo">&times;</button>
+                `;
+                container.appendChild(wrap);
+            });
+
+            // Newly-picked photos for this session, not yet uploaded.
             selectedFiles.forEach((file, i) => {
                 const url = URL.createObjectURL(file);
 
@@ -1117,6 +1130,12 @@
                 `;
                 container.appendChild(wrap);
             });
+        }
+
+        function removeExistingPhoto(imageId) {
+            existingImages = existingImages.filter(img => img.id !== imageId);
+            removedImageIds.push(imageId);
+            renderPreviews();
         }
 
         // ─── CASCADING ADDRESS ────────────────────────────────────────────────
@@ -1526,10 +1545,10 @@
             if (!locationId) {
                 picker.innerHTML = '<option value="">' + t('opt_select_crop') + '</option>';
                 farmerCropsData = [];
-                return;
+                return Promise.resolve();
             }
             picker.innerHTML = '<option value="" disabled selected>Loading crops for this farm...</option>';
-            fetch('../../api/dashboard/get_crop_options.php?location_id=' + locationId)
+            return fetch('../../api/dashboard/get_crop_options.php?location_id=' + locationId)
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
@@ -1570,6 +1589,8 @@
         function openReportModal(editId) {
             document.getElementById("reportForm").reset();
             selectedFiles = [];
+            existingImages = [];
+            removedImageIds = [];
             document.getElementById('imagePreviewContainer').innerHTML = '';
             document.getElementById('photoCount').classList.add('hidden');
 
@@ -1610,6 +1631,9 @@
             selectedFiles.forEach((file, i) => {
                 formData.append('images[]', file);
             });
+            removedImageIds.forEach(id => {
+                formData.append('removed_image_ids[]', id);
+            });
 
             Swal.fire({ title: t('sw_submitting_title'), text: t('sw_submitting_text'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -1630,18 +1654,23 @@
                 Swal.close();
                 if (data.status === 'success') {
                     const r = data.data;
-                    selectedFiles = [];
-                    document.getElementById('imagePreviewContainer').innerHTML = '';
-                    document.getElementById('photoCount').classList.add('hidden');
+                    selectedFiles   = [];
+                    existingImages  = r.images || [];
+                    removedImageIds = [];
                     document.getElementById('reportId').value     = r.Damage_Report_ID;
                     document.getElementById('farmLocation').value = r.Location_ID || '';
-                    updateMaxArea();
-                    document.getElementById('cropPicker').value = r.Crop_ID || '';
-                    document.getElementById('cropName').value   = r.Crop_ID || '';
-                    document.getElementById('cropType').value   = r.Type_ID || '';
-                    const hint = document.getElementById('cropPickerHint');
-                    if (r.Type_ID) { hint.textContent = 'Type ID ' + r.Type_ID + ' auto-selected'; hint.classList.remove('hidden'); }
-                    else { hint.classList.add('hidden'); }
+                    // Set the hidden crop fields to their real values right away (used on submit
+                    // regardless of dropdown timing) - but the VISIBLE dropdown can only be
+                    // correctly selected once its options actually finish loading, and it's
+                    // keyed by Type_ID (crop type), not Crop_ID (a specific crop record).
+                    document.getElementById('cropName').value = r.Crop_ID || '';
+                    document.getElementById('cropType').value = r.Type_ID || '';
+                    updateMaxArea().then(() => {
+                        document.getElementById('cropPicker').value = r.Type_ID || '';
+                        const hint = document.getElementById('cropPickerHint');
+                        if (r.Type_ID) { hint.textContent = 'Type ID ' + r.Type_ID + ' auto-selected'; hint.classList.remove('hidden'); }
+                        else { hint.classList.add('hidden'); }
+                    });
                     document.getElementById('plantingDate').value = r.Planting_Date   || '';
                     document.getElementById('landArea').value     = r.Area_Hectares   || '';
                     document.getElementById('damageType').value   = r.Damage_Type     || 'Flood';
@@ -1649,6 +1678,7 @@
                     document.getElementById('description').value  = r.Description     || '';
                     document.getElementById('modalTitle').innerText = t('modal_edit_title');
                     document.getElementById('modal').classList.remove('hidden');
+                    renderPreviews();
                 } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
             }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_load_report_failed_text'), 'error'));
         }
