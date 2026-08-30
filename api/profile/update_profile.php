@@ -20,6 +20,7 @@ $fullname = trim($input['fullname'] ?? '');
 $email    = trim($input['email']    ?? '');
 $contact  = trim($input['contact']  ?? '');
 $rsba     = trim($input['rsba']     ?? '');
+$rsba     = $rsba === '' ? null : $rsba; // UNIQUE constraint on RSBA_No treats '' as a real duplicate value across every unassigned farmer - NULL is the correct "not set" value instead
 $area     = trim($input['area']     ?? '');
 $password = $input['password']      ?? '';
 
