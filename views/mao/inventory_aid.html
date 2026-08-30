@@ -62,6 +62,44 @@
                     </div>
                 </div>
 
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-4 flex flex-wrap items-end gap-3">
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_status_label">Status</label>
+                        <select id="filterStatus" onchange="filterTable()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                            <option value="">All Statuses</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_damage_type_label">Damage Type</label>
+                        <select id="filterDamageType" onchange="filterTable()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                            <option value="">All Types</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_severity_label">Severity</label>
+                        <select id="filterSeverity" onchange="filterTable()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                            <option value="">All Severities</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_barangay_label">Barangay</label>
+                        <select id="filterBarangay" onchange="filterTable()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                            <option value="">All Barangays</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_from_label">From</label>
+                        <input type="date" id="filterDateFrom" onchange="filterTable()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_to_label">To</label>
+                        <input type="date" id="filterDateTo" onchange="filterTable()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                    </div>
+                    <button onclick="clearAidFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear Filters</span>
+                    </button>
+                </div>
+
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -116,7 +154,10 @@
                 sw_error_title: "Error", sw_update_failed: "Failed to update record.", sw_server_conn_failed: "Server connection failed.",
                 sw_signout_title: "Sign Out?", sw_signout_text: "You will be returned to the login screen.", sw_yes_signout: "Yes, sign out",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
-                notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet."
+                notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
+                filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
+                filter_barangay_label: "Barangay", filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear Filters",
+                filter_all_types: "All Types", filter_all_severities: "All Severities", filter_all_barangays: "All Barangays", filter_all_statuses: "All Statuses"
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
@@ -136,7 +177,10 @@
                 sw_error_title: "Error", sw_update_failed: "Hindi na-update ang record.", sw_server_conn_failed: "Nabigo ang koneksyon sa server.",
                 sw_signout_title: "Mag-sign Out?", sw_signout_text: "Ibabalik ka sa login screen.", sw_yes_signout: "Oo, mag-sign out",
                 sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
-                notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso."
+                notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
+                filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
+                filter_barangay_label: "Barangay", filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear ang mga Filter",
+                filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan", filter_all_barangays: "Lahat ng Barangay", filter_all_statuses: "Lahat ng Katayuan"
             }
         };
 
@@ -149,6 +193,7 @@
 
         // Called automatically by i18n.js whenever the user picks a new language
         function onLanguageChange() {
+            populateFilterOptions(); // refresh "All Types" / "All Severities" / "All Barangays" / "All Statuses" text
             filterTable(); // re-renders the currently filtered rows with translated status/action text
             loadMaoNotifications();
         }
@@ -164,11 +209,61 @@
                 const response = await res.json();
                 if (response.status === 'success') {
                     aidData = response.data;
+                    populateFilterOptions();
                     renderTable(aidData);
                 }
             } catch (e) { 
                 console.error("Load failed", e); 
             }
+        }
+
+        // Same convention already used on Report Management / MAO System Reports:
+        // the stored Barangay field is a full free-text address, but the real
+        // barangay name is always the first comma-separated segment.
+        function parseBarangay(raw) {
+            if (!raw) return '';
+            return raw.split(',')[0].trim();
+        }
+
+        // Builds the dropdown option lists straight from whatever data actually
+        // exists in the aid ledger, so nothing real ever goes missing and no
+        // option ever matches zero rows.
+        function populateFilterOptions() {
+            const damageTypes = [...new Set(aidData.map(i => i.damage_type).filter(Boolean))].sort();
+            const severities  = [...new Set(aidData.map(i => i.damage_severity).filter(Boolean))].sort();
+            const barangays   = [...new Set(aidData.map(i => parseBarangay(i.barangay_raw)).filter(Boolean))].sort();
+            const statusOrder = ['Pending Distribution', 'Claimed'];
+            const statuses    = statusOrder.filter(s => aidData.some(i => i.status === s));
+
+            fillSelect('filterDamageType', damageTypes, t('filter_all_types'));
+            fillSelect('filterSeverity', severities, t('filter_all_severities'));
+            fillSelect('filterBarangay', barangays, t('filter_all_barangays'));
+
+            const statusEl = document.getElementById('filterStatus');
+            if (statusEl) {
+                const currentValue = statusEl.value;
+                statusEl.innerHTML = `<option value="">${t('filter_all_statuses')}</option>` + statuses.map(s => `<option value="${s}">${aidStatusLabel(s)}</option>`).join('');
+                if (statuses.includes(currentValue)) statusEl.value = currentValue;
+            }
+        }
+
+        function fillSelect(id, values, allLabel) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const currentValue = el.value; // preserve the current selection across rebuilds
+            el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
+            if (values.includes(currentValue)) el.value = currentValue;
+        }
+
+        function clearAidFilters() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterDamageType').value = '';
+            document.getElementById('filterSeverity').value = '';
+            document.getElementById('filterBarangay').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            document.getElementById('searchInput').value = '';
+            filterTable();
         }
 
         // 3. Render the Table
@@ -234,10 +329,29 @@
             });
         }
 
-        // 5. Simple Search Filter
+        // 5. Search + Filters
         function filterTable() {
             const q = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = aidData.filter(i => i.farmer_name.toLowerCase().includes(q) || `aid-${i.dist_id}`.includes(q));
+            const statusFilter     = document.getElementById('filterStatus').value;
+            const damageTypeFilter = document.getElementById('filterDamageType').value;
+            const severityFilter   = document.getElementById('filterSeverity').value;
+            const barangayFilter   = document.getElementById('filterBarangay').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo   = document.getElementById('filterDateTo').value;
+
+            const filtered = aidData.filter(i => {
+                const matchesSearch = i.farmer_name.toLowerCase().includes(q) || `aid-${i.dist_id}`.includes(q);
+                const matchesStatus      = !statusFilter || i.status === statusFilter;
+                const matchesDamageType  = !damageTypeFilter || i.damage_type === damageTypeFilter;
+                const matchesSeverity    = !severityFilter || i.damage_severity === severityFilter;
+                const matchesBarangay    = !barangayFilter || parseBarangay(i.barangay_raw) === barangayFilter;
+                // date_distributed comes back as "YYYY-MM-DD HH:MM:SS" — string-compare the date portion
+                const rowDate = i.date_distributed ? i.date_distributed.slice(0, 10) : '';
+                const matchesDateFrom = !dateFrom || (rowDate && rowDate >= dateFrom);
+                const matchesDateTo   = !dateTo || (rowDate && rowDate <= dateTo);
+
+                return matchesSearch && matchesStatus && matchesDamageType && matchesSeverity && matchesBarangay && matchesDateFrom && matchesDateTo;
+            });
             renderTable(filtered);
         }
 
