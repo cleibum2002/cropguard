@@ -10,6 +10,14 @@ if (!isset($_SESSION['User_ID'])) {
 
 $current_user = $_SESSION['User_ID'];
 
+// Farmers can only message MAO, Technician, and Admin - not other Farmers.
+// Everyone else still sees the full contact list, including Farmers, since
+// that's essential to their normal workflow (discussing reports, etc.).
+$exclude_farmers_clause = '';
+if (($_SESSION['Role'] ?? '') === 'Farmer') {
+    $exclude_farmers_clause = "AND u.Role != 'Farmer'";
+}
+
 try {
     $query = "SELECT 
                 u.User_ID as id,
@@ -25,6 +33,7 @@ try {
               FROM users u
               WHERE u.User_ID != $current_user
               AND u.STATUS = 'Active'
+              $exclude_farmers_clause
               ORDER BY last_message_time DESC, u.Role, u.Fullname ASC";
 
     $result = $conn->query($query);
