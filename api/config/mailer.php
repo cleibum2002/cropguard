@@ -8,7 +8,7 @@
 // PHPMailer/Composer are no longer needed for this - removed to keep things simple.
 
 define('BREVO_API_KEY', 'REMOVED_BREVO_API_KEY');
-define('BREVO_SENDER_EMAIL', 'person8@example.com');
+define('BREVO_SENDER_EMAIL', 'person1@example.com');
 define('BREVO_SENDER_NAME', 'CropGuard');
 
 function sendVerificationEmail($toEmail, $toName, $code) {
