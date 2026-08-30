@@ -255,27 +255,27 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_main_crop">Main Crop Type</label>
-                            <select id="farmCropType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
+                            <select id="farmCropType" required disabled class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
                                 <option value="" data-i18n="opt_select_type">Select Type...</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Period</label>
-                            <input type="text" id="farmCroppingPeriod" required
-                                   class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                            <input type="text" id="farmCroppingPeriod" required disabled
+                                   class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed"
                                    placeholder="e.g. May - October">
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_area_size">Area Size (Ha)</label>
-                            <input type="number" step="0.01" id="farmArea" required
-                                   class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700"
+                            <input type="number" step="0.01" id="farmArea" required disabled
+                                   class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed"
                                    placeholder="0.00">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_land_type">Land Type</label>
-                            <select id="farmLandType" required class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-700">
+                            <select id="farmLandType" required disabled class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
                                 <option value="Irrigated" data-i18n="opt_irrigated">Irrigated</option>
                                 <option value="Rainfed" data-i18n="opt_rainfed">Rainfed</option>
                                 <option value="Upland" data-i18n="opt_upland">Upland</option>
@@ -286,10 +286,11 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">GPS Coordinates <span class="font-normal normal-case text-red-500" data-i18n="label_gps_required">(required)</span></p>
-                            <button type="button" onclick="detectGPS()" class="text-[10px] font-bold text-[#11542e] hover:underline flex items-center gap-1">
+                            <button type="button" id="btnUseLocation" onclick="detectGPS()" disabled class="text-[10px] font-bold text-gray-300 cursor-not-allowed flex items-center gap-1">
                                 <i class="fa-solid fa-location-crosshairs text-xs"></i> <span data-i18n="btn_use_location">Use My Location</span>
                             </button>
                         </div>
+                        <p id="farmDetailsLockHint" class="text-[10px] text-amber-600 font-bold -mt-1 mb-2" data-i18n="farm_details_locked_hint">Complete the address above (up to Barangay) to unlock these fields.</p>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1" data-i18n="label_latitude">Latitude</label>
@@ -345,7 +346,8 @@
                 label_land_type: "Land Type",
                 btn_use_location: "Use My Location", label_latitude: "Latitude", label_longitude: "Longitude",
                 btn_save_farm: "Save Farm Location",
-                label_region: "Region", opt_select_province: "— Select Province —", opt_select_city: "— Select City / Municipality —", opt_select_barangay: "— Select Barangay —",
+                label_region: "Region", label_province: "Province", label_city: "City / Municipality", label_barangay: "Barangay",
+                opt_select_province: "— Select Province —", opt_select_city: "— Select City / Municipality —", opt_select_barangay: "— Select Barangay —",
                 loading_provinces: "Loading provinces...", loading_cities: "Loading cities/municipalities...", loading_barangays: "Loading barangays...",
                 failed_provinces: "Failed to load provinces", failed_cities: "Failed to load cities", failed_barangays: "Failed to load barangays",
                 suffix_select_province_first: "(select province first)", suffix_select_city_first: "(select city first)", suffix_loading: "(loading...)",
@@ -380,7 +382,8 @@
                 label_land_type: "Uri ng Lupa",
                 btn_use_location: "Gamitin ang Aking Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
                 btn_save_farm: "I-save ang Lokasyon ng Sakahan",
-                label_region: "Rehiyon", opt_select_province: "— Pumili ng Probinsya —", opt_select_city: "— Pumili ng Lungsod / Munisipalidad —", opt_select_barangay: "— Pumili ng Barangay —",
+                label_region: "Rehiyon", label_province: "Probinsya", label_city: "Lungsod / Munisipalidad", label_barangay: "Barangay",
+                opt_select_province: "— Pumili ng Probinsya —", opt_select_city: "— Pumili ng Lungsod / Munisipalidad —", opt_select_barangay: "— Pumili ng Barangay —",
                 loading_provinces: "Nilo-load ang mga probinsya...", loading_cities: "Nilo-load ang mga lungsod/munisipalidad...", loading_barangays: "Nilo-load ang mga barangay...",
                 failed_provinces: "Hindi na-load ang mga probinsya", failed_cities: "Hindi na-load ang mga lungsod", failed_barangays: "Hindi na-load ang mga barangay",
                 suffix_select_province_first: "(pumili muna ng probinsya)", suffix_select_city_first: "(pumili muna ng lungsod)", suffix_loading: "(naglo-load...)",
@@ -415,7 +418,8 @@
                 label_land_type: "Klase sa Yuta",
                 btn_use_location: "Gamiton ang Akong Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
                 btn_save_farm: "I-save ang Lokasyon sa Uma",
-                label_region: "Rehiyon", opt_select_province: "— Pilia ang Probinsya —", opt_select_city: "— Pilia ang Siyudad / Munisipyo —", opt_select_barangay: "— Pilia ang Barangay —",
+                label_region: "Rehiyon", label_province: "Probinsya", label_city: "Siyudad / Munisipyo", label_barangay: "Barangay",
+                opt_select_province: "— Pilia ang Probinsya —", opt_select_city: "— Pilia ang Siyudad / Munisipyo —", opt_select_barangay: "— Pilia ang Barangay —",
                 loading_provinces: "Ginaload ang mga probinsya...", loading_cities: "Ginaload ang mga siyudad/munisipyo...", loading_barangays: "Ginaload ang mga barangay...",
                 failed_provinces: "Wala ma-load ang mga probinsya", failed_cities: "Wala ma-load ang mga siyudad", failed_barangays: "Wala ma-load ang mga barangay",
                 suffix_select_province_first: "(pilia una ang probinsya)", suffix_select_city_first: "(pilia una ang siyudad)", suffix_loading: "(nagaload...)",
@@ -502,11 +506,43 @@
                     } else {
                         document.getElementById('manualAddressFields').classList.add('hidden');
                     }
+                    updateFarmDetailsLockState();
                 });
             } catch (e) {
                 sel.innerHTML = '<option value="">' + t('failed_barangays') + '</option>';
                 enableSelect('addrBarangay', 'badge-brgy', 'label-brgy', t('label_barangay') || 'Barangay');
             }
+        }
+
+        // Farm Details (crop, area, GPS) stay locked until a real Barangay is picked -
+        // there's no point letting someone fill in crop/area details for an address
+        // that isn't actually complete yet.
+        function updateFarmDetailsLockState() {
+            const barangaySel = document.getElementById('addrBarangay');
+            const unlocked = barangaySel && barangaySel.value && !barangaySel.disabled;
+
+            const fields = ['farmCropType', 'farmCroppingPeriod', 'farmArea', 'farmLandType'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                el.disabled = !unlocked;
+                el.classList.toggle('bg-gray-50', !unlocked);
+                el.classList.toggle('border-gray-200', !unlocked);
+                el.classList.toggle('text-gray-400', !unlocked);
+                el.classList.toggle('cursor-not-allowed', !unlocked);
+                el.classList.toggle('bg-white', unlocked);
+                el.classList.toggle('border-gray-300', unlocked);
+                el.classList.toggle('text-gray-700', unlocked);
+            });
+
+            const gpsBtn = document.getElementById('btnUseLocation');
+            gpsBtn.disabled = !unlocked;
+            gpsBtn.classList.toggle('text-gray-300', !unlocked);
+            gpsBtn.classList.toggle('cursor-not-allowed', !unlocked);
+            gpsBtn.classList.toggle('text-[#11542e]', unlocked);
+            gpsBtn.classList.toggle('hover:underline', unlocked);
+
+            const hint = document.getElementById('farmDetailsLockHint');
+            if (hint) hint.classList.toggle('hidden', unlocked);
         }
 
         function enableSelect(selectId, badgeId, labelId, labelText) {
@@ -554,6 +590,7 @@
             document.getElementById('addrStreet').value   = '';
             document.getElementById('addrZip').value      = '';
             document.getElementById('addrLandmark').value = '';
+            updateFarmDetailsLockState();
         }
 
         function detectGPS() {
