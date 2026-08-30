@@ -26,6 +26,8 @@ function sendVerificationEmail($toEmail, $toName, $token) {
         $mail->Password   = MAILER_GMAIL_APP_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
+        $mail->Timeout    = 10; // fail fast instead of hanging indefinitely if the connection is blocked
+        $mail->SMTPKeepAlive = false;
 
         $mail->setFrom(MAILER_GMAIL_ADDRESS, 'CropGuard');
         $mail->addAddress($toEmail, $toName);
