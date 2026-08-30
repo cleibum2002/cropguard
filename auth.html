@@ -31,6 +31,15 @@
 
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-green); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
         .btn-submit:hover { background: var(--button-hover); }
+        .code-digit {
+            width: 46px; height: 56px;
+            text-align: center; font-size: 1.5rem; font-weight: bold;
+            border: 2px solid #d1d5db; border-radius: 10px;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background: #f8fafc; color: #1e293b;
+        }
+        .code-digit:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(17,84,46,0.12); background: white; }
+        .code-digit.filled { border-color: var(--primary-green); background: white; }
         
         .toggle-link { text-align: center; margin-top: 15px; font-size: 0.9rem; color: #555; }
         .toggle-link a { color: var(--primary-green); font-weight: bold; text-decoration: none; cursor: pointer; transition: color 0.2s; }
@@ -128,8 +137,14 @@
             </div>
 
             <input type="hidden" id="verifyEmail">
-            <div class="input-group">
-                <input type="text" id="verifyCodeInput" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" required>
+            <input type="hidden" id="verifyCodeInput" required>
+            <div id="codeBoxContainer" style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
             </div>
 
             <button type="submit" class="btn-submit">Verify</button>
@@ -272,6 +287,8 @@
                 document.getElementById('verifyEmail').value = email;
                 document.getElementById('verifyCodeText').innerText = data.verification_code || '';
                 document.getElementById('registerForm').reset();
+                document.querySelectorAll('.code-digit').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+                document.querySelector('.code-digit').focus();
             } else {
                 msgBox.className = 'msg-box error';
                 msgBox.innerText = data.message;
@@ -281,6 +298,43 @@
             msgBox.innerText = "Server Error. Check console.";
         }
     }
+
+    // ── 6-digit code boxes: auto-advance forward on type, back on backspace,
+    // supports pasting the whole code at once, keeps the hidden input in sync.
+    (function initCodeBoxes() {
+        const boxes = document.querySelectorAll('.code-digit');
+        const hiddenInput = document.getElementById('verifyCodeInput');
+
+        function syncHiddenInput() {
+            hiddenInput.value = Array.from(boxes).map(b => b.value).join('');
+        }
+
+        boxes.forEach((box, i) => {
+            box.addEventListener('input', () => {
+                box.value = box.value.replace(/\D/g, '').slice(0, 1);
+                box.classList.toggle('filled', box.value !== '');
+                if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+                syncHiddenInput();
+            });
+
+            box.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !box.value && i > 0) {
+                    boxes[i - 1].focus();
+                }
+            });
+
+            box.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+                pasted.split('').forEach((digit, idx) => {
+                    if (boxes[idx]) { boxes[idx].value = digit; boxes[idx].classList.add('filled'); }
+                });
+                syncHiddenInput();
+                const nextEmpty = Array.from(boxes).findIndex(b => !b.value);
+                (nextEmpty === -1 ? boxes[boxes.length - 1] : boxes[nextEmpty]).focus();
+            });
+        });
+    })();
 
     async function handleVerifyCode() {
         const email = document.getElementById('verifyEmail').value;
