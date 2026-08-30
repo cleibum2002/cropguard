@@ -121,9 +121,10 @@
             <h1>Verify Your Email</h1>
             <div class="msg-box" id="verifyMsg"></div>
 
-            <div id="verifyCodeDisplay" style="background:#f0f7f2; border:1px solid #cde3d5; border-radius:8px; padding:14px; margin-bottom:18px; text-align:center;">
-                <p style="font-size:0.75rem; color:#555; margin:0 0 6px;">Your verification code (email delivery isn't confirmed working yet, so it's shown here too):</p>
-                <p id="verifyCodeText" style="font-size:1.8rem; font-weight:bold; letter-spacing:6px; color:#11542e; margin:0;"></p>
+            <p style="font-size:0.85rem; color:#555; text-align:center; margin-bottom:18px;">We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.</p>
+
+            <div id="verifyCodeDisplay" style="display:none;">
+                <p id="verifyCodeText"></p>
             </div>
 
             <input type="hidden" id="verifyEmail">
