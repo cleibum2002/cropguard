@@ -37,6 +37,10 @@ try {
         throw new Exception('Invalid GPS coordinates received.');
     }
     $area = (float)$data->area_size;
+    if ($area <= 0) {
+        echo json_encode(["status" => "error", "message" => "Area size must be greater than 0."]);
+        exit;
+    }
     $type_id = (int)$data->type_id;
 
     // REMOVED: $rsba from the bind_param list
