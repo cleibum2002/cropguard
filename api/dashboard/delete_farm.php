@@ -1,9 +1,9 @@
 <?php
 // File Location: api/dashboard/delete_farm.php
-// Deletes a farm location - but ONLY if it has no damage reports filed against it.
-// A farm with real report history (even old/resolved) is blocked from deletion to
-// avoid silently orphaning or losing that history. The farmer would need to contact
-// support/MAO if a farm with reports genuinely needs to be removed.
+// "Deletes" a farm by archiving it (Is_Archived = 1), same soft-delete pattern already
+// used for damage_report.Status = 'Archived'. Nothing is actually removed from the
+// database, and any crop/report history tied to this farm stays completely intact -
+// the farm just stops showing up in the farmer's active list.
 ob_start();
 session_start();
 header('Content-Type: application/json');
@@ -28,42 +28,18 @@ if (!$data || empty($data->location_id)) {
 $location_id = (int)$data->location_id;
 
 try {
-    // Ownership check
-    $checkStmt = $conn->prepare("SELECT Location_ID FROM farm_location WHERE Location_ID = ? AND Farmer_ID = ?");
-    $checkStmt->bind_param("ii", $location_id, $farmer_id);
-    $checkStmt->execute();
-    if (!$checkStmt->get_result()->fetch_assoc()) {
+    $stmt = $conn->prepare("UPDATE farm_location SET Is_Archived = 1 WHERE Location_ID = ? AND Farmer_ID = ?");
+    $stmt->bind_param("ii", $location_id, $farmer_id);
+    if (!$stmt->execute()) throw new Exception("Failed to archive farm: " . $stmt->error);
+
+    if ($stmt->affected_rows === 0) {
         if (ob_get_length()) ob_clean();
-        echo json_encode(['status' => 'error', 'message' => 'Farm not found or you do not have permission to delete it.']);
+        echo json_encode(['status' => 'error', 'message' => 'Farm not found or you do not have permission to archive it.']);
         exit;
     }
-    $checkStmt->close();
-
-    // Block deletion if any report was ever filed against this farm
-    $reportCheck = $conn->prepare("SELECT COUNT(*) as cnt FROM damage_report WHERE Location_ID = ?");
-    $reportCheck->bind_param("i", $location_id);
-    $reportCheck->execute();
-    $reportCount = $reportCheck->get_result()->fetch_assoc()['cnt'];
-    $reportCheck->close();
-
-    if ($reportCount > 0) {
-        if (ob_get_length()) ob_clean();
-        echo json_encode(['status' => 'error', 'message' => 'This farm cannot be deleted because it has ' . $reportCount . ' damage report(s) on record. Contact your MAO office if this farm truly needs to be removed.']);
-        exit;
-    }
-
-    // Safe to delete - remove the linked crop row(s) first, then the farm itself
-    $delCrop = $conn->prepare("DELETE FROM crop WHERE Location_ID = ? AND Farmer_ID = ?");
-    $delCrop->bind_param("ii", $location_id, $farmer_id);
-    $delCrop->execute();
-    $delCrop->close();
-
-    $delFarm = $conn->prepare("DELETE FROM farm_location WHERE Location_ID = ? AND Farmer_ID = ?");
-    $delFarm->bind_param("ii", $location_id, $farmer_id);
-    if (!$delFarm->execute()) throw new Exception("Failed to delete farm: " . $delFarm->error);
 
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'success', 'message' => 'Farm deleted successfully.']);
+    echo json_encode(['status' => 'success', 'message' => 'Farm archived successfully.']);
 
 } catch (Exception $e) {
     if (ob_get_length()) ob_clean();

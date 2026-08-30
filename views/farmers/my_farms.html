@@ -339,11 +339,11 @@
                 header_title: "Registered Farm Locations",
                 page_title: "Farm Directory", page_sub: "View and manage the exact coordinates and details of your registered land.",
                 th_location: "Location Details", th_land_info: "Land Info", th_main_crop: "Main Crop", th_coordinates: "Coordinates", th_actions: "Actions",
-                action_edit: "Edit", action_delete: "Delete",
+                action_edit: "Edit", action_archive: "Archive",
                 btn_update_farm: "Update Farm", address_locked_hint: "Address can't be changed once a farm is added - remove and re-add the farm if it's genuinely wrong.",
                 sw_farm_updated_title: "Farm Updated!",
-                sw_delete_farm_title: "Delete this farm?", sw_delete_farm_text: "This cannot be undone. Farms with existing damage reports on record cannot be deleted.",
-                sw_delete_farm_confirm: "Yes, Delete It", sw_farm_deleted_title: "Farm Deleted",
+                sw_archive_farm_title: "Archive this farm?", sw_archive_farm_text: "It will be removed from your active list, but nothing is deleted - any linked reports stay safe.",
+                sw_archive_farm_confirm: "Yes, Archive It", sw_farm_archived_title: "Farm Archived",
                 loading_farms: "Loading farms...",
                 no_farms: "You have no registered farm locations yet. Add one above!",
                 view_on_map: "View on Map", no_coords: "No coordinates set",
@@ -380,11 +380,11 @@
                 header_title: "Mga Nakarehistrong Lokasyon ng Sakahan",
                 page_title: "Direktoryo ng Sakahan", page_sub: "Tingnan at pamahalaan ang eksaktong coordinates at detalye ng iyong nakarehistrong lupa.",
                 th_location: "Detalye ng Lokasyon", th_land_info: "Impormasyon ng Lupa", th_main_crop: "Pangunahing Pananim", th_coordinates: "Coordinates", th_actions: "Aksyon",
-                action_edit: "I-edit", action_delete: "Tanggalin",
+                action_edit: "I-edit", action_archive: "I-archive",
                 btn_update_farm: "I-update ang Sakahan", address_locked_hint: "Hindi na mababago ang address kapag naidagdag na ang sakahan - alisin at idagdag muli kung talagang mali.",
                 sw_farm_updated_title: "Na-update ang Sakahan!",
-                sw_delete_farm_title: "Tanggalin ang sakahang ito?", sw_delete_farm_text: "Hindi na ito mababawi. Hindi matatanggal ang mga sakahang may kasamang ulat ng pinsala.",
-                sw_delete_farm_confirm: "Oo, Tanggalin", sw_farm_deleted_title: "Natanggal ang Sakahan",
+                sw_archive_farm_title: "I-archive ang sakahang ito?", sw_archive_farm_text: "Aalisin ito sa iyong aktibong listahan, pero walang matatanggal - ligtas pa rin ang mga naka-link na ulat.",
+                sw_archive_farm_confirm: "Oo, I-archive", sw_farm_archived_title: "Na-archive ang Sakahan",
                 loading_farms: "Nilo-load ang mga sakahan...",
                 no_farms: "Wala ka pang nakarehistrong lokasyon ng sakahan. Magdagdag sa itaas!",
                 view_on_map: "Tingnan sa Mapa", no_coords: "Walang nakatakdang coordinates",
@@ -421,11 +421,11 @@
                 header_title: "Nakarehistro nga mga Lokasyon sa Uma",
                 page_title: "Direktoryo sa Uma", page_sub: "Tan-awa ug dumalahi ang eksaktong coordinates ug detalye sa imong narehistro nga yuta.",
                 th_location: "Detalye sa Lokasyon", th_land_info: "Impormasyon sa Yuta", th_main_crop: "Pangunang Tanom", th_coordinates: "Coordinates", th_actions: "Aksyon",
-                action_edit: "I-edit", action_delete: "Papasa",
+                action_edit: "I-edit", action_archive: "I-archive",
                 btn_update_farm: "I-update ang Uma", address_locked_hint: "Dili na mausab ang address human madugang ang uma - kuhaa ug idugang usab kung sayop gyud.",
                 sw_farm_updated_title: "Na-update ang Uma!",
-                sw_delete_farm_title: "Papason ba kini nga uma?", sw_delete_farm_text: "Dili na kini mabawi. Ang mga uma nga naay report sa kadaot dili mapapas.",
-                sw_delete_farm_confirm: "Oo, Papasa", sw_farm_deleted_title: "Napapas ang Uma",
+                sw_archive_farm_title: "I-archive ba kini nga uma?", sw_archive_farm_text: "Makuha kini sa imong aktibong listahan, apan walay ma-delete - luwas gihapon ang mga naka-link nga report.",
+                sw_archive_farm_confirm: "Oo, I-archive", sw_farm_archived_title: "Na-archive ang Uma",
                 loading_farms: "Ginaload ang mga uma...",
                 no_farms: "Wala ka pay narehistro nga lokasyon sa uma. Pagdugang sa taas!",
                 view_on_map: "Tan-awa sa Mapa", no_coords: "Walay gitakda nga coordinates",
@@ -687,12 +687,12 @@
 
         function deleteFarm(id) {
             Swal.fire({
-                title: t('sw_delete_farm_title'),
-                text: t('sw_delete_farm_text'),
+                title: t('sw_archive_farm_title'),
+                text: t('sw_archive_farm_text'),
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#dc2626',
-                confirmButtonText: t('sw_delete_farm_confirm'),
+                confirmButtonText: t('sw_archive_farm_confirm'),
                 cancelButtonText: t('btn_cancel')
             }).then(result => {
                 if (!result.isConfirmed) return;
@@ -701,7 +701,7 @@
                     body: JSON.stringify({ location_id: id })
                 }).then(res => res.json()).then(data => {
                     if (data.status === 'success') {
-                        Swal.fire({ icon: 'success', title: t('sw_farm_deleted_title'), timer: 1500, showConfirmButton: false });
+                        Swal.fire({ icon: 'success', title: t('sw_farm_archived_title'), timer: 1500, showConfirmButton: false });
                         loadFarms();
                     } else {
                         Swal.fire(t('sw_generic_error_title'), data.message, 'error');
@@ -847,12 +847,12 @@
                 const actionButtons = `
                     <div class="flex items-center justify-end gap-3">
                         <button onclick="editFarm(${loc.Location_ID})" class="text-blue-500 hover:text-blue-700" title="${t('action_edit')}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="deleteFarm(${loc.Location_ID})" class="text-red-500 hover:text-red-700" title="${t('action_delete')}"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="deleteFarm(${loc.Location_ID})" class="text-amber-600 hover:text-amber-700" title="${t('action_archive')}"><i class="fa-solid fa-box-archive"></i></button>
                     </div>`;
                 const actionButtonsMobile = `
                     <div class="flex items-center gap-4">
                         <button onclick="editFarm(${loc.Location_ID})" class="text-blue-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> ${t('action_edit')}</button>
-                        <button onclick="deleteFarm(${loc.Location_ID})" class="text-red-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-trash"></i> ${t('action_delete')}</button>
+                        <button onclick="deleteFarm(${loc.Location_ID})" class="text-amber-600 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-box-archive"></i> ${t('action_archive')}</button>
                     </div>`;
 
                 tbody.innerHTML += `
