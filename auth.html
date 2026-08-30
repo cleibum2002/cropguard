@@ -31,15 +31,22 @@
 
         .btn-submit { width: 100%; padding: 12px; background: var(--primary-green); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
         .btn-submit:hover { background: var(--button-hover); }
-        .code-digit {
-            width: 46px; height: 56px;
+        #codeBoxContainer input.code-digit {
+            width: 46px !important; height: 56px;
             text-align: center; font-size: 1.5rem; font-weight: bold;
             border: 2px solid #d1d5db; border-radius: 10px;
             outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-            background: #f8fafc; color: #1e293b;
+            background: #f8fafc !important; color: #1e293b !important;
+            padding: 0 !important;
         }
-        .code-digit:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(17,84,46,0.12); background: white; }
-        .code-digit.filled { border-color: var(--primary-green); background: white; }
+        #codeBoxContainer input.code-digit:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(17,84,46,0.12); background: white !important; }
+        #codeBoxContainer input.code-digit.filled { border-color: var(--primary-green); background: white !important; }
+        /* Chrome sometimes auto-styles single-digit code inputs (thinks they're an
+           OTP autofill field) and can force the text invisible - this overrides that. */
+        #codeBoxContainer input.code-digit:-webkit-autofill {
+            -webkit-text-fill-color: #1e293b !important;
+            -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+        }
         
         .toggle-link { text-align: center; margin-top: 15px; font-size: 0.9rem; color: #555; }
         .toggle-link a { color: var(--primary-green); font-weight: bold; text-decoration: none; cursor: pointer; transition: color 0.2s; }
