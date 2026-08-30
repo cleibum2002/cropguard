@@ -11,19 +11,13 @@ define('BREVO_API_KEY', 'REMOVED_BREVO_API_KEY');
 define('BREVO_SENDER_EMAIL', 'person8@example.com');
 define('BREVO_SENDER_NAME', 'CropGuard');
 
-function sendVerificationEmail($toEmail, $toName, $token) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host     = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $verifyLink = "$protocol://$host/api/auth/verify_email.php?token=" . urlencode($token);
-
+function sendVerificationEmail($toEmail, $toName, $code) {
     $htmlBody = "
         <div style=\"font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;\">
             <h2 style=\"color: #11542e;\">Welcome to CropGuard, $toName!</h2>
-            <p>Please confirm this is your email address to activate your account.</p>
-            <p style=\"margin: 24px 0;\">
-                <a href=\"$verifyLink\" style=\"background: #11542e; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;\">Verify My Email</a>
-            </p>
-            <p style=\"font-size: 12px; color: #888;\">This link expires in 24 hours. If you didn't create a CropGuard account, you can safely ignore this email.</p>
+            <p>Enter this code on the registration page to verify your account:</p>
+            <p style=\"margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #11542e; text-align: center;\">$code</p>
+            <p style=\"font-size: 12px; color: #888;\">This code expires in 30 minutes. If you didn't create a CropGuard account, you can safely ignore this email.</p>
         </div>
     ";
 

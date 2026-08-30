@@ -117,11 +117,32 @@
             </div>
         </form>
 
+        <form id="verifyForm" class="hidden" onsubmit="event.preventDefault(); handleVerifyCode();">
+            <h1>Verify Your Email</h1>
+            <div class="msg-box" id="verifyMsg"></div>
+
+            <div id="verifyCodeDisplay" style="background:#f0f7f2; border:1px solid #cde3d5; border-radius:8px; padding:14px; margin-bottom:18px; text-align:center;">
+                <p style="font-size:0.75rem; color:#555; margin:0 0 6px;">Your verification code (email delivery isn't confirmed working yet, so it's shown here too):</p>
+                <p id="verifyCodeText" style="font-size:1.8rem; font-weight:bold; letter-spacing:6px; color:#11542e; margin:0;"></p>
+            </div>
+
+            <input type="hidden" id="verifyEmail">
+            <div class="input-group">
+                <input type="text" id="verifyCodeInput" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Verify</button>
+            <div class="toggle-link">
+                <a onclick="switchForm('login')">Back to Login</a>
+            </div>
+        </form>
+
     </div>
 </div>
 
 <script>
     function switchForm(formType) {
+        document.getElementById('verifyForm').classList.add('hidden');
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
         
@@ -245,15 +266,46 @@
             const data = await res.json();
             
             if(data.status === 'success') {
-                msgBox.className = 'msg-box success';
-                msgBox.innerText = "Registration successful! You can now login.";
+                document.getElementById('registerForm').classList.add('hidden');
+                document.getElementById('verifyForm').classList.remove('hidden');
+                document.getElementById('verifyEmail').value = email;
+                document.getElementById('verifyCodeText').innerText = data.verification_code || '';
                 document.getElementById('registerForm').reset();
-                setTimeout(() => switchForm('login'), 2000); 
             } else {
                 msgBox.className = 'msg-box error';
                 msgBox.innerText = data.message;
             }
         } catch(e) { 
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = "Server Error. Check console.";
+        }
+    }
+
+    async function handleVerifyCode() {
+        const email = document.getElementById('verifyEmail').value;
+        const code  = document.getElementById('verifyCodeInput').value.trim();
+        const msgBox = document.getElementById('verifyMsg');
+
+        msgBox.className = 'msg-box';
+        msgBox.innerText = 'Verifying...';
+
+        try {
+            const res = await fetch('api/auth/verify_code.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code })
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                msgBox.className = 'msg-box success';
+                msgBox.innerText = data.message;
+                setTimeout(() => switchForm('login'), 1500);
+            } else {
+                msgBox.className = 'msg-box error';
+                msgBox.innerText = data.message;
+            }
+        } catch(e) {
             msgBox.className = 'msg-box error';
             msgBox.innerText = "Server Error. Check console.";
         }
