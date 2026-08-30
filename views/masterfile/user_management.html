@@ -87,6 +87,11 @@
                         <option value="Farmer" data-i18n="opt_role_farmer">Farmer</option>
                         <option value="Encoder" data-i18n="opt_role_encoder">Encoder</option>
                     </select>
+                    <select id="statusFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                        <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
+                        <option value="Active" data-i18n="status_active">Active</option>
+                        <option value="Inactive" data-i18n="status_inactive">Inactive</option>
+                    </select>
                 </div>
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
                     <span class="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
@@ -223,7 +228,7 @@
             en: {
                 header_title: "User Management", badge_admin_mode: "Admin Mode", role_admin: "Admin",
                 search_placeholder: "Search name or email...",
-                filter_all_roles: "All Roles", opt_role_admin: "Admin", opt_role_mao: "MAO",
+                filter_all_roles: "All Roles", filter_all_statuses: "All Statuses", opt_role_admin: "Admin", opt_role_mao: "MAO",
                 opt_role_technician: "Technician", opt_role_farmer: "Farmer", opt_role_encoder: "Encoder",
                 offline_ready: "Offline Mode Ready",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
@@ -422,6 +427,7 @@
         function filterTable() {
             const searchQuery = document.getElementById("searchInput").value.toLowerCase();
             const roleFilter = document.getElementById("roleFilter").value;
+            const statusFilter = document.getElementById("statusFilter").value;
 
             filteredData = allData.filter(i => {
                 // 1. Does the text match the name or email?
@@ -431,7 +437,10 @@
                 // 2. Does the role match the dropdown? (If 'ALL' is selected, it automatically matches)
                 const matchesRole = (roleFilter === "ALL") || (i.role === roleFilter);
 
-                return matchesSearch && matchesRole;
+                // 3. Does the status match the dropdown?
+                const matchesStatus = (statusFilter === "ALL") || (i.status === statusFilter);
+
+                return matchesSearch && matchesRole && matchesStatus;
             });
             
             currentPage = 1;
