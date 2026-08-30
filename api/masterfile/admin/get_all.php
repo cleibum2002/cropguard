@@ -14,7 +14,7 @@ try {
     $query = "SELECT User_ID as id, Fullname as fullname, Email as email, 
                      Role as role, STATUS as status 
               FROM users 
-              WHERE Role IN ('Admin','MAO','Technician','Encoder')
+              WHERE Role IN ('Admin','MAO','Technician')
               ORDER BY User_ID DESC";
 
     $result = $conn->query($query);

@@ -67,9 +67,6 @@ if (isset($input['email'], $input['password'])) {
                 case 'Technician':
                     $redirect_url = 'views/technician/dashboard.html';
                     break;
-                case 'Encoder':
-                    $redirect_url = 'views/encoder/dashboard.html';
-                    break;
                 case 'MAO':
                     $redirect_url = 'views/mao/index.html';
                     break;

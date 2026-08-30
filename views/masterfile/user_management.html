@@ -85,7 +85,6 @@
                         <option value="MAO" data-i18n="opt_role_mao">MAO</option>
                         <option value="Technician" data-i18n="opt_role_technician">Technician</option>
                         <option value="Farmer" data-i18n="opt_role_farmer">Farmer</option>
-                        <option value="Encoder" data-i18n="opt_role_encoder">Encoder</option>
                     </select>
                     <select id="statusFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
                         <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
@@ -203,7 +202,6 @@
                             <option value="MAO" data-i18n="opt_role_mao">MAO</option>
                             <option value="Technician" data-i18n="opt_role_technician">Technician</option>
                             <option value="Farmer" data-i18n="opt_role_farmer">Farmer</option>
-                            <option value="Encoder" data-i18n="opt_role_encoder">Encoder</option>
                         </select>
                     </div>
                     <div>
@@ -229,7 +227,7 @@
                 header_title: "User Management", badge_admin_mode: "Admin Mode", role_admin: "Admin",
                 search_placeholder: "Search name or email...",
                 filter_all_roles: "All Roles", filter_all_statuses: "All Statuses", opt_role_admin: "Admin", opt_role_mao: "MAO",
-                opt_role_technician: "Technician", opt_role_farmer: "Farmer", opt_role_encoder: "Encoder",
+                opt_role_technician: "Technician", opt_role_farmer: "Farmer",
                 offline_ready: "Offline Mode Ready",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 page_title: "System Users", page_sub: "DA Region X — Manage access and credentials for all roles.",
@@ -254,7 +252,7 @@
                 header_title: "Pamamahala ng User", badge_admin_mode: "Admin Mode", role_admin: "Admin",
                 search_placeholder: "Maghanap ng pangalan o email...",
                 filter_all_roles: "Lahat ng Tungkulin", filter_all_statuses: "Lahat ng Katayuan", opt_role_admin: "Admin", opt_role_mao: "MAO",
-                opt_role_technician: "Technician", opt_role_farmer: "Magsasaka", opt_role_encoder: "Encoder",
+                opt_role_technician: "Technician", opt_role_farmer: "Magsasaka",
                 offline_ready: "Handa ang Offline Mode",
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
                 page_title: "Mga User ng Sistema", page_sub: "DA Region X — Pamahalaan ang access at kredensyal para sa lahat ng tungkulin.",
@@ -280,7 +278,7 @@
         // Role is stored in the DB in English regardless of UI language —
         // this helper only translates what's *displayed*.
         function roleLabel(role) {
-            const map = { Admin: 'opt_role_admin', MAO: 'opt_role_mao', Technician: 'opt_role_technician', Farmer: 'opt_role_farmer', Encoder: 'opt_role_encoder' };
+            const map = { Admin: 'opt_role_admin', MAO: 'opt_role_mao', Technician: 'opt_role_technician', Farmer: 'opt_role_farmer' };
             return map[role] ? t(map[role]) : role;
         }
 
