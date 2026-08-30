@@ -52,7 +52,10 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
         $hashed_password = hashUserPassword($data->password);
         $contact = $data->contact_number ?? null;
         
-        $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS) VALUES (?, ?, ?, ?, ?, ?)";
+        // Email_Verified = 1 immediately - Admin is creating and vouching for this
+        // account directly, unlike self-registration which requires the farmer to
+        // click a link proving they own the email address.
+        $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS, Email_Verified) VALUES (?, ?, ?, ?, ?, ?, 1)";
         $stmt = $conn->prepare($query);
         $stmt->bind_param("ssssss", $data->fullname, $data->email, $contact, $hashed_password, $data->role, $data->status);
         

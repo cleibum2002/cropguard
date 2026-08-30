@@ -2,6 +2,7 @@
 // File: api/auth/register.php
 header('Content-Type: application/json');
 require_once '../config/db_connection.php'; // Adjust this path if your config is located elsewhere
+require_once '../config/mailer.php';
 
 function validatePasswordStrength($password) {
     if (strlen($password) < 8) {
@@ -77,11 +78,20 @@ try {
     $check_stmt->close();
 
     // 5. Insert the new Farmer into the users table with Role = 'Farmer'
-    $insert_stmt = $conn->prepare("INSERT INTO users (Role, Fullname, Contact_Number, Email, Password, STATUS) VALUES (?, ?, ?, ?, ?, 'Active')");
-    $insert_stmt->bind_param("sssss", $role, $name, $contact, $email, $hashed_pass);
+    // Email_Verified starts at 0 - they can't log in until they click the link sent below.
+    $verification_token = bin2hex(random_bytes(32));
+    $token_expires = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+    $insert_stmt = $conn->prepare("INSERT INTO users (Role, Fullname, Contact_Number, Email, Password, STATUS, Email_Verified, Verification_Token, Verification_Token_Expires) VALUES (?, ?, ?, ?, ?, 'Active', 0, ?, ?)");
+    $insert_stmt->bind_param("sssssss", $role, $name, $contact, $email, $hashed_pass, $verification_token, $token_expires);
 
     if ($insert_stmt->execute()) {
-        echo json_encode(['status' => 'success', 'message' => 'Registration successful']);
+        $emailSent = sendVerificationEmail($email, $name, $verification_token);
+        if ($emailSent) {
+            echo json_encode(['status' => 'success', 'message' => 'Registration successful! Please check your email to verify your account before logging in.']);
+        } else {
+            echo json_encode(['status' => 'success', 'message' => 'Registration successful, but the verification email could not be sent. Please contact support.']);
+        }
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Database error: Could not create account.']);
     }

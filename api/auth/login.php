@@ -21,7 +21,7 @@ if (isset($input['email'], $input['password'])) {
     $password = $input['password'];
 
     // --- ONLY ONE QUERY NEEDED NOW ---
-    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS FROM users WHERE BINARY Email = ?");
+    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified FROM users WHERE BINARY Email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -75,6 +75,13 @@ if (isset($input['email'], $input['password'])) {
                     break;
                 default:
                     $redirect_url = 'index.html'; // Fallback
+            }
+
+            // Farmers must verify their email before logging in (Admin-created staff
+            // accounts are auto-verified at creation - see users/create.php).
+            if ($role === 'Farmer' && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
+                echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification link.']);
+                exit;
             }
 
             // Set secure session variables
