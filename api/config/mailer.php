@@ -42,7 +42,9 @@ function sendVerificationEmail($toEmail, $toName, $code) {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
-    curl_close($ch);
+    // curl_close() removed - deprecated as of PHP 8.5 (confirmed via the actual error
+    // Railway's server produced), and unnecessary anyway since PHP 8+ auto-releases
+    // curl handles once they go out of scope.
 
     if ($curlError) {
         error_log('[' . date('Y-m-d H:i:s') . '] Brevo send failed (curl error): ' . $curlError);
