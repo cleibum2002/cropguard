@@ -131,17 +131,19 @@
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_location">Location Details</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_land_info">Land Info</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_main_crop">Main Crop</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_coordinates">Coordinates</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_coordinates">Coordinates</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="farmTableBody" class="divide-y divide-gray-50">
-                                <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic text-sm">Loading farms...</td></tr>
+                                <tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">Loading farms...</td></tr>
                             </tbody>
                         </table>
                     </div>
                     <div id="farmCardsList" class="md:hidden divide-y divide-gray-50">
                         <div class="px-4 py-10 text-center text-gray-400 italic text-sm">Loading farms...</div>
                     </div>
+                    <div id="farmPagination" class="px-4 sm:px-6 py-4 flex items-center justify-center gap-1.5 border-t border-gray-50"></div>
                 </div>
             </div>
         </main>
@@ -159,8 +161,16 @@
             </div>
 
             <form id="farmForm" onsubmit="submitFarm(event)">
+                <input type="hidden" id="farmEditingId" value="">
                 <div class="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
 
+                    <div id="farmAddressReadOnly" class="hidden bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="label_farm_address">Farm Address</p>
+                        <p id="farmAddressReadOnlyText" class="text-sm font-semibold text-gray-700"></p>
+                        <p class="text-[10px] text-gray-400 mt-1" data-i18n="address_locked_hint">Address can't be changed once a farm is added - remove and re-add the farm if it's genuinely wrong.</p>
+                    </div>
+
+                    <div id="farmAddressPickerSection">
                     <div>
                         <div class="flex items-center gap-2 mb-4">
                             <i class="fa-solid fa-location-dot text-[#11542e] text-sm"></i>
@@ -245,6 +255,7 @@
                             </div>
                         </div>
                     </div>
+                    </div>
 
                     <div class="flex items-center gap-3">
                         <div class="flex-1 h-px bg-gray-100"></div>
@@ -313,7 +324,7 @@
                 <div class="px-6 py-4 flex justify-end items-center gap-4 bg-gray-50 border-t border-gray-100">
                     <button type="button" onclick="closeFarmModal()" class="text-sm font-semibold text-gray-600 hover:text-gray-800" data-i18n="btn_cancel">Cancel</button>
                     <button type="submit" class="px-5 py-2.5 bg-[#11542e] hover:bg-[#0c3d22] text-white text-sm font-bold rounded-lg shadow-sm transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_farm">Save Farm Location</span>
+                        <i class="fa-solid fa-floppy-disk"></i> <span id="farmSubmitBtnText" data-i18n="btn_save_farm">Save Farm Location</span>
                     </button>
                 </div>
             </form>
@@ -327,7 +338,12 @@
                 nav_seeds: "Request Seeds", nav_comm: "Communication",
                 header_title: "Registered Farm Locations",
                 page_title: "Farm Directory", page_sub: "View and manage the exact coordinates and details of your registered land.",
-                th_location: "Location Details", th_land_info: "Land Info", th_main_crop: "Main Crop", th_coordinates: "Coordinates",
+                th_location: "Location Details", th_land_info: "Land Info", th_main_crop: "Main Crop", th_coordinates: "Coordinates", th_actions: "Actions",
+                action_edit: "Edit", action_delete: "Delete",
+                btn_update_farm: "Update Farm", address_locked_hint: "Address can't be changed once a farm is added - remove and re-add the farm if it's genuinely wrong.",
+                sw_farm_updated_title: "Farm Updated!",
+                sw_delete_farm_title: "Delete this farm?", sw_delete_farm_text: "This cannot be undone. Farms with existing damage reports on record cannot be deleted.",
+                sw_delete_farm_confirm: "Yes, Delete It", sw_farm_deleted_title: "Farm Deleted",
                 loading_farms: "Loading farms...",
                 no_farms: "You have no registered farm locations yet. Add one above!",
                 view_on_map: "View on Map", no_coords: "No coordinates set",
@@ -363,7 +379,12 @@
                 nav_seeds: "Humiling ng Binhi", nav_comm: "Komunikasyon",
                 header_title: "Mga Nakarehistrong Lokasyon ng Sakahan",
                 page_title: "Direktoryo ng Sakahan", page_sub: "Tingnan at pamahalaan ang eksaktong coordinates at detalye ng iyong nakarehistrong lupa.",
-                th_location: "Detalye ng Lokasyon", th_land_info: "Impormasyon ng Lupa", th_main_crop: "Pangunahing Pananim", th_coordinates: "Coordinates",
+                th_location: "Detalye ng Lokasyon", th_land_info: "Impormasyon ng Lupa", th_main_crop: "Pangunahing Pananim", th_coordinates: "Coordinates", th_actions: "Aksyon",
+                action_edit: "I-edit", action_delete: "Tanggalin",
+                btn_update_farm: "I-update ang Sakahan", address_locked_hint: "Hindi na mababago ang address kapag naidagdag na ang sakahan - alisin at idagdag muli kung talagang mali.",
+                sw_farm_updated_title: "Na-update ang Sakahan!",
+                sw_delete_farm_title: "Tanggalin ang sakahang ito?", sw_delete_farm_text: "Hindi na ito mababawi. Hindi matatanggal ang mga sakahang may kasamang ulat ng pinsala.",
+                sw_delete_farm_confirm: "Oo, Tanggalin", sw_farm_deleted_title: "Natanggal ang Sakahan",
                 loading_farms: "Nilo-load ang mga sakahan...",
                 no_farms: "Wala ka pang nakarehistrong lokasyon ng sakahan. Magdagdag sa itaas!",
                 view_on_map: "Tingnan sa Mapa", no_coords: "Walang nakatakdang coordinates",
@@ -399,7 +420,12 @@
                 nav_seeds: "Pangayo og Binhi", nav_comm: "Komunikasyon",
                 header_title: "Nakarehistro nga mga Lokasyon sa Uma",
                 page_title: "Direktoryo sa Uma", page_sub: "Tan-awa ug dumalahi ang eksaktong coordinates ug detalye sa imong narehistro nga yuta.",
-                th_location: "Detalye sa Lokasyon", th_land_info: "Impormasyon sa Yuta", th_main_crop: "Pangunang Tanom", th_coordinates: "Coordinates",
+                th_location: "Detalye sa Lokasyon", th_land_info: "Impormasyon sa Yuta", th_main_crop: "Pangunang Tanom", th_coordinates: "Coordinates", th_actions: "Aksyon",
+                action_edit: "I-edit", action_delete: "Papasa",
+                btn_update_farm: "I-update ang Uma", address_locked_hint: "Dili na mausab ang address human madugang ang uma - kuhaa ug idugang usab kung sayop gyud.",
+                sw_farm_updated_title: "Na-update ang Uma!",
+                sw_delete_farm_title: "Papason ba kini nga uma?", sw_delete_farm_text: "Dili na kini mabawi. Ang mga uma nga naay report sa kadaot dili mapapas.",
+                sw_delete_farm_confirm: "Oo, Papasa", sw_farm_deleted_title: "Napapas ang Uma",
                 loading_farms: "Ginaload ang mga uma...",
                 no_farms: "Wala ka pay narehistro nga lokasyon sa uma. Pagdugang sa taas!",
                 view_on_map: "Tan-awa sa Mapa", no_coords: "Walay gitakda nga coordinates",
@@ -608,6 +634,11 @@
 
         function openFarmModal() {
             document.getElementById("farmForm").reset();
+            document.getElementById("farmEditingId").value = "";
+            document.getElementById("farmAddressReadOnly").classList.add("hidden");
+            document.getElementById("farmAddressPickerSection").classList.remove("hidden");
+            document.getElementById("modal_farm_title_el")?.remove();
+            document.getElementById("farmSubmitBtnText").innerText = t('btn_save_farm');
             resetFrom('province');
             document.getElementById('manualAddressFields').classList.add('hidden');
             loadRegions();
@@ -615,7 +646,71 @@
             document.getElementById("farmModal").classList.remove("hidden");
         }
 
-        function loadCropTypesForFarmModal() {
+        function editFarm(id) {
+            const farm = allFarms.find(f => String(f.Location_ID) === String(id));
+            if (!farm) return;
+
+            document.getElementById("farmForm").reset();
+            document.getElementById("farmEditingId").value = farm.Location_ID;
+
+            // Address is shown read-only, not re-editable (see comment in the modal HTML)
+            document.getElementById("farmAddressPickerSection").classList.add("hidden");
+            document.getElementById("farmAddressReadOnly").classList.remove("hidden");
+            document.getElementById("farmAddressReadOnlyText").innerText = farm.Barangay || '';
+
+            document.getElementById("farmSubmitBtnText").innerText = t('btn_update_farm');
+
+            loadCropTypesForFarmModal(farm.Type_ID);
+
+            document.getElementById("farmCroppingPeriod").value = farm.Cropping_Period || '';
+            document.getElementById("farmArea").value            = farm.Area_Size || '';
+            document.getElementById("farmLandType").value        = farm.Land_Type || 'Irrigated';
+            document.getElementById("farmLat").value              = farm.Latitude || '';
+            document.getElementById("farmLng").value              = farm.Longitude || '';
+
+            // Edit mode isn't gated by "pick a Barangay first" like Add mode is - the farm
+            // already has a real address, so Farm Details can be edited immediately.
+            ['farmCropType', 'farmCroppingPeriod', 'farmArea', 'farmLandType'].forEach(id2 => {
+                const el = document.getElementById(id2);
+                el.disabled = false;
+                el.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
+                el.classList.add('bg-white', 'border-gray-300', 'text-gray-700');
+            });
+            const gpsBtn = document.getElementById('btnUseLocation');
+            gpsBtn.disabled = false;
+            gpsBtn.classList.remove('text-gray-300', 'cursor-not-allowed');
+            gpsBtn.classList.add('text-[#11542e]', 'hover:underline');
+            document.getElementById('farmDetailsLockHint').classList.add('hidden');
+
+            document.getElementById("farmModal").classList.remove("hidden");
+        }
+
+        function deleteFarm(id) {
+            Swal.fire({
+                title: t('sw_delete_farm_title'),
+                text: t('sw_delete_farm_text'),
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: t('sw_delete_farm_confirm'),
+                cancelButtonText: t('btn_cancel')
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                fetch('../../api/dashboard/delete_farm.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ location_id: id })
+                }).then(res => res.json()).then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({ icon: 'success', title: t('sw_farm_deleted_title'), timer: 1500, showConfirmButton: false });
+                        loadFarms();
+                    } else {
+                        Swal.fire(t('sw_generic_error_title'), data.message, 'error');
+                    }
+                }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
+            });
+        }
+
+        function loadCropTypesForFarmModal(preselectTypeId) {
             const select = document.getElementById('farmCropType');
             fetch('../../api/dashboard/get_crop_options.php')
                 .then(res => res.json())
@@ -624,12 +719,43 @@
                     (data.types || []).forEach(t2 => {
                         select.innerHTML += '<option value="' + t2.Type_ID + '">' + t2.Commodity_Type + ' \u2013 ' + t2.Crop_Name + '</option>';
                     });
+                    if (preselectTypeId) select.value = preselectTypeId;
                 }).catch(() => {});
         }
         function closeFarmModal() { document.getElementById("farmModal").classList.add("hidden"); }
 
         function submitFarm(e) {
             e.preventDefault();
+            const editingId = document.getElementById('farmEditingId').value;
+
+            const areaVal = parseFloat(document.getElementById('farmArea').value);
+            if (isNaN(areaVal) || areaVal <= 0) {
+                Swal.fire(t('sw_generic_error_title'), t('sw_invalid_area_text'), 'warning'); return;
+            }
+
+            if (editingId) {
+                // ─── UPDATE existing farm (Farm Details only, address untouched) ───
+                const payload = {
+                    location_id: editingId,
+                    type_id: document.getElementById('farmCropType').value,
+                    cropping_period: document.getElementById('farmCroppingPeriod').value,
+                    area_size: document.getElementById('farmArea').value,
+                    land_type: document.getElementById('farmLandType').value,
+                    latitude: document.getElementById('farmLat').value || null,
+                    longitude: document.getElementById('farmLng').value || null
+                };
+                fetch('../../api/dashboard/update_farm.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                }).then(res => res.json()).then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({ icon: 'success', title: t('sw_farm_updated_title'), timer: 1500, showConfirmButton: false });
+                        closeFarmModal(); loadFarms();
+                    } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
+                }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
+                return;
+            }
+
+            // ─── ADD new farm (unchanged) ───
             const getSelectedText = id => {
                 const s = document.getElementById(id);
                 return s.options[s.selectedIndex] ? s.options[s.selectedIndex].text : '';
@@ -642,10 +768,6 @@
             const farmLngVal = document.getElementById('farmLng').value;
             if (!farmLatVal || !farmLngVal) {
                 Swal.fire(t('sw_gps_required_title'), t('sw_gps_required_text'), 'warning'); return;
-            }
-            const areaVal = parseFloat(document.getElementById('farmArea').value);
-            if (isNaN(areaVal) || areaVal <= 0) {
-                Swal.fire(t('sw_generic_error_title'), t('sw_invalid_area_text'), 'warning'); return;
             }
             const province = getSelectedText('addrProvince');
             const city     = getSelectedText('addrCity');
@@ -676,70 +798,128 @@
             }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
         }
 
+        let allFarms = [];
+        let currentFarmPage = 1;
+        const FARMS_PER_PAGE = 5;
+
         function loadFarms() {
             fetch('../../api/dashboard/get_farm_locations.php')
                 .then(res => res.json())
                 .then(data => {
-                    const tbody = document.getElementById('farmTableBody');
-                    const cardsList = document.getElementById('farmCardsList');
                     if (data.status === 'success') {
-                        if (data.locations.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</td></tr>';
-                            cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</div>';
-                            return;
-                        }
-                        
-                        tbody.innerHTML = '';
-                        cardsList.innerHTML = '';
-                        data.locations.forEach(loc => {
-                            // Format coordinates or show N/A
-                            let coords = (loc.Latitude && loc.Longitude) 
-                                ? `<a href="https://www.google.com/maps?q=${loc.Latitude},${loc.Longitude}" target="_blank" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-location-crosshairs mr-1"></i> ${t('view_on_map')}</a><br><span class="text-[10px] text-gray-400">${loc.Latitude}, ${loc.Longitude}</span>` 
-                                : `<span class="text-[10px] text-gray-400 italic">${t('no_coords')}</span>`;
-
-                            const brgyText = `${t('brgy_prefix')} ${loc.Barangay || t('na_text')}`;
-                            const rsbaText = `${t('rsba_label')} ${loc.RSBA_Reference_No || t('unregistered')}`;
-                            const areaText = `${loc.Area_Size || '0.00'} ${t('hectares_label')}`;
-                            const landType = landTypeLabel(loc.Land_Type);
-                            const cropName = loc.Crop_Name || t('not_set');
-                            const cycleText = `${t('cycle_label')} ${loc.Cropping_Period || t('na_text')}`;
-
-                            tbody.innerHTML += `
-                                <tr class="hover:bg-gray-50/60 transition-all">
-                                    <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-2"></i>${brgyText}</p>
-                                        <p class="text-[10px] text-gray-500 mt-1">${rsbaText}</p>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-700">${areaText}</p>
-                                        <span class="px-2 py-1 mt-1 inline-block bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landType}</span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <p class="text-sm font-bold text-gray-700">${cropName}</p>
-                                        <p class="text-[10px] text-gray-500">${cycleText}</p>
-                                    </td>
-                                    <td class="px-6 py-4 text-right">
-                                        ${coords}
-                                    </td>
-                                </tr>
-                            `;
-
-                            cardsList.innerHTML += `
-                                <div class="px-4 py-3">
-                                    <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-1.5"></i>${brgyText}</p>
-                                    <p class="text-[10px] text-gray-500 mt-0.5 ml-5">${rsbaText}</p>
-                                    <div class="flex items-center gap-2 mt-2 ml-5">
-                                        <span class="text-xs font-bold text-gray-700">${areaText}</span>
-                                        <span class="px-2 py-0.5 bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landType}</span>
-                                    </div>
-                                    <p class="text-xs text-gray-600 mt-2 ml-5"><span class="font-bold">${cropName}</span> · ${cycleText}</p>
-                                    <div class="text-xs mt-2 ml-5">${coords}</div>
-                                </div>
-                            `;
-                        });
+                        allFarms = data.locations || [];
+                        currentFarmPage = 1;
+                        renderFarmsPage();
                     }
                 })
                 .catch(err => console.error("Could not fetch farms:", err));
+        }
+
+        function renderFarmsPage() {
+            const tbody = document.getElementById('farmTableBody');
+            const cardsList = document.getElementById('farmCardsList');
+
+            if (!allFarms.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</td></tr>';
+                cardsList.innerHTML = '<div class="px-4 py-10 text-center text-gray-400 italic text-sm">' + t('no_farms') + '</div>';
+                document.getElementById('farmPagination').innerHTML = '';
+                return;
+            }
+
+            const start = (currentFarmPage - 1) * FARMS_PER_PAGE;
+            const pageItems = allFarms.slice(start, start + FARMS_PER_PAGE);
+
+            tbody.innerHTML = '';
+            cardsList.innerHTML = '';
+            pageItems.forEach(loc => {
+                // Format coordinates or show N/A
+                let coords = (loc.Latitude && loc.Longitude) 
+                    ? `<a href="https://www.google.com/maps?q=${loc.Latitude},${loc.Longitude}" target="_blank" class="text-blue-500 hover:underline text-xs"><i class="fa-solid fa-location-crosshairs mr-1"></i> ${t('view_on_map')}</a><br><span class="text-[10px] text-gray-400">${loc.Latitude}, ${loc.Longitude}</span>` 
+                    : `<span class="text-[10px] text-gray-400 italic">${t('no_coords')}</span>`;
+
+                const brgyText = `${t('brgy_prefix')} ${loc.Barangay || t('na_text')}`;
+                const rsbaText = `${t('rsba_label')} ${loc.RSBA_Reference_No || t('unregistered')}`;
+                const areaText = `${loc.Area_Size || '0.00'} ${t('hectares_label')}`;
+                const landType = landTypeLabel(loc.Land_Type);
+                const cropName = loc.Crop_Name || t('not_set');
+                const cycleText = `${t('cycle_label')} ${loc.Cropping_Period || t('na_text')}`;
+
+                const actionButtons = `
+                    <div class="flex items-center justify-end gap-3">
+                        <button onclick="editFarm(${loc.Location_ID})" class="text-blue-500 hover:text-blue-700" title="${t('action_edit')}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="deleteFarm(${loc.Location_ID})" class="text-red-500 hover:text-red-700" title="${t('action_delete')}"><i class="fa-solid fa-trash"></i></button>
+                    </div>`;
+                const actionButtonsMobile = `
+                    <div class="flex items-center gap-4">
+                        <button onclick="editFarm(${loc.Location_ID})" class="text-blue-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> ${t('action_edit')}</button>
+                        <button onclick="deleteFarm(${loc.Location_ID})" class="text-red-500 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-trash"></i> ${t('action_delete')}</button>
+                    </div>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/60 transition-all">
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-2"></i>${brgyText}</p>
+                            <p class="text-[10px] text-gray-500 mt-1">${rsbaText}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-bold text-gray-700">${areaText}</p>
+                            <span class="px-2 py-1 mt-1 inline-block bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landType}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm font-bold text-gray-700">${cropName}</p>
+                            <p class="text-[10px] text-gray-500">${cycleText}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            ${coords}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            ${actionButtons}
+                        </td>
+                    </tr>
+                `;
+
+                cardsList.innerHTML += `
+                    <div class="px-4 py-3">
+                        <p class="text-sm font-bold text-gray-800"><i class="fa-solid fa-map-pin text-red-500 mr-1.5"></i>${brgyText}</p>
+                        <p class="text-[10px] text-gray-500 mt-0.5 ml-5">${rsbaText}</p>
+                        <div class="flex items-center gap-2 mt-2 ml-5">
+                            <span class="text-xs font-bold text-gray-700">${areaText}</span>
+                            <span class="px-2 py-0.5 bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100">${landType}</span>
+                        </div>
+                        <p class="text-xs text-gray-600 mt-2 ml-5"><span class="font-bold">${cropName}</span> · ${cycleText}</p>
+                        <div class="text-xs mt-2 ml-5">${coords}</div>
+                        <div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-50 ml-5">
+                            ${actionButtonsMobile}
+                        </div>
+                    </div>
+                `;
+            });
+
+            renderFarmPagination(allFarms.length);
+        }
+
+        function renderFarmPagination(totalItems) {
+            const container = document.getElementById('farmPagination');
+            const totalPages = Math.ceil(totalItems / FARMS_PER_PAGE);
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = '<button onclick="goToFarmPage(' + (currentFarmPage - 1) + ')" ' + (currentFarmPage === 1 ? 'disabled' : '') +
+                ' class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (currentFarmPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100') + '"><i class="fa-solid fa-chevron-left"></i></button>';
+
+            for (let i = 1; i <= totalPages; i++) {
+                const active = i === currentFarmPage;
+                html += '<button onclick="goToFarmPage(' + i + ')" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (active ? 'bg-[#11542e] text-white' : 'text-gray-500 hover:bg-gray-100') + '">' + i + '</button>';
+            }
+
+            html += '<button onclick="goToFarmPage(' + (currentFarmPage + 1) + ')" ' + (currentFarmPage === totalPages ? 'disabled' : '') +
+                ' class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (currentFarmPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100') + '"><i class="fa-solid fa-chevron-right"></i></button>';
+
+            container.innerHTML = html;
+        }
+
+        function goToFarmPage(page) {
+            currentFarmPage = page;
+            renderFarmsPage();
         }
 
         function toggleNotifications() {
