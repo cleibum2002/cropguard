@@ -12,12 +12,6 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'
 try {
     include_once '../../config/db_connection.php'; // Adjust path if needed
 
-    // Toggle between the active working queue and the archived/closed reports view
-    $isArchiveView = (isset($_GET['view']) && $_GET['view'] === 'archived');
-    $whereClause = $isArchiveView
-        ? "WHERE dr.Status IN ('Approved', 'Rejected', 'Archived')"
-        : "WHERE dr.Status NOT IN ('Approved', 'Rejected', 'Archived')";
-
     // Notice we now JOIN the 'users' table twice! Once for the Farmer, once for the Tech.
     $query = "
         SELECT 
@@ -32,12 +26,14 @@ try {
             dr.Damage_Severity as severity, 
             dr.Status as status,
             dr.Description as description,
-            t.Fullname as technician_name
+            t.Fullname as technician_name,
+            fl.Barangay as barangay_raw
         FROM damage_report dr
         LEFT JOIN users f ON dr.Farmer_ID = f.User_ID AND f.Role = 'Farmer'
         LEFT JOIN crop c ON dr.Crop_ID = c.Crop_ID
         LEFT JOIN users t ON dr.Technician_ID = t.User_ID AND t.Role = 'Technician'
-        $whereClause
+        LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
+        WHERE dr.Status != 'Archived'
         ORDER BY dr.Damage_Report_ID DESC
     ";
     
@@ -51,6 +47,6 @@ try {
 
     echo json_encode(["status" => "success", "data" => $data]);
 } catch (Throwable $e) {
-    echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
+    echo json_encode(["status" => "error", "message" => "System Error: " . $e->getMessage()]);
 }
 ?>
