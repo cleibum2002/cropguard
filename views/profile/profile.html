@@ -31,7 +31,11 @@
             sw_updated_title: "Profile Updated!", sw_updated_text: "Your changes have been saved.",
             sw_error_title: "Error", sw_update_failed: "Update failed.", sw_server_error: "Server connection failed.",
             sw_signout_title: "Sign Out?", sw_signout_text: "Return to login screen.", sw_signout_confirm: "Logout",
-            sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+            sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+            sw_verify_new_email_title: "Verify Your New Email", sw_verify_new_email_text: "We've sent a 6-digit code to your new email address. Enter it below to confirm the change.",
+            ph_enter_code: "Enter 6-digit code", btn_verify: "Verify",
+            sw_invalid_code_text: "Please enter the 6-digit code.",
+            sw_email_verified_title: "Email Verified!", sw_email_verified_text: "Please log in again with your new email."
         },
         tl: {
             nav_back: "Bumalik sa Dashboard", nav_profile: "Aking Profile",
@@ -52,7 +56,11 @@
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang iyong mga pagbabago.",
             sw_error_title: "Error", sw_update_failed: "Nabigo ang pag-update.", sw_server_error: "Nabigo ang koneksyon sa server.",
             sw_signout_title: "Mag-sign Out?", sw_signout_text: "Babalik sa login screen.", sw_signout_confirm: "Mag-logout",
-            sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit."
+            sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minutong hindi paggamit.",
+            sw_verify_new_email_title: "I-verify ang Bagong Email", sw_verify_new_email_text: "Nagpadala kami ng 6-digit na code sa iyong bagong email. Ilagay ito para kumpirmahin ang pagbabago.",
+            ph_enter_code: "Ilagay ang 6-digit na code", btn_verify: "I-verify",
+            sw_invalid_code_text: "Pakilagay ang 6-digit na code.",
+            sw_email_verified_title: "Na-verify ang Email!", sw_email_verified_text: "Mangyaring mag-login muli gamit ang iyong bagong email."
         },
         ceb: {
             nav_back: "Balik sa Dashboard", nav_profile: "Akong Profile",
@@ -73,7 +81,11 @@
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang imong mga kausaban.",
             sw_error_title: "Error", sw_update_failed: "Napakyas ang pag-update.", sw_server_error: "Napakyas ang koneksyon sa server.",
             sw_signout_title: "Mo-sign Out?", sw_signout_text: "Mobalik sa login screen.", sw_signout_confirm: "Mag-logout",
-            sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan."
+            sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 5 minutos nga walay kalihukan.",
+            sw_verify_new_email_title: "I-verify ang Bag-ong Email", sw_verify_new_email_text: "Nagpadala kami og 6-digit nga code sa imong bag-ong email. Isulod kini para makumpirma ang kausaban.",
+            ph_enter_code: "Isulod ang 6-digit nga code", btn_verify: "I-verify",
+            sw_invalid_code_text: "Palihug isulod ang 6-digit nga code.",
+            sw_email_verified_title: "Na-verify ang Email!", sw_email_verified_text: "Palihug mag-login pag-usab gamit ang imong bag-ong email."
         }
     };
 
@@ -358,7 +370,9 @@
                     body: JSON.stringify({ fullname, email, contact, rsba, area, password })
                 });
                 const data = await res.json();
-                if (data.status === 'success') {
+                if (data.status === 'success' && data.email_changed) {
+                    promptVerifyNewEmail(email, data.verification_code);
+                } else if (data.status === 'success') {
                     Swal.fire({ icon: 'success', title: t('sw_updated_title'), text: t('sw_updated_text'), confirmButtonColor: '#11542e' })
                         .then(() => location.reload());
                 } else {
@@ -367,6 +381,51 @@
             } catch (e) {
                 Swal.fire(t('sw_error_title'), t('sw_server_error'), 'error');
             }
+        }
+
+        function promptVerifyNewEmail(newEmail, fallbackCode) {
+            Swal.fire({
+                title: t('sw_verify_new_email_title'),
+                html: `
+                    <p style="font-size:0.85rem; color:#555; margin-bottom:12px;">${t('sw_verify_new_email_text')}</p>
+                    <input id="swalCode" class="swal2-input" maxlength="6" inputmode="numeric" placeholder="${t('ph_enter_code')}" style="text-align:center; letter-spacing:4px; font-weight:bold;">
+                `,
+                confirmButtonText: t('btn_verify'),
+                confirmButtonColor: '#11542e',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                preConfirm: () => {
+                    const code = document.getElementById('swalCode').value.trim();
+                    if (!code || code.length !== 6) {
+                        Swal.showValidationMessage(t('sw_invalid_code_text'));
+                        return false;
+                    }
+                    return fetch('../../api/auth/verify_code.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: newEmail, code })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status !== 'success') {
+                            Swal.showValidationMessage(data.message);
+                            return false;
+                        }
+                        return true;
+                    })
+                    .catch(() => {
+                        Swal.showValidationMessage(t('sw_server_error'));
+                        return false;
+                    });
+                }
+            }).then(result => {
+                if (result.isConfirmed) {
+                    Swal.fire({ icon: 'success', title: t('sw_email_verified_title'), text: t('sw_email_verified_text'), confirmButtonColor: '#11542e' })
+                        .then(() => {
+                            fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
+                        });
+                }
+            });
         }
 
         function togglePassword(inputId, iconId) {

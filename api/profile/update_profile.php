@@ -38,17 +38,53 @@ if ($password && strlen($password) < 6) {
     exit;
 }
 
+require_once '../config/mailer.php';
+
 try {
     // Check if email is taken by another user
-    $checkStmt = $conn->prepare("SELECT User_ID FROM users WHERE Email = ? AND User_ID != ?");
-    $checkStmt->bind_param("si", $email, $user_id);
+    $checkStmt = $conn->prepare("SELECT User_ID, Email, Role FROM users WHERE User_ID = ?");
+    $checkStmt->bind_param("i", $user_id);
     $checkStmt->execute();
-    if ($checkStmt->get_result()->fetch_assoc()) {
-        throw new Exception("Email is already in use by another account.");
-    }
+    $currentUser = $checkStmt->get_result()->fetch_assoc();
     $checkStmt->close();
 
-    if ($password) {
+    $checkDupeStmt = $conn->prepare("SELECT User_ID FROM users WHERE Email = ? AND User_ID != ?");
+    $checkDupeStmt->bind_param("si", $email, $user_id);
+    $checkDupeStmt->execute();
+    if ($checkDupeStmt->get_result()->fetch_assoc()) {
+        throw new Exception("Email is already in use by another account.");
+    }
+    $checkDupeStmt->close();
+
+    // If the email actually changed, the new one must be re-verified before this
+    // account can log in again - otherwise "verified" would silently apply to an
+    // address that was never actually confirmed. Only Farmers go through this at
+    // all, matching login.php's verification gate.
+    $emailChanged = $currentUser && strcasecmp($currentUser['Email'], $email) !== 0;
+    $isFarmer = $currentUser && $currentUser['Role'] === 'Farmer';
+    $new_code = null;
+
+    if ($emailChanged && $isFarmer) {
+        $new_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+        if ($password) {
+            $hashed = hashUserPassword($password);
+            $stmt   = $conn->prepare(
+                "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ?,
+                 Email_Verified = 0, Verification_Token = ?, Verification_Token_Expires = ?
+                 WHERE User_ID = ?"
+            );
+            $stmt->bind_param("ssssssssi", $fullname, $email, $contact, $rsba, $area, $hashed, $new_code, $token_expires, $user_id);
+        } else {
+            $stmt = $conn->prepare(
+                "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?,
+                 Email_Verified = 0, Verification_Token = ?, Verification_Token_Expires = ?
+                 WHERE User_ID = ?"
+            );
+            $stmt->bind_param("sssssssi", $fullname, $email, $contact, $rsba, $area, $new_code, $token_expires, $user_id);
+        }
+    } else if ($password) {
         $hashed = hashUserPassword($password);
         $stmt   = $conn->prepare(
             "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ? 
@@ -69,7 +105,17 @@ try {
     // Update session so sidebar name reflects immediately
     $_SESSION['Fullname'] = $fullname;
 
-    echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully.']);
+    if ($emailChanged && $isFarmer) {
+        sendVerificationEmail($email, $fullname, $new_code); // best-effort
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Profile updated. Your new email needs to be verified before you can log in again.',
+            'email_changed' => true,
+            'verification_code' => $new_code
+        ]);
+    } else {
+        echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully.']);
+    }
 
 } catch (Exception $e) {
     echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
