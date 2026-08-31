@@ -33,7 +33,7 @@ try {
     $query = "UPDATE damage_report 
               SET Technician_ID = ?, 
                   Visit_Date    = ?,
-                  Status        = 'Pending' 
+                  Status        = 'Validated' 
               WHERE Damage_Report_ID = ?";
 
     $stmt = $conn->prepare($query);
