@@ -67,24 +67,29 @@ try {
     $new_code = null;
 
     if ($emailChanged && $isFarmer) {
+        // Do NOT touch the real Email or Email_Verified columns yet - the account
+        // keeps working normally with its current, already-verified email the whole
+        // time. The new address only becomes real once the code is confirmed
+        // (see verify_code.php). Closing the prompt without verifying means nothing
+        // actually changed - no more silent "bypass" via reload or a second Save.
         $new_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
 
         if ($password) {
             $hashed = hashUserPassword($password);
             $stmt   = $conn->prepare(
-                "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ?,
-                 Email_Verified = 0, Verification_Token = ?, Verification_Token_Expires = ?
+                "UPDATE users SET Fullname = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ?,
+                 Pending_Email = ?, Verification_Token = ?, Verification_Token_Expires = ?
                  WHERE User_ID = ?"
             );
-            $stmt->bind_param("ssssssssi", $fullname, $email, $contact, $rsba, $area, $hashed, $new_code, $token_expires, $user_id);
+            $stmt->bind_param("ssssssssi", $fullname, $contact, $rsba, $area, $hashed, $email, $new_code, $token_expires, $user_id);
         } else {
             $stmt = $conn->prepare(
-                "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?,
-                 Email_Verified = 0, Verification_Token = ?, Verification_Token_Expires = ?
+                "UPDATE users SET Fullname = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?,
+                 Pending_Email = ?, Verification_Token = ?, Verification_Token_Expires = ?
                  WHERE User_ID = ?"
             );
-            $stmt->bind_param("sssssssi", $fullname, $email, $contact, $rsba, $area, $new_code, $token_expires, $user_id);
+            $stmt->bind_param("sssssssi", $fullname, $contact, $rsba, $area, $email, $new_code, $token_expires, $user_id);
         }
     } else if ($password) {
         $hashed = hashUserPassword($password);
