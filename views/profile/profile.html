@@ -128,6 +128,20 @@
         .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
         .lang-link { cursor: pointer; }
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
+        #codeBoxContainer input.code-digit {
+            width: 46px !important; height: 56px;
+            text-align: center; font-size: 1.5rem; font-weight: bold;
+            border: 2px solid #d1d5db; border-radius: 10px;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            background: #f8fafc !important; color: #1e293b !important;
+            padding: 0 !important;
+        }
+        #codeBoxContainer input.code-digit:focus { border-color: #11542e; box-shadow: 0 0 0 3px rgba(17,84,46,0.12); background: white !important; }
+        #codeBoxContainer input.code-digit.filled { border-color: #11542e; background: white !important; }
+        #codeBoxContainer input.code-digit:-webkit-autofill {
+            -webkit-text-fill-color: #1e293b !important;
+            -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+        }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">
@@ -386,13 +400,52 @@
             Swal.fire({
                 title: t('sw_verify_new_email_title'),
                 html: `
-                    <p style="font-size:0.85rem; color:#555; margin-bottom:12px;">${t('sw_verify_new_email_text')}</p>
-                    <input id="swalCode" class="swal2-input" maxlength="6" inputmode="numeric" placeholder="${t('ph_enter_code')}" style="text-align:center; letter-spacing:4px; font-weight:bold;">
+                    <p style="font-size:0.85rem; color:#555; margin-bottom:18px;">${t('sw_verify_new_email_text')}</p>
+                    <input type="hidden" id="swalCode">
+                    <div id="codeBoxContainer" style="display:flex; justify-content:center; gap:10px;">
+                        <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                        <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+                    </div>
                 `,
                 confirmButtonText: t('btn_verify'),
                 confirmButtonColor: '#11542e',
+                showCloseButton: true,
                 allowOutsideClick: false,
-                allowEscapeKey: false,
+                didOpen: () => {
+                    const boxes = document.querySelectorAll('#codeBoxContainer .code-digit');
+                    const hiddenInput = document.getElementById('swalCode');
+
+                    function syncHiddenInput() {
+                        hiddenInput.value = Array.from(boxes).map(b => b.value).join('');
+                    }
+
+                    boxes.forEach((box, i) => {
+                        box.addEventListener('input', () => {
+                            box.value = box.value.replace(/\D/g, '').slice(0, 1);
+                            box.classList.toggle('filled', box.value !== '');
+                            if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+                            syncHiddenInput();
+                        });
+                        box.addEventListener('keydown', (e) => {
+                            if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+                        });
+                        box.addEventListener('paste', (e) => {
+                            e.preventDefault();
+                            const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+                            pasted.split('').forEach((digit, idx) => {
+                                if (boxes[idx]) { boxes[idx].value = digit; boxes[idx].classList.add('filled'); }
+                            });
+                            syncHiddenInput();
+                            const nextEmpty = Array.from(boxes).findIndex(b => !b.value);
+                            (nextEmpty === -1 ? boxes[boxes.length - 1] : boxes[nextEmpty]).focus();
+                        });
+                    });
+                    boxes[0].focus();
+                },
                 preConfirm: () => {
                     const code = document.getElementById('swalCode').value.trim();
                     if (!code || code.length !== 6) {
@@ -423,6 +476,11 @@
                         .then(() => {
                             fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
                         });
+                } else {
+                    // Closed via the X without verifying - the profile change (including
+                    // the new unverified email) is already saved; just refresh so the
+                    // page reflects the current (unverified) state honestly.
+                    location.reload();
                 }
             });
         }
