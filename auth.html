@@ -226,6 +226,7 @@
             } else if (data.message && data.message.toLowerCase().includes('verify')) {
                 switchForm('verify');
                 document.getElementById('verifyEmail').value = email;
+                handleResendCode(); // fire off a fresh code right away - don't make them notice and click it themselves
             } else {
                 errorBox.innerText = data.message;
             }
