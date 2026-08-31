@@ -158,6 +158,9 @@
 
             <button type="submit" class="btn-submit">Verify</button>
             <div class="toggle-link">
+                <a onclick="handleResendCode()" id="resendLink">Resend Code</a>
+            </div>
+            <div class="toggle-link">
                 <a onclick="switchForm('login')">Back to Login</a>
             </div>
         </form>
@@ -353,6 +356,52 @@
             });
         });
     })();
+
+    async function handleResendCode() {
+        const email = document.getElementById('verifyEmail').value.trim();
+        const msgBox = document.getElementById('verifyMsg');
+        const link = document.getElementById('resendLink');
+
+        if (!email) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = 'Please enter your email above first.';
+            return;
+        }
+
+        link.style.pointerEvents = 'none';
+        link.style.opacity = '0.5';
+        msgBox.className = 'msg-box';
+        msgBox.innerText = 'Sending...';
+
+        try {
+            const res = await fetch('api/auth/resend_code.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            msgBox.className = data.status === 'success' ? 'msg-box success' : 'msg-box error';
+            msgBox.innerText = data.message;
+        } catch(e) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = "Server Error. Check console.";
+        }
+
+        // 30-second cooldown so the link can't be spammed
+        let seconds = 30;
+        link.innerText = `Resend Code (${seconds}s)`;
+        const cooldown = setInterval(() => {
+            seconds--;
+            if (seconds <= 0) {
+                clearInterval(cooldown);
+                link.innerText = 'Resend Code';
+                link.style.pointerEvents = 'auto';
+                link.style.opacity = '1';
+            } else {
+                link.innerText = `Resend Code (${seconds}s)`;
+            }
+        }, 1000);
+    }
 
     async function handleVerifyCode() {
         const email = document.getElementById('verifyEmail').value;
