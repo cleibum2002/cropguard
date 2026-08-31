@@ -58,7 +58,7 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
         // creating the account only proves Admin typed it correctly, not that the
         // intended recipient actually owns that inbox. Applies uniformly now,
         // including new Admin accounts.
-        $rolesRequiringVerification = ['MAO', 'Technician', 'Admin'];
+        $rolesRequiringVerification = ['MAO', 'Technician', 'Admin', 'Farmer'];
         $needsVerification = in_array($data->role, $rolesRequiringVerification);
 
         if ($needsVerification) {
