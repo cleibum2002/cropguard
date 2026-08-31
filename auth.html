@@ -98,9 +98,6 @@
             <div class="toggle-link">
                 Don't have an account? <a onclick="switchForm('register')">Register here</a>
             </div>
-            <div class="toggle-link">
-                Need to verify your account? <a onclick="switchForm('verify')">Verify here</a>
-            </div>
         </form>
 
         <form id="registerForm" class="hidden" onsubmit="event.preventDefault(); handleRegister();">
@@ -223,6 +220,9 @@
             
             if(data.status === 'success') {
                 window.location.href = data.redirect;
+            } else if (data.message && data.message.toLowerCase().includes('verify')) {
+                switchForm('verify');
+                document.getElementById('verifyEmail').value = email;
             } else {
                 errorBox.innerText = data.message;
             }
