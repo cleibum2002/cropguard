@@ -108,8 +108,12 @@
                 <input type="text" id="regName" placeholder="Full Name" required>
             </div>
             
-            <div class="input-group">
-                <input type="tel" id="regContact" placeholder="Contact Number (e.g. 09123456789)" required>
+            <div class="input-group" style="display:flex; gap:8px;">
+                <span style="display:flex; align-items:center; gap:4px; padding:0 12px; background:#eef2ef; border:1px solid #ccc; border-radius:8px; font-weight:bold; color:#333; flex-shrink:0;">
+                    🇵🇭 +63
+                </span>
+                <input type="tel" id="regContact" placeholder="9xxxxxxxxx" maxlength="10" inputmode="numeric" required
+                       oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10);" style="flex:1;">
             </div>
 
             <div class="input-group">
@@ -134,10 +138,10 @@
         </form>
 
         <form id="verifyForm" class="hidden" onsubmit="event.preventDefault(); handleVerifyCode();">
-            <h1>Verify Your Email</h1>
+            <h1 id="verifyTitle">Verify Your Email</h1>
             <div class="msg-box" id="verifyMsg"></div>
 
-            <p style="font-size:0.85rem; color:#555; text-align:center; margin-bottom:18px;">We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.</p>
+            <p id="verifyInstructions" style="font-size:0.85rem; color:#555; text-align:center; margin-bottom:18px;">We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.</p>
 
             <div id="verifyCodeDisplay" style="display:none;">
                 <p id="verifyCodeText"></p>
@@ -190,6 +194,8 @@
             verifyForm.classList.remove('hidden');
             document.querySelectorAll('.code-digit').forEach(b => { b.value = ''; b.classList.remove('filled'); });
             document.getElementById('verifyCodeInput').value = '';
+            document.getElementById('verifyTitle').innerText = 'Verify Your Email';
+            document.getElementById('verifyInstructions').innerText = "We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.";
         } else {
             loginForm.classList.remove('hidden');
         }
@@ -261,7 +267,7 @@
 
     async function handleRegister() {
         const name = document.getElementById('regName').value;
-        const contact = document.getElementById('regContact').value;
+        const contactDigits = document.getElementById('regContact').value.trim();
         const email = document.getElementById('regEmail').value;
         const pass = document.getElementById('regPass').value;
         const passConfirm = document.getElementById('regPassConfirm').value;
@@ -287,6 +293,13 @@
             msgBox.innerText = emailCheck.message;
             return;
         }
+
+        if (contactDigits.length !== 10) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = 'Contact number must be exactly 10 digits (e.g. 9171234567).';
+            return;
+        }
+        const contact = '+63' + contactDigits;
 
         msgBox.className = 'msg-box';
         msgBox.innerText = 'Registering...';
@@ -420,7 +433,18 @@
             });
             const data = await res.json();
 
-            if (data.status === 'success') {
+            if (data.status === 'success' && data.step === 'phone') {
+                // Email step just finished - now switch to asking for the phone code,
+                // staying on this same form instead of redirecting to login.
+                msgBox.className = 'msg-box success';
+                msgBox.innerText = data.message;
+                document.getElementById('verifyTitle').innerText = 'Verify Your Phone';
+                document.getElementById('verifyInstructions').innerText = "We've sent a 6-digit code to your phone via SMS. Enter it below to finish.";
+                document.querySelectorAll('.code-digit').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+                document.getElementById('verifyCodeInput').value = '';
+                document.querySelector('.code-digit').focus();
+            } else if (data.status === 'success') {
+                // step === 'done' - fully verified now.
                 msgBox.className = 'msg-box success';
                 msgBox.innerText = data.message;
                 setTimeout(() => switchForm('login'), 1500);

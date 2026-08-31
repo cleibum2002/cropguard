@@ -21,7 +21,7 @@ if (isset($input['email'], $input['password'])) {
     $password = $input['password'];
 
     // --- ONLY ONE QUERY NEEDED NOW ---
-    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified FROM users WHERE BINARY Email = ?");
+    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified, Phone_Verified FROM users WHERE BINARY Email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -74,11 +74,17 @@ if (isset($input['email'], $input['password'])) {
                     $redirect_url = 'index.html'; // Fallback
             }
 
-            // All 4 roles must verify their email before logging in.
+            // All 4 roles must verify both email AND phone before logging in.
             $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician', 'Admin'];
-            if (in_array($role, $rolesRequiringVerification) && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
-                echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
-                exit;
+            if (in_array($role, $rolesRequiringVerification)) {
+                if (isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
+                    echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
+                    exit;
+                }
+                if (isset($user['Phone_Verified']) && (int)$user['Phone_Verified'] !== 1) {
+                    echo json_encode(['status' => 'error', 'message' => 'Please verify your phone number before logging in. Check your SMS for the verification code.']);
+                    exit;
+                }
             }
 
             // Set secure session variables

@@ -86,7 +86,7 @@ try {
     $verification_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
     $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
 
-    $insert_stmt = $conn->prepare("INSERT INTO users (Role, Fullname, Contact_Number, Email, Password, STATUS, Email_Verified, Verification_Token, Verification_Token_Expires) VALUES (?, ?, ?, ?, ?, 'Active', 0, ?, ?)");
+    $insert_stmt = $conn->prepare("INSERT INTO users (Role, Fullname, Contact_Number, Email, Password, STATUS, Email_Verified, Phone_Verified, Verification_Token, Verification_Token_Expires) VALUES (?, ?, ?, ?, ?, 'Active', 0, 0, ?, ?)");
     $insert_stmt->bind_param("sssssss", $role, $name, $contact, $email, $hashed_pass, $verification_code, $token_expires);
 
     if ($insert_stmt->execute()) {
