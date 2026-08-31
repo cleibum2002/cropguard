@@ -98,6 +98,9 @@
             <div class="toggle-link">
                 Don't have an account? <a onclick="switchForm('register')">Register here</a>
             </div>
+            <div class="toggle-link">
+                Need to verify your account? <a onclick="switchForm('verify')">Verify here</a>
+            </div>
         </form>
 
         <form id="registerForm" class="hidden" onsubmit="event.preventDefault(); handleRegister();">
@@ -143,7 +146,9 @@
                 <p id="verifyCodeText"></p>
             </div>
 
-            <input type="hidden" id="verifyEmail">
+            <div class="input-group">
+                <input type="email" id="verifyEmail" placeholder="Email Address" required>
+            </div>
             <input type="hidden" id="verifyCodeInput" required>
             <div id="codeBoxContainer" style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
                 <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
@@ -165,19 +170,27 @@
 
 <script>
     function switchForm(formType) {
-        document.getElementById('verifyForm').classList.add('hidden');
-        const loginForm = document.getElementById('loginForm');
+        const loginForm    = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
-        
+        const verifyForm   = document.getElementById('verifyForm');
+
         document.getElementById('loginError').innerText = '';
         document.getElementById('regMsg').innerText = '';
         document.getElementById('regMsg').className = 'msg-box';
+        document.getElementById('verifyMsg').innerText = '';
+        document.getElementById('verifyMsg').className = 'msg-box';
+
+        loginForm.classList.add('hidden');
+        registerForm.classList.add('hidden');
+        verifyForm.classList.add('hidden');
 
         if (formType === 'register') {
-            loginForm.classList.add('hidden');
             registerForm.classList.remove('hidden');
+        } else if (formType === 'verify') {
+            verifyForm.classList.remove('hidden');
+            document.querySelectorAll('.code-digit').forEach(b => { b.value = ''; b.classList.remove('filled'); });
+            document.getElementById('verifyCodeInput').value = '';
         } else {
-            registerForm.classList.add('hidden');
             loginForm.classList.remove('hidden');
         }
     }
@@ -289,12 +302,10 @@
             const data = await res.json();
             
             if(data.status === 'success') {
-                document.getElementById('registerForm').classList.add('hidden');
-                document.getElementById('verifyForm').classList.remove('hidden');
+                switchForm('verify');
                 document.getElementById('verifyEmail').value = email;
                 document.getElementById('verifyCodeText').innerText = data.verification_code || '';
                 document.getElementById('registerForm').reset();
-                document.querySelectorAll('.code-digit').forEach(b => { b.value = ''; b.classList.remove('filled'); });
                 document.querySelector('.code-digit').focus();
             } else {
                 msgBox.className = 'msg-box error';
