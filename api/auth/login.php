@@ -74,9 +74,8 @@ if (isset($input['email'], $input['password'])) {
                     $redirect_url = 'index.html'; // Fallback
             }
 
-            // Farmer, MAO, and Technician must verify their email before logging in.
-            // Admin-role accounts still auto-verify at creation for now (see users/create.php).
-            $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician'];
+            // All 4 roles must verify their email before logging in.
+            $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician', 'Admin'];
             if (in_array($role, $rolesRequiringVerification) && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
                 echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
                 exit;

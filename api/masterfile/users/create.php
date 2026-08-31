@@ -54,11 +54,11 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
         $hashed_password = hashUserPassword($data->password);
         $contact = $data->contact_number ?? null;
 
-        // MAO and Technician accounts now require the actual person to verify their
-        // email, same as Farmers - Admin creating the account only proves Admin typed
-        // it correctly, not that the intended recipient actually owns that inbox.
-        // Admin-role accounts still auto-verify for now (not extended to this yet).
-        $rolesRequiringVerification = ['MAO', 'Technician'];
+        // Every role now requires the actual person to verify their email - Admin
+        // creating the account only proves Admin typed it correctly, not that the
+        // intended recipient actually owns that inbox. Applies uniformly now,
+        // including new Admin accounts.
+        $rolesRequiringVerification = ['MAO', 'Technician', 'Admin'];
         $needsVerification = in_array($data->role, $rolesRequiringVerification);
 
         if ($needsVerification) {

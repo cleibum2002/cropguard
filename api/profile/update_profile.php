@@ -62,7 +62,7 @@ try {
     // address that was never actually confirmed. Only Farmers go through this at
     // all, matching login.php's verification gate.
     $emailChanged = $currentUser && strcasecmp($currentUser['Email'], $email) !== 0;
-    $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician'];
+    $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician', 'Admin'];
     $isFarmer = $currentUser && in_array($currentUser['Role'], $rolesRequiringVerification);
     $new_code = null;
 
