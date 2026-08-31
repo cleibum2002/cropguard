@@ -48,19 +48,41 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
         exit;
     }
     try {
+        require_once '../../config/mailer.php';
+
         // Hash the password for security
         $hashed_password = hashUserPassword($data->password);
         $contact = $data->contact_number ?? null;
-        
-        // Email_Verified = 1 immediately - Admin is creating and vouching for this
-        // account directly, unlike self-registration which requires the farmer to
-        // click a link proving they own the email address.
-        $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS, Email_Verified) VALUES (?, ?, ?, ?, ?, ?, 1)";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("ssssss", $data->fullname, $data->email, $contact, $hashed_password, $data->role, $data->status);
+
+        // MAO and Technician accounts now require the actual person to verify their
+        // email, same as Farmers - Admin creating the account only proves Admin typed
+        // it correctly, not that the intended recipient actually owns that inbox.
+        // Admin-role accounts still auto-verify for now (not extended to this yet).
+        $rolesRequiringVerification = ['MAO', 'Technician'];
+        $needsVerification = in_array($data->role, $rolesRequiringVerification);
+
+        if ($needsVerification) {
+            $verification_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+            $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS, Email_Verified, Verification_Token, Verification_Token_Expires) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("ssssssss", $data->fullname, $data->email, $contact, $hashed_password, $data->role, $data->status, $verification_code, $token_expires);
+        } else {
+            // Email_Verified = 1 immediately - Admin is creating and vouching for this
+            // account directly.
+            $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS, Email_Verified) VALUES (?, ?, ?, ?, ?, ?, 1)";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("ssssss", $data->fullname, $data->email, $contact, $hashed_password, $data->role, $data->status);
+        }
         
         if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'New user added successfully.']);
+            if ($needsVerification) {
+                sendVerificationEmail($data->email, $data->fullname, $verification_code); // best-effort
+                echo json_encode(['status' => 'success', 'message' => 'New user added. They must verify their email before they can log in.']);
+            } else {
+                echo json_encode(['status' => 'success', 'message' => 'New user added successfully.']);
+            }
         } else {
             // Check if email already exists
             if ($conn->errno === 1062) {

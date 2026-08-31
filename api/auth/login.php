@@ -74,10 +74,11 @@ if (isset($input['email'], $input['password'])) {
                     $redirect_url = 'index.html'; // Fallback
             }
 
-            // Farmers must verify their email before logging in (Admin-created staff
-            // accounts are auto-verified at creation - see users/create.php).
-            if ($role === 'Farmer' && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
-                echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification link.']);
+            // Farmer, MAO, and Technician must verify their email before logging in.
+            // Admin-role accounts still auto-verify at creation for now (see users/create.php).
+            $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician'];
+            if (in_array($role, $rolesRequiringVerification) && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
+                echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
                 exit;
             }
 
