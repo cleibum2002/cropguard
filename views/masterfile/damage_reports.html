@@ -741,8 +741,8 @@
 
                 actionButtons += `
                     <div class="flex items-center gap-1 ml-3 border-l border-gray-100 pl-3">
-                        <button onclick="reviewInspection(${item.id}, '${currentStatus}')" class="w-8 h-8 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-200 transition-colors" title="${t('title_view_details')}"><i class="fa-solid fa-eye text-xs"></i></button>
-                        <button onclick="deleteItem(${item.id})" class="w-8 h-8 bg-red-50 text-red-400 rounded-lg hover:bg-red-100 transition-colors" title="${t('title_archive_report')}"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        <button onclick="reviewInspection(${item.id}, '${currentStatus}')" class="px-3 h-8 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors text-[10px] font-black uppercase tracking-wide whitespace-nowrap" title="${t('title_view_details')}">${t('title_view_details')}</button>
+                        <button onclick="deleteItem(${item.id})" class="px-3 h-8 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 transition-colors text-[10px] font-black uppercase tracking-wide whitespace-nowrap" title="${t('title_archive_report')}">${t('title_archive_report')}</button>
                     </div>`;
 
                 const visitDateDisplay = item.visit_date ? `<p class="text-[9px] mt-1 font-bold text-blue-400"><i class="fa-solid fa-calendar-check mr-1"></i>${t('label_visit')}: ${item.visit_date}</p>` : '';

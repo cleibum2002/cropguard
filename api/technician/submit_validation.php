@@ -107,6 +107,15 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         }
 
         $conn->commit();
+
+        // Log the action
+        require_once '../audit/log_action.php';
+        logAction($conn, $tech_id, 'Technician',
+            'Submit Inspection',
+            "Field inspection submitted for Report #$report_id. Severity confirmed: $final_severity.",
+            'Damage Reports'
+        );
+
         echo json_encode(['status' => 'success', 'message' => 'Inspection submitted and Farmer notified!']);
 
     } catch (Exception $e) {
