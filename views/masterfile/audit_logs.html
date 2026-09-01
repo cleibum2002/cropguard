@@ -64,12 +64,19 @@
                     <span>|</span>
                     <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
                 </div>
-                <select id="moduleFilter" onchange="loadLogs()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                <select id="moduleFilter" onchange="loadLogs(1)" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                     <option value="" data-i18n="filter_all_modules">All Modules</option>
                     <option value="Authentication" data-i18n="module_authentication">Authentication</option>
                     <option value="Reports" data-i18n="module_reports">Reports</option>
                     <option value="Damage Reports" data-i18n="module_damage_reports">Damage Reports</option>
                     <option value="Aid Distribution" data-i18n="module_aid_distribution">Aid Distribution</option>
+                </select>
+                <select id="roleFilter" onchange="loadLogs(1)" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                    <option value="" data-i18n="filter_all_roles">All Roles</option>
+                    <option value="Admin">Admin</option>
+                    <option value="MAO">MAO</option>
+                    <option value="Technician">Technician</option>
+                    <option value="Farmer">Farmer</option>
                 </select>
                 <button onclick="loadLogs()" class="bg-[#11542e] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-800 transition-all">
                     <i class="fa-solid fa-sync mr-1"></i> <span data-i18n="btn_refresh">Refresh</span>
@@ -77,7 +84,21 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
+        <div class="px-6 pt-6 flex flex-wrap items-center gap-3 bg-[#f0f2f0]">
+            <div class="relative flex-1 min-w-[240px] max-w-md">
+                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
+                <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="Search user, description, or IP..."
+                       class="bg-white border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
+            </div>
+            <input type="date" id="dateFrom" onchange="loadLogs(1)" class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-600 outline-none focus:ring-2 focus:ring-[#11542e]">
+            <span class="text-gray-400 text-xs font-bold" data-i18n="label_to">to</span>
+            <input type="date" id="dateTo" onchange="loadLogs(1)" class="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-600 outline-none focus:ring-2 focus:ring-[#11542e]">
+            <button onclick="clearFilters()" class="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors px-3 py-2.5">
+                <i class="fa-solid fa-rotate-left mr-1"></i> <span data-i18n="btn_clear">Clear</span>
+            </button>
+        </div>
+
+        <main class="flex-1 overflow-y-auto p-6 pt-0 bg-[#f0f2f0] custom-scrollbar">
             <div class="max-w-7xl mx-auto">
 
                 <!-- Stats -->
@@ -117,6 +138,18 @@
                             </thead>
                             <tbody id="logTableBody" class="divide-y divide-gray-50"></tbody>
                         </table>
+                    </div>
+                    <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                        <p id="paginationSummary" class="text-xs text-gray-400 font-bold"></p>
+                        <div class="flex items-center gap-2">
+                            <button id="prevPageBtn" onclick="goToPage(currentPage - 1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-chevron-left text-xs"></i>
+                            </button>
+                            <span id="pageIndicator" class="text-xs font-black text-gray-700 px-2">Page 1 of 1</span>
+                            <button id="nextPageBtn" onclick="goToPage(currentPage + 1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -171,14 +204,52 @@
 
         // Called automatically by i18n.js whenever the user picks a new language
         function onLanguageChange() {
-            loadLogs(); // re-fetches and re-renders with translated action labels
+            loadLogs(currentPage); // re-fetches the SAME page with translated action labels
         }
 
-        document.addEventListener('DOMContentLoaded', loadLogs);
+        let currentPage = 1;
+        let totalPages  = 1;
+        let searchDebounceTimer;
 
-        async function loadLogs() {
+        document.addEventListener('DOMContentLoaded', () => {
+            loadLogs(1);
+            document.getElementById('searchInput').addEventListener('input', () => {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => loadLogs(1), 400);
+            });
+        });
+
+        function clearFilters() {
+            document.getElementById('moduleFilter').value = '';
+            document.getElementById('roleFilter').value   = '';
+            document.getElementById('searchInput').value  = '';
+            document.getElementById('dateFrom').value     = '';
+            document.getElementById('dateTo').value       = '';
+            loadLogs(1);
+        }
+
+        function goToPage(page) {
+            if (page < 1 || page > totalPages) return;
+            loadLogs(page);
+        }
+
+        async function loadLogs(page) {
+            currentPage = page || currentPage;
+
             const module = document.getElementById('moduleFilter').value;
-            const url    = `../../api/audit/get_logs.php?limit=200${module ? '&module=' + module : ''}`;
+            const role   = document.getElementById('roleFilter').value;
+            const search = document.getElementById('searchInput').value.trim();
+            const from   = document.getElementById('dateFrom').value;
+            const to     = document.getElementById('dateTo').value;
+
+            const params = new URLSearchParams({ page: currentPage, per_page: 15 });
+            if (module) params.append('module', module);
+            if (role)   params.append('role', role);
+            if (search) params.append('search', search);
+            if (from)   params.append('date_from', from);
+            if (to)     params.append('date_to', to);
+
+            const url = `../../api/audit/get_logs.php?${params.toString()}`;
 
             try {
                 const res  = await fetch(url);
@@ -186,17 +257,28 @@
 
                 if (data.status === 'success') {
                     renderLogs(data.data);
-                    updateStats(data.data);
+                    updateStats(data.stats);
+                    updatePagination(data);
                 }
             } catch(e) { console.error('Failed to load logs', e); }
         }
 
-        function updateStats(data) {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('statTotal').innerText   = data.length;
-            document.getElementById('statLogins').innerText  = data.filter(l => l.Action === 'Login' && l.Created_At?.startsWith(today)).length;
-            document.getElementById('statReports').innerText = data.filter(l => l.Action === 'Submit Report' || l.Action === 'Edit Report').length;
-            document.getElementById('statAid').innerText     = data.filter(l => l.Action === 'Mark as Claimed' || l.Action === 'Approve Report').length;
+        function updateStats(stats) {
+            document.getElementById('statTotal').innerText   = stats.total_actions;
+            document.getElementById('statLogins').innerText  = stats.logins_today;
+            document.getElementById('statReports').innerText = stats.reports_submitted;
+            document.getElementById('statAid').innerText     = stats.aid_actions;
+        }
+
+        function updatePagination(data) {
+            totalPages = data.total_pages;
+            document.getElementById('pageIndicator').innerText = `Page ${data.page} of ${data.total_pages}`;
+            document.getElementById('prevPageBtn').disabled = data.page <= 1;
+            document.getElementById('nextPageBtn').disabled = data.page >= data.total_pages;
+
+            const start = data.total_count === 0 ? 0 : ((data.page - 1) * data.per_page) + 1;
+            const end   = Math.min(data.page * data.per_page, data.total_count);
+            document.getElementById('paginationSummary').innerText = `Showing ${start}–${end} of ${data.total_count} logs`;
         }
 
         function renderLogs(data) {
