@@ -74,17 +74,13 @@ if (isset($input['email'], $input['password'])) {
                     $redirect_url = 'index.html'; // Fallback
             }
 
-            // All 4 roles must verify both email AND phone before logging in.
+            // All 4 roles must verify their email before logging in. Phone
+            // verification is not part of the login gate right now - Semaphore
+            // isn't fully set up yet (sender name not approved). Reserved for later.
             $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician', 'Admin'];
-            if (in_array($role, $rolesRequiringVerification)) {
-                if (isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
-                    echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
-                    exit;
-                }
-                if (isset($user['Phone_Verified']) && (int)$user['Phone_Verified'] !== 1) {
-                    echo json_encode(['status' => 'error', 'message' => 'Please verify your phone number before logging in. Check your SMS for the verification code.']);
-                    exit;
-                }
+            if (in_array($role, $rolesRequiringVerification) && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
+                echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
+                exit;
             }
 
             // Set secure session variables

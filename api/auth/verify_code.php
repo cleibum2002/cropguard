@@ -46,33 +46,16 @@ if ($user['Pending_Email'] !== null && $user['Pending_Email'] === $email) {
     exit;
 }
 
-// Case 2: first-time EMAIL step for a brand-new account.
+// Case 2: EMAIL step for a brand-new account - this is the only step for now.
+// Phone verification is paused (Semaphore not fully set up) - reserved for later,
+// likely as a post-login prompt rather than a login gate.
 if ((int)$user['Email_Verified'] === 0) {
-    $phone_code    = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
-
-    $update = $conn->prepare("UPDATE users SET Email_Verified = 1, Verification_Token = ?, Verification_Token_Expires = ? WHERE User_ID = ?");
-    $update->bind_param("ssi", $phone_code, $token_expires, $user['User_ID']);
-    $update->execute();
-
-    sendVerificationSMS($user['Contact_Number'], $phone_code); // best-effort
-
-    echo json_encode([
-        'status'  => 'success',
-        'step'    => 'phone',
-        'message' => "Email verified! We've sent a code to your phone - enter it below to finish."
-    ]);
-    exit;
-}
-
-// Case 3: second-step PHONE verification.
-if ((int)$user['Phone_Verified'] === 0) {
-    $update = $conn->prepare("UPDATE users SET Phone_Verified = 1, Verification_Token = NULL, Verification_Token_Expires = NULL WHERE User_ID = ?");
+    $update = $conn->prepare("UPDATE users SET Email_Verified = 1, Verification_Token = NULL, Verification_Token_Expires = NULL WHERE User_ID = ?");
     $update->bind_param("i", $user['User_ID']);
     $update->execute();
-    echo json_encode(['status' => 'success', 'step' => 'done', 'message' => 'Phone verified! You can now log in.']);
+    echo json_encode(['status' => 'success', 'step' => 'done', 'message' => 'Email verified! You can now log in.']);
     exit;
 }
 
-echo json_encode(['status' => 'error', 'message' => 'This account is already fully verified.']);
+echo json_encode(['status' => 'error', 'message' => 'This account is already verified.']);
 ?>

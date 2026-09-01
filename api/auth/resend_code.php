@@ -16,7 +16,7 @@ if (!$email) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT User_ID, Fullname, Contact_Number, Email_Verified, Phone_Verified FROM users WHERE Email = ? AND (Email_Verified = 0 OR Phone_Verified = 0)");
+$stmt = $conn->prepare("SELECT User_ID, Fullname, Contact_Number, Email_Verified, Phone_Verified FROM users WHERE Email = ? AND Email_Verified = 0");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
@@ -35,11 +35,6 @@ $update->bind_param("ssi", $new_code, $token_expires, $user['User_ID']);
 $update->execute();
 $update->close();
 
-if ((int)$user['Email_Verified'] === 0) {
-    sendVerificationEmail($email, $user['Fullname'], $new_code); // best-effort
-    echo json_encode(['status' => 'success', 'channel' => 'email', 'message' => 'A new code has been sent to your email.']);
-} else {
-    sendVerificationSMS($user['Contact_Number'], $new_code); // best-effort
-    echo json_encode(['status' => 'success', 'channel' => 'phone', 'message' => 'A new code has been sent to your phone.']);
-}
+sendVerificationEmail($email, $user['Fullname'], $new_code); // best-effort
+echo json_encode(['status' => 'success', 'channel' => 'email', 'message' => 'A new code has been sent to your email.']);
 ?>
