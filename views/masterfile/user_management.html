@@ -187,7 +187,13 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_contact_number">Contact Number</label>
-                        <input type="text" id="userContact" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="09xxxxxxxxx">
+                        <div class="flex items-stretch gap-2">
+                            <span class="flex items-center gap-1.5 px-3 bg-gray-100 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 flex-shrink-0">
+                                <span>🇵🇭</span> <span>+63</span>
+                            </span>
+                            <input type="text" id="userContact" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm flex-1" placeholder="9xxxxxxxxx" inputmode="numeric" maxlength="10"
+                                   oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10);">
+                        </div>
                     </div>
                 </div>
                 <div>
@@ -465,7 +471,8 @@
             document.getElementById("editId").value = i.id;
             document.getElementById("userFullName").value = i.fullname;
             document.getElementById("userEmail").value = i.email || "";
-            document.getElementById("userContact").value = i.contact_number || "";
+            const rawContact = (i.contact_number || '').replace(/\D/g, '');
+            document.getElementById("userContact").value = rawContact.slice(-10);
             document.getElementById("userPassword").value = ""; 
             document.getElementById("userRole").value = i.role;
             document.getElementById("userStatus").value = i.status;
@@ -479,7 +486,10 @@
             const data = {
                 fullname: document.getElementById("userFullName").value.trim(),
                 email: document.getElementById("userEmail").value.trim(),
-                contact_number: document.getElementById("userContact").value.trim(),
+                contact_number: (() => {
+                    const digits = document.getElementById("userContact").value.trim();
+                    return digits ? ('+63' + digits) : '';
+                })(),
                 password: document.getElementById("userPassword").value.trim(),
                 role: document.getElementById("userRole").value,
                 status: document.getElementById("userStatus").value
