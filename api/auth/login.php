@@ -92,6 +92,11 @@ if (isset($input['email'], $input['password'])) {
             // the person actually changes to a password that passes the rule.
             $_SESSION['Weak_Password'] = isPasswordWeak($password);
             $_SESSION['Weak_Password_Alert_Dismissed'] = false;
+            // Phone verification is a post-login reminder, not a login gate (see
+            // earlier revert - Semaphore isn't fully set up yet). Re-checked fresh
+            // on every login so it reappears each time until actually verified.
+            $_SESSION['Phone_Unverified'] = isset($user['Phone_Verified']) && (int)$user['Phone_Verified'] !== 1;
+            $_SESSION['Phone_Alert_Dismissed'] = false;
 
                         // Log the action
             require_once '../audit/log_action.php';

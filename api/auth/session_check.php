@@ -10,6 +10,7 @@ if (isset($_SESSION['User_ID']) && isset($_SESSION['Role'])) {
         'status' => 'active',
         'role' => $_SESSION['Role'],
         'weak_password' => ($_SESSION['Weak_Password'] ?? false) && !($_SESSION['Weak_Password_Alert_Dismissed'] ?? false),
+        'phone_unverified' => ($_SESSION['Phone_Unverified'] ?? false) && !($_SESSION['Phone_Alert_Dismissed'] ?? false),
         'user' => [
             'fullname' => $_SESSION['Fullname'],
             'id' => $_SESSION['User_ID']
