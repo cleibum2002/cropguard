@@ -74,6 +74,13 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
         $stmtNotif->bind_param("is", $farmer_id, $msg);
         $stmtNotif->execute();
 
+        // STEP 4b: Notify MAO — aid is now sitting in their queue waiting to be handed out
+        $mao_msg = "Aid for report #REP-$report_id ($qty $unit of $cat) has been approved and is ready for distribution.";
+        $mao_redirect = 'inventory_aid.html';
+        $stmtMaoNotif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Related_Report_ID, Redirect_URL) VALUES ('MAO', ?, ?, ?)");
+        $stmtMaoNotif->bind_param("sis", $mao_msg, $report_id, $mao_redirect);
+        $stmtMaoNotif->execute();
+
         // Commit all changes
         $conn->commit();
 
