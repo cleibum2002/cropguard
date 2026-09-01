@@ -172,6 +172,7 @@
                 no_logs_found: "No logs found.", label_system: "System",
                 action_login: "Login", action_submit_report: "Submit Report", action_edit_report: "Edit Report",
                 action_validate_report: "Validate Report", action_approve_report: "Approve Report", action_mark_claimed: "Mark as Claimed",
+                action_submit_inspection: "Submit Inspection",
                 sw_logout_title: "Logout?",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
             },
@@ -187,6 +188,7 @@
                 no_logs_found: "Walang nahanap na log.", label_system: "Sistema",
                 action_login: "Login", action_submit_report: "Isumite ang Ulat", action_edit_report: "I-edit ang Ulat",
                 action_validate_report: "Patunayan ang Ulat", action_approve_report: "Aprubahan ang Ulat", action_mark_claimed: "Markahan bilang Na-claim",
+                action_submit_inspection: "Isumite ang Inspeksyon",
                 sw_logout_title: "Mag-logout?",
                 sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
             }
@@ -197,7 +199,8 @@
         function auditActionLabel(action) {
             const map = {
                 'Login': 'action_login', 'Submit Report': 'action_submit_report', 'Edit Report': 'action_edit_report',
-                'Validate Report': 'action_validate_report', 'Approve Report': 'action_approve_report', 'Mark as Claimed': 'action_mark_claimed'
+                'Validate Report': 'action_validate_report', 'Approve Report': 'action_approve_report', 'Mark as Claimed': 'action_mark_claimed',
+                'Submit Inspection': 'action_submit_inspection'
             };
             return map[action] ? t(map[action]) : action;
         }
