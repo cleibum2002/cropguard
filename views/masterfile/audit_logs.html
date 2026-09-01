@@ -84,7 +84,7 @@
             </div>
         </header>
 
-        <div class="px-6 pt-6 flex flex-wrap items-center gap-3 bg-[#f0f2f0]">
+        <div class="px-6 pt-6 pb-4 flex flex-wrap items-center gap-3 bg-[#f0f2f0]">
             <div class="relative flex-1 min-w-[240px] max-w-md">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                 <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="Search user, description, or IP..."
@@ -139,17 +139,17 @@
                             <tbody id="logTableBody" class="divide-y divide-gray-50"></tbody>
                         </table>
                     </div>
-                    <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-                        <p id="paginationSummary" class="text-xs text-gray-400 font-bold"></p>
-                        <div class="flex items-center gap-2">
-                            <button id="prevPageBtn" onclick="goToPage(currentPage - 1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                    <div class="px-6 py-5 border-t border-gray-100 flex flex-col items-center gap-3">
+                        <div class="flex items-center gap-3">
+                            <button id="prevPageBtn" onclick="goToPage(currentPage - 1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#11542e] text-[#11542e] hover:bg-[#11542e] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#11542e]">
                                 <i class="fa-solid fa-chevron-left text-xs"></i>
                             </button>
                             <span id="pageIndicator" class="text-xs font-black text-gray-700 px-2">Page 1 of 1</span>
-                            <button id="nextPageBtn" onclick="goToPage(currentPage + 1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+                            <button id="nextPageBtn" onclick="goToPage(currentPage + 1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#11542e] text-[#11542e] hover:bg-[#11542e] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#11542e]">
                                 <i class="fa-solid fa-chevron-right text-xs"></i>
                             </button>
                         </div>
+                        <p id="paginationSummary" class="text-xs text-gray-400 font-bold"></p>
                     </div>
                 </div>
 
