@@ -37,9 +37,9 @@ $update->close();
 
 if ((int)$user['Email_Verified'] === 0) {
     sendVerificationEmail($email, $user['Fullname'], $new_code); // best-effort
-    echo json_encode(['status' => 'success', 'message' => 'A new code has been sent to your email.']);
+    echo json_encode(['status' => 'success', 'channel' => 'email', 'message' => 'A new code has been sent to your email.']);
 } else {
     sendVerificationSMS($user['Contact_Number'], $new_code); // best-effort
-    echo json_encode(['status' => 'success', 'message' => 'A new code has been sent to your phone.']);
+    echo json_encode(['status' => 'success', 'channel' => 'phone', 'message' => 'A new code has been sent to your phone.']);
 }
 ?>
