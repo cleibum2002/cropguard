@@ -38,7 +38,7 @@ function renderMaoNotificationList(items) {
     }
 
     list.innerHTML = items.map(n => `
-        <div onclick="goToMaoNotification('${(n.Redirect_URL || '').replace(/'/g, "\\'")}')"
+        <div onclick="goToMaoNotification('${(n.Redirect_URL || '').replace(/'/g, "\\'")}', ${n.Related_Report_ID ?? 'null'})"
              class="flex items-center gap-4 px-6 py-4 ${n.Is_Read == 0 ? 'bg-green-50/50' : ''} hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0">
             <div class="w-10 h-10 rounded-full bg-green-100 text-[#11542e] flex items-center justify-center flex-shrink-0">
                 <i class="fa-solid fa-bell text-sm"></i>
@@ -56,8 +56,13 @@ function renderMaoNotificationList(items) {
 // carry a Redirect_URL (a bare filename like "report_management.html", resolved
 // relative to whichever MAO page the officer is currently on — they're all
 // siblings in views/mao/, so a plain relative filename always works).
-function goToMaoNotification(url) {
-    if (url) window.location.href = url;
+function goToMaoNotification(url, reportId) {
+    if (!url) return;
+    if (reportId) {
+        const separator = url.includes('?') ? '&' : '?';
+        url += `${separator}id=${reportId}`;
+    }
+    window.location.href = url;
 }
 
 function toggleMaoNotificationPanel() {
