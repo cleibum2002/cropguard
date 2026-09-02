@@ -357,6 +357,7 @@
                 no_records_found: "No matching distribution records found.", na_fallback: "N/A",
                 status_pending_distribution: "Pending Distribution", status_claimed: "Claimed",
                 sw_no_data_title: "No Data", sw_no_data_text: "No data exported. Please refresh the report first.",
+                sw_invalid_date_title: "Invalid Date Range", sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
                 sw_signout_title: "Sign Out?", sw_signout_text: "Return to login screen.", sw_logout_btn: "Logout",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to inactivity.",
                 xl_farm_name: "Farm Name", xl_crop_damage: "Crop Damage", xl_incident_type: "Incident Type",
@@ -388,6 +389,7 @@
                 no_records_found: "Walang tumugmang record ng pamamahagi.", na_fallback: "N/A",
                 status_pending_distribution: "Naghihintay ng Pamamahagi", status_claimed: "Na-claim na",
                 sw_no_data_title: "Walang Datos", sw_no_data_text: "Walang na-export na datos. Paki-refresh muna ang ulat.",
+                sw_invalid_date_title: "Maling Saklaw ng Petsa", sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
                 sw_signout_title: "Mag-sign Out?", sw_signout_text: "Babalik sa login screen.", sw_logout_btn: "Mag-logout",
                 sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa hindi paggamit.",
                 xl_farm_name: "Pangalan ng Sakahan", xl_crop_damage: "Pinsala sa Pananim", xl_incident_type: "Uri ng Insidente",
@@ -425,8 +427,14 @@
             const damageTypeFilter = document.getElementById('filterDamageType').value;
             const severityFilter   = document.getElementById('filterSeverity').value;
             const barangayFilter   = document.getElementById('filterBarangay').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo   = document.getElementById('filterDateTo').value;
+            let dateFrom = document.getElementById('filterDateFrom').value;
+            let dateTo   = document.getElementById('filterDateTo').value;
+
+            if (dateFrom && dateTo && dateFrom > dateTo) {
+                Swal.fire({ icon: 'warning', title: t('sw_invalid_date_title'), text: t('sw_invalid_date_text'), confirmButtonColor: '#11542e' });
+                dateFrom = '';
+                dateTo = '';
+            }
 
             try {
                 const res = await fetch('../../api/mao/get_aid_ledger.php');
