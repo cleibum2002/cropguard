@@ -39,9 +39,38 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
         exit;
     }
     try {
+        require_once '../../config/mailer.php';
         $contact = $data->contact_number ?? null;
 
-        // If the admin typed a new password, update it. Otherwise, ignore the password column.
+        // Need the CURRENT email on file to know whether Admin is actually
+        // changing it - only then does verification apply. Every other edit
+        // (name, role, status, contact, password) never needs it.
+        $checkStmt = $conn->prepare("SELECT Email FROM users WHERE User_ID = ?");
+        $checkStmt->bind_param("i", $data->id);
+        $checkStmt->execute();
+        $currentUser = $checkStmt->get_result()->fetch_assoc();
+        $checkStmt->close();
+
+        if (!$currentUser) {
+            echo json_encode(['status' => 'error', 'message' => 'User not found.']);
+            exit;
+        }
+
+        // A different account already owning this email is always an error,
+        // whether it's already their real Email or someone else's unconfirmed
+        // Pending_Email.
+        $checkDupeStmt = $conn->prepare("SELECT User_ID FROM users WHERE (Email = ? OR Pending_Email = ?) AND User_ID != ?");
+        $checkDupeStmt->bind_param("ssi", $data->email, $data->email, $data->id);
+        $checkDupeStmt->execute();
+        if ($checkDupeStmt->get_result()->fetch_assoc()) {
+            echo json_encode(['status' => 'error', 'message' => 'Email address is already in use by another account.']);
+            exit;
+        }
+        $checkDupeStmt->close();
+
+        $emailChanged = strcasecmp($currentUser['Email'], $data->email) !== 0;
+
+        $hashed_password = null;
         if (!empty($data->password)) {
             $password_error = validatePasswordStrength($data->password);
             if ($password_error) {
@@ -49,17 +78,46 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
                 exit;
             }
             $hashed_password = password_hash($data->password, PASSWORD_DEFAULT);
-            $query = "UPDATE users SET Fullname=?, Email=?, Contact_Number=?, Password=?, Role=?, STATUS=? WHERE User_ID=?";
-            $stmt = $conn->prepare($query);
-            $stmt->bind_param("ssssssi", $data->fullname, $data->email, $contact, $hashed_password, $data->role, $data->status, $data->id);
+        }
+
+        if ($emailChanged) {
+            // Same pattern already proven on the Profile page's self-service email
+            // change: the real Email column stays untouched (this account keeps
+            // logging in with its current, already-verified address) until the new
+            // address is actually confirmed via the code sent to it. Admin typing
+            // a new email here only proves Admin typed it correctly - not that the
+            // intended recipient actually owns that inbox.
+            $new_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+
+            if ($hashed_password) {
+                $query = "UPDATE users SET Fullname=?, Contact_Number=?, Password=?, Role=?, STATUS=?, Pending_Email=?, Verification_Token=?, Verification_Token_Expires=? WHERE User_ID=?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("ssssssssi", $data->fullname, $contact, $hashed_password, $data->role, $data->status, $data->email, $new_code, $token_expires, $data->id);
+            } else {
+                $query = "UPDATE users SET Fullname=?, Contact_Number=?, Role=?, STATUS=?, Pending_Email=?, Verification_Token=?, Verification_Token_Expires=? WHERE User_ID=?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("sssssssi", $data->fullname, $contact, $data->role, $data->status, $data->email, $new_code, $token_expires, $data->id);
+            }
         } else {
-            $query = "UPDATE users SET Fullname=?, Email=?, Contact_Number=?, Role=?, STATUS=? WHERE User_ID=?";
-            $stmt = $conn->prepare($query);
-            $stmt->bind_param("sssssi", $data->fullname, $data->email, $contact, $data->role, $data->status, $data->id);
+            if ($hashed_password) {
+                $query = "UPDATE users SET Fullname=?, Email=?, Contact_Number=?, Password=?, Role=?, STATUS=? WHERE User_ID=?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("ssssssi", $data->fullname, $data->email, $contact, $hashed_password, $data->role, $data->status, $data->id);
+            } else {
+                $query = "UPDATE users SET Fullname=?, Email=?, Contact_Number=?, Role=?, STATUS=? WHERE User_ID=?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param("sssssi", $data->fullname, $data->email, $contact, $data->role, $data->status, $data->id);
+            }
         }
         
         if ($stmt->execute()) {
-            echo json_encode(['status' => 'success', 'message' => 'User updated successfully.']);
+            if ($emailChanged) {
+                sendVerificationEmail($data->email, $data->fullname, $new_code); // best-effort
+                echo json_encode(['status' => 'success', 'message' => "User updated. Their new email must be verified before they can log in with it."]);
+            } else {
+                echo json_encode(['status' => 'success', 'message' => 'User updated successfully.']);
+            }
         } else {
             if ($conn->errno === 1062) {
                 echo json_encode(['status' => 'error', 'message' => 'Email address is already in use by another account.']);
