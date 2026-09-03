@@ -117,6 +117,17 @@
                                 </tbody>
                         </table>
                     </div>
+                    <div id="paginationBar" class="hidden flex items-center justify-between px-6 py-4 border-t border-gray-100">
+                        <p id="paginationInfo" class="text-xs font-bold text-gray-400"></p>
+                        <div class="flex items-center gap-2">
+                            <button onclick="changePage(-1)" id="prevPageBtn" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-gray-600 rounded-lg text-xs font-bold transition-colors">
+                                <i class="fa-solid fa-chevron-left"></i> <span data-i18n="pagination_prev">Prev</span>
+                            </button>
+                            <button onclick="changePage(1)" id="nextPageBtn" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-gray-600 rounded-lg text-xs font-bold transition-colors">
+                                <span data-i18n="pagination_next">Next</span> <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -152,6 +163,7 @@
                 sw_yes_distributed: "Yes, Distributed",
                 sw_distributed_title: "Distributed!", sw_distributed_text: "Beneficiary claim recorded successfully.",
                 sw_error_title: "Error", sw_update_failed: "Failed to update record.", sw_server_conn_failed: "Server connection failed.",
+                sw_invalid_date_title: "Invalid Date Range", sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
                 sw_signout_title: "Sign Out?", sw_signout_text: "You will be returned to the login screen.", sw_yes_signout: "Yes, sign out",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
@@ -175,6 +187,7 @@
                 sw_yes_distributed: "Oo, Naipamahagi Na",
                 sw_distributed_title: "Naipamahagi Na!", sw_distributed_text: "Matagumpay na naitala ang claim ng benepisyaryo.",
                 sw_error_title: "Error", sw_update_failed: "Hindi na-update ang record.", sw_server_conn_failed: "Nabigo ang koneksyon sa server.",
+                sw_invalid_date_title: "Maling Saklaw ng Petsa", sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
                 sw_signout_title: "Mag-sign Out?", sw_signout_text: "Ibabalik ka sa login screen.", sw_yes_signout: "Oo, mag-sign out",
                 sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
@@ -336,11 +349,23 @@
             const damageTypeFilter = document.getElementById('filterDamageType').value;
             const severityFilter   = document.getElementById('filterSeverity').value;
             const barangayFilter   = document.getElementById('filterBarangay').value;
-            const dateFrom = document.getElementById('filterDateFrom').value;
-            const dateTo   = document.getElementById('filterDateTo').value;
+            let dateFrom = document.getElementById('filterDateFrom').value;
+            let dateTo   = document.getElementById('filterDateTo').value;
+
+            if (dateFrom && dateTo && dateFrom > dateTo) {
+                Swal.fire({ icon: 'warning', title: t('sw_invalid_date_title'), text: t('sw_invalid_date_text'), confirmButtonColor: '#11542e' });
+                dateFrom = '';
+                dateTo = '';
+            }
 
             const filtered = aidData.filter(i => {
-                const matchesSearch = i.farmer_name.toLowerCase().includes(q) || `aid-${i.dist_id}`.includes(q);
+                const idStr = (i.report_id || '').toString().toLowerCase();
+                const matchesSearch = i.farmer_name.toLowerCase().includes(q)
+                    || `aid-${i.dist_id}`.toLowerCase().includes(q)
+                    || `rep-${idStr}`.includes(q)
+                    || idStr.includes(q)
+                    || (i.crop_name || '').toLowerCase().includes(q)
+                    || (i.category || '').toLowerCase().includes(q);
                 const matchesStatus      = !statusFilter || i.status === statusFilter;
                 const matchesDamageType  = !damageTypeFilter || i.damage_type === damageTypeFilter;
                 const matchesSeverity    = !severityFilter || i.damage_severity === severityFilter;
