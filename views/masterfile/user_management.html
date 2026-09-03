@@ -243,6 +243,7 @@
                 modal_title_new_user: "New User", modal_title_add_user: "Add New User", modal_title_edit_user: "Edit User",
                 label_full_name: "Full Name", label_email_address: "Email Address", label_contact_number: "Contact Number",
                 label_password: "Password", placeholder_password_hint: "Leave blank to keep current (if editing)",
+                placeholder_password_required: "Required for new users",
                 status_active: "Active", status_inactive: "Inactive",
                 btn_cancel: "Cancel", btn_save_user: "Save User",
                 no_users_found: "No users found matching your filters.", label_no_email: "No email",
@@ -271,6 +272,7 @@
                 modal_title_new_user: "Bagong User", modal_title_add_user: "Magdagdag ng Bagong User", modal_title_edit_user: "I-edit ang User",
                 label_full_name: "Buong Pangalan", label_email_address: "Email Address", label_contact_number: "Contact Number",
                 label_password: "Password", placeholder_password_hint: "Iwanang blangko para panatilihin ang kasalukuyan (kung ine-edit)",
+                placeholder_password_required: "Kailangan para sa bagong user",
                 status_active: "Aktibo", status_inactive: "Hindi Aktibo",
                 btn_cancel: "Kanselahin", btn_save_user: "I-save ang User",
                 no_users_found: "Walang nahanap na user na tumutugma sa iyong mga filter.", label_no_email: "Walang email",
@@ -476,6 +478,7 @@
             document.getElementById("userEmail").value = "";
             document.getElementById("userContact").value = "";
             document.getElementById("userPassword").value = "";
+            document.getElementById("userPassword").placeholder = t('placeholder_password_required');
             document.getElementById("userRole").value = "Admin";
             document.getElementById("userStatus").value = "Active";
             document.getElementById("modal").classList.remove("hidden");
@@ -490,6 +493,7 @@
             const rawContact = (i.contact_number || '').replace(/\D/g, '');
             document.getElementById("userContact").value = rawContact.slice(-10);
             document.getElementById("userPassword").value = ""; 
+            document.getElementById("userPassword").placeholder = t('placeholder_password_hint');
             document.getElementById("userRole").value = i.role;
             document.getElementById("userStatus").value = i.status;
             document.getElementById("modal").classList.remove("hidden");
