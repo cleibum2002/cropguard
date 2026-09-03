@@ -76,6 +76,11 @@
                         <option value="Cash Aid" data-i18n="category_cash_aid">Cash Aid</option>
                         <option value="Equipment" data-i18n="category_equipment">Equipment</option>
                     </select>
+                    <select id="statusFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                        <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
+                        <option value="Active" data-i18n="status_active">Active</option>
+                        <option value="Inactive" data-i18n="status_inactive">Inactive</option>
+                    </select>
                 </div>
 
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
@@ -228,7 +233,7 @@
                 header_title: "Item Management", badge_admin_mode: "Admin Mode", role_admin: "Admin",
                 search_placeholder: "Search commodity name...", offline_ready: "Offline Mode Ready",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
-                filter_all_categories: "All Categories", category_seeds: "Seeds", category_fertilizer: "Fertilizer",
+                filter_all_categories: "All Categories", filter_all_statuses: "All Statuses", category_seeds: "Seeds", category_fertilizer: "Fertilizer",
                 category_cash_aid: "Cash Aid", category_equipment: "Equipment", category_general: "General",
                 page_title: "Resource Management", page_sub: "DA Region X — System-wide commodity and supply inventory.",
                 btn_add_commodity: "Add New Commodity",
@@ -258,7 +263,7 @@
                 header_title: "Pamamahala ng Item", badge_admin_mode: "Admin Mode", role_admin: "Admin",
                 search_placeholder: "Maghanap ng pangalan ng commodity...", offline_ready: "Handa ang Offline Mode",
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
-                filter_all_categories: "Lahat ng Kategorya", category_seeds: "Binhi", category_fertilizer: "Pataba",
+                filter_all_categories: "Lahat ng Kategorya", filter_all_statuses: "Lahat ng Katayuan", category_seeds: "Binhi", category_fertilizer: "Pataba",
                 category_cash_aid: "Tulong Pera", category_equipment: "Kagamitan", category_general: "Pangkalahatan",
                 page_title: "Pamamahala ng Rekurso", page_sub: "DA Region X — Sistemang imbentaryo ng commodity at suplay.",
                 btn_add_commodity: "Magdagdag ng Bagong Commodity",
@@ -459,6 +464,7 @@
         function filterTable() {
             const q = document.getElementById("searchInput").value.toLowerCase();
             const cat = document.getElementById("categoryFilter").value;
+            const statusFilter = document.getElementById("statusFilter").value;
             
             filteredData = allData.filter(i => {
                 const matchText = i.item_name.toLowerCase().includes(q)
@@ -470,7 +476,8 @@
                     || (i.status || '').toLowerCase().includes(q)
                     || String(i.id).includes(q);
                 const matchCat = (cat === "ALL") || (i.category === cat);
-                return matchText && matchCat;
+                const matchStatus = (statusFilter === "ALL") || (i.status === statusFilter);
+                return matchText && matchCat && matchStatus;
             });
             
             currentPage = 1;
