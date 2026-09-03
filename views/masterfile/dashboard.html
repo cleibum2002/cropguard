@@ -517,7 +517,7 @@
                 document.getElementById('statItems').innerText   = data.total_items ?? '--';
                 document.getElementById('statFarmers').innerText = (data.avg_response ?? '--') + (data.avg_response ? ' days' : '');
                 document.getElementById('statPending').innerText = data.total_pending ?? '--';
-                document.getElementById('statTechs').innerText   = (data.total_techs ?? '--') + (data.total_techs ? '/12' : '');
+                document.getElementById('statTechs').innerText   = (data.total_techs ?? '--') + (data.total_techs_all ? '/' + data.total_techs_all : '');
 
                 const queue = document.getElementById('queueTable');
                 if (data.queue && data.queue.length) {

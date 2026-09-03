@@ -26,6 +26,13 @@ try {
         "SELECT COUNT(*) FROM users WHERE Role = 'Technician' AND STATUS = 'Active'"
     )->fetch_row()[0] ?? 0;
 
+    // 3b. Total registered technicians regardless of status — the dashboard
+    // shows this as "X/Y" (active out of total). Previously Y was a hardcoded
+    // "12" in the frontend with no connection to real data at all.
+    $res['total_techs_all'] = $conn->query(
+        "SELECT COUNT(*) FROM users WHERE Role = 'Technician'"
+    )->fetch_row()[0] ?? 0;
+
     // 4. Avg response time in days
     $avgResult = $conn->query(
         "SELECT ROUND(AVG(DATEDIFF(NOW(), Report_Date)), 1) as avg_days 
