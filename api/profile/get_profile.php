@@ -13,7 +13,7 @@ $user_id = $_SESSION['User_ID'];
 
 try {
     $stmt = $conn->prepare(
-        "SELECT User_ID, Role, Fullname, Email, Contact_Number, RSBA_No, Assigned_Area, STATUS 
+        "SELECT User_ID, Role, Fullname, Email, Pending_Email, Contact_Number, RSBA_No, Assigned_Area, STATUS 
          FROM users WHERE User_ID = ?"
     );
     $stmt->bind_param("i", $user_id);

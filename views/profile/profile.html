@@ -345,6 +345,15 @@
                     document.getElementById('inputRole').value     = u.Role           ?? '';
                     document.getElementById('inputRSBA').value     = u.RSBA_No        ?? '';
                     document.getElementById('inputArea').value     = u.Assigned_Area  ?? '';
+
+                    // Someone (usually Admin, via User Management) changed this
+                    // account's email on a previous visit, and it's still waiting
+                    // to be confirmed - the person never actually saw the code
+                    // prompt at the time, since it only used to appear in that
+                    // same instant. Show it now, every time, until it's verified.
+                    if (u.Pending_Email) {
+                        promptVerifyNewEmail(u.Pending_Email);
+                    }
                 }
             } catch (e) { console.error('Load profile failed', e); }
         }
