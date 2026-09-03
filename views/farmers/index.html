@@ -751,6 +751,8 @@
                 sw_generic_error_title: "Error",
                 sw_connect_error_text: "Could not connect to server.",
                 sw_invalid_area_text: "Area size must be greater than 0.",
+                sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
+                sw_date_bounds_text: "Please pick a date between January 2024 and today. Filter cleared.",
                 sw_no_locations_title: "No Farm Locations", sw_no_locations_text: "You need to add a Farm Location before you can file a report.",
                 sw_rsbsa_title: "RSBSA Required", sw_go_to_profile: "Go to Profile",
                 sw_submitting_title: "Submitting...", sw_submitting_text: "Uploading your report and photos.",
@@ -830,6 +832,8 @@
                 sw_generic_error_title: "Error",
                 sw_connect_error_text: "Hindi makakonekta sa server.",
                 sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0.",
+                sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
+                sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon. Nabura ang filter.",
                 sw_no_locations_title: "Walang Lokasyon ng Sakahan", sw_no_locations_text: "Kailangan mong magdagdag ng Lokasyon ng Sakahan bago maghain ng ulat.",
                 sw_rsbsa_title: "Kailangan ang RSBSA", sw_go_to_profile: "Pumunta sa Profile",
                 sw_submitting_title: "Isinusumite...", sw_submitting_text: "Ina-upload ang iyong ulat at mga larawan.",
@@ -904,6 +908,8 @@
                 sw_generic_error_title: "Error",
                 sw_connect_error_text: "Dili maka-connect sa server.",
                 sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0.",
+                sw_invalid_date_text: "Ang petsa nga 'Gikan' dili pwede mag-una sa 'Hangtod'. Gi-clear ang filter.",
+                sw_date_bounds_text: "Pagpili og petsa tali sa Enero 2024 ug karon. Gi-clear ang filter.",
                 sw_no_locations_title: "Walay Lokasyon sa Uma", sw_no_locations_text: "Kinahanglan ka mag-dugang og Lokasyon sa Uma una ka makahimo og report.",
                 sw_rsbsa_title: "Gikinahanglan ang RSBSA", sw_go_to_profile: "Adto sa Profile",
                 sw_submitting_title: "Gina-submit...", sw_submitting_text: "Gina-upload ang imong report ug mga litrato.",
@@ -928,6 +934,17 @@
         let removedImageIds = [];  // ids of existingImages the farmer explicitly removed
 
         document.addEventListener("DOMContentLoaded", () => {
+            // Nothing about a report submission can be in the future, and nothing
+            // predates CropGuard's own existence — bound both fields so the date
+            // picker itself can't offer an impossible value.
+            (() => {
+                const todayStr = new Date().toISOString().split('T')[0];
+                const earliestStr = '2024-01-01';
+                ['filterDateFrom', 'filterDateTo'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.max = todayStr; el.min = earliestStr; }
+                });
+            })();
             loadDashboardData();
             fetchNotifications();
             loadCropOptions();
@@ -1414,8 +1431,22 @@
             const statusFilter     = document.getElementById('filterStatus').value;
             const damageTypeFilter = document.getElementById('filterDamageType').value;
             const severityFilter   = document.getElementById('filterSeverity').value;
-            const dateFrom         = document.getElementById('filterDateFrom').value;
-            const dateTo           = document.getElementById('filterDateTo').value;
+            let dateFrom = document.getElementById('filterDateFrom').value;
+            let dateTo   = document.getElementById('filterDateTo').value;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            if ((dateFrom && (dateFrom > todayStr || dateFrom < earliestStr)) || (dateTo && (dateTo > todayStr || dateTo < earliestStr))) {
+                Swal.fire({ icon: 'warning', title: t('sw_generic_error_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
+                document.getElementById('filterDateFrom').value = '';
+                document.getElementById('filterDateTo').value = '';
+                dateFrom = '';
+                dateTo = '';
+            } else if (dateFrom && dateTo && dateFrom > dateTo) {
+                Swal.fire({ icon: 'warning', title: t('sw_generic_error_title'), text: t('sw_invalid_date_text'), confirmButtonColor: '#11542e' });
+                dateFrom = '';
+                dateTo = '';
+            }
 
             filteredReportsData = allReportsData.filter(r => {
                 const matchesStatus = !statusFilter     || r.status === statusFilter;

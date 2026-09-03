@@ -30,6 +30,25 @@ try {
 
     $report = $result->fetch_assoc();
 
+    // The edit modal needs {id, path} pairs so it can both display existing
+    // photos and let the farmer remove a specific one (removeExistingPhoto()
+    // sends this id back as removed_image_ids[] on save). This was missing
+    // entirely before, which is why every Edit open showed zero saved photos
+    // regardless of what was actually in the database.
+    $imgStmt = $conn->prepare("SELECT Image_ID, Image_Path FROM damage_report_images WHERE Damage_Report_ID = ?");
+    $imgStmt->bind_param("i", $report_id);
+    $imgStmt->execute();
+    $imgResult = $imgStmt->get_result();
+    $images = [];
+    while ($imgRow = $imgResult->fetch_assoc()) {
+        $images[] = [
+            'id'   => (int)$imgRow['Image_ID'],
+            'path' => '../../' . $imgRow['Image_Path'],
+        ];
+    }
+    $imgStmt->close();
+    $report['images'] = $images;
+
     if (ob_get_length()) ob_clean();
     echo json_encode(['status' => 'success', 'data' => $report]);
 
