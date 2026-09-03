@@ -443,6 +443,15 @@
             
             const detail = data.report;
             const images = data.images || [];
+
+            // Archived reports are deliberately excluded from currentReports (see
+            // fetchReports()'s Status filter), so baseReport is undefined whenever
+            // this report is archived — the case when opening it via an old
+            // notification or a deep link. Fall back to raw columns from this API
+            // response instead of crashing on undefined.
+            const displayStatus = baseReport?.displayStatus || detail.Status || 'Archived';
+            const reportDate    = baseReport?.date || detail.Report_Date;
+            const reportArea    = baseReport?.area || detail.Affected_Area || '0.00';
             
             let galleryHTML = '';
             if (images.length > 0) {
@@ -502,7 +511,7 @@
                 </div>`;
 
             let decisionPanel = "";
-            if (baseReport.displayStatus === 'Pending') {
+            if (displayStatus === 'Pending') {
                 decisionPanel = `
                     <div class="bg-amber-50/50 p-8 rounded-[2rem] border border-amber-100 mt-8">
                         <h4 class="text-lg font-black text-gray-800 mb-2">${t('mao_verification_title')}</h4>
@@ -516,23 +525,23 @@
                 decisionPanel = `
                     <div class="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100 mt-8 flex items-center justify-center">
                         <p class="text-xs font-black text-blue-500 uppercase tracking-widest">
-                            <i class="fa-solid fa-lock mr-2"></i> ${t('report_locked_prefix')} ${reportStatusLabel(baseReport.displayStatus)}
+                            <i class="fa-solid fa-lock mr-2"></i> ${t('report_locked_prefix')} ${reportStatusLabel(displayStatus)}
                         </p>
                     </div>`;
             }
 
             const farmLocation = detail.Barangay ? detail.Barangay : t('location_missing');
             // Smart lookup for RSBA Number based on exact schema spelling
-            const rsbaDisplay = detail.RSBA_No || baseReport.RSBA_No || detail.rsba_no || t('unregistered');
+            const rsbaDisplay = detail.RSBA_No || baseReport?.RSBA_No || detail.rsba_no || t('unregistered');
 
             document.getElementById('detailPanel').innerHTML = `
                 <div class="max-w-4xl mx-auto pb-10">
                     <div class="flex justify-between items-center mb-8 pb-6 border-b border-gray-100">
                         <div>
                             <h3 class="text-3xl font-black text-gray-800 tracking-tighter">${t('validation_profile_title')} #REP-${id}</h3>
-                            <p class="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">${t('submitted_label')}: ${baseReport.date || t('na_fallback')}</p>
+                            <p class="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">${t('submitted_label')}: ${reportDate || t('na_fallback')}</p>
                         </div>
-                        <span class="px-5 py-2 rounded-full text-[10px] font-black uppercase ${getStatusStyle(baseReport.displayStatus)}">${reportStatusLabel(baseReport.displayStatus)}</span>
+                        <span class="px-5 py-2 rounded-full text-[10px] font-black uppercase ${getStatusStyle(displayStatus)}">${reportStatusLabel(displayStatus)}</span>
                     </div>
 
                     <!-- Farmer Identity Block -->
@@ -541,7 +550,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${t('full_name_label')}</p>
-                                <p class="text-sm font-black text-gray-800">${detail.FarmerName || baseReport.farmer}</p>
+                                <p class="text-sm font-black text-gray-800">${detail.FarmerName || baseReport?.farmer || t('na_fallback')}</p>
                             </div>
                             <div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${t('rsbsa_number_label')}</p>
@@ -558,15 +567,15 @@
                     <div class="grid grid-cols-3 gap-4 mb-8">
                         <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('crop_type_label')}</p>
-                            <p class="text-sm font-bold text-[#11542e]">${detail.Crop_Name || baseReport.crop_name}</p>
+                            <p class="text-sm font-bold text-[#11542e]">${detail.Crop_Name || baseReport?.crop_name || t('na_fallback')}</p>
                         </div>
                         <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('reported_damage_label')}</p>
-                            <p class="text-sm font-bold text-red-600">${detail.Damage_Type || baseReport.damage_type}</p>
+                            <p class="text-sm font-bold text-red-600">${detail.Damage_Type || baseReport?.damage_type || t('na_fallback')}</p>
                         </div>
                         <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('affected_area_label')}</p>
-                            <p class="text-sm font-bold text-gray-800">${baseReport.area || detail.Area_Size || '0.00'} Ha</p>
+                            <p class="text-sm font-bold text-gray-800">${reportArea} Ha</p>
                         </div>
                     </div>
                     
