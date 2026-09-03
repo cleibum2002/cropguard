@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/i18n.js?v=1"></script>
 
     <script>
         fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
@@ -148,7 +148,6 @@
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_id">ID</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_commodity_details">Commodity Details</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_category">Category</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_unit_price">Unit Price</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_current_stock">Current Stock</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_status">Status</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
@@ -186,7 +185,7 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_category">Category</label>
-                        <select id="itemCat" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm">
+                        <select id="itemCat" onchange="syncCashAidFields()" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm">
                             <option value="Seeds" data-i18n="category_seeds">Seeds</option>
                             <option value="Fertilizer" data-i18n="category_fertilizer">Fertilizer</option>
                             <option value="Cash Aid" data-i18n="category_cash_aid">Cash Aid</option>
@@ -197,14 +196,11 @@
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_unit_type">Unit Type</label>
                         <input type="text" id="itemUnit" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Bags, Sacks, PHP">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_unit_price_php">Unit Price (₱)</label>
-                        <input type="number" step="0.01" id="itemPrice" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="0.00">
+                    <div class="col-span-2">
+                        <label id="stockLabel" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_initial_stock">Initial Stock</label>
+                        <input type="number" step="0.01" min="0" id="itemStock" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="0">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_initial_stock">Initial Stock</label>
-                        <input type="number" step="0.01" id="itemStock" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="0">
-                    </div>
+                    <input type="hidden" id="itemPrice" value="0">
                     <div class="col-span-2">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_description">Description</label>
                         <textarea id="itemDesc" rows="2" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Enter details..."></textarea>
@@ -250,6 +246,8 @@
                 label_showing: "SHOWING", label_to: "TO", label_of: "OF",
                 sw_error_title: "Error", sw_failed_connect_db: "Failed to connect to the database.",
                 sw_required_title: "Required", sw_required_commodity_name: "Please enter the commodity name.",
+                sw_negative_stock: "Stock cannot be a negative number.",
+                label_qty_php: "QTY (PHP)",
                 sw_saved_title: "Saved!", sw_saved_text: "Item saved successfully.", sw_server_failed: "Server connection failed.",
                 sw_deactivate_title: "Deactivate Commodity?", sw_deactivate_text: "This will set the status to Inactive.", sw_yes_deactivate: "Yes, Deactivate",
                 sw_deactivated_title: "Deactivated!", sw_deactivated_text: "Commodity is now Inactive.",
@@ -278,6 +276,8 @@
                 label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA",
                 sw_error_title: "Error", sw_failed_connect_db: "Nabigong kumonekta sa database.",
                 sw_required_title: "Kailangan", sw_required_commodity_name: "Pakilagay ang pangalan ng commodity.",
+                sw_negative_stock: "Hindi maaaring negatibo ang stock.",
+                label_qty_php: "DAMI (PHP)",
                 sw_saved_title: "Na-save na!", sw_saved_text: "Matagumpay na na-save ang item.", sw_server_failed: "Nabigo ang koneksyon sa server.",
                 sw_deactivate_title: "I-deactivate ang Commodity?", sw_deactivate_text: "Itatakda nito ang katayuan sa Hindi Aktibo.", sw_yes_deactivate: "Oo, I-deactivate",
                 sw_deactivated_title: "Na-deactivate na!", sw_deactivated_text: "Ang commodity ay Hindi na Aktibo ngayon.",
@@ -408,7 +408,7 @@
 
             tbody.innerHTML = items.length
                 ? ""
-                : `<tr><td colspan="7" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_commodities_found')}</td></tr>`;
+                : `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_commodities_found')}</td></tr>`;
 
             items.forEach(item => {
                 const statusColor = item.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
@@ -427,9 +427,6 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                             <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold">${categoryLabel(item.category)}</span>
-                        </td>
-                        <td class="px-6 py-4 text-right font-mono font-bold text-gray-700">
-                            ₱${displayPrice}
                         </td>
                         <td class="px-6 py-4 text-right">
                             <span class="font-black text-lg ${stockColor}">${displayStock}</span> <span class="text-[10px] font-bold text-gray-400 uppercase">${displayUnit}</span>
@@ -464,7 +461,14 @@
             const cat = document.getElementById("categoryFilter").value;
             
             filteredData = allData.filter(i => {
-                const matchText = i.item_name.toLowerCase().includes(q);
+                const matchText = i.item_name.toLowerCase().includes(q)
+                    || (i.description || '').toLowerCase().includes(q)
+                    || (i.unit || '').toLowerCase().includes(q)
+                    || categoryLabel(i.category).toLowerCase().includes(q)
+                    || (i.category || '').toLowerCase().includes(q)
+                    || itemStatusLabel(i.status).toLowerCase().includes(q)
+                    || (i.status || '').toLowerCase().includes(q)
+                    || String(i.id).includes(q);
                 const matchCat = (cat === "ALL") || (i.category === cat);
                 return matchText && matchCat;
             });
@@ -475,16 +479,38 @@
 
         function changePage(dir) { currentPage += dir; renderTable(); }
 
+        // Cash Aid represents a pure peso amount, not a physical quantity - so
+        // its "stock" is really "how many pesos", its unit is always "PHP" (not
+        // Bags/Sacks/whatever was typed before), and its price is fixed at 1 so
+        // stock x price in the summary cards equals the real peso figure.
+        function syncCashAidFields() {
+            const cat = document.getElementById('itemCat').value;
+            const stockLabel = document.getElementById('stockLabel');
+            const unitInput = document.getElementById('itemUnit');
+            if (cat === 'Cash Aid') {
+                stockLabel.innerText = t('label_qty_php');
+                unitInput.value = 'PHP';
+                unitInput.readOnly = true;
+                unitInput.classList.add('opacity-60', 'cursor-not-allowed');
+                document.getElementById('itemPrice').value = '1';
+            } else {
+                stockLabel.innerText = t('label_initial_stock');
+                unitInput.readOnly = false;
+                unitInput.classList.remove('opacity-60', 'cursor-not-allowed');
+            }
+        }
+
         function openModal() {
             document.getElementById("modalTitle").innerText = t('btn_add_commodity');
             document.getElementById("editId").value = "";
             document.getElementById("itemName").value = "";
             document.getElementById("itemCat").value = "Seeds";
             document.getElementById("itemUnit").value = "Bags";
-            document.getElementById("itemPrice").value = "0.00";
+            document.getElementById("itemPrice").value = "0";
             document.getElementById("itemStock").value = "0";
             document.getElementById("itemDesc").value = "";
             document.getElementById("itemStatus").value = "Active";
+            syncCashAidFields();
             document.getElementById("modal").classList.remove("hidden");
         }
 
@@ -494,10 +520,13 @@
             document.getElementById("itemName").value = i.item_name;
             document.getElementById("itemCat").value = i.category || "Seeds";
             document.getElementById("itemUnit").value = i.unit || "";
+            document.getElementById("itemUnit").readOnly = false;
+            document.getElementById("itemUnit").classList.remove('opacity-60', 'cursor-not-allowed');
             document.getElementById("itemPrice").value = i.price || 0;
             document.getElementById("itemStock").value = i.current_stock || 0;
             document.getElementById("itemDesc").value = i.description || "";
             document.getElementById("itemStatus").value = i.status;
+            syncCashAidFields();
             document.getElementById("modal").classList.remove("hidden");
         }
 
@@ -505,12 +534,16 @@
 
         async function saveData() {
             const id = document.getElementById("editId").value;
+            const stockVal = parseFloat(document.getElementById("itemStock").value);
+            if (isNaN(stockVal) || stockVal < 0) {
+                return Swal.fire(t('sw_required_title'), t('sw_negative_stock'), 'warning');
+            }
             const data = {
                 item_name: document.getElementById("itemName").value.trim(),
                 category: document.getElementById("itemCat").value,
                 unit: document.getElementById("itemUnit").value.trim() || 'Unit',
                 price: parseFloat(document.getElementById("itemPrice").value) || 0,
-                current_stock: parseFloat(document.getElementById("itemStock").value) || 0,
+                current_stock: stockVal,
                 description: document.getElementById("itemDesc").value.trim(),
                 status: document.getElementById("itemStatus").value
             };
@@ -603,7 +636,7 @@
         resetIdleTimer();
     </script>
 
-    <script src="../../assets/js/navbar_admin.js"></script>
+    <script src="../../assets/js/navbar_admin.js?v=1"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('items'); 
