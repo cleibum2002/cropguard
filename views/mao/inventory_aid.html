@@ -386,12 +386,17 @@
 
             const filtered = aidData.filter(i => {
                 const idStr = (i.report_id || '').toString().toLowerCase();
+                const qtyUnitStr = `${i.quantity} ${i.unit}`.toLowerCase();
                 const matchesSearch = i.farmer_name.toLowerCase().includes(q)
                     || `aid-${i.dist_id}`.toLowerCase().includes(q)
                     || `rep-${idStr}`.includes(q)
                     || idStr.includes(q)
                     || (i.crop_name || '').toLowerCase().includes(q)
-                    || (i.category || '').toLowerCase().includes(q);
+                    || (i.category || '').toLowerCase().includes(q)
+                    || qtyUnitStr.includes(q)
+                    || (i.admin_name || '').toLowerCase().includes(q)
+                    || aidStatusLabel(i.status).toLowerCase().includes(q)
+                    || (i.status || '').toLowerCase().includes(q);
                 const matchesStatus      = !statusFilter || i.status === statusFilter;
                 const matchesDamageType  = !damageTypeFilter || i.damage_type === damageTypeFilter;
                 const matchesSeverity    = !severityFilter || i.damage_severity === severityFilter;
