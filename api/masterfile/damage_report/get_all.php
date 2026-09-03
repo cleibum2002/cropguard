@@ -12,6 +12,15 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'
 try {
     include_once '../../config/db_connection.php'; // Adjust path if needed
 
+    // MAO's version of this same file always excludes Archived (MAO has no
+    // archive view at all). Admin's damage_reports.html, on the other hand,
+    // has a real "View Archive" toggle and an "Archived" status filter option
+    // — both of which need this endpoint to actually return archived rows
+    // when asked. Previously the WHERE clause was hardcoded and ignored the
+    // request entirely, so both features silently always returned nothing.
+    $showArchived = isset($_GET['view']) && $_GET['view'] === 'archived';
+    $statusCondition = $showArchived ? "dr.Status = 'Archived'" : "dr.Status != 'Archived'";
+
     // Notice we now JOIN the 'users' table twice! Once for the Farmer, once for the Tech.
     $query = "
         SELECT 
@@ -33,7 +42,7 @@ try {
         LEFT JOIN crop c ON dr.Crop_ID = c.Crop_ID
         LEFT JOIN users t ON dr.Technician_ID = t.User_ID AND t.Role = 'Technician'
         LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
-        WHERE dr.Status != 'Archived'
+        WHERE $statusCondition
         ORDER BY dr.Damage_Report_ID DESC
     ";
     
