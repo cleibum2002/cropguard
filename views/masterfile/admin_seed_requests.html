@@ -54,6 +54,12 @@
                     <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or seed..." data-i18n-placeholder="search_placeholder"
                         class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
                 </div>
+                <select id="statusFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                    <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
+                    <option value="Pending" data-i18n="status_pending">Pending</option>
+                    <option value="Approved" data-i18n="status_approved">Approved</option>
+                    <option value="Rejected" data-i18n="status_rejected">Rejected</option>
+                </select>
                 <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
                     <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
                         <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
@@ -279,6 +285,7 @@
                 btn_cancel: "Cancel", btn_submit_decision: "Submit Decision",
                 no_seed_requests_found: "No seed requests found.",
                 status_pending: "Pending", status_approved: "Approved", status_rejected: "Rejected",
+                filter_all_statuses: "All Statuses",
                 btn_process: "Process", btn_view: "View", label_date: "Date",
                 label_in_progress: "In Progress", label_rejected: "Rejected",
                 label_showing: "SHOWING", label_to: "TO", label_of: "OF",
@@ -325,6 +332,7 @@
                 btn_cancel: "Kanselahin", btn_submit_decision: "Isumite ang Desisyon",
                 no_seed_requests_found: "Walang nahanap na kahilingan sa binhi.",
                 status_pending: "Naghihintay", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+                filter_all_statuses: "Lahat ng Katayuan",
                 btn_process: "Iproseso", btn_view: "Tingnan", label_date: "Petsa",
                 label_in_progress: "Isinasagawa", label_rejected: "Tinanggihan",
                 label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA",
@@ -446,12 +454,28 @@
             document.getElementById("nextBtn").disabled = end >= filteredData.length;
         }
 
+        // Same status-bucket logic as seedReqStatusLabel(): several raw DB
+        // statuses ('Approved by Admin', 'Ready for Pickup', 'Claimed') all
+        // count as "Approved" here, matching what the table already shows.
+        function seedReqStatusBucket(status) {
+            if (status === 'Pending') return 'Pending';
+            if (status === 'Approved by Admin' || status === 'Ready for Pickup' || status === 'Claimed' || status === 'Approved') return 'Approved';
+            return 'Rejected';
+        }
+
         function filterTable() {
             const q = document.getElementById("searchInput").value.toLowerCase();
-            filteredData = allData.filter(i =>
-                (i.Farmer_Name    && i.Farmer_Name.toLowerCase().includes(q)) ||
-                (i.Requested_Seed && i.Requested_Seed.toLowerCase().includes(q))
-            );
+            const statusFilter = document.getElementById("statusFilter").value;
+            filteredData = allData.filter(i => {
+                const matchText = (i.Farmer_Name    && i.Farmer_Name.toLowerCase().includes(q))
+                    || (i.Requested_Seed && i.Requested_Seed.toLowerCase().includes(q))
+                    || (i.Description   && i.Description.toLowerCase().includes(q))
+                    || seedReqStatusLabel(i.Status).toLowerCase().includes(q)
+                    || `req-${String(i.Request_ID).padStart(3, '0')}`.includes(q)
+                    || String(i.Request_ID).includes(q);
+                const matchStatus = (statusFilter === "ALL") || (seedReqStatusBucket(i.Status) === statusFilter);
+                return matchText && matchStatus;
+            });
             currentPage = 1;
             renderTable();
         }
