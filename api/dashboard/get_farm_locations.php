@@ -28,7 +28,8 @@ try {
                 c.Commodity_Type 
             FROM farm_location f 
             LEFT JOIN crop_type c ON f.Type_ID = c.Type_ID 
-            WHERE f.Farmer_ID = ? AND f.Is_Archived = 0";
+            WHERE f.Farmer_ID = ? AND f.Is_Archived = 0
+            ORDER BY f.Location_ID DESC";
             
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("i", $farmer_id);
