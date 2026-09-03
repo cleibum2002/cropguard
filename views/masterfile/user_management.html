@@ -88,7 +88,7 @@
                     </select>
                     <select id="statusFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
                         <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
-                        <option value="Active" data-i18n="status_active">Active</option>
+                        <option value="Active" data-i18n="status_active" selected>Active</option>
                         <option value="Inactive" data-i18n="status_inactive">Inactive</option>
                     </select>
                 </div>
@@ -248,6 +248,9 @@
                 no_users_found: "No users found matching your filters.", label_no_email: "No email",
                 sw_required_title: "Required", sw_required_name_email: "Please enter full name and email.", sw_required_password: "Please assign a password for the new user.",
                 sw_saved_title: "Saved!", sw_error_title: "Error", sw_server_failed: "Server connection failed.",
+                title_deactivate: "Deactivate", title_activate: "Activate",
+                sw_activate_title: "Restore Access?", sw_activate_text: "This will reactivate the user's account.", sw_yes_activate: "Yes, Activate",
+                sw_activated_title: "Activated!", sw_activated_text: "User access restored.",
                 sw_revoke_title: "Revoke Access?", sw_revoke_text: "This will deactivate the user's account.", sw_yes_deactivate: "Yes, Deactivate",
                 sw_deactivated_title: "Deactivated!", sw_deactivated_text: "User access removed.", sw_failed_connect: "Failed to connect to the server.",
                 sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
@@ -273,6 +276,9 @@
                 no_users_found: "Walang nahanap na user na tumutugma sa iyong mga filter.", label_no_email: "Walang email",
                 sw_required_title: "Kailangan", sw_required_name_email: "Ilagay ang buong pangalan at email.", sw_required_password: "Magtalaga ng password para sa bagong user.",
                 sw_saved_title: "Na-save na!", sw_error_title: "Error", sw_server_failed: "Nabigo ang koneksyon sa server.",
+                title_deactivate: "I-deactivate", title_activate: "I-activate",
+                sw_activate_title: "Ibalik ang Access?", sw_activate_text: "Ire-reactivate nito ang account ng user.", sw_yes_activate: "Oo, I-activate",
+                sw_activated_title: "Na-activate na!", sw_activated_text: "Naibalik na ang access ng user.",
                 sw_revoke_title: "Bawiin ang Access?", sw_revoke_text: "I-de-deactivate nito ang account ng user.", sw_yes_deactivate: "Oo, I-deactivate",
                 sw_deactivated_title: "Na-deactivate na!", sw_deactivated_text: "Naalis na ang access ng user.", sw_failed_connect: "Nabigong kumonekta sa server.",
                 sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
@@ -413,9 +419,13 @@
                                 <button onclick="editItem(${item.id})" class="w-9 h-9 bg-blue-50 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all flex items-center justify-center">
                                     <i class="fa-solid fa-pen-to-square text-xs"></i>
                                 </button>
-                                <button onclick="deleteItem(${item.id})" class="w-9 h-9 bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
+                                ${item.status === 'Active' ? `
+                                <button onclick="deleteItem(${item.id})" class="w-9 h-9 bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center" title="${t('title_deactivate')}">
                                     <i class="fa-solid fa-trash-can text-xs"></i>
-                                </button>
+                                </button>` : `
+                                <button onclick="activateItem(${item.id})" class="w-9 h-9 bg-green-50 text-green-500 rounded-xl hover:bg-green-500 hover:text-white transition-all flex items-center justify-center" title="${t('title_activate')}">
+                                    <i class="fa-solid fa-rotate-left text-xs"></i>
+                                </button>`}
                             </div>
                         </td>
                     </tr>`;
@@ -434,9 +444,15 @@
             const statusFilter = document.getElementById("statusFilter").value;
 
             filteredData = allData.filter(i => {
-                // 1. Does the text match the name or email?
+                // 1. Does the text match name, email, contact number, role, status, or ID?
                 const matchesSearch = i.fullname.toLowerCase().includes(searchQuery) || 
-                                      (i.email && i.email.toLowerCase().includes(searchQuery));
+                                      (i.email && i.email.toLowerCase().includes(searchQuery)) ||
+                                      (i.contact_number && i.contact_number.toLowerCase().includes(searchQuery)) ||
+                                      roleLabel(i.role).toLowerCase().includes(searchQuery) ||
+                                      (i.role && i.role.toLowerCase().includes(searchQuery)) ||
+                                      (i.status === 'Active' ? t('status_active') : t('status_inactive')).toLowerCase().includes(searchQuery) ||
+                                      (i.status && i.status.toLowerCase().includes(searchQuery)) ||
+                                      String(i.id).includes(searchQuery);
                 
                 // 2. Does the role match the dropdown? (If 'ALL' is selected, it automatically matches)
                 const matchesRole = (roleFilter === "ALL") || (i.role === roleFilter);
@@ -516,6 +532,45 @@
             } catch (e) {
                 Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error');
             }
+        }
+
+        function activateItem(id) {
+            const i = allData.find(x => x.id == id);
+            if (!i) return;
+            Swal.fire({
+                title: t('sw_activate_title'),
+                text: t('sw_activate_text'),
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                confirmButtonText: t('sw_yes_activate')
+            }).then(r => {
+                if (r.isConfirmed) {
+                    fetch(API_URL + "update.php", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            id: i.id,
+                            fullname: i.fullname,
+                            email: i.email,
+                            contact_number: i.contact_number,
+                            role: i.role,
+                            status: 'Active'
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(res => {
+                        if (res.status === 'success') {
+                            Swal.fire({ icon: 'success', title: t('sw_activated_title'), text: t('sw_activated_text'), showConfirmButton: false, timer: 1500 });
+                            loadTable();
+                        } else {
+                            Swal.fire(t('sw_error_title'), res.message, 'error');
+                        }
+                    }).catch(() => {
+                        Swal.fire(t('sw_error_title'), t('sw_failed_connect'), 'error');
+                    });
+                }
+            });
         }
 
         function deleteItem(id) {
