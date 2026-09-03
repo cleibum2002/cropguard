@@ -462,7 +462,7 @@
         const specDateStr = document.getElementById('specificDate').value;
 
         if (specDateStr) {
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr = '2024-01-01';
             if (specDateStr > todayStr || specDateStr < earliestStr) {
                 Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
@@ -670,7 +670,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadAdminNavbar('sys_reports');
         initI18n();
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
         const earliestStr = '2024-01-01';
         const el = document.getElementById('specificDate');
         if (el) { el.max = todayStr; el.min = earliestStr; }

@@ -224,7 +224,7 @@
                 clearTimeout(searchDebounceTimer);
                 searchDebounceTimer = setTimeout(() => loadLogs(1), 400);
             });
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr = '2024-01-01';
             ['dateFrom', 'dateTo'].forEach(id => {
                 const el = document.getElementById(id);
@@ -255,7 +255,7 @@
             let from = document.getElementById('dateFrom').value;
             let to   = document.getElementById('dateTo').value;
 
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr = '2024-01-01';
             if ((from && (from > todayStr || from < earliestStr)) || (to && (to > todayStr || to < earliestStr))) {
                 Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });

@@ -222,7 +222,7 @@
             // Nothing about a distribution date can be in the future, and nothing
             // meaningful predates CropGuard's own existence — bound both fields
             // so the date picker itself can't offer an impossible value.
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr = '2024-01-01';
             ['filterDateFrom', 'filterDateTo'].forEach(id => {
                 const el = document.getElementById(id);
@@ -370,7 +370,7 @@
             let dateFrom = document.getElementById('filterDateFrom').value;
             let dateTo   = document.getElementById('filterDateTo').value;
 
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr = '2024-01-01';
             if ((dateFrom && (dateFrom > todayStr || dateFrom < earliestStr)) || (dateTo && (dateTo > todayStr || dateTo < earliestStr))) {
                 Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });

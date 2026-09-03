@@ -432,7 +432,7 @@
             let dateFrom = document.getElementById('filterDateFrom').value;
             let dateTo   = document.getElementById('filterDateTo').value;
 
-            const todayStr2 = new Date().toISOString().split('T')[0];
+            const todayStr2 = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr2 = '2024-01-01';
             if ((dateFrom && (dateFrom > todayStr2 || dateFrom < earliestStr2)) || (dateTo && (dateTo > todayStr2 || dateTo < earliestStr2))) {
                 Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
@@ -651,7 +651,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             generateReport();
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             const earliestStr = '2024-01-01';
             ['filterDateFrom', 'filterDateTo'].forEach(id => {
                 const el = document.getElementById(id);
