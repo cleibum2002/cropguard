@@ -169,7 +169,9 @@
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
                 filter_barangay_label: "Barangay", filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear Filters",
-                filter_all_types: "All Types", filter_all_severities: "All Severities", filter_all_barangays: "All Barangays", filter_all_statuses: "All Statuses"
+                filter_all_types: "All Types", filter_all_severities: "All Severities", filter_all_barangays: "All Barangays", filter_all_statuses: "All Statuses",
+                sw_date_bounds_title: "Invalid Date", sw_date_bounds_text: "Please pick a date between January 2024 and today. Filter cleared.",
+                pagination_prev: "Prev", pagination_next: "Next", pagination_showing: "Showing", pagination_of: "of"
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
@@ -193,7 +195,9 @@
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
                 filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
                 filter_barangay_label: "Barangay", filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear ang mga Filter",
-                filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan", filter_all_barangays: "Lahat ng Barangay", filter_all_statuses: "Lahat ng Katayuan"
+                filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan", filter_all_barangays: "Lahat ng Barangay", filter_all_statuses: "Lahat ng Katayuan",
+                sw_date_bounds_title: "Hindi Wastong Petsa", sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon. Nabura ang filter.",
+                pagination_prev: "Nakaraan", pagination_next: "Susunod", pagination_showing: "Ipinapakita", pagination_of: "ng"
             }
         };
 
@@ -213,7 +217,19 @@
 
         let aidData = [];
 
-        document.addEventListener("DOMContentLoaded", loadAidList);
+        document.addEventListener("DOMContentLoaded", () => {
+            loadAidList();
+            // Nothing about a distribution date can be in the future, and nothing
+            // meaningful predates CropGuard's own existence — bound both fields
+            // so the date picker itself can't offer an impossible value.
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            ['filterDateFrom', 'filterDateTo'].forEach(id => {
+                const el = document.getElementById(id);
+                el.max = todayStr;
+                el.min = earliestStr;
+            });
+        });
 
         // 2. Fetch the newly created Aid Ledger from the database
         async function loadAidList() {
@@ -223,7 +239,9 @@
                 if (response.status === 'success') {
                     aidData = response.data;
                     populateFilterOptions();
-                    renderTable(aidData);
+                    filteredAidData = aidData;
+                    currentPage = 1;
+                    renderPage();
                 }
             } catch (e) { 
                 console.error("Load failed", e); 
@@ -352,7 +370,15 @@
             let dateFrom = document.getElementById('filterDateFrom').value;
             let dateTo   = document.getElementById('filterDateTo').value;
 
-            if (dateFrom && dateTo && dateFrom > dateTo) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            if ((dateFrom && (dateFrom > todayStr || dateFrom < earliestStr)) || (dateTo && (dateTo > todayStr || dateTo < earliestStr))) {
+                Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
+                document.getElementById('filterDateFrom').value = '';
+                document.getElementById('filterDateTo').value = '';
+                dateFrom = '';
+                dateTo = '';
+            } else if (dateFrom && dateTo && dateFrom > dateTo) {
                 Swal.fire({ icon: 'warning', title: t('sw_invalid_date_title'), text: t('sw_invalid_date_text'), confirmButtonColor: '#11542e' });
                 dateFrom = '';
                 dateTo = '';
@@ -377,7 +403,41 @@
 
                 return matchesSearch && matchesStatus && matchesDamageType && matchesSeverity && matchesBarangay && matchesDateFrom && matchesDateTo;
             });
-            renderTable(filtered);
+            filteredAidData = filtered;
+            currentPage = 1; // any filter change starts back on page 1
+            renderPage();
+        }
+
+        // 7. Pagination — 5 rows per page, so the filters and table both stay
+        // visible without scrolling on a normal screen.
+        const PAGE_SIZE = 5;
+        let filteredAidData = [];
+        let currentPage = 1;
+
+        function renderPage() {
+            const totalPages = Math.max(1, Math.ceil(filteredAidData.length / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageData = filteredAidData.slice(start, start + PAGE_SIZE);
+            renderTable(pageData);
+
+            const bar = document.getElementById('paginationBar');
+            if (filteredAidData.length === 0) {
+                bar.classList.add('hidden');
+                return;
+            }
+            bar.classList.remove('hidden');
+            const shownFrom = start + 1;
+            const shownTo = Math.min(start + PAGE_SIZE, filteredAidData.length);
+            document.getElementById('paginationInfo').innerText =
+                `${t('pagination_showing')} ${shownFrom}-${shownTo} ${t('pagination_of')} ${filteredAidData.length}`;
+            document.getElementById('prevPageBtn').disabled = currentPage <= 1;
+            document.getElementById('nextPageBtn').disabled = currentPage >= totalPages;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderPage();
         }
 
         // 6. Secure Logout

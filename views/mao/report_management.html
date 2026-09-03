@@ -162,7 +162,7 @@
             sw_updated_title: "Updated!", sw_updated_text: "Workflow updated successfully.",
             sw_update_failed: "Update failed", sw_server_error: "Server failed to respond",
             sw_invalid_date_title: "Invalid Date Range", sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
-            sw_invalid_date_title: "Invalid Date Range", sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
+            sw_date_bounds_title: "Invalid Date", sw_date_bounds_text: "Please pick a date between January 2024 and today. Filter cleared.",
             notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
             filter_damage_type_label: "Damage Type", filter_severity_label: "Severity", filter_barangay_label: "Barangay",
             filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear Filters",
@@ -200,7 +200,7 @@
             sw_updated_title: "Na-update!", sw_updated_text: "Matagumpay na na-update ang workflow.",
             sw_update_failed: "Nabigo ang pag-update", sw_server_error: "Hindi tumugon ang server",
             sw_invalid_date_title: "Maling Saklaw ng Petsa", sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
-            sw_invalid_date_title: "Maling Saklaw ng Petsa", sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
+            sw_date_bounds_title: "Hindi Wastong Petsa", sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon. Nabura ang filter.",
             notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
             filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan", filter_barangay_label: "Barangay",
             filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear ang mga Filter",
@@ -216,6 +216,17 @@
 
     document.addEventListener("DOMContentLoaded", async () => {
         await fetchReports();
+
+        // Nothing about a report submission can be in the future, and nothing
+        // predates CropGuard's own existence — bound both fields so the date
+        // picker itself can't offer an impossible value.
+        const todayStr = new Date().toISOString().split('T')[0];
+        const earliestStr = '2024-01-01';
+        ['filterDateFrom', 'filterDateTo'].forEach(id => {
+            const el = document.getElementById(id);
+            el.max = todayStr;
+            el.min = earliestStr;
+        });
 
         // Deep link support: report_management.html?id=62 jumps straight to
         // that report's validation profile (used by the Dashboard's clickable
@@ -370,7 +381,15 @@
         let dateFrom = document.getElementById('filterDateFrom').value;
         let dateTo   = document.getElementById('filterDateTo').value;
 
-        if (dateFrom && dateTo && dateFrom > dateTo) {
+        const todayStr2 = new Date().toISOString().split('T')[0];
+        const earliestStr2 = '2024-01-01';
+        if ((dateFrom && (dateFrom > todayStr2 || dateFrom < earliestStr2)) || (dateTo && (dateTo > todayStr2 || dateTo < earliestStr2))) {
+            Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            dateFrom = '';
+            dateTo = '';
+        } else if (dateFrom && dateTo && dateFrom > dateTo) {
             Swal.fire({ icon: 'warning', title: t('sw_invalid_date_title'), text: t('sw_invalid_date_text'), confirmButtonColor: '#11542e' });
             dateFrom = '';
             dateTo = '';
