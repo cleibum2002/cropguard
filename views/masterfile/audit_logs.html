@@ -174,7 +174,9 @@
                 action_validate_report: "Validate Report", action_approve_report: "Approve Report", action_mark_claimed: "Mark as Claimed",
                 action_submit_inspection: "Submit Inspection",
                 sw_logout_title: "Logout?",
-                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                sw_invalid_date_title: "Invalid Date Range", sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
+                sw_date_bounds_title: "Invalid Date", sw_date_bounds_text: "Please pick a date between January 2024 and today. Filter cleared."
             },
             tl: {
                 header_title: "Audit Logs", badge_admin_only: "Admin Lamang",
@@ -190,7 +192,9 @@
                 action_validate_report: "Patunayan ang Ulat", action_approve_report: "Aprubahan ang Ulat", action_mark_claimed: "Markahan bilang Na-claim",
                 action_submit_inspection: "Isumite ang Inspeksyon",
                 sw_logout_title: "Mag-logout?",
-                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
+                sw_invalid_date_title: "Maling Saklaw ng Petsa", sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
+                sw_date_bounds_title: "Hindi Wastong Petsa", sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon. Nabura ang filter."
             }
         };
 
@@ -220,6 +224,12 @@
                 clearTimeout(searchDebounceTimer);
                 searchDebounceTimer = setTimeout(() => loadLogs(1), 400);
             });
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            ['dateFrom', 'dateTo'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.max = todayStr; el.min = earliestStr; }
+            });
         });
 
         function clearFilters() {
@@ -242,8 +252,22 @@
             const module = document.getElementById('moduleFilter').value;
             const role   = document.getElementById('roleFilter').value;
             const search = document.getElementById('searchInput').value.trim();
-            const from   = document.getElementById('dateFrom').value;
-            const to     = document.getElementById('dateTo').value;
+            let from = document.getElementById('dateFrom').value;
+            let to   = document.getElementById('dateTo').value;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            if ((from && (from > todayStr || from < earliestStr)) || (to && (to > todayStr || to < earliestStr))) {
+                Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
+                document.getElementById('dateFrom').value = '';
+                document.getElementById('dateTo').value = '';
+                from = '';
+                to = '';
+            } else if (from && to && from > to) {
+                Swal.fire({ icon: 'warning', title: t('sw_invalid_date_title'), text: t('sw_invalid_date_text'), confirmButtonColor: '#11542e' });
+                from = '';
+                to = '';
+            }
 
             const params = new URLSearchParams({ page: currentPage, per_page: 15 });
             if (module) params.append('module', module);

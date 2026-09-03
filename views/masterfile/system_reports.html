@@ -386,6 +386,7 @@
             status_approved: "Approved", status_pending: "Pending", status_archived: "Archived", status_rejected: "Rejected",
             sw_generating_title: "Generating Report...", sw_error_title: "Error", sw_failed_pull_data: "Failed to pull data from database.",
             sw_no_data_title: "No Data", sw_no_data_text: "Generate a report first before exporting.",
+            sw_date_bounds_title: "Invalid Date", sw_date_bounds_text: "Please pick a date between January 2024 and today.",
             sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
             sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to inactivity."
         },
@@ -407,6 +408,7 @@
             status_approved: "Naaprubahan", status_pending: "Naghihintay", status_archived: "Naka-archive", status_rejected: "Tinanggihan",
             sw_generating_title: "Bumubuo ng Ulat...", sw_error_title: "Error", sw_failed_pull_data: "Nabigong kunin ang datos mula sa database.",
             sw_no_data_title: "Walang Datos", sw_no_data_text: "Bumuo muna ng ulat bago mag-export.",
+            sw_date_bounds_title: "Hindi Wastong Petsa", sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon.",
             sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
             sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa hindi paggamit."
         }
@@ -458,6 +460,16 @@
         const statusFilter = document.getElementById('statusFilter').value;
         const timeframe = document.getElementById('timeframeFilter').value;
         const specDateStr = document.getElementById('specificDate').value;
+
+        if (specDateStr) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            if (specDateStr > todayStr || specDateStr < earliestStr) {
+                Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
+                document.getElementById('specificDate').value = '';
+                return;
+            }
+        }
 
         try {
             const res = await fetch('../../api/masterfile/damage_report/get_all.php');
@@ -658,6 +670,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         loadAdminNavbar('sys_reports');
         initI18n();
+        const todayStr = new Date().toISOString().split('T')[0];
+        const earliestStr = '2024-01-01';
+        const el = document.getElementById('specificDate');
+        if (el) { el.max = todayStr; el.min = earliestStr; }
     });
 </script>
 

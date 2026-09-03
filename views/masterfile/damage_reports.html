@@ -466,6 +466,8 @@
                 sw_archive_title: "Archive?", sw_archive_text: "You can revert this in the Archive list.",
                 placeholder_select_farmer: "-- Select Farmer --", no_farmers_found: "No farmers found", failed_load_farmers: "Failed to load farmers",
                 sw_missing_fields_title: "Missing Fields", sw_missing_fields_text: "Farmer, crop name, damage type, and severity are required.",
+                sw_invalid_date_title2: "Invalid Date Range", sw_invalid_date_text2: "The 'From' date can't be after the 'To' date. Filter cleared.",
+                sw_date_bounds_title: "Invalid Date", sw_date_bounds_text: "Please pick a date between January 2024 and today. Filter cleared.",
                 sw_submitted_title: "Submitted!", sw_submit_failed: "Failed to submit report.",
                 sw_logout_title: "Logout?", sw_yes_logout: "Yes, logout",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
@@ -541,6 +543,8 @@
                 sw_archive_title: "I-archive?", sw_archive_text: "Maaari mo itong ibalik sa listahan ng Archive.",
                 placeholder_select_farmer: "-- Pumili ng Magsasaka --", no_farmers_found: "Walang nahanap na magsasaka", failed_load_farmers: "Nabigong i-load ang mga magsasaka",
                 sw_missing_fields_title: "Kulang na Detalye", sw_missing_fields_text: "Kinakailangan ang magsasaka, pangalan ng pananim, uri ng pinsala, at kalubhaan.",
+                sw_invalid_date_title2: "Maling Saklaw ng Petsa", sw_invalid_date_text2: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
+                sw_date_bounds_title: "Hindi Wastong Petsa", sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon. Nabura ang filter.",
                 sw_submitted_title: "Naisumite na!", sw_submit_failed: "Nabigong isumite ang ulat.",
                 sw_logout_title: "Mag-logout?", sw_yes_logout: "Oo, mag-logout",
                 sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
@@ -598,6 +602,12 @@
             loadTable();
             loadTechnicians();
             loadMasterfileItems();
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            ['filterDateFrom', 'filterDateTo'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.max = todayStr; el.min = earliestStr; }
+            });
         });
 
         async function loadMasterfileItems() {
@@ -1074,8 +1084,22 @@
             const statusFilter    = document.getElementById("filterStatus").value;
             const damageTypeFilter = document.getElementById("filterDamageType").value;
             const severityFilter  = document.getElementById("filterSeverity").value;
-            const dateFrom        = document.getElementById("filterDateFrom").value;
-            const dateTo          = document.getElementById("filterDateTo").value;
+            let dateFrom = document.getElementById("filterDateFrom").value;
+            let dateTo   = document.getElementById("filterDateTo").value;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            const earliestStr = '2024-01-01';
+            if ((dateFrom && (dateFrom > todayStr || dateFrom < earliestStr)) || (dateTo && (dateTo > todayStr || dateTo < earliestStr))) {
+                Swal.fire({ icon: 'warning', title: t('sw_date_bounds_title'), text: t('sw_date_bounds_text'), confirmButtonColor: '#11542e' });
+                document.getElementById("filterDateFrom").value = '';
+                document.getElementById("filterDateTo").value = '';
+                dateFrom = '';
+                dateTo = '';
+            } else if (dateFrom && dateTo && dateFrom > dateTo) {
+                Swal.fire({ icon: 'warning', title: t('sw_invalid_date_title2'), text: t('sw_invalid_date_text2'), confirmButtonColor: '#11542e' });
+                dateFrom = '';
+                dateTo = '';
+            }
 
             filteredData = allData.filter(i => {
                 const matchesSearch = !q || (i.farmer && i.farmer.toLowerCase().includes(q)) || (i.crop_name && i.crop_name.toLowerCase().includes(q)) || (i.status && i.status.toLowerCase().includes(q));
