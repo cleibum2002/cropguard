@@ -263,7 +263,7 @@
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center"><i class="fa-solid fa-file-invoice"></i></div>
                     <div>
-                        <h3 class="font-black text-gray-800 tracking-tight" data-i18n="modal_farmer_report_title">Farmer's Damage Report</h3>
+                        <h3 id="modalReportID" class="font-black text-gray-800 tracking-tight"></h3>
                         <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest" data-i18n="modal_pre_inspection">Pre-Inspection Details</p>
                     </div>
                 </div>
@@ -427,9 +427,12 @@
                         <div class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-50 hover:shadow-md transition-all">
                             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                 <div class="flex-1">
-                                    <span class="bg-red-50 text-red-500 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter mb-3 inline-block border border-red-100">
-                                        ${t('badge_pending_inspection')}
-                                    </span>
+                                    <div class="flex items-center gap-2 mb-3">
+                                        <span class="bg-red-50 text-red-500 text-[9px] font-black px-3 py-1 rounded-full uppercase tracking-tighter inline-block border border-red-100">
+                                            ${t('badge_pending_inspection')}
+                                        </span>
+                                        <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">#REP-${a.id}</span>
+                                    </div>
                                     <h5 class="text-lg sm:text-xl font-black text-gray-800 mb-1">${a.crop_name || t('na_fallback')} Damage</h5>
                                     <p class="text-sm text-gray-400 font-medium mb-4">
                                         ${t('label_reported_by')} <span class="font-bold text-gray-600">${a.farmer_name || t('na_fallback')}</span>
@@ -472,6 +475,7 @@
 
     // ── View Farmer Report (Modal) ───────────────────────────────────
     async function viewReportDetails(id) {
+        document.getElementById('modalReportID').innerText = `#REP-${id} · ${t('modal_farmer_report_title')}`;
         Swal.fire({ title: t('sw_fetching_report'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         
         try {
