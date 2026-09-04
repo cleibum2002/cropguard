@@ -29,7 +29,7 @@
     .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     
     /* This CSS handles the injected sidebar */
-    #sidebar-container { width: 16rem; flex-shrink: 0; }
+    #sidebar-container { width: 0; flex-shrink: 0; } @media (min-width: 768px) { #sidebar-container { width: 16rem; } }
     #sidebar-container aside { 
         background-color: #11542e; 
         height: 100vh; 
@@ -55,18 +55,18 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
 
-        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800" data-i18n="header_title">Item Management</span>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
+        <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <span class="text-sm sm:text-base font-black text-gray-800" data-i18n="header_title">Item Management</span>
+                <span class="hidden sm:inline-block bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex flex-wrap items-center gap-3">
                 
-                <div class="flex items-center gap-2">
-                    <div class="relative">
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="relative flex-1 min-w-[160px]">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                         <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search commodity name..." data-i18n-placeholder="search_placeholder"
-                               class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-64 focus:ring-2 focus:ring-[#11542e] outline-none">
+                               class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-full sm:w-64 focus:ring-2 focus:ring-[#11542e] outline-none">
                     </div>
                     
                     <select id="categoryFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
@@ -83,8 +83,15 @@
                     </select>
                 </div>
 
-                <div class="flex items-center gap-3 pl-4 border-l border-gray-100">
-                    <span class="text-[11px] font-bold text-gray-400 flex items-center gap-1.5">
+                <div class="flex items-center gap-3 sm:pl-4 sm:border-l border-gray-100">
+                    <span class="hidden lg:flex text-[11px] font-bold text-gray-400 items-center gap-1.5">
+                        <i class="fa-solid fa-wifi text-gray-300"></i>
+                    </span>
+                    <div class="hidden md:flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    </div> text-gray-400 flex items-center gap-1.5">
                         <i class="fa-solid fa-wifi text-gray-300"></i>
                     </span>
                     <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
@@ -107,11 +114,11 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="text-right">
+                        <div class="hidden sm:block text-right">
                             <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
                             <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                         </div>
-                        <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
+                        <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0">AD</div>
                     </div>
                 </div>
             </div>
@@ -120,7 +127,7 @@
         <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
             <div class="max-w-7xl mx-auto">
 
-                <div class="flex justify-between items-end mb-6">
+                <div class="flex flex-wrap justify-between items-end gap-3 mb-6">
                     <div>
                         <h2 class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Resource Management</h2>
                         <p class="text-gray-400 text-sm" data-i18n="page_sub">DA Region X — System-wide commodity and supply inventory.</p>
@@ -188,7 +195,7 @@
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_commodity_name">Commodity Name</label>
                         <input type="text" id="itemName" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Certified Rice Seeds">
                     </div>
-                    <div>
+                    <div class="col-span-2 sm:col-span-1">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_category">Category</label>
                         <select id="itemCat" onchange="syncCashAidFields()" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm">
                             <option value="Seeds" data-i18n="category_seeds">Seeds</option>
@@ -197,7 +204,7 @@
                             <option value="Equipment" data-i18n="category_equipment">Equipment</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="col-span-2 sm:col-span-1">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_unit_type">Unit Type</label>
                         <input type="text" id="itemUnit" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Bags, Sacks, PHP">
                     </div>
@@ -643,7 +650,7 @@
         resetIdleTimer();
     </script>
 
-    <script src="../../assets/js/navbar_admin.js?v=1"></script>
+    <script src="../../assets/js/navbar_admin.js?v=2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('items'); 
