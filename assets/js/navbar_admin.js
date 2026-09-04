@@ -1,6 +1,10 @@
 function loadAdminNavbar(currentPage) {
     const sidebarHTML = `
-    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
+    <div id="mobileSidebarBackdrop" class="hidden fixed inset-0 bg-black/50 z-30 md:hidden" onclick="closeMobileSidebar()"></div>
+    <button id="mobileSidebarToggle" onclick="toggleMobileSidebar()" class="md:hidden fixed bottom-5 right-5 z-50 w-14 h-14 bg-[#11542e] text-white rounded-full shadow-2xl flex items-center justify-center text-lg">
+        <i id="mobileSidebarToggleIcon" class="fa-solid fa-bars"></i>
+    </button>
+    <aside id="mobileSidebarAside" class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-40 flex-shrink-0 fixed inset-y-0 left-0 -translate-x-full transition-transform duration-300 ease-in-out md:static md:translate-x-0">
         <div class="p-6 border-b border-white/10 flex flex-col items-center gap-3">
             <div class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center overflow-hidden border-2 border-white/20">
                 <i class="fa-solid fa-seedling text-3xl text-[#f1c40f]"></i>
@@ -83,4 +87,34 @@ function loadAdminNavbar(currentPage) {
             if (dot) dot.classList.toggle('hidden', !(data.status === 'success' && data.unread > 0));
         })
         .catch(() => {});
+}
+
+// Shared across every Admin page via this one script: the sidebar itself
+// never changes between mobile and desktop, only how it's shown - a static
+// column on desktop (md: and up), a slide-in drawer triggered by the
+// floating button on phones/small tablets.
+function toggleMobileSidebar() {
+    const aside = document.getElementById('mobileSidebarAside');
+    const backdrop = document.getElementById('mobileSidebarBackdrop');
+    const icon = document.getElementById('mobileSidebarToggleIcon');
+    const isOpen = aside.classList.contains('translate-x-0');
+    if (isOpen) {
+        closeMobileSidebar();
+    } else {
+        aside.classList.remove('-translate-x-full');
+        aside.classList.add('translate-x-0');
+        backdrop.classList.remove('hidden');
+        icon.className = 'fa-solid fa-xmark';
+    }
+}
+
+function closeMobileSidebar() {
+    const aside = document.getElementById('mobileSidebarAside');
+    const backdrop = document.getElementById('mobileSidebarBackdrop');
+    const icon = document.getElementById('mobileSidebarToggleIcon');
+    if (!aside) return;
+    aside.classList.remove('translate-x-0');
+    aside.classList.add('-translate-x-full');
+    backdrop.classList.add('hidden');
+    if (icon) icon.className = 'fa-solid fa-bars';
 }
