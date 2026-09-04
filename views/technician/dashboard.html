@@ -432,8 +432,8 @@
                                     </span>
                                     <h5 class="text-lg sm:text-xl font-black text-gray-800 mb-1">${a.crop_name} Damage</h5>
                                     <p class="text-sm text-gray-400 font-medium mb-4">
-                                        ${t('label_reported_by')} <span class="font-bold text-gray-600">${a.farmer_name}</span>
-                                        &nbsp;·&nbsp; ${a.barangay}
+                                        ${t('label_reported_by')} <span class="font-bold text-gray-600">${a.farmer_name || t('na_fallback')}</span>
+                                        &nbsp;·&nbsp; ${a.barangay || t('na_fallback')}
                                     </p>
                                     <div>${visitDateBadge(a.visit_date)}</div>
                                 </div>

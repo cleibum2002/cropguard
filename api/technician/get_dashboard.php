@@ -37,6 +37,10 @@ try {
     $stmt->close();
 
     // 3. Assignments Queue — now includes Visit_Date
+    // LEFT JOIN, not JOIN: a report with a broken/missing Location_ID or
+    // Farmer_ID reference must still show up here (even if some fields come
+    // back blank) rather than silently vanishing from the list while still
+    // being counted in the stats above, which don't use any joins at all.
     $qAssign = "SELECT 
                     dr.Damage_Report_ID  AS id,
                     c.Crop_Name          AS crop_name,
@@ -45,9 +49,9 @@ try {
                     fl.Barangay          AS barangay,
                     dr.Visit_Date        AS visit_date
                 FROM damage_report dr
-                JOIN farm_location fl ON dr.Location_ID  = fl.Location_ID
-                JOIN users         f  ON dr.Farmer_ID    = f.User_ID
-                LEFT JOIN crop     c  ON dr.Crop_ID      = c.Crop_ID
+                LEFT JOIN farm_location fl ON dr.Location_ID  = fl.Location_ID
+                LEFT JOIN users         f  ON dr.Farmer_ID    = f.User_ID
+                LEFT JOIN crop          c  ON dr.Crop_ID      = c.Crop_ID
                 WHERE dr.Technician_ID = ?
                   AND dr.Status IN ('Pending', 'Validated')
                 ORDER BY dr.Visit_Date ASC, dr.Report_Date ASC";
@@ -69,9 +73,9 @@ try {
                 f.Fullname           AS farmer_name,
                 fl.Barangay          AS barangay
               FROM damage_report dr
-              JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
-              JOIN users         f  ON dr.Farmer_ID   = f.User_ID
-              LEFT JOIN crop     c  ON dr.Crop_ID     = c.Crop_ID
+              LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
+              LEFT JOIN users         f  ON dr.Farmer_ID   = f.User_ID
+              LEFT JOIN crop          c  ON dr.Crop_ID     = c.Crop_ID
               WHERE dr.Technician_ID = ?
                 AND dr.Status IN ('Inspected', 'Approved', 'Rejected')
               ORDER BY dr.Report_Date DESC
