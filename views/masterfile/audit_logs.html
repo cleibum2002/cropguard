@@ -53,13 +53,13 @@
 <div id="sidebar-container"></div>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-4">
-                <span class="text-base font-black text-gray-800" data-i18n="header_title">Audit Logs</span>
-                <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_only">Admin Only</span>
+        <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <span class="text-sm sm:text-base font-black text-gray-800" data-i18n="header_title">Audit Logs</span>
+                <span class="hidden sm:inline-block bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_only">Admin Only</span>
             </div>
-            <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400 mr-1">
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <div class="hidden md:flex items-center gap-1.5 text-xs font-bold text-gray-400 mr-1">
                     <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
                     <span>|</span>
                     <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
@@ -102,7 +102,7 @@
             <div class="max-w-7xl mx-auto">
 
                 <!-- Stats -->
-                <div class="grid grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                     <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_total_actions">Total Actions</p>
                         <p id="statTotal" class="text-3xl font-black text-gray-800">0</p>
