@@ -1,7 +1,7 @@
 function loadAdminNavbar(currentPage) {
     const sidebarHTML = `
     <div id="mobileSidebarBackdrop" class="hidden fixed inset-0 bg-black/50 z-30 md:hidden" onclick="closeMobileSidebar()"></div>
-    <button id="mobileSidebarToggle" onclick="toggleMobileSidebar()" class="md:hidden fixed bottom-5 right-5 z-50 w-14 h-14 bg-[#11542e] text-white rounded-full shadow-2xl flex items-center justify-center text-lg">
+    <button id="mobileSidebarToggle" onclick="toggleMobileSidebar()" class="md:hidden fixed bottom-5 left-5 z-50 w-14 h-14 bg-[#11542e] text-white rounded-full shadow-2xl flex items-center justify-center text-lg">
         <i id="mobileSidebarToggleIcon" class="fa-solid fa-bars"></i>
     </button>
     <aside id="mobileSidebarAside" class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-40 flex-shrink-0 fixed inset-y-0 left-0 -translate-x-full transition-transform duration-300 ease-in-out md:static md:translate-x-0">
