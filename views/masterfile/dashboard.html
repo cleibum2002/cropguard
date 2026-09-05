@@ -65,36 +65,32 @@
 <div id="sidebar-container"></div>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 bg-white border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-4">
-                <div>
-                    <span class="text-base font-black text-gray-800" data-i18n="header_title">Admin Dashboard</span>
-                </div>
-                <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
+        <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
+            <div class="flex items-center gap-2 sm:gap-4">
+                <span class="text-sm sm:text-base font-black text-gray-800" data-i18n="header_title">Admin Dashboard</span>
+                <span class="hidden sm:inline-block bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
-                        <span>|</span>
-                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
-                    </div>
-                    <div class="relative">
-                        <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100">
-                            <i class="fa-regular fa-bell text-sm"></i>
-                            <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
-                        </button>
-                        <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
-                            </div>
-                            <div id="notifList" class="divide-y divide-gray-50">
-                                <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
-                            </div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <div class="hidden md:flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span>|</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                </div>
+                <div class="relative">
+                    <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 flex-shrink-0">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                        <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                    </button>
+                    <div id="notifPanel" class="hidden absolute right-0 top-12 w-[88vw] max-w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
+                        <div class="px-4 py-3 border-b border-gray-100">
+                            <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                        </div>
+                        <div id="notifList" class="divide-y divide-gray-50">
+                            <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
                         </div>
                     </div>
-                    <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm">AD</div>
                 </div>
+                <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0">AD</div>
             </div>
         </header>
 
