@@ -1,32 +1,8 @@
 // File Location: assets/js/navbar_mao.js
 
 function loadMaoNavbar(currentPage) {
-    // See navbar_admin.js for why this is real CSS, not Tailwind utility
-    // classes - those only exist inside this JS-injected string, never in
-    // the static page Tailwind's CDN scans on load, which broke silently before.
-    if (!document.getElementById('mobileSidebarStyles')) {
-        const styleTag = document.createElement('style');
-        styleTag.id = 'mobileSidebarStyles';
-        styleTag.textContent = `
-            #mobileSidebarAside {
-                position: fixed; top: 0; bottom: 0; left: 0;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease-in-out;
-            }
-            #mobileSidebarAside.sidebar-open { transform: translateX(0); }
-            @media (min-width: 768px) {
-                #mobileSidebarAside { position: static !important; transform: none !important; }
-            }
-        `;
-        document.head.appendChild(styleTag);
-    }
-
     const sidebarHTML = `
-    <div id="mobileSidebarBackdrop" class="hidden fixed inset-0 bg-black/50 z-30 md:hidden no-print" onclick="closeMobileSidebar()"></div>
-    <button id="mobileSidebarToggle" onclick="toggleMobileSidebar()" class="md:hidden fixed bottom-5 left-5 z-50 w-14 h-14 bg-[#11542e] text-white rounded-full shadow-2xl flex items-center justify-center text-lg no-print">
-        <i id="mobileSidebarToggleIcon" class="fa-solid fa-bars"></i>
-    </button>
-    <aside id="mobileSidebarAside" class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-40 flex-shrink-0 no-print">
+    <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0 no-print">
         
         <div class="p-8 border-b border-white/10 flex flex-col items-center">
             <div class="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center border-2 border-white/20 mb-4 shadow-lg">
@@ -95,30 +71,4 @@ function loadMaoNavbar(currentPage) {
             })
             .catch(() => {});
     }
-}
-
-// Same pattern as Admin's navbar_admin.js: static sidebar on desktop,
-// slide-in drawer via the floating button on mobile.
-function toggleMobileSidebar() {
-    const aside = document.getElementById('mobileSidebarAside');
-    const backdrop = document.getElementById('mobileSidebarBackdrop');
-    const icon = document.getElementById('mobileSidebarToggleIcon');
-    const isOpen = aside.classList.contains('sidebar-open');
-    if (isOpen) {
-        closeMobileSidebar();
-    } else {
-        aside.classList.add('sidebar-open');
-        backdrop.classList.remove('hidden');
-        icon.className = 'fa-solid fa-xmark';
-    }
-}
-
-function closeMobileSidebar() {
-    const aside = document.getElementById('mobileSidebarAside');
-    const backdrop = document.getElementById('mobileSidebarBackdrop');
-    const icon = document.getElementById('mobileSidebarToggleIcon');
-    if (!aside) return;
-    aside.classList.remove('sidebar-open');
-    backdrop.classList.add('hidden');
-    if (icon) icon.className = 'fa-solid fa-bars';
 }
