@@ -71,4 +71,6 @@ function loadMaoNavbar(currentPage) {
             })
             .catch(() => {});
     }
+
+    initCropGuardMobileShell();
 }
