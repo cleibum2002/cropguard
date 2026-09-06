@@ -68,15 +68,14 @@
         <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-2 sm:gap-4">
                 <span class="text-sm sm:text-base font-black text-gray-800" data-i18n="header_title">Admin Dashboard</span>
-                <span class="hidden sm:inline-block bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
+
             </div>
-            <div class="flex items-center gap-2 sm:gap-3">
-                <div class="hidden md:flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
-                    <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
-                </div>
-                <div class="relative">
+                            <div class="relative flex items-center gap-2 sm:gap-3">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
+                    </div>
                     <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 flex-shrink-0">
                         <i class="fa-regular fa-bell text-sm"></i>
                         <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
@@ -89,9 +88,8 @@
                             <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
                         </div>
                     </div>
+                    <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0">AD</div>
                 </div>
-                <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0">AD</div>
-            </div>
         </header>
 
         <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0]">
@@ -336,7 +334,6 @@
         // on all 4 MAO pages. Admin had zero i18n infrastructure before this.
         const translations = {
             en: {
-                header_title: "Admin Dashboard", badge_admin_mode: "Admin Mode",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 page_title: "Admin Dashboard", page_sub: "DA Region X — Northern Mindanao Operations Center",
                 stat_total: "Total Reports", stat_caption_last_month: "from last month",

@@ -42,7 +42,6 @@
     <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
         <div class="flex items-center gap-2 sm:gap-4">
             <span class="text-sm sm:text-base font-black text-gray-800" data-i18n="header_title">Crops Masterlist</span>
-            <span class="hidden sm:inline-block bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_admin_mode">Admin Mode</span>
         </div>
         <div class="flex flex-wrap items-center gap-3">
             <div class="relative flex-1 min-w-[160px] sm:flex-none">
@@ -50,24 +49,22 @@
                 <input type="text" id="searchInput" onkeyup="filterCrops()" placeholder="Search crops or variety..." data-i18n-placeholder="search_placeholder"
                        class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-full sm:w-64 focus:ring-2 focus:ring-[#11542e] outline-none">
             </div>
-            <div class="flex items-center gap-3 sm:pl-4 sm:border-l border-gray-100">
-                <div class="hidden md:flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                        <div class="relative flex items-center gap-3 sm:pl-4 sm:border-l border-gray-100">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
                 </div>
-                <div class="relative">
-                    <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100">
-                        <i class="fa-regular fa-bell text-sm"></i>
-                        <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
-                    </button>
-                    <div id="notifPanel" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
-                        <div class="px-4 py-3 border-b border-gray-100">
-                            <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
-                        </div>
-                        <div id="notifList" class="divide-y divide-gray-50">
-                            <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
-                        </div>
+                <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 flex-shrink-0">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                </button>
+                <div id="notifPanel" class="hidden absolute right-0 top-12 w-[88vw] max-w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
+                    <div class="px-4 py-3 border-b border-gray-100">
+                        <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                    </div>
+                    <div id="notifList" class="divide-y divide-gray-50">
+                        <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -213,7 +210,7 @@
     // Reusable EN / TL switcher (see assets/js/i18n.js)
     const translations = {
         en: {
-            header_title: "Crops Masterlist", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+            header_title: "Crops Masterlist",  role_admin: "Admin",
             search_placeholder: "Search crops or variety...",
             notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
             page_title: "Registered Commodities", page_sub: "DA Region X — Northern Mindanao Operations Center",
@@ -238,7 +235,7 @@
             sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to inactivity."
         },
         tl: {
-            header_title: "Crops Masterlist", badge_admin_mode: "Admin Mode", role_admin: "Admin",
+            header_title: "Crops Masterlist",  role_admin: "Admin",
             search_placeholder: "Maghanap ng pananim o barayti...",
             notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
             page_title: "Nakarehistrong Commodity", page_sub: "DA Region X — Sentro ng Operasyon sa Northern Mindanao",
