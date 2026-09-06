@@ -29,29 +29,27 @@
 <div id="sidebar-container"></div>
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
-            <span class="text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Municipal Operations Overview</span>
-            <div class="flex items-center gap-4">
+                <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-3 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
+            <span class="text-sm sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Municipal Operations Overview</span>
+            <div class="relative flex items-center gap-3 sm:gap-4">
                 <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">English</span>
+                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
                     <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">Tagalog</span>
+                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
                 </div>
-                <div class="relative">
-                    <button id="maoNotifBellBtn" onclick="toggleMaoNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors">
-                        <i class="fa-regular fa-bell text-sm"></i>
-                        <span id="maoNotifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
-                    </button>
-                    <div id="maoNotifPanel" class="hidden absolute right-0 top-12 w-[480px] max-w-[90vw] bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100]">
-                        <div class="px-6 py-4 border-b border-gray-100">
-                            <h4 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
-                        </div>
-                        <div id="maoNotifList" class="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
-                            <p class="text-sm text-gray-400 italic text-center py-10" data-i18n="notif_loading">Loading...</p>
-                        </div>
+                <button id="maoNotifBellBtn" onclick="toggleMaoNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 transition-colors flex-shrink-0">
+                    <i class="fa-regular fa-bell text-sm"></i>
+                    <span id="maoNotifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                </button>
+                <div id="maoNotifPanel" class="hidden absolute right-0 top-12 w-[88vw] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100]">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h4 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                    </div>
+                    <div id="maoNotifList" class="divide-y divide-gray-50 max-h-[420px] overflow-y-auto">
+                        <p class="text-sm text-gray-400 italic text-center py-10" data-i18n="notif_loading">Loading...</p>
                     </div>
                 </div>
-                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs border border-blue-200 shadow-sm">MA</div>
+                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-black text-xs border border-blue-200 shadow-sm flex-shrink-0">MA</div>
             </div>
         </header>
 
