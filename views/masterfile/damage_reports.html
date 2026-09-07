@@ -70,6 +70,20 @@
                         <span>|</span>
                         <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
                     </div>
+                    <div class="relative">
+                        <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 flex-shrink-0">
+                            <i class="fa-regular fa-bell text-sm"></i>
+                            <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                        </button>
+                        <div id="notifPanel" class="hidden absolute right-0 top-12 w-[88vw] max-w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                            </div>
+                            <div id="notifList" class="divide-y divide-gray-50">
+                                <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
                     <div class="hidden sm:block text-right">
                         <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
                         <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
@@ -1194,6 +1208,60 @@
             }
         }
 
+        async function loadAdminNotifications() {
+            try {
+                const res = await fetch('../../api/dashboard/admin_notifications.php?action=fetch');
+                const result = await res.json();
+                if (result.status === 'success') {
+                    renderNotificationList(result.data);
+                    const badge = document.getElementById('notifBadge');
+                    if (result.unread > 0) {
+                        badge.textContent = result.unread > 9 ? '9+' : result.unread;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (e) { console.error('Failed to load notifications:', e); }
+        }
+
+        function renderNotificationList(items) {
+            const list = document.getElementById('notifList');
+            if (!items || items.length === 0) {
+                list.innerHTML = '<p class="text-xs text-gray-400 italic text-center py-8">No notifications yet.</p>';
+                return;
+            }
+            list.innerHTML = items.map(n => `
+                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors ${n.Redirect_URL ? 'cursor-pointer flex items-center justify-between gap-3' : ''}" ${n.Redirect_URL ? `onclick="window.location.href='${n.Redirect_URL}'"` : ''}>
+                    <div class="min-w-0">
+                        <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
+                        <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                    </div>
+                    ${n.Redirect_URL ? '<span class="flex-shrink-0 text-[9px] font-black text-white bg-[#11542e] px-2.5 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap flex items-center gap-1">View <i class="fa-solid fa-arrow-right"></i></span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function toggleNotificationPanel() {
+            const panel = document.getElementById('notifPanel');
+            const isHidden = panel.classList.contains('hidden');
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                fetch('../../api/dashboard/admin_notifications.php?action=read')
+                    .then(() => { document.getElementById('notifBadge').classList.add('hidden'); });
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('notifPanel');
+            const btn = document.getElementById('notifBellBtn');
+            if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) {
+                panel.classList.add('hidden');
+            }
+        });
+
         function confirmLogout() {
             Swal.fire({ title: t('sw_logout_title'), text: t('sw_are_you_sure'), icon: 'warning', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: t('sw_yes_logout') })
                 .then((result) => { if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.href = '../../auth.html'; }).catch(() => { window.location.href = '../../auth.html'; }); });
@@ -1214,7 +1282,7 @@
 
     <script src="../../assets/js/navbar_admin.js?v=3"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('reports'); initI18n(); });
+        document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('reports'); initI18n(); loadAdminNotifications(); });
     </script>
 </body>
 </html>

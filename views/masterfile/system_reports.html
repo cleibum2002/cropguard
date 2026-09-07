@@ -171,12 +171,26 @@
                 <span class="text-sm sm:text-base font-black text-gray-800" data-i18n="header_title">System Reports Engine</span>
             </div>
             <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
-                    <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
-                    <span>|</span>
-                    <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
-                </div>
-                <div class="hidden sm:block text-right">
+                                    <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
+                        <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
+                        <span>|</span>
+                        <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
+                    </div>
+                    <div class="relative">
+                        <button id="notifBellBtn" onclick="toggleNotificationPanel()" class="relative w-9 h-9 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 flex-shrink-0">
+                            <i class="fa-regular fa-bell text-sm"></i>
+                            <span id="notifBadge" class="hidden absolute top-1 right-1 min-w-[16px] h-4 px-1 bg-red-500 rounded-full text-[9px] text-white font-black flex items-center justify-center">0</span>
+                        </button>
+                        <div id="notifPanel" class="hidden absolute right-0 top-12 w-[88vw] max-w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[100] max-h-96 overflow-y-auto">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <h4 class="text-xs font-black text-gray-800 uppercase tracking-widest" data-i18n="notif_title">Notifications</h4>
+                            </div>
+                            <div id="notifList" class="divide-y divide-gray-50">
+                                <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:block text-right">
                     <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
                     <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
                 </div>
