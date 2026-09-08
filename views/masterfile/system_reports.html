@@ -684,7 +684,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         loadAdminNavbar('sys_reports');
-        initI18n();
+                initI18n();
+        loadAdminNotifications();
         const todayStr = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
         const earliestStr = '2024-01-01';
         const el = document.getElementById('specificDate');
