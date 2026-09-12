@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["php82", "nginx"]
+
+[start]
+cmd = "nginx -g 'daemon off;'"
