@@ -93,6 +93,15 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                fetch('../../api/auth/session_check.php', {cache: 'no-store'})
+                    .then(res => res.json())
+                    .then(data => { if (data.status !== 'active') window.location.replace('../../auth.html'); })
+                    .catch(() => window.location.replace('../../auth.html'));
+            }
+        });
+
         fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status !== 'active') {
                 window.location.href = '../../auth.html';
