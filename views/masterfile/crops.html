@@ -13,8 +13,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="../../assets/js/i18n.js?v=1"></script>
     <script>
-        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status === 'active' && data.role.toLowerCase() === 'admin') {
+                document.body.style.display = '';
                 window.addEventListener('load', () => {
                     document.getElementById('adminName').innerText = data.user.fullname;
                     document.getElementById('adminNameSidebar').innerText = data.user.fullname;

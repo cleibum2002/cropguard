@@ -136,10 +136,11 @@
 
     <script>
         // 1. Session Check
-        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status !== 'active' || (data.role.toLowerCase() !== 'mao' && data.role.toLowerCase() !== 'admin')) {
                 window.location.href = '../../auth.html'; 
             } else {
+                document.body.style.display = '';
                 document.getElementById('maoNameSidebar').innerText = data.user.fullname;
             }
         }).catch(() => { window.location.href = '../../auth.html'; });

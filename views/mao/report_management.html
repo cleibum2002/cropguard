@@ -16,9 +16,11 @@
 
     <script>
         // Check session
-        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status !== 'active' || data.role.toUpperCase() !== 'MAO') {
                 window.location.href = '../../auth.html';
+            } else {
+                document.body.style.display = '';
             }
         }).catch(() => window.location.href = '../../auth.html');
     </script>

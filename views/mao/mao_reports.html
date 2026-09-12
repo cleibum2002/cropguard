@@ -16,10 +16,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
-        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status !== 'active' || data.role.toLowerCase() !== 'mao') {
                 window.location.href = '../../auth.html';
             } else {
+                document.body.style.display = '';
                 window.addEventListener('load', () => {
                     document.getElementById('maoNameSidebar').innerText = data.user.fullname;
                 });
