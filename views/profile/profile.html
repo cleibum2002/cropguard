@@ -487,7 +487,7 @@
                 if (result.isConfirmed) {
                     Swal.fire({ icon: 'success', title: t('sw_email_verified_title'), text: t('sw_email_verified_text'), confirmButtonColor: '#11542e' })
                         .then(() => {
-                            fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
+                            fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html'));
                         });
                 } else {
                     // Closed via the X without verifying - the profile change (including
@@ -517,7 +517,7 @@
                 confirmButtonColor: '#11542e', confirmButtonText: t('sw_signout_confirm')
             }).then(r => {
                 if (r.isConfirmed)
-                    fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
+                    fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html'));
             });
         }
         // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
@@ -526,7 +526,7 @@
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
                 Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
-                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')));
             }, 5 * 60 * 1000);
         }
         ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));

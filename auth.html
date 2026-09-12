@@ -6,9 +6,14 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <script>
+        // Replace the current history entry with auth.html so the Back button
+        // cannot navigate back to a protected page after logout.
+        history.replaceState(null, '', window.location.href);
+        window.addEventListener('popstate', function() {
+            window.location.replace(window.location.href);
+        });
+    </script>
     <title>Department of Agriculture - Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>

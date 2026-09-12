@@ -676,7 +676,7 @@
         idleTimer = setTimeout(() => {
             Swal.fire({
                 icon: 'warning', title: 'Session Expired', text: 'You have been logged out due to 5 minutes of inactivity.', confirmButtonColor: '#11542e', allowOutsideClick: false
-            }).then(() => { fetch('../../api/auth/logout.php').then(() => { window.location.href = '../../auth.html'; }); });
+            }).then(() => { fetch('../../api/auth/logout.php').then(() => { window.location.replace('../../auth.html'); }); });
         }, 5 * 60 * 1000);
     }
     ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(evt => document.addEventListener(evt, resetIdleTimer));

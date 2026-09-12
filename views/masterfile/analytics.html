@@ -343,7 +343,7 @@ function confirmLogout() {
         clearTimeout(idleTimer);
         idleTimer = setTimeout(() => {
             Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
-                .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+                .then(() => fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')));
         }, 5 * 60 * 1000);
     }
     ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));

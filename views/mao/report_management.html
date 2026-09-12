@@ -664,7 +664,7 @@
     }
 
     function confirmLogout() {
-        fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html');
+        fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html'));
     }
 </script>
 

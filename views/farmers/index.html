@@ -1834,7 +1834,7 @@
 
         function confirmLogout() {
             Swal.fire({ title: t('sw_signout_title'), icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
-                .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html').catch(() => window.location.href = '../../auth.html'); });
+                .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')).catch(() => window.location.href = '../../auth.html'); });
         }
 
         // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
@@ -1843,7 +1843,7 @@
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
                 Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
-                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.href = '../../auth.html'));
+                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')));
             }, 5 * 60 * 1000);
         }
         // Also listen for touch events for mobile users
