@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
+header('Vary: *');
 
 if (isset($_SESSION['User_ID']) && isset($_SESSION['Role'])) {
     echo json_encode([

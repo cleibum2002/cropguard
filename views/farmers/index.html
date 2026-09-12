@@ -14,6 +14,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                fetch('../../api/auth/session_check.php', {cache: 'no-store'})
+                    .then(res => res.json())
+                    .then(data => { if (data.status !== 'active') window.location.replace('../../auth.html'); })
+                    .catch(() => window.location.replace('../../auth.html'));
+            }
+        });
+
         fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status !== 'active' || data.role.toLowerCase() !== 'farmer') {
                 window.location.href = '../../auth.html';

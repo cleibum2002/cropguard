@@ -1,3 +1,17 @@
+// Fires when Chrome restores a page from bfcache (Back/Forward button)
+window.addEventListener('pageshow', function(e) {
+    if (e.persisted) {
+        fetch('../../api/auth/session_check.php', {cache: 'no-store'})
+            .then(res => res.json())
+            .then(data => {
+                if (data.status !== 'active') {
+                    window.location.replace('../../auth.html');
+                }
+            })
+            .catch(() => window.location.replace('../../auth.html'));
+    }
+});
+
 function loadAdminNavbar(currentPage) {
     const sidebarHTML = `
     <aside class="bg-[#11542e] w-64 min-h-screen flex flex-col shadow-2xl z-30 flex-shrink-0">
