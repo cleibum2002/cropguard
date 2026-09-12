@@ -143,6 +143,20 @@
                 </div>
             </div>
 
+            <!-- Shared pagination (works for both Grid and List views) -->
+            <div id="cropPagination" class="hidden mt-6 flex flex-col items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <button id="prevBtn" onclick="changePage(-1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#11542e] text-[#11542e] hover:bg-[#11542e] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#11542e]">
+                        <i class="fa-solid fa-chevron-left text-xs"></i>
+                    </button>
+                    <span id="pageIndicator" class="text-xs font-black text-gray-700 px-2">Page 1 of 1</span>
+                    <button id="nextBtn" onclick="changePage(1)" class="w-9 h-9 flex items-center justify-center rounded-lg border border-[#11542e] text-[#11542e] hover:bg-[#11542e] hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-[#11542e]">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+                <p id="pageInfo" class="text-xs text-gray-400 font-bold"></p>
+            </div>
+
         </div>
     </main>
 </div>
@@ -293,6 +307,9 @@
         Eggplant: 'bg-purple-50 text-purple-700', Other: 'bg-gray-50 text-gray-600'
     };
 
+    let currentPage = 1;
+    const rowsPerPage = 9;
+
     document.addEventListener("DOMContentLoaded", loadCrops);
     document.addEventListener("DOMContentLoaded", loadAdminNotifications);
 
@@ -386,6 +403,7 @@
         document.getElementById('errorState').classList.add('hidden');
         document.getElementById('cropGrid').classList.add('hidden');
         document.getElementById('cropList').classList.add('hidden');
+        document.getElementById('cropPagination').classList.add('hidden');
 
         if (state === 'loading') {
             document.getElementById('loadingState').classList.remove('hidden');
@@ -396,8 +414,10 @@
             }
         } else if (state === 'grid') {
             document.getElementById('cropGrid').classList.remove('hidden');
+            document.getElementById('cropPagination').classList.remove('hidden');
         } else if (state === 'list') {
             document.getElementById('cropList').classList.remove('hidden');
+            document.getElementById('cropPagination').classList.remove('hidden');
         }
     }
 
@@ -407,13 +427,36 @@
         else renderListView();
     }
 
+    function getPageSlice() {
+        const start = (currentPage - 1) * rowsPerPage;
+        return filteredCrops.slice(start, start + rowsPerPage);
+    }
+
+    function updatePaginationUI() {
+        const totalPages = Math.max(1, Math.ceil(filteredCrops.length / rowsPerPage));
+        const start = filteredCrops.length ? (currentPage - 1) * rowsPerPage + 1 : 0;
+        const end   = Math.min(currentPage * rowsPerPage, filteredCrops.length);
+
+        document.getElementById('pageIndicator').innerText = `Page ${currentPage} of ${totalPages}`;
+        document.getElementById('pageInfo').innerText = `Showing ${start}–${end} of ${filteredCrops.length}`;
+        document.getElementById('prevBtn').disabled = currentPage === 1;
+        document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+    }
+
+    function changePage(dir) {
+        currentPage += dir;
+        renderCrops();
+    }
+
     function renderGrid() {
         const grid = document.getElementById('cropGrid');
         if (!filteredCrops.length) {
             grid.innerHTML = `<div class="col-span-3 py-16 text-center text-gray-400 italic">${t('no_crops_found')}</div>`;
+            updatePaginationUI();
             return;
         }
-        grid.innerHTML = filteredCrops.map(crop => {
+        updatePaginationUI();
+        grid.innerHTML = getPageSlice().map(crop => {
             const icon  = cropIcons[crop.type]  || 'fa-seedling';
             const color = cropColors[crop.type] || 'bg-green-50 text-[#11542e]';
             const cost  = crop.prod_cost
@@ -460,9 +503,11 @@
         const tbody = document.getElementById('cropListBody');
         if (!filteredCrops.length) {
             tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic">${t('no_crops_found')}</td></tr>`;
+            updatePaginationUI();
             return;
         }
-        tbody.innerHTML = filteredCrops.map(crop => {
+        updatePaginationUI();
+        tbody.innerHTML = getPageSlice().map(crop => {
             const cost = crop.prod_cost
                 ? '₱' + parseFloat(crop.prod_cost).toLocaleString('en-PH', { minimumFractionDigits: 2 })
                 : '—';
@@ -512,6 +557,7 @@
             c.name.toLowerCase().includes(q) ||
             (c.type && c.type.toLowerCase().includes(q))
         );
+        currentPage = 1;
         renderCrops();
     }
 
