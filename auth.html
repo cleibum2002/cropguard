@@ -172,6 +172,10 @@
             </div>
 
             <button type="submit" class="btn-submit">Verify</button>
+            <div style="text-align:center; margin-bottom:10px;">
+                <span style="font-size:0.85rem; color:#555;">Code expires in </span>
+                <span id="verifyCountdown" style="font-size:0.95rem; font-weight:700; color:#11542e;">5:00</span>
+            </div>
             <div class="toggle-link">
                 <a onclick="handleResendCode()" id="resendLink">Resend Code</a>
             </div>
@@ -243,7 +247,8 @@
             } else if (data.message && data.message.toLowerCase().includes('verify')) {
                 switchForm('verify');
                 document.getElementById('verifyEmail').value = email;
-                handleResendCode(); // fire off a fresh code right away - don't make them notice and click it themselves
+                handleResendCode();
+                startCountdown(); // fire off a fresh code right away - don't make them notice and click it themselves
             } else {
                 errorBox.innerText = data.message;
             }
@@ -335,6 +340,7 @@
                 document.getElementById('verifyCodeText').innerText = data.verification_code || '';
                 document.getElementById('registerForm').reset();
                 document.querySelector('.code-digit').focus();
+                startCountdown();
             } else {
                 msgBox.className = 'msg-box error';
                 msgBox.innerText = data.message;
@@ -382,6 +388,39 @@
         });
     })();
 
+    let countdownInterval = null;
+
+    function startCountdown() {
+        clearInterval(countdownInterval);
+        let seconds = 300; // 5 minutes
+        const display = document.getElementById('verifyCountdown');
+        const resendLink = document.getElementById('resendLink');
+        if (display) {
+            display.innerText = '5:00';
+            display.style.color = '#11542e';
+        }
+        countdownInterval = setInterval(() => {
+            seconds--;
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            if (display) {
+                display.innerText = m + ':' + String(s).padStart(2, '0');
+                if (seconds <= 60) display.style.color = '#dc2626'; // red when 1 min left
+            }
+            if (seconds <= 0) {
+                clearInterval(countdownInterval);
+                if (display) display.innerText = '0:00';
+                // Code expired — redirect to login
+                const msgBox = document.getElementById('verifyMsg');
+                if (msgBox) {
+                    msgBox.className = 'msg-box error';
+                    msgBox.innerText = 'Your verification code has expired. Please log in to request a new one.';
+                }
+                setTimeout(() => { switchForm('login'); }, 3000);
+            }
+        }, 1000);
+    }
+
     async function handleResendCode() {
         const email = document.getElementById('verifyEmail').value.trim();
         const msgBox = document.getElementById('verifyMsg');
@@ -407,6 +446,7 @@
             const data = await res.json();
             msgBox.className = data.status === 'success' ? 'msg-box success' : 'msg-box error';
             msgBox.innerText = data.message;
+            if (data.status === 'success') startCountdown();
 
             if (data.channel === 'phone') {
                 document.getElementById('verifyTitle').innerText = 'Verify Your Phone';
