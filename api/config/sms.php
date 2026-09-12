@@ -3,7 +3,7 @@
 define('SEMAPHORE_API_KEY', 'REMOVED_SEMAPHORE_API_KEY');
 
 function sendVerificationSMS($phoneNumber, $code) {
-    $message = "Your CropGuard verification code is {otp}. This code expires in 30 minutes.";
+    $message = "Your CropGuard verification code is {otp}. This code expires in 5 minutes.";
 
     $ch = curl_init('https://semaphore.co/api/v4/otp');
     curl_setopt($ch, CURLOPT_POST, true);

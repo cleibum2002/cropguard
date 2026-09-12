@@ -28,7 +28,7 @@ if (!$user) {
 }
 
 $new_code      = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-$token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+$token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
 $update = $conn->prepare("UPDATE users SET Verification_Token = ?, Verification_Token_Expires = ? WHERE User_ID = ?");
 $update->bind_param("ssi", $new_code, $token_expires, $user['User_ID']);

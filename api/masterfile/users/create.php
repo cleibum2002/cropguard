@@ -63,7 +63,7 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
 
         if ($needsVerification) {
             $verification_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+            $token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
             $query = "INSERT INTO users (Fullname, Email, Contact_Number, Password, Role, STATUS, Email_Verified, Phone_Verified, Verification_Token, Verification_Token_Expires) VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?)";
             $stmt = $conn->prepare($query);

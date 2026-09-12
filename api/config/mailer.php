@@ -17,7 +17,7 @@ function sendVerificationEmail($toEmail, $toName, $code) {
             <h2 style=\"color: #11542e;\">Welcome to CropGuard, $toName!</h2>
             <p>Enter this code on the registration page to verify your account:</p>
             <p style=\"margin: 24px 0; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #11542e; text-align: center;\">$code</p>
-            <p style=\"font-size: 12px; color: #888;\">This code expires in 30 minutes. If you didn't create a CropGuard account, you can safely ignore this email.</p>
+            <p style=\"font-size: 12px; color: #888;\">This code expires in 5 minutes. If you didn't create a CropGuard account, you can safely ignore this email.</p>
         </div>
     ";
 

@@ -97,7 +97,7 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
             // a new email here only proves Admin typed it correctly - not that the
             // intended recipient actually owns that inbox.
             $new_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+            $token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
             if ($hashed_password) {
                 $query = "UPDATE users SET Fullname=?, Contact_Number=?, Password=?, Role=?, STATUS=?, Pending_Email=?, Verification_Token=?, Verification_Token_Expires=? WHERE User_ID=?";
@@ -112,7 +112,7 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
             // Account was never verified to begin with - just fix the email
             // directly and send a fresh code, same as a brand-new account.
             $new_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+            $token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
             if ($hashed_password) {
                 $query = "UPDATE users SET Fullname=?, Email=?, Contact_Number=?, Password=?, Role=?, STATUS=?, Email_Verified=0, Verification_Token=?, Verification_Token_Expires=? WHERE User_ID=?";

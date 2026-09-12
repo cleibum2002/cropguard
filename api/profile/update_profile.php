@@ -73,7 +73,7 @@ try {
         // (see verify_code.php). Closing the prompt without verifying means nothing
         // actually changed - no more silent "bypass" via reload or a second Save.
         $new_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $token_expires = date('Y-m-d H:i:s', strtotime('+30 minutes'));
+        $token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
         if ($password) {
             $hashed = hashUserPassword($password);
