@@ -41,10 +41,11 @@
             }
         };
 
-        fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
             if (data.status !== 'active') {
                 window.location.href = '../../auth.html';
             } else {
+                document.body.style.display = '';
                 currentUserName = data.user.fullname;
                 currentRole     = data.role;
 
@@ -85,7 +86,7 @@
         .lang-link.lang-active { color: #f1c40f; text-decoration: underline; }
     </style>
 </head>
-<body class="h-[100dvh] flex overflow-hidden bg-[#f0f2f0]">
+<body class="h-[100dvh] flex overflow-hidden bg-[#f0f2f0]" style="display:none!important">
 
     <div class="flex w-full h-[100dvh]">
 

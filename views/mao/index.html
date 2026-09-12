@@ -27,7 +27,7 @@
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden">
+<body class="h-screen flex overflow-hidden" style="display:none!important">
 
 <div id="sidebar-container"></div>
 
@@ -206,8 +206,9 @@
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            fetch('../../api/auth/session_check.php').then(res => res.json()).then(data => {
+            fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
                 if (data.status === 'active' && data.role.toUpperCase() === 'MAO') {
+                    document.body.style.display = '';
                     document.getElementById('maoNameSidebar').innerText = data.user.fullname;
                 } else {
                     window.location.href = '../../auth.html';
