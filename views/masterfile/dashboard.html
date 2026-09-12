@@ -777,7 +777,7 @@
         function confirmLogout() {
             Swal.fire({ title: 'Logout?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: 'Yes, logout' })
                 .then((result) => {
-                    if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.href = '../../auth.html'; }).catch(() => window.location.href = '../../auth.html');
+                    if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.replace('../../auth.html'); }).catch(() => window.location.replace('../../auth.html'));
                 });
         }
 

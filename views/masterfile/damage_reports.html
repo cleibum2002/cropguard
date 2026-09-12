@@ -1275,7 +1275,7 @@
 
         function confirmLogout() {
             Swal.fire({ title: t('sw_logout_title'), text: t('sw_are_you_sure'), icon: 'warning', showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: t('sw_yes_logout') })
-                .then((result) => { if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.href = '../../auth.html'; }).catch(() => { window.location.href = '../../auth.html'; }); });
+                .then((result) => { if (result.isConfirmed) fetch('../../api/auth/logout.php').then(res => res.json()).then(data => { if (data.status === 'success') window.location.replace('../../auth.html'); }).catch(() => { window.location.replace('../../auth.html'); }); });
         }
 
         // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
