@@ -154,7 +154,7 @@
                                 <tr>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_id">ID</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_commodity_details">Commodity Details</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_category">Category</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_category">Category</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_current_stock">Current Stock</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_status">Status</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
@@ -432,7 +432,7 @@
                             <p class="text-sm font-black text-gray-800 truncate max-w-[140px] md:max-w-none">${item.item_name}</p>
                             <p class="text-[10px] text-gray-400 truncate max-w-[140px] md:max-w-xs">${item.description || t('no_description_provided')}</p>
                         </td>
-                        <td class="px-3 md:px-6 py-4 text-center">
+                        <td class="hidden md:table-cell px-6 py-4 text-center">
                             <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold">${categoryLabel(item.category)}</span>
                         </td>
                         <td class="px-3 md:px-6 py-4 text-right">
