@@ -92,12 +92,12 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_req_id">Req ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_info">Farmer Info</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_requested_seed">Requested Seed</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_req_id">Req ID</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_info">Farmer Info</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_requested_seed">Requested Seed</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
@@ -403,7 +403,7 @@
 
             tbody.innerHTML = items.length
                 ? ""
-                : `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_seed_requests_found')}</td></tr>`;
+                : `<tr><td colspan="6" class="px-3 md:px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_seed_requests_found')}</td></tr>`;
 
             items.forEach(item => {
                 let statusBadge = '', actionButtons = '';
@@ -431,23 +431,23 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/60 transition-all border-b border-gray-50">
-                        <td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
-                        <td class="px-6 py-4">
+                        <td class="hidden md:table-cell px-6 py-4 font-bold text-gray-400 text-center text-sm">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
+                        <td class="px-3 md:px-6 py-4">
                             <p class="text-sm font-black text-gray-800">${item.Farmer_Name}</p>
                             <p class="text-[10px] text-gray-400">${t('label_date')}: ${item.DateStr}</p>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-3 md:px-6 py-4">
                             <p class="text-sm font-bold text-[#11542e]">${item.Requested_Seed}</p>
                         </td>
-                        <td class="px-6 py-4">
-                            <p class="text-[11px] text-gray-500 max-w-[200px] truncate">${item.Description}</p>
+                        <td class="px-3 md:px-6 py-4">
+                            <p class="text-[11px] text-gray-500 max-w-[100px] md:max-w-[200px] truncate">${item.Description}</p>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="hidden md:table-cell px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">
                                 ${seedReqStatusLabel(item.Status)}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right">${actionButtons}</td>
+                        <td class="px-3 md:px-6 py-4 text-right">${actionButtons}</td>
                     </tr>`;
             });
 
