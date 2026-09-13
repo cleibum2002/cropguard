@@ -87,3 +87,134 @@ function loadMaoNavbar(currentPage) {
 
     initCropGuardMobileShell();
 }
+
+/* ============================================================
+   CropGuard mobile shell — phones only (max-width: 767px)
+   Desktop layout is completely untouched.
+   Identical copy of the version in navbar_admin.js — MAO pages
+   never load that file, so this was calling an undefined function
+   and the mobile drawer/FAB never activated on any MAO page.
+   ============================================================ */
+function initCropGuardMobileShell() {
+    if (document.getElementById('cgMobileShellStyles')) return;
+
+    const css = `
+    #cgMenuBtn, #cgDrawerOverlay { display: none; }
+
+    @media (max-width: 767px) {
+
+        /* 1. The 16rem sidebar no longer eats the screen.
+              It becomes a drawer that slides in from the left. */
+        body #sidebar-container {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: 16rem;
+            max-width: 82vw;
+            z-index: 60;
+            transform: translateX(-100%);
+            transition: transform .25s ease;
+            overflow: hidden;
+        }
+        body #sidebar-container.cg-drawer-open { transform: translateX(0); }
+        body #sidebar-container > aside {
+            width: 100%;
+            height: 100%;
+            min-height: 100%;
+        }
+
+        /* 2. Dark backdrop behind the open drawer */
+        #cgDrawerOverlay {
+            display: block;
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: rgba(0,0,0,.5);
+            z-index: 55;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .25s ease, visibility .25s ease;
+        }
+        #cgDrawerOverlay.cg-drawer-open { opacity: 1; visibility: visible; }
+
+        /* 3. Floating menu button, bottom-right, sitting above
+              the phone's own back/home/menu bar */
+        #cgMenuBtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            right: 1rem;
+            bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+            width: 3.25rem;
+            height: 3.25rem;
+            border-radius: 9999px;
+            background: #11542e;
+            color: #ffffff;
+            border: 2px solid rgba(255,255,255,.25);
+            box-shadow: 0 8px 22px rgba(0,0,0,.3);
+            font-size: 1.15rem;
+            z-index: 70;
+            cursor: pointer;
+            padding: 0;
+            transition: transform .15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #cgMenuBtn:active { transform: scale(.93); }
+
+        /* 4. Comfortable side padding + real clearance at the bottom
+              so the phone's nav bar stops covering content */
+        main.overflow-y-auto {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            padding-bottom: calc(7rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* 5. Page headers were sized for wide screens */
+        header.flex {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+    }
+
+    /* Never let the drawer button appear on printed reports */
+    @media print {
+        #cgMenuBtn, #cgDrawerOverlay { display: none !important; }
+    }`;
+
+    const style = document.createElement('style');
+    style.id = 'cgMobileShellStyles';
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    const overlay = document.createElement('div');
+    overlay.id = 'cgDrawerOverlay';
+    document.body.appendChild(overlay);
+
+    const btn = document.createElement('button');
+    btn.id = 'cgMenuBtn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Open menu');
+    btn.innerHTML = '<i class="fa-solid fa-bars"></i>';
+    document.body.appendChild(btn);
+
+    const drawer = document.getElementById('sidebar-container');
+
+    function setDrawer(open) {
+        if (!drawer) return;
+        drawer.classList.toggle('cg-drawer-open', open);
+        overlay.classList.toggle('cg-drawer-open', open);
+        btn.innerHTML = open
+            ? '<i class="fa-solid fa-xmark"></i>'
+            : '<i class="fa-solid fa-bars"></i>';
+    }
+
+    btn.addEventListener('click', function () {
+        setDrawer(!(drawer && drawer.classList.contains('cg-drawer-open')));
+    });
+    overlay.addEventListener('click', function () { setDrawer(false); });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') setDrawer(false);
+    });
+    window.addEventListener('resize', function () {
+        if (window.innerWidth >= 768) setDrawer(false);
+    });
+}
