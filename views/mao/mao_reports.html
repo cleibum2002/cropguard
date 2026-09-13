@@ -139,7 +139,11 @@
                 border: none !important;
                 border-radius: 0 !important;
             }
-            #reportPreviewCard .p-10 {
+            /* Targeted by this stable class, not by the Tailwind p-10 utility name
+               directly - that utility is now p-4 sm:p-10 (mobile-responsive on
+               screen), so matching the exact class name would have silently
+               broken this rule, same issue as .report-summary-stats below. */
+            #reportPreviewCard .report-preview-body {
                 padding: 0 !important;
             }
 
@@ -209,19 +213,23 @@
                 </div>
 
                 <div id="reportConfigCard" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
-                    <div class="flex items-center gap-4 mb-4">
-                        <div class="w-10 h-10 bg-green-50 text-green-700 rounded-xl flex items-center justify-center font-bold">
+                    <div class="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                        <div class="w-9 h-9 sm:w-10 sm:h-10 bg-green-50 text-green-700 rounded-xl flex items-center justify-center font-bold flex-shrink-0">
                             <i class="fa-solid fa-magnifying-glass-chart"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-black text-gray-800" data-i18n="config_title">Assistance Report Generator</h3>
+                            <h3 class="text-sm sm:text-lg font-black text-gray-800" data-i18n="config_title">Assistance Report Generator</h3>
                             <p class="text-[10px] font-bold text-gray-400 uppercase" data-i18n="config_sub">Summarize aid distribution by status</p>
                         </div>
                     </div>
-                    <div class="flex flex-wrap items-end gap-3">
+                    <button id="reportFilterToggleBtn" onclick="toggleReportFilterPanel()" class="md:hidden w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold text-gray-600">
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-filter"></i> <span data-i18n="filter_toggle_label">Filters</span></span>
+                        <i id="reportFilterToggleIcon" class="fa-solid fa-chevron-down transition-transform"></i>
+                    </button>
+                    <div id="reportFilterFieldsRow" class="hidden md:flex mt-3 md:mt-0 space-y-3 md:space-y-0 flex-wrap items-end gap-3">
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="filter_category_label">Filter Category</label>
-                            <select id="statusFilter" onchange="generateReport()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[170px]">
+                            <select id="statusFilter" onchange="generateReport()" class="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] md:min-w-[170px]">
                                 <option value="ALL" data-i18n="filter_opt_all">Show All Distributions</option>
                                 <option value="PENDING DISTRIBUTION" data-i18n="filter_opt_pending">Pending Distribution</option>
                                 <option value="CLAIMED" data-i18n="filter_opt_claimed">Successfully Claimed</option>
@@ -229,56 +237,56 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="filter_damage_type_label">Damage Type</label>
-                            <select id="filterDamageType" onchange="generateReport()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[150px]">
+                            <select id="filterDamageType" onchange="generateReport()" class="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] md:min-w-[150px]">
                                 <option value="">All Types</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="filter_severity_label">Severity</label>
-                            <select id="filterSeverity" onchange="generateReport()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[150px]">
+                            <select id="filterSeverity" onchange="generateReport()" class="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] md:min-w-[150px]">
                                 <option value="">All Severities</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="filter_barangay_label">Barangay</label>
-                            <select id="filterBarangay" onchange="generateReport()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                            <select id="filterBarangay" onchange="generateReport()" class="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] md:min-w-[160px]">
                                 <option value="">All Barangays</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="filter_date_from_label">From</label>
-                            <input type="date" id="filterDateFrom" onchange="generateReport()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                            <input type="date" id="filterDateFrom" onchange="generateReport()" class="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="filter_date_to_label">To</label>
-                            <input type="date" id="filterDateTo" onchange="generateReport()" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                            <input type="date" id="filterDateTo" onchange="generateReport()" class="w-full md:w-auto bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                         </div>
-                        <button onclick="generateReport()" class="bg-[#11542e] text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:bg-green-900 transition-all flex items-center gap-2">
+                        <button onclick="generateReport()" class="w-full md:w-auto bg-[#11542e] text-white px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-bold shadow-lg hover:bg-green-900 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-sync"></i> <span data-i18n="btn_refresh_report">Refresh Report Data</span>
                         </button>
-                        <button onclick="clearFilters()" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-3 rounded-xl font-bold transition-colors flex items-center gap-2">
+                        <button onclick="clearFilters()" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2">
                             <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear Filters</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="reportPreviewCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[600px]">
-                    <div class="px-6 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center no-print">
-                        <h3 class="font-black text-gray-800 text-sm uppercase tracking-wider">
+                <div id="reportPreviewCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px] sm:min-h-[600px]">
+                    <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-center no-print">
+                        <h3 class="font-black text-gray-800 text-xs sm:text-sm uppercase tracking-wider">
                             <i class="fa-solid fa-file-contract mr-2 text-gray-400"></i> <span data-i18n="report_preview_title">Report Preview</span>
                         </h3>
-                        <div class="flex items-center gap-2">
-                            <button onclick="exportToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-emerald-700 transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-file-excel"></i> <span data-i18n="btn_export_excel">Export to Excel</span>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <button onclick="exportToExcel()" title="Export to Excel" class="w-9 h-9 md:w-auto md:h-auto md:px-4 md:py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-emerald-700 transition-all flex items-center justify-center md:gap-2">
+                                <i class="fa-solid fa-file-excel"></i> <span class="hidden md:inline" data-i18n="btn_export_excel">Export to Excel</span>
                             </button>
-                            <button onclick="window.print()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-indigo-700 transition-all flex items-center gap-2">
-                                <i class="fa-solid fa-print"></i> <span data-i18n="btn_print_pdf">Print Official PDF</span>
+                            <button onclick="window.print()" title="Print Official PDF" class="w-9 h-9 md:w-auto md:h-auto md:px-4 md:py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center md:gap-2">
+                                <i class="fa-solid fa-print"></i> <span class="hidden md:inline" data-i18n="btn_print_pdf">Print Official PDF</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="p-10">
-                        <div class="report-summary-stats grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10 pb-10 border-b border-gray-100">
+                    <div class="report-preview-body p-4 sm:p-10">
+                        <div class="report-summary-stats grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 mb-4 pb-4 sm:mb-10 sm:pb-10 border-b border-gray-100">
                             <div class="text-center sm:border-r border-gray-200">
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_total_beneficiaries">Total Beneficiaries</p>
                                 <p id="repTotalFarmers" class="text-xl sm:text-3xl font-black text-gray-800 mt-1">0</p>
@@ -293,7 +301,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-10">
+                        <div class="mb-4 sm:mb-10">
                             <h4 class="text-xs font-black text-gray-800 uppercase mb-3" data-i18n="ledger_title">Detailed Incident Ledger</h4>
                             <div class="overflow-x-auto">
                             <table class="w-full text-left">
@@ -356,6 +364,7 @@
                 filter_opt_pending: "Pending Distribution", filter_opt_claimed: "Successfully Claimed",
                 filter_damage_type_label: "Damage Type", filter_severity_label: "Severity", filter_barangay_label: "Barangay",
                 filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear Filters",
+                filter_toggle_label: "Filters",
                 filter_all_types: "All Types", filter_all_severities: "All Severities", filter_all_barangays: "All Barangays",
                 btn_refresh_report: "Refresh Report Data",
                 report_preview_title: "Report Preview", btn_export_excel: "Export to Excel",
@@ -389,6 +398,7 @@
                 filter_opt_pending: "Naghihintay ng Pamamahagi", filter_opt_claimed: "Matagumpay na Na-claim",
                 filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan", filter_barangay_label: "Barangay",
                 filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear ang mga Filter",
+                filter_toggle_label: "Mga Filter",
                 filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan", filter_all_barangays: "Lahat ng Barangay",
                 btn_refresh_report: "I-refresh ang Datos ng Ulat",
                 report_preview_title: "Preview ng Ulat", btn_export_excel: "I-export sa Excel",
@@ -521,6 +531,11 @@
             const currentValue = el.value; // preserve the current selection across rebuilds
             el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
             if (values.includes(currentValue)) el.value = currentValue;
+        }
+
+        function toggleReportFilterPanel() {
+            document.getElementById('reportFilterFieldsRow').classList.toggle('hidden');
+            document.getElementById('reportFilterToggleIcon').classList.toggle('rotate-180');
         }
 
         function clearFilters() {
