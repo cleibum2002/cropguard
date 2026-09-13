@@ -169,7 +169,7 @@
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_crop_details">Crop Details</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_damage_type">Damage Type</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
+                                    <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
@@ -790,7 +790,7 @@
                             ${item.technician_name ? `<p class="text-[9px] mt-1 font-bold text-purple-500"><i class="fa-solid fa-user-check mr-1"></i>${item.technician_name}</p>` : ''}
                             ${visitDateDisplay}
                         </td>
-                        <td class="px-3 md:px-6 py-4 text-right"><div class="flex flex-wrap items-center justify-end gap-2">${actionButtons}</div></td>
+                        <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-right"><div class="flex flex-wrap items-center justify-end gap-2">${actionButtons}</div></td>
                     </tr>`;
             });
 
