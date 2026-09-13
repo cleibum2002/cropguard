@@ -156,11 +156,11 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div class="lg:col-span-2 space-y-4">
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div class="px-6 py-4 border-b border-gray-50 flex justify-between items-center gap-3">
+                            <div class="px-4 md:px-6 py-4 border-b border-gray-50 flex flex-col md:flex-row md:justify-between items-stretch md:items-center gap-2 md:gap-3">
                                 <h3 class="font-black text-gray-800 flex items-center gap-2">
                                     <i class="fa-regular fa-clock text-amber-500"></i> <span data-i18n="queue_title">Validation Queue</span>
                                 </h3>
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center justify-between md:justify-end gap-3">
                                     <select id="queueSortFilter" onchange="loadData()" class="text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-[#11542e]">
                                         <option value="ASC" data-i18n="sort_oldest">Oldest to Recent</option>
                                         <option value="DESC" data-i18n="sort_recent">Recent to Oldest</option>
