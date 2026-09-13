@@ -91,60 +91,60 @@
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
-            <div class="max-w-7xl mx-auto space-y-6">
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#f0f2f0] custom-scrollbar">
+            <div class="max-w-7xl mx-auto space-y-4 sm:space-y-6">
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_total_area">Total Area Damaged</p>
-                            <h3 id="totalAreaStat" class="text-3xl font-black text-red-600">0.00 <span class="text-sm text-gray-400">Ha</span></h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1" data-i18n="stat_total_area">Total Area Damaged</p>
+                            <h3 id="totalAreaStat" class="text-xl sm:text-3xl font-black text-red-600">0.00 <span class="text-xs sm:text-sm text-gray-400">Ha</span></h3>
                         </div>
-                        <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-sm sm:text-xl flex-shrink-0">
                             <i class="fa-solid fa-chart-area"></i>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_top_crop">Most Affected Crop</p>
-                            <h3 id="topCropStat" class="text-2xl font-black text-[#11542e]" data-i18n="loading">Loading...</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1" data-i18n="stat_top_crop">Most Affected Crop</p>
+                            <h3 id="topCropStat" class="text-lg sm:text-2xl font-black text-[#11542e]" data-i18n="loading">Loading...</h3>
                         </div>
-                        <div class="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-xl">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-sm sm:text-xl flex-shrink-0">
                             <i class="fa-solid fa-wheat-awn"></i>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
                         <div>
-                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1" data-i18n="stat_top_cause">Primary Threat</p>
-                            <h3 id="topCauseStat" class="text-2xl font-black text-blue-600" data-i18n="loading">Loading...</h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-0.5 sm:mb-1" data-i18n="stat_top_cause">Primary Threat</p>
+                            <h3 id="topCauseStat" class="text-lg sm:text-2xl font-black text-blue-600" data-i18n="loading">Loading...</h3>
                         </div>
-                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl">
+                        <div class="w-9 h-9 sm:w-12 sm:h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-sm sm:text-xl flex-shrink-0">
                             <i class="fa-solid fa-cloud-showers-water"></i>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest" data-i18n="chart_title_cause">Incidents by Damage Type</h3>
-                        <div class="relative h-64 w-full flex items-center justify-center">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-black text-gray-800 mb-2 sm:mb-4 uppercase tracking-widest" data-i18n="chart_title_cause">Incidents by Damage Type</h3>
+                        <div class="relative h-48 sm:h-64 w-full flex items-center justify-center">
                             <canvas id="causeChart"></canvas>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest" data-i18n="chart_title_crop">Hectares Lost per Crop</h3>
-                        <div class="relative h-64 w-full">
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-sm font-black text-gray-800 mb-2 sm:mb-4 uppercase tracking-widest" data-i18n="chart_title_crop">Hectares Lost per Crop</h3>
+                        <div class="relative h-48 sm:h-64 w-full">
                             <canvas id="cropAreaChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-2 sm:mb-4">
                         <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest" data-i18n="chart_title_trend">Monthly Damage Trend (2026)</h3>
                     </div>
-                    <div class="relative h-72 w-full">
+                    <div class="relative h-56 sm:h-72 w-full">
                         <canvas id="trendChart"></canvas>
                     </div>
                 </div>
