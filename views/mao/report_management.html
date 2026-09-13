@@ -78,42 +78,48 @@
             <button onclick="setTab('All')" id="tabAll" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all" data-i18n="tab_all">All Reports</button>
         </div>
 
-        <div class="bg-white px-4 sm:px-8 py-3 flex-shrink-0 flex flex-wrap items-end gap-3 border-b border-gray-100">
-            <div id="filterStatusWrapper" class="hidden">
-                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_status_label">Status</label>
-                <select id="filterStatus" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
-                    <option value="">All Statuses</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_damage_type_label">Damage Type</label>
-                <select id="filterDamageType" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
-                    <option value="">All Types</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_severity_label">Severity</label>
-                <select id="filterSeverity" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
-                    <option value="">All Severities</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_barangay_label">Barangay</label>
-                <select id="filterBarangay" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
-                    <option value="">All Barangays</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_from_label">From</label>
-                <input type="date" id="filterDateFrom" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
-            </div>
-            <div>
-                <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_to_label">To</label>
-                <input type="date" id="filterDateTo" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
-            </div>
-            <button onclick="clearFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear Filters</span>
+        <div class="bg-white px-4 sm:px-8 py-3 flex-shrink-0 border-b border-gray-100">
+            <button id="filterToggleBtn" onclick="toggleFilterPanel()" class="md:hidden w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold text-gray-600">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-filter"></i> <span data-i18n="filter_toggle_label">Filters</span></span>
+                <i id="filterToggleIcon" class="fa-solid fa-chevron-down transition-transform"></i>
             </button>
+            <div id="filterFieldsRow" class="hidden md:flex mt-3 md:mt-0 space-y-3 md:space-y-0 flex-wrap items-end gap-3">
+                <div id="filterStatusWrapper" class="hidden">
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_status_label">Status</label>
+                    <select id="filterStatus" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                        <option value="">All Statuses</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_damage_type_label">Damage Type</label>
+                    <select id="filterDamageType" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                        <option value="">All Types</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_severity_label">Severity</label>
+                    <select id="filterSeverity" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                        <option value="">All Severities</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_barangay_label">Barangay</label>
+                    <select id="filterBarangay" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                        <option value="">All Barangays</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_from_label">From</label>
+                    <input type="date" id="filterDateFrom" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                </div>
+                <div>
+                    <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="filter_date_to_label">To</label>
+                    <input type="date" id="filterDateTo" onchange="filterReports()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
+                </div>
+                <button onclick="clearFilters()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-xmark"></i> <span data-i18n="filter_clear">Clear Filters</span>
+                </button>
+            </div>
         </div>
 
         <main class="flex-1 flex overflow-hidden">
@@ -169,6 +175,7 @@
             notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
             filter_damage_type_label: "Damage Type", filter_severity_label: "Severity", filter_barangay_label: "Barangay",
             filter_date_from_label: "From", filter_date_to_label: "To", filter_clear: "Clear Filters",
+            filter_toggle_label: "Filters",
             filter_all_types: "All Types", filter_all_severities: "All Severities", filter_all_barangays: "All Barangays",
             filter_status_label: "Status", filter_all_statuses: "All Statuses",
             tech_findings_title: "Technician's Field Findings", no_tech_findings: "No findings provided yet.",
@@ -208,6 +215,7 @@
             notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
             filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan", filter_barangay_label: "Barangay",
             filter_date_from_label: "Mula", filter_date_to_label: "Hanggang", filter_clear: "I-clear ang mga Filter",
+            filter_toggle_label: "Mga Filter",
             filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan", filter_all_barangays: "Lahat ng Barangay",
             filter_status_label: "Katayuan", filter_all_statuses: "Lahat ng Katayuan",
             tech_findings_title: "Natuklasan ng Technician sa Field", no_tech_findings: "Wala pang natuklasan na ibinigay.",
@@ -332,6 +340,11 @@
         const currentValue = el.value; // preserve the current selection across rebuilds
         el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${v}">${v}</option>`).join('');
         if (values.includes(currentValue)) el.value = currentValue;
+    }
+
+    function toggleFilterPanel() {
+        document.getElementById('filterFieldsRow').classList.toggle('hidden');
+        document.getElementById('filterToggleIcon').classList.toggle('rotate-180');
     }
 
     function clearFilters() {
