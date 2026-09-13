@@ -127,7 +127,7 @@
                 <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4" id="reportsList"></div>
             </div>
 
-            <div class="hidden md:block flex-1 overflow-y-auto bg-white p-6 sm:p-10 custom-scrollbar" id="detailPanel">
+            <div class="hidden md:block flex-1 overflow-y-auto bg-white p-4 sm:p-10 custom-scrollbar" id="detailPanel">
                 <div class="h-full flex flex-col items-center justify-center text-gray-300">
                     <i class="fa-solid fa-file-circle-question text-6xl mb-4 opacity-20"></i>
                     <p class="font-bold text-sm text-gray-400" data-i18n="empty_state_text">Select a report to view details</p>
@@ -154,6 +154,7 @@
             mao_verification_title: "MAO Identity Verification",
             mao_verification_desc: "Verify if this farmer is a legitimate resident (check RSBA) and actually operates in the reported location.",
             btn_approve_verification: "Approve Verification", btn_reject_report: "Reject Report",
+            btn_approve_short: "Approve", btn_reject_short: "Reject",
             report_locked_prefix: "Report is currently locked as",
             validation_profile_title: "Validation Profile", submitted_label: "Submitted",
             farmer_id_section: "Farmer Identification", full_name_label: "Full Name",
@@ -194,6 +195,7 @@
             mao_verification_title: "Pagpapatunay ng Pagkakakilanlan ng MAO",
             mao_verification_desc: "Tiyakin kung ang magsasakang ito ay lehitimong residente (tingnan ang RSBA) at talagang nagsasaka sa nakasaad na lokasyon.",
             btn_approve_verification: "Aprubahan ang Pagpapatunay", btn_reject_report: "Tanggihan ang Ulat",
+            btn_approve_short: "Aprubahan", btn_reject_short: "Tanggihan",
             report_locked_prefix: "Ang ulat ay kasalukuyang naka-lock bilang",
             validation_profile_title: "Profile ng Pagpapatunay", submitted_label: "Isinumite",
             farmer_id_section: "Pagkakakilanlan ng Magsasaka", full_name_label: "Buong Pangalan",
@@ -506,17 +508,17 @@
             let galleryHTML = '';
             if (images.length > 0) {
                 galleryHTML = `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
-                    <div class="flex flex-wrap gap-4 mb-8">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
+                    <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">
                         ${images.map(img => `
-                            <a href="${img.path || img}" target="_blank" class="block w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
+                            <a href="${img.path || img}" target="_blank" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
                                 <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
                             </a>`).join('')}
                     </div>`;
             } else {
                 galleryHTML = `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
-                    <div class="bg-gray-50 border border-gray-100 p-4 rounded-xl mb-8">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
+                    <div class="bg-gray-50 border border-gray-100 p-3 sm:p-4 rounded-xl mb-3 sm:mb-8">
                         <p class="text-xs text-gray-400 italic">${t('no_evidence')}</p>
                     </div>`;
             }
@@ -537,25 +539,25 @@
             }
 
             const remarksHTML = hasTechFindings ? `
-                <div class="mb-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="mb-3 sm:mb-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
-                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
-                            <div class="bg-blue-50/30 border border-blue-100 p-5 rounded-2xl h-full">
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
+                            <div class="bg-blue-50/30 border border-blue-100 p-3 sm:p-5 rounded-2xl h-full">
                                 <p class="text-sm text-gray-600 leading-relaxed italic whitespace-pre-line">${farmerNotes || t('no_remarks')}</p>
                             </div>
                         </div>
                         <div>
-                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-green-500 pl-2">${t('tech_findings_title')}</h4>
-                            <div class="bg-green-50/30 border border-green-100 p-5 rounded-2xl h-full">
+                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-green-500 pl-2">${t('tech_findings_title')}</h4>
+                            <div class="bg-green-50/30 border border-green-100 p-3 sm:p-5 rounded-2xl h-full">
                                 <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">${techNotes || t('no_tech_findings')}</p>
                             </div>
                         </div>
                     </div>
                 </div>` : `
-                <div class="mb-6">
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
-                    <div class="bg-blue-50/30 border border-blue-100 p-5 rounded-2xl">
+                <div class="mb-3 sm:mb-6">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
+                    <div class="bg-blue-50/30 border border-blue-100 p-3 sm:p-5 rounded-2xl">
                         <p class="text-sm text-gray-600 leading-relaxed italic whitespace-pre-line">${farmerNotes || t('no_remarks')}</p>
                     </div>
                 </div>`;
@@ -563,17 +565,17 @@
             let decisionPanel = "";
             if (displayStatus === 'Pending') {
                 decisionPanel = `
-                    <div class="bg-amber-50/50 p-8 rounded-[2rem] border border-amber-100 mt-8">
-                        <h4 class="text-lg font-black text-gray-800 mb-2">${t('mao_verification_title')}</h4>
-                        <p class="text-xs text-gray-500 mb-6">${t('mao_verification_desc')}</p>
-                        <div class="flex gap-4">
-                            <button onclick="updateStatus(${id}, 'Validated')" class="flex-1 bg-[#11542e] text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-check"></i> ${t('btn_approve_verification')}</button>
-                            <button onclick="updateStatus(${id}, 'Rejected')" class="flex-1 bg-red-50 text-red-600 border border-red-200 py-4 rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all flex justify-center items-center gap-2"><i class="fa-solid fa-xmark"></i> ${t('btn_reject_report')}</button>
+                    <div class="bg-amber-50/50 p-4 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-amber-100 mt-4 sm:mt-8">
+                        <h4 class="text-sm sm:text-lg font-black text-gray-800 mb-1 sm:mb-2">${t('mao_verification_title')}</h4>
+                        <p class="text-xs text-gray-500 mb-3 sm:mb-6">${t('mao_verification_desc')}</p>
+                        <div class="flex gap-3 sm:gap-4">
+                            <button onclick="updateStatus(${id}, 'Validated')" class="flex-1 bg-[#11542e] text-white py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-xs uppercase shadow-xl shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex justify-center items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-check"></i> <span class="sm:hidden">${t('btn_approve_short')}</span><span class="hidden sm:inline">${t('btn_approve_verification')}</span></button>
+                            <button onclick="updateStatus(${id}, 'Rejected')" class="flex-1 bg-red-50 text-red-600 border border-red-200 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-black text-xs uppercase hover:bg-red-600 hover:text-white transition-all flex justify-center items-center gap-2 whitespace-nowrap"><i class="fa-solid fa-xmark"></i> <span class="sm:hidden">${t('btn_reject_short')}</span><span class="hidden sm:inline">${t('btn_reject_report')}</span></button>
                         </div>
                     </div>`;
             } else {
                 decisionPanel = `
-                    <div class="bg-blue-50/50 p-6 rounded-[2rem] border border-blue-100 mt-8 flex items-center justify-center">
+                    <div class="bg-blue-50/50 p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-blue-100 mt-4 sm:mt-8 flex items-center justify-center">
                         <p class="text-xs font-black text-blue-500 uppercase tracking-widest">
                             <i class="fa-solid fa-lock mr-2"></i> ${t('report_locked_prefix')} ${reportStatusLabel(displayStatus)}
                         </p>
@@ -585,9 +587,9 @@
             const rsbaDisplay = detail.RSBA_No || baseReport?.RSBA_No || detail.rsba_no || t('unregistered');
 
             document.getElementById('detailPanel').innerHTML = `
-                <div class="max-w-4xl mx-auto pb-10">
-                    <button onclick="clearDetailPanel()" class="md:hidden mb-4 flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#11542e]"><i class="fa-solid fa-arrow-left"></i> ${t('btn_back_to_list')}</button>
-                    <div class="flex flex-wrap justify-between items-center gap-3 mb-8 pb-6 border-b border-gray-100">
+                <div class="max-w-4xl mx-auto pb-4 sm:pb-10">
+                    <button onclick="clearDetailPanel()" class="md:hidden mb-3 flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#11542e]"><i class="fa-solid fa-arrow-left"></i> ${t('btn_back_to_list')}</button>
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4 sm:mb-8 pb-3 sm:pb-6 border-b border-gray-100">
                         <div>
                             <h3 class="text-xl sm:text-3xl font-black text-gray-800 tracking-tighter">${t('validation_profile_title')} #REP-${id}</h3>
                             <p class="text-xs text-gray-400 font-bold tracking-widest uppercase mt-1">${t('submitted_label')}: ${reportDate || t('na_fallback')}</p>
@@ -596,9 +598,9 @@
                     </div>
 
                     <!-- Farmer Identity Block -->
-                    <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100 mb-6">
-                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 border-l-2 border-[#11542e] pl-2">${t('farmer_id_section')}</h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-2xl p-4 sm:p-6 border border-gray-100 mb-3 sm:mb-6">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-4 border-l-2 border-[#11542e] pl-2">${t('farmer_id_section')}</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                             <div>
                                 <p class="text-[10px] text-gray-400 font-bold uppercase mb-1">${t('full_name_label')}</p>
                                 <p class="text-sm font-black text-gray-800">${detail.FarmerName || baseReport?.farmer || t('na_fallback')}</p>
@@ -615,23 +617,23 @@
                     </div>
 
                     <!-- Farm & Damage Details -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                        <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-8">
+                        <div class="bg-white border border-gray-100 p-3 sm:p-5 rounded-2xl shadow-sm">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('crop_type_label')}</p>
                             <p class="text-sm font-bold text-[#11542e]">${detail.Crop_Name || baseReport?.crop_name || t('na_fallback')}</p>
                         </div>
-                        <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
+                        <div class="bg-white border border-gray-100 p-3 sm:p-5 rounded-2xl shadow-sm">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('reported_damage_label')}</p>
                             <p class="text-sm font-bold text-red-600">${detail.Damage_Type || baseReport?.damage_type || t('na_fallback')}</p>
                         </div>
-                        <div class="bg-white border border-gray-100 p-5 rounded-2xl shadow-sm">
+                        <div class="bg-white border border-gray-100 p-3 sm:p-5 rounded-2xl shadow-sm">
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('affected_area_label')}</p>
                             <p class="text-sm font-bold text-gray-800">${reportArea} Ha</p>
                         </div>
                     </div>
-                    
+
                     ${galleryHTML}
-                    
+
                     <!-- Farmer's Original Report vs Technician's Field Findings -->
                     ${remarksHTML}
 
