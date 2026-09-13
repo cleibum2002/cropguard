@@ -97,6 +97,8 @@ if (isset($input['email'], $input['password'])) {
             // on every login so it reappears each time until actually verified.
             $_SESSION['Phone_Unverified'] = isset($user['Phone_Verified']) && (int)$user['Phone_Verified'] !== 1;
             $_SESSION['Phone_Alert_Dismissed'] = false;
+            // Starts the server-side idle clock (see api/config/session_policy.php).
+            $_SESSION['Last_Activity'] = time();
 
                         // Log the action
             require_once '../audit/log_action.php';
