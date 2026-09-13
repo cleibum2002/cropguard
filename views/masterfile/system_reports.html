@@ -309,15 +309,15 @@
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 border-b border-gray-200 pb-6">
                             <div class="text-center pb-4 sm:pb-0 border-b sm:border-b-0 sm:border-r border-gray-200">
                                 <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest" data-i18n="label_total_incidents">Total Incidents</p>
-                                <p id="repTotal" class="text-3xl font-black text-gray-800 mt-1">0</p>
+                                <p id="repTotal" class="text-xl sm:text-3xl font-black text-gray-800 mt-1">0</p>
                             </div>
                             <div class="text-center pb-4 sm:pb-0 border-b sm:border-b-0 sm:border-r border-gray-200">
                                 <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest" data-i18n="label_total_affected_area">Total Affected Area</p>
-                                <p id="repArea" class="text-3xl font-black text-red-600 mt-1">0.00 Ha</p>
+                                <p id="repArea" class="text-xl sm:text-3xl font-black text-red-600 mt-1">0.00 Ha</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest" data-i18n="label_est_aid_required">Est. Aid Required</p>
-                                <p id="repAid" class="text-3xl font-black text-indigo-600 mt-1">0 Bags</p>
+                                <p id="repAid" class="text-xl sm:text-3xl font-black text-indigo-600 mt-1">0 Bags</p>
                             </div>
                         </div>
 
@@ -328,9 +328,9 @@
                                 <table class="w-full text-left bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
                                     <thead class="bg-gray-100 border-b border-gray-200">
                                         <tr>
-                                            <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase" data-i18n="th_crop_type">Crop Type</th>
-                                            <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase text-center" data-i18n="th_incidents">Incidents</th>
-                                            <th class="py-2 px-4 text-[10px] font-black text-gray-500 uppercase text-right" data-i18n="th_total_area">Total Area (Ha)</th>
+                                            <th class="py-2 px-2 sm:px-4 text-[10px] font-black text-gray-500 uppercase whitespace-nowrap" data-i18n="th_crop_type">Crop Type</th>
+                                            <th class="py-2 px-2 sm:px-4 text-[10px] font-black text-gray-500 uppercase text-center whitespace-nowrap" data-i18n="th_incidents">Incidents</th>
+                                            <th class="py-2 px-2 sm:px-4 text-[10px] font-black text-gray-500 uppercase text-right whitespace-nowrap" data-i18n="th_total_area">Total Area (Ha)</th>
                                         </tr>
                                     </thead>
                                     <tbody id="breakdownTableBody" class="divide-y divide-gray-100 text-sm font-bold text-gray-700">
@@ -346,12 +346,12 @@
                                 <table class="w-full text-left">
                                     <thead>
                                         <tr class="border-b-2 border-gray-800 text-gray-800">
-                                            <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_ref_id">Ref ID</th>
-                                            <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_farmer_short">Farmer</th>
-                                            <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_crop_short">Crop</th>
-                                            <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_date_short">Date</th>
-                                            <th class="py-2 text-[10px] font-black uppercase" data-i18n="th_area_short">Area</th>
-                                            <th class="py-2 text-[10px] font-black uppercase text-right" data-i18n="th_status">Status</th>
+                                            <th class="py-2 pr-2 sm:pr-3 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="th_ref_id">Ref ID</th>
+                                            <th class="py-2 pr-2 sm:pr-3 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="th_farmer_short">Farmer</th>
+                                            <th class="py-2 pr-2 sm:pr-3 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="th_crop_short">Crop</th>
+                                            <th class="py-2 pr-2 sm:pr-3 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="th_date_short">Date</th>
+                                            <th class="py-2 pr-2 sm:pr-3 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="th_area_short">Area</th>
+                                            <th class="py-2 text-[10px] font-black uppercase text-right whitespace-nowrap" data-i18n="th_status">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody id="reportTableBody" class="divide-y divide-gray-100 text-xs text-gray-600">
@@ -587,12 +587,12 @@
 
             return `
                 <tr class="hover:bg-gray-50 transition-colors">
-                    <td class="py-2 font-bold text-gray-500">REP-${item.id}</td>
-                    <td class="py-2 font-bold">${item.farmer || t('label_unknown')}</td>
-                    <td class="py-2">${cropName}</td>
-                    <td class="py-2 text-gray-500">${cleanDate}</td>
-                    <td class="py-2 text-red-600 font-bold">${area.toFixed(2)}</td>
-                    <td class="py-2 text-right font-bold uppercase tracking-widest ${statusClass}">${reportStatusLabel(item.status)}</td>
+                    <td class="py-2 pr-2 sm:pr-3 font-bold text-gray-500 whitespace-nowrap">REP-${item.id}</td>
+                    <td class="py-2 pr-2 sm:pr-3 font-bold whitespace-nowrap">${item.farmer || t('label_unknown')}</td>
+                    <td class="py-2 pr-2 sm:pr-3 whitespace-nowrap">${cropName}</td>
+                    <td class="py-2 pr-2 sm:pr-3 text-gray-500 whitespace-nowrap">${cleanDate}</td>
+                    <td class="py-2 pr-2 sm:pr-3 text-red-600 font-bold whitespace-nowrap">${area.toFixed(2)}</td>
+                    <td class="py-2 text-right font-bold uppercase tracking-widest whitespace-nowrap ${statusClass}">${reportStatusLabel(item.status)}</td>
                 </tr>
             `;
         }).join('');
@@ -600,9 +600,9 @@
         // Breakdown table
         breakdownTbody.innerHTML = Object.keys(cropData).map(crop => `
             <tr>
-                <td class="py-2 px-4">${crop}</td>
-                <td class="py-2 px-4 text-center text-gray-500">${cropData[crop].count}</td>
-                <td class="py-2 px-4 text-right text-red-600">${cropData[crop].area.toFixed(2)}</td>
+                <td class="py-2 px-2 sm:px-4 whitespace-nowrap">${crop}</td>
+                <td class="py-2 px-2 sm:px-4 text-center text-gray-500 whitespace-nowrap">${cropData[crop].count}</td>
+                <td class="py-2 px-2 sm:px-4 text-right text-red-600 whitespace-nowrap">${cropData[crop].area.toFixed(2)}</td>
             </tr>
         `).join('');
 
