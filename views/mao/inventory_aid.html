@@ -28,8 +28,8 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden bg-gray-50">
                 <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-3 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
-            <span class="text-sm sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Relief Distribution (MAO Center)</span>
-            <div class="relative flex items-center gap-3 sm:gap-4">
+            <span class="text-xs sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Relief Distribution (MAO Center)</span>
+            <div class="ml-auto sm:ml-0 relative flex items-center gap-3 sm:gap-4">
                 <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
                     <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
                     <span>|</span>
@@ -52,14 +52,14 @@
 
         <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
             <div class="max-w-7xl mx-auto">
-                <div class="mb-8 flex items-end justify-between gap-4">
+                <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                     <div>
-                        <h2 class="text-3xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Ayuda Distribution Ledger</h2>
+                        <h2 class="text-xl sm:text-3xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Ayuda Distribution Ledger</h2>
                         <p class="text-gray-500 text-sm mt-1" data-i18n="page_sub">Verify farmer identification and mark agricultural inputs as claimed.</p>
                     </div>
-                    <div class="relative flex-shrink-0">
+                    <div class="relative w-full sm:w-64 sm:flex-shrink-0">
                         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Beneficiary..." class="w-64 bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#11542e]/20" data-i18n-placeholder="search_placeholder">
+                        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Beneficiary..." class="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-[#11542e]/20" data-i18n-placeholder="search_placeholder">
                     </div>
                 </div>
 
@@ -106,21 +106,20 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_dist_id">Distribution ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_name">Farmer Name</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_allocated_aid">Allocated Aid</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_approved_by">Approved By</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_status">Status</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_action">Action</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_dist_id">Distribution ID</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_name">Farmer Name</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_allocated_aid">Allocated Aid</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_approved_by">Approved By</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_status">Status</th>
+                                    <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="aidTableBody" class="divide-y divide-gray-50">
                                 </tbody>
                         </table>
                     </div>
-                    <div id="paginationBar" class="hidden flex items-center justify-between px-6 py-4 border-t border-gray-100">
-                        <p id="paginationInfo" class="text-xs font-bold text-gray-400"></p>
-                        <div class="flex items-center gap-2">
+                    <div id="paginationBar" class="hidden flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0 px-6 py-4 border-t border-gray-100">
+                        <div class="order-1 sm:order-2 flex items-center gap-2">
                             <button onclick="changePage(-1)" id="prevPageBtn" class="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed text-gray-600 rounded-lg text-xs font-bold transition-colors">
                                 <i class="fa-solid fa-chevron-left"></i> <span data-i18n="pagination_prev">Prev</span>
                             </button>
@@ -128,6 +127,7 @@
                                 <span data-i18n="pagination_next">Next</span> <i class="fa-solid fa-chevron-right"></i>
                             </button>
                         </div>
+                        <p id="paginationInfo" class="order-2 sm:order-1 text-xs font-bold text-gray-400"></p>
                     </div>
                 </div>
             </div>
@@ -302,27 +302,27 @@
         // 3. Render the Table
         function renderTable(data) {
             const tbody = document.getElementById("aidTableBody");
-            tbody.innerHTML = data.length ? "" : `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 italic">${t('no_aid_found')}</td></tr>`;
+            tbody.innerHTML = data.length ? "" : `<tr><td colspan="6" class="px-3 md:px-6 py-12 text-center text-gray-400 italic">${t('no_aid_found')}</td></tr>`;
 
             data.forEach(item => {
                 const isClaimed = item.status === 'Claimed';
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/50 transition-colors">
-                        <td class="px-6 py-4 font-black text-gray-400 text-xs">#AID-${item.dist_id}</td>
-                        <td class="px-6 py-4 font-black text-gray-800 text-sm">${item.farmer_name}</td>
-                        <td class="px-6 py-4">
+                        <td class="hidden md:table-cell px-6 py-4 font-black text-gray-400 text-xs">#AID-${item.dist_id}</td>
+                        <td class="px-3 md:px-6 py-4 font-black text-gray-800 text-sm">${item.farmer_name}</td>
+                        <td class="px-3 md:px-6 py-4">
                             <span class="text-xs font-bold text-indigo-600">${item.quantity} ${item.unit}</span>
                             <p class="text-[9px] text-gray-400 uppercase">${item.category}</p>
                         </td>
-                        <td class="px-6 py-4 text-xs text-gray-500">${item.admin_name}</td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="hidden md:table-cell px-6 py-4 text-xs text-gray-500">${item.admin_name}</td>
+                        <td class="px-3 md:px-6 py-4 text-center">
                             <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase ${isClaimed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
                                 ${aidStatusLabel(item.status)}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            ${isClaimed ? 
-                                `<button disabled class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold cursor-not-allowed">${t('btn_released')}</button>` : 
+                        <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-right">
+                            ${isClaimed ?
+                                `<button disabled class="px-4 py-2 bg-gray-100 text-gray-400 rounded-lg text-xs font-bold cursor-not-allowed">${t('btn_released')}</button>` :
                                 `<button onclick="confirmClaim(${item.dist_id})" class="px-4 py-2 bg-[#11542e] text-white rounded-lg text-xs font-bold shadow-md shadow-green-900/20 hover:bg-green-800 transition-all">${t('btn_mark_claimed')}</button>`
                             }
                         </td>
