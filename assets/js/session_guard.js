@@ -1,0 +1,198 @@
+// assets/js/session_guard.js
+//
+// One shared session guard for every protected page. This logic used to be
+// copy-pasted inline into ~20 pages, which is how two of them (mao_reports and
+// tech_reports) ended up never destroying the session on logout at all.
+//
+// What it covers:
+//   1. The initial "are you signed in, and are you allowed on this page" gate.
+//   2. Back/forward (bfcache) restores. Chrome re-shows a fully rendered page
+//      from memory WITHOUT re-running a single script, so the inline gate never
+//      fires - this is why Back after logout used to land back on the dashboard.
+//      The page is hidden until the session has been re-verified.
+//   3. The 5-minute idle timeout, destroying the server session the moment it
+//      expires instead of waiting for the user to click OK on the dialog
+//      (refreshing instead of clicking used to leave the session fully alive).
+//   4. An activity heartbeat, so the server-side timeout in session_check.php
+//      tracks real interaction rather than only page loads.
+//
+// Usage, in <head>, after i18n.js:
+//   <script src="../../assets/js/session_guard.js?v=1"></script>
+//   <script>
+//     CropGuardSession.protect({
+//       roles: ['admin'],                  // omit or [] = any signed-in role
+//       onReady: function (data) { ... }   // runs once the page has loaded
+//     });
+//   </script>
+
+(function () {
+    'use strict';
+
+    // Resolve URLs from this script's own src rather than a hard-coded '../../'
+    // so the file works from any folder depth, under both XAMPP
+    // (http://localhost/da_system/) and Railway (domain root).
+    var SELF = document.currentScript ? document.currentScript.src : '';
+    var MARKER = 'assets/js/session_guard.js';
+    var ROOT = (SELF && SELF.indexOf(MARKER) !== -1)
+        ? SELF.slice(0, SELF.indexOf(MARKER))
+        : '../../';
+
+    var URL_CHECK     = ROOT + 'api/auth/session_check.php';
+    var URL_LOGOUT    = ROOT + 'api/auth/logout.php';
+    var URL_HEARTBEAT = ROOT + 'api/auth/heartbeat.php';
+    var URL_AUTH      = ROOT + 'auth.html';
+
+    var IDLE_MS      = 5 * 60 * 1000; // keep in step with CG_IDLE_LIMIT_SECONDS
+    var HEARTBEAT_MS = 60 * 1000;
+
+    var allowedRoles = [];
+    var idleTimer    = null;
+    var lastBeat     = 0;
+    var leaving      = false;
+
+    function leaveToAuth() {
+        if (leaving) return;
+        leaving = true;
+        clearTimeout(idleTimer);
+        // replace(), not href: the dead page must not stay in history where the
+        // Back button can reach it.
+        window.location.replace(URL_AUTH);
+    }
+
+    function ask() {
+        return fetch(URL_CHECK, { cache: 'no-store', credentials: 'same-origin' })
+            .then(function (r) { return r.json(); });
+    }
+
+    function isAllowed(data) {
+        if (!data || data.status !== 'active') return false;
+        if (!allowedRoles.length) return true; // page open to any signed-in role
+        return allowedRoles.indexOf(String(data.role || '').toLowerCase()) !== -1;
+    }
+
+    // Pages set the body to display:none until the gate passes.
+    function revealBody() {
+        if (document.body) {
+            document.body.style.display = '';
+        } else {
+            document.addEventListener('DOMContentLoaded', function () {
+                document.body.style.display = '';
+            });
+        }
+    }
+
+    // The original inline guards used window 'load' so that onReady ran after
+    // navbar_*.js had injected the sidebar (that's where adminNameSidebar and
+    // friends live). Kept, but without the bug where a fetch resolving after
+    // 'load' had already fired meant the callback never ran at all.
+    function whenPageReady(fn) {
+        if (document.readyState === 'complete') fn();
+        else window.addEventListener('load', fn);
+    }
+
+    function translate(key, fallback) {
+        try {
+            if (typeof t !== 'function') return fallback;
+            var value = t(key);
+            // i18n.js returns the key itself when a page has no such string.
+            return (value && value !== key) ? value : fallback;
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    // ── Idle timeout ────────────────────────────────────────────────────────
+    function restartIdleTimer() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(onIdleExpired, IDLE_MS);
+    }
+
+    function onIdleExpired() {
+        // Kill the server session FIRST. Previously this happened inside the
+        // dialog's .then(), so refreshing instead of clicking OK left the
+        // session completely alive and the "expiry" was purely cosmetic.
+        fetch(URL_LOGOUT, { cache: 'no-store', credentials: 'same-origin' })
+            .catch(function () { /* redirect regardless */ })
+            .then(function () {
+                if (typeof Swal === 'undefined') { leaveToAuth(); return; }
+                Swal.fire({
+                    icon: 'warning',
+                    title: translate('sw_session_expired_title', 'Session Expired'),
+                    text: translate('sw_session_expired_text',
+                        'You have been logged out due to 5 minutes of inactivity.'),
+                    confirmButtonColor: '#11542e',
+                    allowOutsideClick: false
+                }).then(leaveToAuth);
+            });
+    }
+
+    function onActivity() {
+        if (leaving) return;
+        restartIdleTimer();
+
+        var now = Date.now();
+        if (now - lastBeat < HEARTBEAT_MS) return;
+        lastBeat = now;
+        fetch(URL_HEARTBEAT, { cache: 'no-store', credentials: 'same-origin' })
+            .catch(function () { /* a dropped heartbeat is not fatal */ });
+    }
+
+    function watchActivity() {
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart', 'touchmove']
+            .forEach(function (ev) {
+                document.addEventListener(ev, onActivity, { passive: true });
+            });
+        restartIdleTimer();
+    }
+
+    // ── Back/forward cache ──────────────────────────────────────────────────
+    function watchBackForward() {
+        window.addEventListener('pageshow', function (e) {
+            if (!e.persisted) return;
+
+            // Restored from bfcache: nothing re-ran, so what is on screen is a
+            // stale snapshot rendered before the user logged out. Hide it until
+            // the session has been confirmed, so no data is shown even briefly.
+            document.documentElement.style.visibility = 'hidden';
+
+            ask().then(function (data) {
+                if (!isAllowed(data)) { leaveToAuth(); return; }
+                document.documentElement.style.visibility = '';
+                restartIdleTimer();
+            }).catch(leaveToAuth);
+        });
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────────
+    function protect(options) {
+        options = options || {};
+        allowedRoles = (options.roles || []).map(function (r) {
+            return String(r).toLowerCase();
+        });
+
+        watchBackForward();
+
+        ask().then(function (data) {
+            if (!isAllowed(data)) { leaveToAuth(); return; }
+            revealBody();
+            watchActivity();
+            if (typeof options.onReady === 'function') {
+                whenPageReady(function () { options.onReady(data); });
+            }
+        }).catch(leaveToAuth);
+    }
+
+    // Destroys the server session, then leaves. Every page's confirmLogout()
+    // should route through this rather than rolling its own fetch.
+    function logout() {
+        return fetch(URL_LOGOUT, { cache: 'no-store', credentials: 'same-origin' })
+            .catch(function () { /* leave regardless - the cookie is gone */ })
+            .then(leaveToAuth);
+    }
+
+    window.CropGuardSession = {
+        protect: protect,
+        logout: logout,
+        check: ask
+    };
+})();

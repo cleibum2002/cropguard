@@ -7,12 +7,12 @@
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        // Replace the current history entry with auth.html so the Back button
-        // cannot navigate back to a protected page after logout.
-        history.replaceState(null, '', window.location.href);
-        window.addEventListener('popstate', function() {
-            window.location.replace(window.location.href);
-        });
+        // NOTE: there used to be a history.replaceState + popstate guard here that
+        // was meant to stop the Back button reaching a protected page after logout.
+        // It could never work: popstate does not fire when Back leaves the document
+        // entirely, which is exactly the case it was written for. Back navigation is
+        // now handled where it actually happens - the pageshow/bfcache guard in
+        // assets/js/session_guard.js on each protected page.
     </script>
     <title>Department of Agriculture - Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -243,7 +243,9 @@
             const data = await res.json();
             
             if(data.status === 'success') {
-                window.location.href = data.redirect;
+                // replace(), not href: otherwise auth.html stays in history and
+                // pressing Back from the dashboard lands on the login screen.
+                window.location.replace(data.redirect);
             } else if (data.message && data.message.toLowerCase().includes('verify')) {
                 switchForm('verify');
                 document.getElementById('verifyEmail').value = email;
