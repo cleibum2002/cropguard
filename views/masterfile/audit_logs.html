@@ -88,8 +88,8 @@
             </div>
         </header>
 
-        <div class="px-6 pt-6 pb-4 flex flex-wrap items-center gap-3 bg-[#f0f2f0]">
-            <div class="relative flex-1 min-w-[240px] max-w-md">
+        <div class="px-4 md:px-6 pt-6 pb-4 flex flex-wrap items-center gap-3 bg-[#f0f2f0]">
+            <div class="relative w-full md:flex-1 md:min-w-[240px] md:max-w-md">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                 <input type="text" id="searchInput" data-i18n-placeholder="search_placeholder" placeholder="Search user, description, or IP..."
                        class="bg-white border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
@@ -106,22 +106,22 @@
             <div class="max-w-7xl mx-auto">
 
                 <!-- Stats -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_total_actions">Total Actions</p>
-                        <p id="statTotal" class="text-3xl font-black text-gray-800">0</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-1 sm:mb-2" data-i18n="stat_total_actions">Total Actions</p>
+                        <p id="statTotal" class="text-xl sm:text-3xl font-black text-gray-800">0</p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_logins_today">Logins Today</p>
-                        <p id="statLogins" class="text-3xl font-black text-blue-600">0</p>
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-1 sm:mb-2" data-i18n="stat_logins_today">Logins Today</p>
+                        <p id="statLogins" class="text-xl sm:text-3xl font-black text-blue-600">0</p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_reports_submitted">Reports Submitted</p>
-                        <p id="statReports" class="text-3xl font-black text-green-600">0</p>
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-1 sm:mb-2" data-i18n="stat_reports_submitted">Reports Submitted</p>
+                        <p id="statReports" class="text-xl sm:text-3xl font-black text-green-600">0</p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_aid_actions">Aid Actions</p>
-                        <p id="statAid" class="text-3xl font-black text-amber-600">0</p>
+                    <div class="bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-[10px] font-black text-gray-400 uppercase mb-1 sm:mb-2" data-i18n="stat_aid_actions">Aid Actions</p>
+                        <p id="statAid" class="text-xl sm:text-3xl font-black text-amber-600">0</p>
                     </div>
                 </div>
 
@@ -131,13 +131,13 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50 border-b border-gray-100">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_time">Time</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user">User</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_role">Role</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_action">Action</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_module">Module</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_ip_address">IP Address</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_time">Time</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user">User</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_role">Role</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_action">Action</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_module">Module</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_ip_address">IP Address</th>
                                 </tr>
                             </thead>
                             <tbody id="logTableBody" class="divide-y divide-gray-50"></tbody>
@@ -315,7 +315,7 @@
         function renderLogs(data) {
             const tbody = document.getElementById('logTableBody');
             if (!data.length) {
-                tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-gray-400 italic">${t('no_logs_found')}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="px-3 md:px-6 py-12 text-center text-gray-400 italic">${t('no_logs_found')}</td></tr>`;
                 return;
             }
 
@@ -333,17 +333,17 @@
                 const date  = new Date(log.Created_At).toLocaleString();
                 return `
                 <tr class="hover:bg-gray-50/50 transition-colors">
-                    <td class="px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
-                    <td class="px-6 py-3 text-xs font-bold text-gray-800">${log.user_name || t('label_system')}</td>
-                    <td class="px-6 py-3">
+                    <td class="px-3 md:px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
+                    <td class="px-3 md:px-6 py-3 text-xs font-bold text-gray-800">${log.user_name || t('label_system')}</td>
+                    <td class="hidden md:table-cell px-6 py-3">
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase">${log.user_role}</span>
                     </td>
-                    <td class="px-6 py-3">
+                    <td class="px-3 md:px-6 py-3">
                         <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${auditActionLabel(log.Action)}</span>
                     </td>
-                    <td class="px-6 py-3 text-xs text-gray-600 max-w-xs truncate">${log.Description}</td>
-                    <td class="px-6 py-3 text-xs text-gray-500">${log.Module}</td>
-                    <td class="px-6 py-3 text-xs font-mono text-gray-400">${log.IP_Address}</td>
+                    <td class="px-3 md:px-6 py-3 text-xs text-gray-600 max-w-[140px] md:max-w-xs truncate">${log.Description}</td>
+                    <td class="hidden md:table-cell px-6 py-3 text-xs text-gray-500">${log.Module}</td>
+                    <td class="hidden md:table-cell px-6 py-3 text-xs font-mono text-gray-400">${log.IP_Address}</td>
                 </tr>`;
             }).join('');
         }
