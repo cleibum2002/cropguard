@@ -161,11 +161,11 @@
                                     <i class="fa-regular fa-clock text-amber-500"></i> <span data-i18n="queue_title">Validation Queue</span>
                                 </h3>
                                 <div class="flex items-center justify-between md:justify-end gap-3">
-                                    <select id="queueSortFilter" onchange="loadData()" class="text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-[#11542e]">
+                                    <select id="queueSortFilter" onchange="loadData()" class="flex-1 min-w-0 md:flex-none text-[10px] font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:ring-2 focus:ring-[#11542e]">
                                         <option value="ASC" data-i18n="sort_oldest">Oldest to Recent</option>
                                         <option value="DESC" data-i18n="sort_recent">Recent to Oldest</option>
                                     </select>
-                                    <a href="damage_reports.html" class="text-[11px] font-black text-[#11542e] uppercase tracking-widest hover:underline whitespace-nowrap" data-i18n="view_all">View All</a>
+                                    <a href="damage_reports.html" class="flex-shrink-0 text-[11px] font-black text-[#11542e] uppercase tracking-widest hover:underline whitespace-nowrap" data-i18n="view_all">View All</a>
                                 </div>
                             </div>
                             <div class="divide-y divide-gray-50" id="queueTable">
