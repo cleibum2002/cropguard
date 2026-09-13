@@ -144,8 +144,12 @@
             }
 
             /* Summary stat boxes become a plain bordered row instead of colored cards */
-            /* Summary stat boxes removed entirely from the printed version */
-            #reportPreviewCard .grid.grid-cols-3 {
+            /* Summary stat boxes removed entirely from the printed version.
+               Targeted by this stable class, not by the Tailwind grid-cols-3
+               utility name directly - that utility is now grid-cols-1 sm:grid-cols-3
+               (mobile-responsive on screen), so matching the exact class name would
+               have silently broken this rule. */
+            #reportPreviewCard .report-summary-stats {
                 display: none !important;
             }
         }
@@ -158,9 +162,9 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
                 <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0 no-print">
             <div class="flex items-center gap-2 sm:gap-4">
-                <span class="text-sm sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Assistance Monitoring Engine</span>
+                <span class="text-xs sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Assistance Monitoring Engine</span>
             </div>
-            <div class="relative flex items-center gap-2 sm:gap-4">
+            <div class="ml-auto sm:ml-0 relative flex items-center gap-2 sm:gap-4">
                 <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
                     <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
                     <span>|</span>
@@ -178,8 +182,8 @@
                         <p class="text-sm text-gray-400 italic text-center py-10" data-i18n="notif_loading">Loading...</p>
                     </div>
                 </div>
-                <button onclick="window.print()" class="bg-[#11542e] text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md hover:bg-green-800 transition-all flex-shrink-0">
-                    <i class="fa-solid fa-print mr-2"></i> <span data-i18n="btn_print_pdf">Print Official PDF</span>
+                <button onclick="window.print()" title="Print Official PDF" class="bg-[#11542e] text-white w-9 h-9 md:w-auto md:h-auto md:px-4 md:py-2 rounded-lg text-xs font-bold shadow-md hover:bg-green-800 transition-all flex-shrink-0 flex items-center justify-center md:gap-2">
+                    <i class="fa-solid fa-print"></i> <span class="hidden md:inline" data-i18n="btn_print_pdf">Print Official PDF</span>
                 </button>
             </div>
         </header>
@@ -204,7 +208,7 @@
                     </p>
                 </div>
 
-                <div id="reportConfigCard" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
+                <div id="reportConfigCard" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="w-10 h-10 bg-green-50 text-green-700 rounded-xl flex items-center justify-center font-bold">
                             <i class="fa-solid fa-magnifying-glass-chart"></i>
@@ -274,43 +278,45 @@
                     </div>
 
                     <div class="p-10">
-                        <div class="grid grid-cols-3 gap-6 mb-10 pb-10 border-b border-gray-100">
-                            <div class="text-center border-r border-gray-200">
+                        <div class="report-summary-stats grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10 pb-10 border-b border-gray-100">
+                            <div class="text-center sm:border-r border-gray-200">
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_total_beneficiaries">Total Beneficiaries</p>
-                                <p id="repTotalFarmers" class="text-3xl font-black text-gray-800 mt-1">0</p>
+                                <p id="repTotalFarmers" class="text-xl sm:text-3xl font-black text-gray-800 mt-1">0</p>
                             </div>
-                            <div class="text-center border-r border-gray-200">
+                            <div class="text-center sm:border-r border-gray-200">
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_successful_claims">Successful Claims</p>
-                                <p id="repClaimed" class="text-3xl font-black text-green-600 mt-1">0</p>
+                                <p id="repClaimed" class="text-xl sm:text-3xl font-black text-green-600 mt-1">0</p>
                             </div>
                             <div class="text-center">
                                 <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="stat_units_distributed">Units Distributed</p>
-                                <p id="repUnits" class="text-3xl font-black text-blue-600 mt-1">0</p>
+                                <p id="repUnits" class="text-xl sm:text-3xl font-black text-blue-600 mt-1">0</p>
                             </div>
                         </div>
 
                         <div class="mb-10">
                             <h4 class="text-xs font-black text-gray-800 uppercase mb-3" data-i18n="ledger_title">Detailed Incident Ledger</h4>
+                            <div class="overflow-x-auto">
                             <table class="w-full text-left">
                                 <thead>
                                     <tr class="border-b-2 border-gray-800 text-gray-800">
-                                        <th class="py-2 pr-2 text-[10px] font-black uppercase" data-i18n="xl_farm_name">Farm Name</th>
-                                        <th class="py-2 pr-2 text-[10px] font-black uppercase" data-i18n="xl_crop_damage">Crop Damage</th>
-                                        <th class="py-2 pr-2 text-[10px] font-black uppercase" data-i18n="xl_incident_type">Incident Type</th>
-                                        <th class="py-2 pr-2 text-[10px] font-black uppercase" data-i18n="xl_technician">Technician</th>
-                                        <th class="py-2 pr-2 text-[10px] font-black uppercase" data-i18n="xl_location">Location</th>
-                                        <th class="py-2 pr-2 text-[10px] font-black uppercase" data-i18n="xl_date">Date</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-center" data-i18n="xl_ayuda">Ayuda</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-center" data-i18n="xl_service">Service</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-center" data-i18n="xl_cash">Cash</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-center" data-i18n="xl_seeds">Seeds</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-center" data-i18n="xl_filler">Filler</th>
-                                        <th class="py-2 text-[10px] font-black uppercase text-center" data-i18n="th_status">Status</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="xl_farm_name">Farm Name</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="xl_crop_damage">Crop Damage</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="xl_incident_type">Incident Type</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="xl_technician">Technician</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="xl_location">Location</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase whitespace-nowrap" data-i18n="xl_date">Date</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase text-center whitespace-nowrap" data-i18n="xl_ayuda">Ayuda</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase text-center whitespace-nowrap" data-i18n="xl_service">Service</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase text-center whitespace-nowrap" data-i18n="xl_cash">Cash</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase text-center whitespace-nowrap" data-i18n="xl_seeds">Seeds</th>
+                                        <th class="py-2 pr-2 text-[10px] font-black uppercase text-center whitespace-nowrap" data-i18n="xl_filler">Filler</th>
+                                        <th class="py-2 text-[10px] font-black uppercase text-center whitespace-nowrap" data-i18n="th_status">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reportTableBody" class="divide-y divide-gray-100 text-[10px] text-gray-600">
                                 </tbody>
                             </table>
+                            </div>
                         </div>
 
                         <div class="print-signatures hidden mt-16 pt-8 justify-between px-10">
@@ -556,18 +562,18 @@
 
                     return `
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="py-2 pr-2 font-bold text-gray-800">${item.farmer_name || ''}</td>
-                            <td class="py-2 pr-2">${item.crop_name || t('na_fallback')}</td>
-                            <td class="py-2 pr-2">${item.damage_type ? `${item.damage_type} (${item.damage_severity || t('na_fallback')})` : t('na_fallback')}</td>
-                            <td class="py-2 pr-2">${item.technician_name || t('xl_unassigned')}</td>
-                            <td class="py-2 pr-2">${location}</td>
-                            <td class="py-2 pr-2">${dateOnly}</td>
-                            <td class="py-2 text-center font-bold text-[#11542e]">${bucket === 'Ayuda' ? qtyLabel : ''}</td>
-                            <td class="py-2 text-center font-bold text-[#11542e]">${bucket === 'Service' ? qtyLabel : ''}</td>
-                            <td class="py-2 text-center font-bold text-[#11542e]">${bucket === 'Cash' ? qtyLabel : ''}</td>
-                            <td class="py-2 text-center font-bold text-[#11542e]">${bucket === 'Seeds' ? qtyLabel : ''}</td>
-                            <td class="py-2 text-center font-bold text-[#11542e]">${bucket === 'Filler' ? qtyLabel : ''}</td>
-                            <td class="py-2 text-center">
+                            <td class="py-2 pr-2 font-bold text-gray-800 whitespace-nowrap">${item.farmer_name || ''}</td>
+                            <td class="py-2 pr-2 whitespace-nowrap">${item.crop_name || t('na_fallback')}</td>
+                            <td class="py-2 pr-2 whitespace-nowrap">${item.damage_type ? `${item.damage_type} (${item.damage_severity || t('na_fallback')})` : t('na_fallback')}</td>
+                            <td class="py-2 pr-2 whitespace-nowrap">${item.technician_name || t('xl_unassigned')}</td>
+                            <td class="py-2 pr-2 whitespace-nowrap">${location}</td>
+                            <td class="py-2 pr-2 whitespace-nowrap">${dateOnly}</td>
+                            <td class="py-2 pr-2 text-center font-bold text-[#11542e] whitespace-nowrap">${bucket === 'Ayuda' ? qtyLabel : ''}</td>
+                            <td class="py-2 pr-2 text-center font-bold text-[#11542e] whitespace-nowrap">${bucket === 'Service' ? qtyLabel : ''}</td>
+                            <td class="py-2 pr-2 text-center font-bold text-[#11542e] whitespace-nowrap">${bucket === 'Cash' ? qtyLabel : ''}</td>
+                            <td class="py-2 pr-2 text-center font-bold text-[#11542e] whitespace-nowrap">${bucket === 'Seeds' ? qtyLabel : ''}</td>
+                            <td class="py-2 pr-2 text-center font-bold text-[#11542e] whitespace-nowrap">${bucket === 'Filler' ? qtyLabel : ''}</td>
+                            <td class="py-2 text-center whitespace-nowrap">
                                 <span class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${statusDotClass === 'bg-green-500' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${aidStatusLabel(item.status)}</span>
                             </td>
                         </tr>
