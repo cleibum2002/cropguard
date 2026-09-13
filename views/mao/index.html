@@ -33,8 +33,8 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
                 <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-8 py-3 bg-white/80 backdrop-blur-md border-b border-gray-100 flex-shrink-0 z-20">
-            <span class="text-sm sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Municipal Operations Overview</span>
-            <div class="relative flex items-center gap-3 sm:gap-4">
+            <span class="text-xs sm:text-base font-black text-gray-800 tracking-tight" data-i18n="header_title">Municipal Operations Overview</span>
+            <div class="ml-auto sm:ml-0 relative flex items-center gap-3 sm:gap-4">
                 <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400">
                     <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
                     <span>|</span>
@@ -63,41 +63,41 @@
                     <p class="text-gray-500 text-sm mt-1" data-i18n="page_sub">Real-time overview of incoming reports and validation progress.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
                     <!-- Total Reports -->
-                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="stat-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
                             <p class="text-xs font-bold text-gray-500" data-i18n="stat_total">Total Reports</p>
                             <div class="w-8 h-8 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center"><i class="fa-regular fa-file-lines"></i></div>
                         </div>
-                        <h3 class="text-3xl font-black text-gray-800" id="statTotal">0</h3>
+                        <h3 class="text-xl sm:text-3xl font-black text-gray-800" id="statTotal">0</h3>
                     </div>
 
                     <!-- Awaiting MAO Validation -->
-                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="stat-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
                             <p class="text-xs font-bold text-gray-500" data-i18n="stat_pending">Awaiting Validation</p>
                             <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-clock"></i></div>
                         </div>
-                        <h3 class="text-3xl font-black text-amber-600" id="statPending">0</h3>
+                        <h3 class="text-xl sm:text-3xl font-black text-amber-600" id="statPending">0</h3>
                     </div>
 
                     <!-- Validated by MAO -->
-                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="stat-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
                             <p class="text-xs font-bold text-gray-500" data-i18n="stat_validated">Validated Reports</p>
                             <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-check-double"></i></div>
                         </div>
-                        <h3 class="text-3xl font-black text-blue-600" id="statValidated">0</h3>
+                        <h3 class="text-xl sm:text-3xl font-black text-blue-600" id="statValidated">0</h3>
                     </div>
 
                     <!-- Approved Claims -->
-                    <div class="stat-card bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="stat-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                        <div class="flex justify-between items-start mb-2 sm:mb-4">
                             <p class="text-xs font-bold text-gray-500" data-i18n="stat_approved">Approved Claims</p>
                             <div class="w-8 h-8 rounded-lg bg-green-50 text-green-500 flex items-center justify-center"><i class="fa-solid fa-hand-holding-heart"></i></div>
                         </div>
-                        <h3 class="text-3xl font-black text-green-600" id="statApproved">0</h3>
+                        <h3 class="text-xl sm:text-3xl font-black text-green-600" id="statApproved">0</h3>
                     </div>
                 </div>
 
@@ -112,11 +112,11 @@
                         <table class="w-full text-left text-sm">
                             <thead class="bg-gray-50 text-gray-500 uppercase text-[10px] tracking-widest">
                                 <tr>
-                                    <th class="px-3 py-3" data-i18n="th_request">Request</th>
+                                    <th class="hidden md:table-cell px-3 py-3" data-i18n="th_request">Request</th>
                                     <th class="px-3 py-3" data-i18n="th_farmer">Farmer</th>
                                     <th class="px-3 py-3" data-i18n="th_seed">Seed</th>
-                                    <th class="px-3 py-3" data-i18n="th_status">Status</th>
-                                    <th class="px-3 py-3 text-right" data-i18n="th_action">Action</th>
+                                    <th class="hidden md:table-cell px-3 py-3" data-i18n="th_status">Status</th>
+                                    <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 py-3 text-right" data-i18n="th_action">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="seedRequestTableBody" class="divide-y divide-gray-100"></tbody>
@@ -126,8 +126,8 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                     <!-- Map (Placeholder for future update) -->
-                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-2 relative min-h-[450px]">
-                        <div id="damageMap" class="w-full h-full min-h-[450px] rounded-xl z-10"></div>
+                    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-2 relative min-h-[300px] sm:min-h-[450px]">
+                        <div id="damageMap" class="w-full h-full min-h-[300px] sm:min-h-[450px] rounded-xl z-10"></div>
                         <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm p-3 rounded-xl shadow-lg border border-white z-[1000]">
                             <h4 id="mapModeLabel" class="text-[10px] font-black text-gray-800 uppercase tracking-widest">Damage Density Map</h4>
                         </div>
@@ -322,11 +322,11 @@
 
                     return `
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-3 py-3 text-xs font-black text-gray-700">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
+                            <td class="hidden md:table-cell px-3 py-3 text-xs font-black text-gray-700">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
                             <td class="px-3 py-3 text-xs text-gray-600">${item.Farmer_Name || t('farmer_fallback')}</td>
                             <td class="px-3 py-3 text-xs text-gray-600">${item.Requested_Seed}</td>
-                            <td class="px-3 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusBadge}">${item.Status}</span></td>
-                            <td class="px-3 py-3 text-right">
+                            <td class="hidden md:table-cell px-3 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusBadge}">${item.Status}</span></td>
+                            <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 py-3 text-right">
                                 <button onclick="handleSeedRequestAction(${item.Request_ID}, ${item.Farmer_ID}, '${item.Status === 'Ready for Pickup' ? 'mark_claimed' : 'notify_farmer'}')"
                                     class="px-3 py-2 ${actionClass} text-white rounded-lg text-[10px] font-black uppercase tracking-wide transition-all">
                                     ${actionText}
