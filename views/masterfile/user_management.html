@@ -370,8 +370,7 @@
                 const res = await fetch(API_URL + "get_all.php");
                 const response = await res.json();
                 allData = response.data || [];
-                filteredData = [...allData];
-                renderTable();
+                filterTable(); // reapply whatever search/role/status filters are currently active, instead of silently resetting to show everyone
             } catch (e) {
                 console.error("Load failed", e);
                 renderTable();
