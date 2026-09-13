@@ -7,7 +7,9 @@
 // never blocked, so this works reliably where SMTP did not.
 // PHPMailer/Composer are no longer needed for this - removed to keep things simple.
 
-define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: '');
+// Fallback covers local XAMPP, where Railway's BREVO_API_KEY env var isn't set -
+// getenv() still wins whenever it IS set (Railway), so production is unaffected.
+define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: 'REMOVED_BREVO_API_KEY');
 define('BREVO_SENDER_EMAIL', 'person1@example.com');
 define('BREVO_SENDER_NAME', 'CropGuard');
 
