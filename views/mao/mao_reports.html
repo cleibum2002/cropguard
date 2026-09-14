@@ -11,21 +11,18 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/session_guard.js?v=1"></script>
     <script src="../../assets/js/mao_notifications.js?v=1"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
-        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
-            if (data.status !== 'active' || data.role.toLowerCase() !== 'mao') {
-                window.location.href = '../../auth.html';
-            } else {
-                document.body.style.display = '';
-                window.addEventListener('load', () => {
-                    document.getElementById('maoNameSidebar').innerText = data.user.fullname;
-                });
+        CropGuardSession.protect({
+            roles: ['mao'],
+            onReady: (data) => {
+                document.getElementById('maoNameSidebar').innerText = data.user.fullname;
             }
-        }).catch(() => window.location.href = '../../auth.html');
+        });
     </script>
 
     <style>
@@ -669,7 +666,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#11542e',
                 confirmButtonText: t('sw_logout_btn')
-            }).then(r => { if (r.isConfirmed) window.location.href = '../../auth.html'; });
+            }).then(r => { if (r.isConfirmed) CropGuardSession.logout(); });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -683,25 +680,7 @@
             });
         });
         
-        let idleTimer;
-        function resetIdleTimer() {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                Swal.fire({
-                    icon: 'warning',
-                    title: t('sw_session_expired_title'),
-                    text: t('sw_session_expired_text'),
-                    confirmButtonColor: '#11542e',
-                    allowOutsideClick: false
-                }).then(() => {
-                    fetch('../../api/auth/logout.php').then(() => {
-                        window.location.href = '../../auth.html';
-                    });
-                });
-        }, 5 * 60 * 1000);
-    }
-    ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
-    resetIdleTimer();
+        // The idle timeout lives in session_guard.js now.
     </script>
 
     <script src="../../assets/js/navbar_mao.js?v=4"></script>
