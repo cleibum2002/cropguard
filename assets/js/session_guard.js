@@ -42,6 +42,15 @@
     var URL_HEARTBEAT = ROOT + 'api/auth/heartbeat.php';
     var URL_AUTH      = ROOT + 'auth.html';
 
+    // Where each role belongs. Must stay in step with the same mapping in
+    // api/auth/login.php and the one in auth.html.
+    var ROLE_HOME = {
+        admin:      'views/masterfile/dashboard.html',
+        farmer:     'views/farmers/index.html',
+        technician: 'views/technician/dashboard.html',
+        mao:        'views/mao/index.html'
+    };
+
     var IDLE_MS      = 5 * 60 * 1000; // keep in step with CG_IDLE_LIMIT_SECONDS
     var HEARTBEAT_MS = 60 * 1000;
 
@@ -50,13 +59,30 @@
     var lastBeat     = 0;
     var leaving      = false;
 
-    function leaveToAuth() {
+    // replace(), not href: the dead page must not stay in history where the
+    // Back button can reach it.
+    function leaveTo(url) {
         if (leaving) return;
         leaving = true;
         clearTimeout(idleTimer);
-        // replace(), not href: the dead page must not stay in history where the
-        // Back button can reach it.
-        window.location.replace(URL_AUTH);
+        window.location.replace(url);
+    }
+
+    function leaveToAuth() {
+        leaveTo(URL_AUTH);
+    }
+
+    // Called when the session check comes back but this page isn't allowed.
+    // Someone who IS signed in - just not with a role this page accepts, e.g. a
+    // farmer typing an admin URL - goes straight to their own dashboard. Routing
+    // them via auth.html instead would make the login screen visibly flash on
+    // the way past, since auth.html would only turn them around again.
+    function denyAccess(data) {
+        if (data && data.status === 'active') {
+            var home = ROLE_HOME[String(data.role || '').toLowerCase()];
+            if (home) { leaveTo(ROOT + home); return; }
+        }
+        leaveToAuth();
     }
 
     function ask() {
@@ -183,7 +209,7 @@
             document.documentElement.style.visibility = 'hidden';
 
             ask().then(function (data) {
-                if (!isAllowed(data)) { leaveToAuth(); return; }
+                if (!isAllowed(data)) { denyAccess(data); return; }
                 document.documentElement.style.visibility = '';
                 restartIdleTimer();
             }).catch(function () {
@@ -206,7 +232,7 @@
         watchBackForward();
 
         ask().then(function (data) {
-            if (!isAllowed(data)) { leaveToAuth(); return; }
+            if (!isAllowed(data)) { denyAccess(data); return; }
             revealBody();
             watchActivity();
             if (typeof options.onReady === 'function') {
