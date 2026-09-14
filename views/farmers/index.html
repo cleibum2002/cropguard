@@ -10,26 +10,13 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/session_guard.js?v=2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
-        window.addEventListener('pageshow', function(e) {
-            if (e.persisted) {
-                fetch('../../api/auth/session_check.php', {cache: 'no-store'})
-                    .then(res => res.json())
-                    .then(data => { if (data.status !== 'active') window.location.replace('../../auth.html'); })
-                    .catch(() => window.location.replace('../../auth.html'));
-            }
-        });
-
-        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
-            if (data.status !== 'active' || data.role.toLowerCase() !== 'farmer') {
-                window.location.href = '../../auth.html';
-            } else {
-                document.body.style.display = '';
-            }
-        }).catch(() => window.location.href = '../../auth.html');
+        // bfcache restores are handled by session_guard.js.
+        CropGuardSession.protect({ roles: ['farmer'] });
     </script>
 
     <style>
@@ -1843,28 +1830,11 @@
 
         function confirmLogout() {
             Swal.fire({ title: t('sw_signout_title'), icon: 'question', showCancelButton: true, confirmButtonColor: '#11542e' })
-                .then(r => { if (r.isConfirmed) fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')).catch(() => window.location.replace('../../auth.html')); });
+                .then(r => { if (r.isConfirmed) CropGuardSession.logout(); });
         }
-
-        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
-        let idleTimer;
-        function resetIdleTimer() {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
-                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')));
-            }, 5 * 60 * 1000);
-        }
-        // Also listen for touch events for mobile users
-        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
-        // Taking a photo backgrounds the tab while the phone's camera app is open - no
-        // mousemove/touch events fire during that time, so without this the idle timer
-        // can silently expire the session while someone's just framing a photo, not
-        // actually idle. Resetting on tab-focus-return covers that gap.
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') resetIdleTimer();
-        });
-        resetIdleTimer();
+        // The idle timeout lives in session_guard.js now, including the
+        // tab-focus-return reset that keeps the camera flow from being counted
+        // as idle time.
 
         // Poll for new big alerts every 30 seconds
         setInterval(fetchAndShowBigAlerts, 30000);

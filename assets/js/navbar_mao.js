@@ -1,17 +1,9 @@
 // File Location: assets/js/navbar_mao.js
 
-window.addEventListener('pageshow', function(e) {
-    if (e.persisted) {
-        fetch('../../api/auth/session_check.php', {cache: 'no-store'})
-            .then(res => res.json())
-            .then(data => {
-                if (data.status !== 'active') {
-                    window.location.replace('../../auth.html');
-                }
-            })
-            .catch(() => window.location.replace('../../auth.html'));
-    }
-});
+// The bfcache (Back/Forward) guard that used to live here now sits in
+// assets/js/session_guard.js, which every MAO page loads. Keeping a second
+// copy here would only re-check the session without the role check or the
+// hide-until-verified behaviour the guard adds.
 
 function loadMaoNavbar(currentPage) {
     const sidebarHTML = `
