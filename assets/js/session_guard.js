@@ -169,16 +169,30 @@
         window.addEventListener('pageshow', function (e) {
             if (!e.persisted) return;
 
-            // Restored from bfcache: nothing re-ran, so what is on screen is a
-            // stale snapshot rendered before the user logged out. Hide it until
-            // the session has been confirmed, so no data is shown even briefly.
+            // bfcache restores the whole JS heap exactly as it was when we
+            // navigated away - `leaving` included. Logging out sets it to true,
+            // so without this reset leaveToAuth() below hits its own `if
+            // (leaving) return` guard, silently does nothing, and a logged-out
+            // dashboard just sits there on Back. That navigation is long over;
+            // this document is live again.
+            leaving = false;
+
+            // Nothing re-ran, so what is on screen is a stale snapshot rendered
+            // before the user logged out. Hide it until the session has been
+            // confirmed, so no data is shown even briefly.
             document.documentElement.style.visibility = 'hidden';
 
             ask().then(function (data) {
                 if (!isAllowed(data)) { leaveToAuth(); return; }
                 document.documentElement.style.visibility = '';
                 restartIdleTimer();
-            }).catch(leaveToAuth);
+            }).catch(function () {
+                // Couldn't confirm the session (offline, server hiccup). Reload
+                // rather than redirect: a reload re-runs every script from
+                // scratch, so it can't be defeated by stale heap state the way
+                // the redirect just was, and it never strands a hidden page.
+                window.location.reload();
+            });
         });
     }
 
