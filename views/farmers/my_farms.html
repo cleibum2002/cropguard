@@ -10,17 +10,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/session_guard.js?v=2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <script>
-        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
-            if (data.status !== 'active' || data.role.toLowerCase() !== 'farmer') {
-                window.location.href = '../../auth.html';
-            } else {
-                document.body.style.display = '';
-            }
-        }).catch(() => window.location.href = '../../auth.html');
+        // This page previously had no bfcache guard at all, so Back after logout
+        // restored it intact. session_guard.js covers that case now.
+        CropGuardSession.protect({ roles: ['farmer'] });
     </script>
 
     <style>
@@ -1010,11 +1007,7 @@
                 showCancelButton: true,
                 confirmButtonColor: '#11542e'
             }).then(r => {
-                if (r.isConfirmed) {
-                    fetch('../../api/auth/logout.php')
-                    .then(() => window.location.href = '../../auth.html')
-                    .catch(() => window.location.href = '../../auth.html');
-                }
+                if (r.isConfirmed) CropGuardSession.logout();
             });
         }
 
@@ -1024,17 +1017,7 @@
             fetchFarmerDetails();
         });
 
-// ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
-let idleTimer;
-function resetIdleTimer() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-        Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
-            .then(() => fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')));
-    }, 5 * 60 * 1000);
-}
-['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
-resetIdleTimer();
+// The idle timeout lives in session_guard.js now.
     </script>
         <script>
         function checkUnreadMessages() {

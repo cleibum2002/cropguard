@@ -142,6 +142,25 @@
             .forEach(function (ev) {
                 document.addEventListener(ev, onActivity, { passive: true });
             });
+
+        // Taking a photo backgrounds the tab while the phone's camera app is
+        // open, and no mouse/touch events fire during that time - so without
+        // this, framing a shot counts as idle. Carried over from the farmer
+        // dashboard, which is where that actually bites.
+        //
+        // Note this can only restart the *client* timer. If the camera was open
+        // longer than the server's limit the session is already gone, and the
+        // heartbeat below is what tells us so.
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState !== 'visible' || leaving) return;
+            restartIdleTimer();
+            lastBeat = Date.now();
+            fetch(URL_HEARTBEAT, { cache: 'no-store', credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (d) { if (!d || d.status !== 'active') leaveToAuth(); })
+                .catch(function () { /* offline - let the next real action decide */ });
+        });
+
         restartIdleTimer();
     }
 

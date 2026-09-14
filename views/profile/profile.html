@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/session_guard.js?v=2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -93,20 +94,9 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-        window.addEventListener('pageshow', function(e) {
-            if (e.persisted) {
-                fetch('../../api/auth/session_check.php', {cache: 'no-store'})
-                    .then(res => res.json())
-                    .then(data => { if (data.status !== 'active') window.location.replace('../../auth.html'); })
-                    .catch(() => window.location.replace('../../auth.html'));
-            }
-        });
-
-        fetch('../../api/auth/session_check.php', {cache: 'no-store'}).then(res => res.json()).then(data => {
-            if (data.status !== 'active') {
-                window.location.href = '../../auth.html';
-            } else {
-                document.body.style.display = '';
+        // Open to any signed-in role. bfcache restores handled by session_guard.js.
+        CropGuardSession.protect({
+            onReady: (data) => {
                 document.getElementById('sidebarName').innerText = data.user.fullname;
                 document.getElementById('sidebarRole').innerText = data.role;
                 document.getElementById('sidebarInitial').innerText = data.user.fullname.charAt(0).toUpperCase();
@@ -120,7 +110,7 @@
                     applyTranslations('en');
                 }
             }
-        }).catch(() => window.location.href = '../../auth.html');
+        });
     });
 </script>
 
@@ -495,9 +485,7 @@
             }).then(result => {
                 if (result.isConfirmed) {
                     Swal.fire({ icon: 'success', title: t('sw_email_verified_title'), text: t('sw_email_verified_text'), confirmButtonColor: '#11542e' })
-                        .then(() => {
-                            fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html'));
-                        });
+                        .then(() => CropGuardSession.logout());
                 } else {
                     // Closed via the X without verifying - the profile change (including
                     // the new unverified email) is already saved; just refresh so the
@@ -525,21 +513,10 @@
                 icon: 'question', showCancelButton: true,
                 confirmButtonColor: '#11542e', confirmButtonText: t('sw_signout_confirm')
             }).then(r => {
-                if (r.isConfirmed)
-                    fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html'));
+                if (r.isConfirmed) CropGuardSession.logout();
             });
         }
-        // ── IDLE TIMEOUT: 5 minutes ───────────────────────────────────
-        let idleTimer;
-        function resetIdleTimer() {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                Swal.fire({ icon: 'warning', title: t('sw_session_expired_title'), text: t('sw_session_expired_text'), confirmButtonColor: '#11542e', allowOutsideClick: false })
-                    .then(() => fetch('../../api/auth/logout.php').then(() => window.location.replace('../../auth.html')));
-            }, 5 * 60 * 1000);
-        }
-        ['mousemove','keypress','click','scroll','touchstart','touchmove'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
-        resetIdleTimer();
+        // The idle timeout lives in session_guard.js now.
     </script>
 </body>
 </html>
