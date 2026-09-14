@@ -435,7 +435,12 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_planting_date">Planting Date</label>
-                            <input type="date" id="plantingDate" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700">
+                            <input type="date" id="plantingDate" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700 read-only:bg-gray-100 read-only:text-gray-500">
+                            <p id="plantingDateLockHint" class="text-[10px] text-gray-400 mt-1 hidden" data-i18n="hint_planting_date_locked">This crop is already registered — planting date is locked so it can't be accidentally changed.</p>
+                            <label id="newPlantingToggleWrap" class="hidden items-center gap-1.5 mt-1.5 cursor-pointer">
+                                <input type="checkbox" id="newPlantingToggle" onchange="onNewPlantingToggle()" class="w-3.5 h-3.5 rounded border-gray-300 text-[#11542e] focus:ring-[#11542e]">
+                                <span class="text-[10px] font-bold text-gray-500" data-i18n="label_new_planting_toggle">This is a new planting (replanted)</span>
+                            </label>
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_affected_area">Affected Area (Ha)</label>
@@ -706,6 +711,8 @@
                 modal_report_title: "File Crop Damage Report",
                 label_farm_location: "Farm Location", label_crop_picker: "Which Crop Was Damaged?",
                 label_planting_date: "Planting Date", label_affected_area: "Affected Area (Ha)", area_warning: "Cannot exceed total farm size!",
+                hint_planting_date_locked: "This crop is already registered — planting date is locked so it can't be accidentally changed.",
+                label_new_planting_toggle: "This is a new planting (replanted)",
                 area_negative_warning: "Area must be greater than 0.",
                 label_damage_type: "Damage Type", opt_flood: "Flood", opt_typhoon: "Typhoon", opt_pest: "Pest Infestation", opt_drought: "Drought",
                 label_severity: "Severity", opt_low: "Low", opt_moderate: "Moderate", opt_high: "High", opt_total_loss: "Total Loss",
@@ -786,6 +793,8 @@
                 modal_report_title: "Maghain ng Ulat ng Pinsala sa Pananim",
                 label_farm_location: "Lokasyon ng Sakahan", label_crop_picker: "Aling Pananim ang Nasira?",
                 label_planting_date: "Petsa ng Pagtatanim", label_affected_area: "Apektadong Lugar (Ha)", area_warning: "Hindi maaaring lumampas sa kabuuang sukat ng sakahan!",
+                hint_planting_date_locked: "Naka-rehistro na ang pananim na ito — naka-lock ang petsa ng pagtatanim para hindi ito aksidenteng mabago.",
+                label_new_planting_toggle: "Bagong pagtatanim ito (muling itinanim)",
                 area_negative_warning: "Ang lugar ay dapat higit sa 0.",
                 label_damage_type: "Uri ng Pinsala", opt_flood: "Baha", opt_typhoon: "Bagyo", opt_pest: "Peste", opt_drought: "Tagtuyot",
                 label_severity: "Kalubhaan", opt_low: "Mababa", opt_moderate: "Katamtaman", opt_high: "Mataas", opt_total_loss: "Kumpletong Pagkalugi",
@@ -862,6 +871,8 @@
                 modal_report_title: "Pag-file og Report sa Kadaot sa Tanom",
                 label_farm_location: "Lokasyon sa Uma", label_crop_picker: "Unsa nga Tanom ang Naguba?",
                 label_planting_date: "Petsa sa Pagtanom", label_affected_area: "Naapektuhan nga Sukod (Ha)", area_warning: "Dili pwede molapas sa total nga sukod sa uma!",
+                hint_planting_date_locked: "Naka-rehistro na kini nga tanom — naka-lock ang petsa sa pagtanom aron dili kini mausab nga wala tuyo-a.",
+                label_new_planting_toggle: "Bag-o nga pagtanom kini (gitanom pag-usab)",
                 area_negative_warning: "Ang sukod kinahanglan labaw sa 0.",
                 label_damage_type: "Klase sa Kadaot", opt_flood: "Baha", opt_typhoon: "Bagyo", opt_pest: "Peste", opt_drought: "Hulaw",
                 label_severity: "Grabe sa Kadaot", opt_low: "Gamay", opt_moderate: "Kasarangan", opt_high: "Grabe", opt_total_loss: "Total nga Kadaot",
@@ -1588,6 +1599,54 @@
                 hint.textContent = t('crop_type_auto').replace('{id}', crop.Type_ID);
                 hint.classList.remove('hidden');
             } else { hint.classList.add('hidden'); }
+            applyPlantingDateLock(crop && crop.Planting_Date);
+        }
+
+        // Planting Date belongs to the crop cycle, not to any one damage
+        // report - submit_report.php finds-or-creates a `crop` row keyed by
+        // Farmer+Location+Type and overwrites its Planting_Date on every
+        // submission. Filing a SECOND report for a crop that's still standing
+        // used to silently replace the real planting date with whatever the
+        // farmer typed that time. If a cycle is already on record, lock the
+        // field to that value instead; the "new planting" toggle is the
+        // explicit opt-in for the one case where overwriting is correct
+        // (replanted after a full loss).
+        let lockedPlantingDate = '';
+
+        function applyPlantingDateLock(existingDate) {
+            const field      = document.getElementById('plantingDate');
+            const lockHint   = document.getElementById('plantingDateLockHint');
+            const toggleWrap = document.getElementById('newPlantingToggleWrap');
+            const toggle     = document.getElementById('newPlantingToggle');
+
+            lockedPlantingDate = existingDate || '';
+            toggle.checked = false;
+
+            if (lockedPlantingDate) {
+                field.value = lockedPlantingDate;
+                field.readOnly = true;
+                lockHint.classList.remove('hidden');
+                toggleWrap.classList.remove('hidden');
+                toggleWrap.classList.add('flex');
+            } else {
+                field.readOnly = false;
+                lockHint.classList.add('hidden');
+                toggleWrap.classList.add('hidden');
+                toggleWrap.classList.remove('flex');
+            }
+        }
+
+        function onNewPlantingToggle() {
+            const field  = document.getElementById('plantingDate');
+            const toggle = document.getElementById('newPlantingToggle');
+            if (toggle.checked) {
+                field.readOnly = false;
+                field.value = '';
+                field.focus();
+            } else {
+                field.readOnly = true;
+                field.value = lockedPlantingDate;
+            }
         }
 
         // farm_location.Barangay stores the whole address the farmer typed in
@@ -1688,6 +1747,10 @@
             removedImageIds = [];
             document.getElementById('imagePreviewContainer').innerHTML = '';
             document.getElementById('photoCount').classList.add('hidden');
+            // form.reset() only resets values, not JS-set properties like
+            // .readOnly - without this, a lock left on from a previous crop
+            // selection would carry over into a freshly opened modal.
+            applyPlantingDateLock('');
 
             const locationSelect = document.getElementById('farmLocation');
             if (locationSelect.options.length <= 1 && locationSelect.options[0] && locationSelect.options[0].disabled) {
@@ -1766,7 +1829,9 @@
                         if (r.Type_ID) { hint.textContent = 'Type ID ' + r.Type_ID + ' auto-selected'; hint.classList.remove('hidden'); }
                         else { hint.classList.add('hidden'); }
                     });
-                    document.getElementById('plantingDate').value = r.Planting_Date   || '';
+                    // Editing an existing report is the same crop cycle by definition,
+                    // so it defaults to locked too - see applyPlantingDateLock().
+                    applyPlantingDateLock(r.Planting_Date);
                     document.getElementById('landArea').value     = r.Area_Hectares   || '';
                     document.getElementById('damageType').value   = r.Damage_Type     || 'Flood';
                     document.getElementById('severity').value     = r.Damage_Severity || 'Low';
