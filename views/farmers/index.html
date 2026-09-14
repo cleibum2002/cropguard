@@ -1590,6 +1590,22 @@
             } else { hint.classList.add('hidden'); }
         }
 
+        // farm_location.Barangay stores the whole address the farmer typed in
+        // My Farms - "Baliwagan, Balingasag, Misamis Oriental, Region X -
+        // Northern Mindanao | Zone-2 Purok 1 | ZIP: 9005", not just a short
+        // barangay name. A native <select>'s open dropdown sizes itself to the
+        // widest option and ignores the modal's width entirely (it's rendered
+        // as browser chrome, not page content, so no CSS on the modal can
+        // contain it) - with the full address in every option, the list was
+        // spilling out past the modal's edge. Show just the first segment
+        // (the actual barangay name) instead; the full address is still one
+        // hover away via the title attribute.
+        function shortLocationLabel(raw) {
+            if (!raw) return '';
+            const shortName = raw.split(',')[0].trim();
+            return shortName.length > 40 ? shortName.slice(0, 37) + '…' : shortName;
+        }
+
         function loadFarmLocations() {
             fetch('../../api/dashboard/get_farm_locations.php')
                 .then(res => res.json())
@@ -1598,7 +1614,8 @@
                     select.innerHTML = '<option value="">' + t('opt_select_location') + '</option>';
                     if (data.status === 'success' && data.locations.length > 0) {
                         data.locations.forEach(loc => {
-                            select.innerHTML += '<option value="' + loc.Location_ID + '" data-max-area="' + loc.Area_Size + '">' + loc.Barangay + ' - ' + loc.Area_Size + ' Ha</option>';
+                            const fullAddress = (loc.Barangay || '').replace(/"/g, '&quot;');
+                            select.innerHTML += '<option value="' + loc.Location_ID + '" data-max-area="' + loc.Area_Size + '" title="' + fullAddress + '">' + shortLocationLabel(loc.Barangay) + ' - ' + loc.Area_Size + ' Ha</option>';
                         });
                     } else {
                         select.innerHTML = '<option value="" disabled>' + t('opt_no_locations') + '</option>';
