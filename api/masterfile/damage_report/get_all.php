@@ -43,8 +43,13 @@ try {
         LEFT JOIN users t ON dr.Technician_ID = t.User_ID AND t.Role = 'Technician'
         LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
         WHERE $statusCondition
-        ORDER BY dr.Damage_Report_ID DESC
-    ";
+        ORDER BY dr.Last_Updated DESC, dr.Damage_Report_ID DESC
+    "; // Sorted by Last_Updated (bumped automatically by MySQL's ON UPDATE
+       // CURRENT_TIMESTAMP whenever any column on the row changes), not by ID,
+       // so an old report that finally gets touched - MAO validates it,
+       // technician sends it back, admin approves/rejects it - moves to the
+       // top instead of staying stuck wherever it originally slotted in.
+       // ID is only a tie-breaker for rows that share the same timestamp.
     
     $result = $conn->query($query);
     if (!$result) throw new Exception($conn->error);

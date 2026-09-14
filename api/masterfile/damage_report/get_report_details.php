@@ -39,15 +39,18 @@ if (isset($_GET['id'])) {
         
         if ($report) {
             // Fetch the images INCLUDING geotag data
-            // UPDATED: Selecting geo_lat and geo_lng
-            $imgQuery = "SELECT Image_Path, geo_lat, geo_lng, Uploaded_By_Role FROM damage_report_images WHERE Damage_Report_ID = $id";
+            // UPDATED: Selecting geo_lat and geo_lng, and now Image_ID too - needed
+            // by the technician's Edit Inspection form so it can target a specific
+            // photo for deletion instead of only ever being able to add more.
+            $imgQuery = "SELECT Image_ID, Image_Path, geo_lat, geo_lng, Uploaded_By_Role FROM damage_report_images WHERE Damage_Report_ID = $id";
             $imgResult = $conn->query($imgQuery);
-            
+
             $images = [];
             if ($imgResult) {
                 while ($row = $imgResult->fetch_assoc()) {
                     // Returning as an object so the frontend can access path, lat, lng, and who uploaded it
                     $images[] = [
+                        'id'          => $row['Image_ID'],
                         'path'        => '../../' . $row['Image_Path'],
                         'geo_lat'     => $row['geo_lat'],
                         'geo_lng'     => $row['geo_lng'],

@@ -62,8 +62,11 @@ try {
     $assignments = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
 
-    // 4. Recently Completed
-    $qComp = "SELECT 
+    // 4. Completed
+    // Was capped at LIMIT 10, which silently hid anything past a technician's
+    // 10 most recent inspections - the Completed tab now paginates client-side
+    // instead, so it needs every row, not just the first page's worth.
+    $qComp = "SELECT
                 dr.Damage_Report_ID AS id,
                 DATE(dr.Report_Date) AS date,
                 dr.Damage_Severity   AS severity,
@@ -78,8 +81,7 @@ try {
               LEFT JOIN crop          c  ON dr.Crop_ID     = c.Crop_ID
               WHERE dr.Technician_ID = ?
                 AND dr.Status IN ('Inspected', 'Approved', 'Rejected')
-              ORDER BY dr.Report_Date DESC
-              LIMIT 10";
+              ORDER BY dr.Report_Date DESC";
 
     $stmt = $conn->prepare($qComp);
     $stmt->bind_param("i", $tech_id);

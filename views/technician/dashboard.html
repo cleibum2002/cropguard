@@ -252,6 +252,13 @@
                 <!-- ── COMPLETED TAB ── -->
                 <div id="sectionCompleted" class="hidden">
                     <div id="completedList" class="grid grid-cols-1 gap-4"></div>
+                    <div id="completedPagination" class="hidden mt-6 flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="completedPageInfo"></p>
+                        <div class="flex gap-2">
+                            <button id="completedPrevBtn" onclick="changeCompletedPage(-1)" class="px-5 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 transition-all" data-i18n="btn_previous">Previous</button>
+                            <button id="completedNextBtn" onclick="changeCompletedPage(1)" class="px-5 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 transition-all" data-i18n="btn_next">Next</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -273,6 +280,87 @@
             <div class="p-8 overflow-y-auto custom-scrollbar" id="reportModalContent">
                 <!-- Content Injected via JS -->
             </div>
+        </div>
+    </div>
+
+    <!-- ── EDIT INSPECTION MODAL ── -->
+    <div id="editModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-2xl rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="bg-blue-600 px-4 py-3 sm:px-6 sm:py-4 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-xl flex items-center justify-center text-white flex-shrink-0"><i class="fa-solid fa-pen"></i></div>
+                    <div>
+                        <h3 id="editModalReportID" class="font-black text-white tracking-tight text-sm sm:text-base"></h3>
+                        <p class="text-[10px] text-white/70 uppercase font-bold tracking-widest" data-i18n="modal_edit_inspection_title">Edit Inspection</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeEditModal()" class="w-8 h-8 sm:w-9 sm:h-9 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="editInspectionForm" onsubmit="submitEditForm(event)" class="flex-1 flex flex-col overflow-hidden" enctype="multipart/form-data">
+                <input type="hidden" id="editReportIdField">
+                <div class="p-4 sm:p-8 overflow-y-auto custom-scrollbar space-y-6 sm:space-y-8">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_observations">Observations / Field Findings</label>
+                        <textarea id="editObsField" rows="4" required
+                            class="w-full bg-gray-50 border-0 rounded-2xl p-4 sm:p-5 text-sm focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                            placeholder="Describe the current state of the crop..." data-i18n-placeholder="placeholder_observations"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_damage_classification">Damage Classification</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                            <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                                <input type="radio" name="editSeverity" value="Minimal" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_minimal">Minimal</p>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                                <input type="radio" name="editSeverity" value="Light" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_light">Light</p>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                                <input type="radio" name="editSeverity" value="Moderate" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_moderate">Moderate</p>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                                <input type="radio" name="editSeverity" value="Severe" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_severe">Severe</p>
+                            </label>
+                            <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
+                                <input type="radio" name="editSeverity" value="Total Loss" class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
+                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_total_loss">Total Loss</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_uploaded_photos">Uploaded Photos</label>
+                        <div id="editExistingPhotos" class="flex flex-wrap gap-3"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_attach_evidence">Attach Field Evidence (Photos)</label>
+                        <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center hover:bg-blue-50 hover:border-blue-300 transition-all">
+                            <div class="file-upload-wrapper w-full">
+                                <div class="pointer-events-none">
+                                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-2"></i>
+                                    <p class="text-sm font-bold text-gray-700" data-i18n="label_click_upload">Click to upload photos</p>
+                                    <p class="text-xs text-gray-400 mt-1" data-i18n="label_upload_hint">Accepts JPG, PNG (Max 5MB per file)</p>
+                                </div>
+                                <input type="file" id="editEvidencePhotos" accept="image/*" multiple onchange="handleEditFileSelection(event)">
+                            </div>
+                        </div>
+                        <div id="editImagePreviewContainer" class="flex flex-wrap gap-3 mt-4 hidden"></div>
+                    </div>
+                </div>
+
+                <div class="p-4 sm:p-6 border-t border-gray-100 bg-gray-50 flex gap-3 flex-shrink-0">
+                    <button type="button" onclick="closeEditModal()" class="px-6 py-3 border border-gray-200 rounded-xl font-black text-[10px] uppercase text-gray-400 hover:bg-gray-100 transition-all" data-i18n="btn_cancel">Cancel</button>
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-900/10 hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_changes">Save Changes</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -316,6 +404,15 @@
             geo_locating: "Locating...", geo_no_gps: "No GPS",
             sw_uploading_title: "Uploading Data...", sw_uploading_text: "Submitting your report and evidence photos.",
             sw_submitted_title: "Inspection Submitted", sw_submitted_text: "Admin notified and photos uploaded.",
+            btn_view: "View", btn_edit: "Edit", status_approved: "Approved", status_rejected: "Rejected",
+            label_showing: "Showing", label_to: "to", label_of: "of", btn_previous: "Previous", btn_next: "Next",
+            label_farmer_original_report: "Farmer's Original Report", label_technician_findings: "Your Field Findings",
+            no_findings_provided: "No findings recorded.",
+            modal_edit_inspection_title: "Edit Inspection", label_uploaded_photos: "Uploaded Photos", no_tech_photos: "You haven't attached any photos yet.",
+            btn_save_changes: "Save Changes",
+            sw_updating_title: "Saving Changes...", sw_updating_text: "Updating your findings.",
+            sw_updated_title: "Updated!", sw_updated_text: "Your inspection has been updated.",
+            sw_confirm_delete_photo_title: "Remove this photo?", sw_confirm_delete_photo_text: "This cannot be undone.", sw_yes_remove: "Yes, remove it",
             sw_logout_title: "Logout?", sw_logout_text: "Are you sure you want to exit?", sw_yes_logout: "Yes, logout",
             sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
         },
@@ -355,6 +452,15 @@
             geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS",
             sw_uploading_title: "Ina-upload ang Datos...", sw_uploading_text: "Isinusumite ang iyong ulat at mga larawang ebidensya.",
             sw_submitted_title: "Naisumite ang Inspeksyon", sw_submitted_text: "Naabisuhan ang Admin at na-upload na ang mga larawan.",
+            btn_view: "Tingnan", btn_edit: "I-edit", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+            label_showing: "Ipinapakita", label_to: "hanggang", label_of: "ng", btn_previous: "Nakaraan", btn_next: "Susunod",
+            label_farmer_original_report: "Orihinal na Ulat ng Magsasaka", label_technician_findings: "Iyong mga Natuklasan sa Field",
+            no_findings_provided: "Walang naitalang natuklasan.",
+            modal_edit_inspection_title: "I-edit ang Inspeksyon", label_uploaded_photos: "Na-upload na Larawan", no_tech_photos: "Wala ka pang inilakip na larawan.",
+            btn_save_changes: "I-save ang mga Pagbabago",
+            sw_updating_title: "Sine-save ang mga Pagbabago...", sw_updating_text: "Ina-update ang iyong mga natuklasan.",
+            sw_updated_title: "Na-update na!", sw_updated_text: "Na-update na ang iyong inspeksyon.",
+            sw_confirm_delete_photo_title: "Alisin ang larawang ito?", sw_confirm_delete_photo_text: "Hindi na ito mababawi.", sw_yes_remove: "Oo, alisin",
             sw_logout_title: "Mag-logout?", sw_logout_text: "Sigurado ka bang gusto mong lumabas?", sw_yes_logout: "Oo, mag-logout",
             sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
         }
@@ -455,23 +561,83 @@
                     `).join('');
                 }
 
-                const cList = document.getElementById('completedList');
-                cList.innerHTML = data.completed_list.map(c => `
-                    <div class="bg-white px-4 sm:px-8 py-4 sm:py-6 rounded-2xl border border-gray-100 flex justify-between items-center gap-3 hover:bg-gray-50 transition-colors">
-                        <div class="flex items-center gap-3 sm:gap-5 min-w-0">
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
-                                <i class="fa-solid fa-check-double"></i>
-                            </div>
-                            <div class="min-w-0">
-                                <h6 class="font-black text-gray-800 text-sm sm:text-base">#REP-${c.id}</h6>
-                                <p class="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black truncate">${c.date} · ${t('label_final_assessment')}: ${c.severity}</p>
-                            </div>
-                        </div>
-                        <span class="flex-shrink-0 text-[9px] sm:text-[10px] font-black bg-green-100 text-green-700 border border-green-200 px-2.5 sm:px-4 py-1.5 rounded-full uppercase tracking-widest">${t('badge_inspected')}</span>
-                    </div>
-                `).join('') || `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_completed')}</p>`;
+                // Sorted newest-first so a report just re-edited (or freshly inspected)
+                // surfaces on page 1 instead of wherever its report date happened to land.
+                completedData = data.completed_list || [];
+                completedPage = 1;
+                renderCompletedPage();
             }
         } catch (e) { console.error(e); }
+    }
+
+    // ── Completed Tab: pagination + status-aware cards ────────────────
+    let completedData = [];
+    let completedPage = 1;
+    const COMPLETED_PAGE_SIZE = 5;
+
+    function completedStatusBadge(status) {
+        if (status === 'Approved') return { label: t('status_approved'), cls: 'bg-blue-100 text-blue-700 border-blue-200' };
+        if (status === 'Rejected') return { label: t('status_rejected'), cls: 'bg-red-100 text-red-700 border-red-200' };
+        return { label: t('badge_inspected'), cls: 'bg-green-100 text-green-700 border-green-200' };
+    }
+
+    function renderCompletedPage() {
+        const cList = document.getElementById('completedList');
+        const pagination = document.getElementById('completedPagination');
+
+        if (completedData.length === 0) {
+            cList.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_completed')}</p>`;
+            pagination.classList.add('hidden');
+            return;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(completedData.length / COMPLETED_PAGE_SIZE));
+        if (completedPage > totalPages) completedPage = totalPages;
+        const start = (completedPage - 1) * COMPLETED_PAGE_SIZE;
+        const pageItems = completedData.slice(start, start + COMPLETED_PAGE_SIZE);
+
+        cList.innerHTML = pageItems.map(c => {
+            const badge = completedStatusBadge(c.current_status);
+            // Editing (findings/severity/photos) is only safe while the report is
+            // still 'Inspected' - once Admin has approved or rejected it, aid may
+            // already be allocated off the recorded severity, so it's locked.
+            const editBtn = c.current_status === 'Inspected' ? `
+                <button onclick="openEditInspection(${c.id})" class="flex-1 sm:flex-none bg-blue-50 text-blue-600 border border-blue-200 px-3 sm:px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-pen"></i> ${t('btn_edit')}
+                </button>` : '';
+            return `
+                <div class="bg-white px-4 sm:px-8 py-4 sm:py-6 rounded-2xl border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-3 sm:gap-5 min-w-0">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <h6 class="font-black text-gray-800 text-sm sm:text-base">#REP-${c.id}</h6>
+                            <p class="text-[9px] sm:text-[10px] text-gray-400 uppercase font-black truncate">${c.date} · ${t('label_final_assessment')}: ${c.severity}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <span class="text-[9px] sm:text-[10px] font-black border px-2.5 sm:px-4 py-1.5 rounded-full uppercase tracking-widest ${badge.cls}">${badge.label}</span>
+                        <button onclick="viewReportDetails(${c.id})" class="flex-1 sm:flex-none bg-gray-50 text-gray-600 border border-gray-200 px-3 sm:px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-all flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-eye"></i> ${t('btn_view')}
+                        </button>
+                        ${editBtn}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        pagination.classList.toggle('hidden', completedData.length <= COMPLETED_PAGE_SIZE);
+        const rangeEnd = Math.min(start + COMPLETED_PAGE_SIZE, completedData.length);
+        document.getElementById('completedPageInfo').innerText =
+            `${t('label_showing')} ${start + 1} ${t('label_to')} ${rangeEnd} ${t('label_of')} ${completedData.length}`;
+        document.getElementById('completedPrevBtn').disabled = completedPage <= 1;
+        document.getElementById('completedNextBtn').disabled = completedPage >= totalPages;
+    }
+
+    function changeCompletedPage(delta) {
+        completedPage += delta;
+        renderCompletedPage();
     }
 
     // ── View Farmer Report (Modal) ───────────────────────────────────
@@ -486,18 +652,62 @@
             
             if (data.status === 'success') {
                 const r = data.report;
-                const imgs = data.images.length > 0 
-                    ? data.images.map(img => {
-                        // get_report_details.php returns each image as an object now
-                        // ({ path, geo_lat, geo_lng, uploaded_by }), not a plain URL string —
-                        // this fell out of sync when that endpoint changed for the Admin/MAO
-                        // farmer-vs-technician photo split.
-                        const src = typeof img === 'string' ? img : img.path;
-                        return `<img src="${src}" class="w-full h-32 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-80" onclick="window.open('${src}', '_blank')">`;
-                      }).join('')
+
+                // get_report_details.php returns each image as an object
+                // ({ id, path, geo_lat, geo_lng, uploaded_by }), not a plain URL string.
+                const images = data.images || [];
+                const farmerImgs = images.filter(img => (img.uploaded_by || 'Farmer') === 'Farmer');
+                const techImgs   = images.filter(img => img.uploaded_by === 'Technician');
+                const renderImgs = list => list.length > 0
+                    ? list.map(img => `<img src="${img.path}" class="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-80" onclick="window.open('${img.path}', '_blank')">`).join('')
                     : `<p class="text-xs text-gray-400 italic col-span-3">${t('no_field_photos')}</p>`;
-                    
+
+                // Same "--- TECH FINDINGS ---" marker convention used in
+                // report_management.html / damage_reports.html - splits the one
+                // Description column into what the farmer originally reported vs
+                // what this technician found in the field, instead of showing the
+                // raw marker text as one undifferentiated block.
+                const techMarker = '--- TECH FINDINGS ---';
+                const rawDescription = r.Description || '';
+                let farmerNotes = rawDescription;
+                let techNotes = '';
+                let hasTechFindings = false;
+                if (rawDescription.includes(techMarker)) {
+                    const parts = rawDescription.split(techMarker);
+                    farmerNotes = parts[0].trim();
+                    techNotes = parts[1].trim();
+                    hasTechFindings = true;
+                }
+
                 const locationStr = r.Barangay ? r.Barangay : t('label_location_missing');
+
+                const remarksHTML = hasTechFindings ? `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                        <div>
+                            <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-2 border-l-2 border-blue-500 pl-2">${t('label_farmer_original_report')}</p>
+                            <p class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 text-gray-700 text-sm leading-relaxed h-full">${farmerNotes || t('no_description')}</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-2 border-l-2 border-green-500 pl-2">${t('label_technician_findings')}</p>
+                            <p class="bg-green-50/50 p-5 rounded-2xl border border-green-100 text-gray-700 text-sm leading-relaxed h-full">${techNotes || t('no_findings_provided')}</p>
+                        </div>
+                    </div>` : `
+                    <div class="mb-8">
+                        <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-2 border-l-2 border-blue-500 pl-2">${t('label_farmers_remarks')}</p>
+                        <p class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 text-gray-700 text-sm leading-relaxed">${farmerNotes || t('no_description')}</p>
+                    </div>`;
+
+                const galleryHTML = hasTechFindings ? `
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('label_farmer')}</p>
+                            <div class="grid grid-cols-2 gap-3">${renderImgs(farmerImgs)}</div>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-3 border-l-2 border-green-500 pl-2">${t('label_technician')}</p>
+                            <div class="grid grid-cols-2 gap-3">${renderImgs(techImgs)}</div>
+                        </div>
+                    </div>` : `<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${renderImgs(images)}</div>`;
 
                 document.getElementById('reportModalContent').innerHTML = `
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 sm:gap-y-6 gap-x-4 mb-8 bg-gray-50 p-4 sm:p-6 rounded-2xl border border-gray-100">
@@ -508,15 +718,12 @@
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_damage_cause')}</p><p class="font-bold text-red-600">${r.Damage_Type || t('label_na')}</p></div>
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_est_area')}</p><p class="font-bold text-gray-800">${r.Area_Hectares || r.Area_Size || '0.00'} Ha</p></div>
                     </div>
-                    
-                    <div class="mb-8">
-                        <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-2 border-l-2 border-blue-500 pl-2">${t('label_farmers_remarks')}</p>
-                        <p class="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 text-gray-700 text-sm leading-relaxed">${r.Description || t('no_description')}</p>
-                    </div>
-                    
+
+                    ${remarksHTML}
+
                     <div>
                         <p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-3 border-l-2 border-blue-500 pl-2">${t('label_attached_evidence')}</p>
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${imgs}</div>
+                        ${galleryHTML}
                     </div>
                 `;
                 document.getElementById('reportModal').classList.remove('hidden');
@@ -617,6 +824,169 @@
     function removeFile(index) {
         selectedFiles.splice(index, 1);
         renderPreviews();
+    }
+
+    // ── Edit Inspection (Completed tab) ────────────────────────────────
+    // Separate staged-file array from `selectedFiles` above - they back two
+    // different forms (new assignment vs. editing an already-submitted one)
+    // that can, in principle, both have unsaved state at once.
+    let editSelectedFiles = [];
+
+    async function openEditInspection(id) {
+        Swal.fire({ title: t('sw_fetching_report'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            const res  = await fetch(`../../api/masterfile/damage_report/get_report_details.php?id=${id}`);
+            const data = await res.json();
+            Swal.close();
+
+            if (data.status !== 'success') {
+                Swal.fire(t('sw_error_title'), data.message || t('sw_could_not_load_report'), 'error');
+                return;
+            }
+
+            const r = data.report;
+            document.getElementById('editReportIdField').value = id;
+            document.getElementById('editModalReportID').innerText = `#REP-${id}`;
+
+            // Pre-fill with only the technician's own findings, not the farmer's
+            // original text underneath it - same marker split used in viewReportDetails().
+            const techMarker = '--- TECH FINDINGS ---';
+            const rawDescription = r.Description || '';
+            const techNotes = rawDescription.includes(techMarker)
+                ? rawDescription.split(techMarker)[1].trim()
+                : '';
+            document.getElementById('editObsField').value = techNotes;
+
+            document.querySelectorAll('#editInspectionForm input[name="editSeverity"]').forEach(radio => {
+                radio.checked = (radio.value === r.Damage_Severity);
+            });
+
+            const techPhotos = (data.images || []).filter(img => img.uploaded_by === 'Technician');
+            renderEditExistingPhotos(techPhotos);
+
+            editSelectedFiles = [];
+            renderEditPreviews();
+
+            document.getElementById('editModal').classList.remove('hidden');
+        } catch (e) {
+            Swal.close();
+            Swal.fire(t('sw_error_title'), t('sw_failed_connect'), 'error');
+        }
+    }
+
+    function renderEditExistingPhotos(photos) {
+        const container = document.getElementById('editExistingPhotos');
+        if (photos.length === 0) {
+            container.innerHTML = `<p class="text-xs text-gray-400 italic">${t('no_tech_photos')}</p>`;
+            return;
+        }
+        container.innerHTML = photos.map(img => `
+            <div class="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group">
+                <img src="${img.path}" class="w-full h-full object-cover cursor-pointer" onclick="window.open('${img.path}', '_blank')">
+                <button type="button" onclick="deleteExistingImage(${img.id}, this)" class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center shadow-md">
+                    <i class="fa-solid fa-trash text-[10px]"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    async function deleteExistingImage(imageId, btnEl) {
+        const result = await Swal.fire({
+            title: t('sw_confirm_delete_photo_title'), text: t('sw_confirm_delete_photo_text'),
+            icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: t('sw_yes_remove')
+        });
+        if (!result.isConfirmed) return;
+
+        try {
+            const res  = await fetch('../../api/technician/delete_evidence_image.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_id: imageId })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                btnEl.closest('.relative').remove();
+                const remaining = document.getElementById('editExistingPhotos').children.length;
+                if (remaining === 0) renderEditExistingPhotos([]);
+            } else {
+                Swal.fire(t('sw_error_title'), data.message, 'error');
+            }
+        } catch (e) {
+            Swal.fire(t('sw_error_title'), t('sw_failed_connect'), 'error');
+        }
+    }
+
+    function handleEditFileSelection(event) {
+        Array.from(event.target.files).forEach(f => editSelectedFiles.push(f));
+        event.target.value = '';
+        renderEditPreviews();
+    }
+
+    function renderEditPreviews() {
+        const container = document.getElementById('editImagePreviewContainer');
+        container.innerHTML = '';
+
+        if (editSelectedFiles.length > 0) {
+            container.classList.remove('hidden');
+            editSelectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
+                    imgDiv.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
+                            <button type="button" onclick="removeEditFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
+                                <i class="fa-solid fa-trash text-[10px]"></i>
+                            </button>
+                        </div>`;
+                    container.appendChild(imgDiv);
+                };
+                reader.readAsDataURL(file);
+            });
+        } else {
+            container.classList.add('hidden');
+        }
+    }
+
+    function removeEditFile(index) {
+        editSelectedFiles.splice(index, 1);
+        renderEditPreviews();
+    }
+
+    async function submitEditForm(e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append('id', document.getElementById('editReportIdField').value);
+        formData.append('observations', document.getElementById('editObsField').value);
+        const severityEl = document.querySelector('#editInspectionForm input[name="editSeverity"]:checked');
+        formData.append('severity', severityEl ? severityEl.value : '');
+        editSelectedFiles.forEach(file => formData.append('evidencePhotos[]', file));
+
+        Swal.fire({ title: t('sw_updating_title'), text: t('sw_updating_text'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        try {
+            const res  = await fetch('../../api/technician/update_inspection.php', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                Swal.fire({ icon: 'success', title: t('sw_updated_title'), text: t('sw_updated_text'), showConfirmButton: false, timer: 1500 });
+                closeEditModal();
+                loadData();
+            } else {
+                Swal.fire(t('sw_error_title'), data.message, 'error');
+            }
+        } catch (err) {
+            Swal.fire(t('sw_error_title'), t('sw_failed_connect'), 'error');
+        }
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.getElementById('editInspectionForm').reset();
+        editSelectedFiles = [];
+        renderEditPreviews();
     }
 
     // ── Submit Inspection ────────────────────────────────────────────
