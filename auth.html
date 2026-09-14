@@ -13,6 +13,29 @@
         // entirely, which is exactly the case it was written for. Back navigation is
         // now handled where it actually happens - the pageshow/bfcache guard in
         // assets/js/session_guard.js on each protected page.
+
+        // If someone who is already signed in lands here - usually by pressing Back
+        // far enough to reach an auth.html entry left over from before they logged
+        // in - send them straight back to their own dashboard. replace() so this
+        // never adds a history entry of its own. No redirect loop is possible: this
+        // only fires while the session is ACTIVE, and protected pages only bounce
+        // here while it is INACTIVE.
+        (function () {
+            var ROLE_HOME = {
+                admin:      'views/masterfile/dashboard.html',
+                farmer:     'views/farmers/index.html',
+                technician: 'views/technician/dashboard.html',
+                mao:        'views/mao/index.html'
+            };
+            fetch('api/auth/session_check.php', { cache: 'no-store', credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data || data.status !== 'active') return;
+                    var home = ROLE_HOME[String(data.role || '').toLowerCase()];
+                    if (home) window.location.replace(home);
+                })
+                .catch(function () { /* offline or server down - just show the login form */ });
+        })();
     </script>
     <title>Department of Agriculture - Authentication</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
