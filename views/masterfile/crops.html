@@ -160,27 +160,27 @@
 </div>
 
 <!-- ── Crop Modal ──────────────────────────────────────────────────────────── -->
-<div id="cropModal" class="fixed inset-0 bg-[#11542e]/40 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden">
-        <div class="p-7 border-b border-gray-50 flex justify-between items-center">
-            <h3 id="modalTitle" class="text-xl font-black text-gray-800" data-i18n="modal_title_register">Register New Crop</h3>
+<div id="cropModal" class="fixed inset-0 bg-[#11542e]/40 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl sm:rounded-[2rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div class="p-5 sm:p-7 border-b border-gray-50 flex justify-between items-center flex-shrink-0">
+            <h3 id="modalTitle" class="text-base sm:text-xl font-black text-gray-800" data-i18n="modal_title_register">Register New Crop</h3>
             <button onclick="closeModal()"
-                    class="w-9 h-9 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all text-lg font-bold">&times;</button>
+                    class="w-8 h-8 sm:w-9 sm:h-9 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all text-lg font-bold flex-shrink-0">&times;</button>
         </div>
-        <div class="p-7 space-y-4">
+        <div class="p-5 sm:p-7 space-y-3 sm:space-y-4 overflow-y-auto">
             <input type="hidden" id="cropId">
 
             <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_crop_name_variety">Crop Name / Variety</label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_crop_name_variety">Crop Name / Variety</label>
                 <input type="text" id="cropName"
-                       class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm"
+                       class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm"
                        placeholder="e.g. RC-222 (Tubigan)">
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_commodity_type">Commodity Type</label>
-                    <select id="cropType" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_commodity_type">Commodity Type</label>
+                    <select id="cropType" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
                         <option value="Rice" data-i18n="crop_type_rice">Rice</option>
                         <option value="Corn" data-i18n="crop_type_corn">Corn</option>
                         <option value="Banana" data-i18n="crop_type_banana">Banana</option>
@@ -190,33 +190,32 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_growth_duration">Growth Duration</label>
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_growth_duration">Growth Duration</label>
                     <input type="text" id="cropPeriod" placeholder="e.g. 110 Days"
-                           class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
+                           class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
                 </div>
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_prod_cost_php">Std. Production Cost (₱)</label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_prod_cost_php">Std. Production Cost (₱)</label>
                 <input type="number" id="cropProdCost" placeholder="e.g. 45000" min="0" step="0.01"
-                       class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
+                       class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_description">Description</label>
+                <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_description">Description</label>
                 <textarea id="cropDesc" rows="3"
-                          class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm"
+                          class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm"
                           placeholder="Short description..."></textarea>
             </div>
-
-            <div class="pt-4 flex gap-3">
-                <button onclick="closeModal()"
-                        class="flex-1 py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
-                <button onclick="saveCrop()" id="saveBtn"
-                        class="flex-[2] py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm" data-i18n="btn_save_crop">
-                    Save Crop
-                </button>
-            </div>
+        </div>
+        <div class="p-5 sm:p-7 pt-3 sm:pt-4 border-t border-gray-50 flex gap-3 flex-shrink-0">
+            <button onclick="closeModal()"
+                    class="flex-1 py-3 sm:py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
+            <button onclick="saveCrop()" id="saveBtn"
+                    class="flex-[2] py-3 sm:py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm" data-i18n="btn_save_crop">
+                Save Crop
+            </button>
         </div>
     </div>
 </div>
