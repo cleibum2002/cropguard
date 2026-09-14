@@ -157,42 +157,42 @@
         </main>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-[#11542e]/40 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden">
-            <div class="p-7 border-b border-gray-50 flex justify-between items-center">
-                <h3 id="modalTitle" class="text-xl font-black text-gray-800" data-i18n="modal_title_new_user">New User</h3>
-                <button onclick="closeModal()" class="w-9 h-9 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all text-lg font-bold leading-none">&times;</button>
+    <div id="modal" class="fixed inset-0 bg-[#11542e]/40 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl sm:rounded-[2rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="p-5 sm:p-7 border-b border-gray-50 flex justify-between items-center flex-shrink-0">
+                <h3 id="modalTitle" class="text-base sm:text-xl font-black text-gray-800" data-i18n="modal_title_new_user">New User</h3>
+                <button onclick="closeModal()" class="w-8 h-8 sm:w-9 sm:h-9 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-all text-lg font-bold leading-none flex-shrink-0">&times;</button>
             </div>
-            <div class="p-7 space-y-4">
+            <div class="p-5 sm:p-7 space-y-3 sm:space-y-4 overflow-y-auto">
                 <input type="hidden" id="editId">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div class="sm:col-span-2">
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_full_name">Full Name</label>
-                        <input type="text" id="userFullName" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Juan Dela Cruz">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_full_name">Full Name</label>
+                        <input type="text" id="userFullName" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Juan Dela Cruz">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_email_address">Email Address</label>
-                        <input type="email" id="userEmail" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="user@da.gov.ph">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_email_address">Email Address</label>
+                        <input type="email" id="userEmail" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="user@da.gov.ph">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_contact_number">Contact Number</label>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_contact_number">Contact Number</label>
                         <div class="flex items-stretch gap-2">
                             <span class="flex items-center gap-1.5 px-3 bg-gray-100 border border-gray-200 rounded-xl text-sm font-bold text-gray-600 flex-shrink-0">
                                 <span>🇵🇭</span> <span>+63</span>
                             </span>
-                            <input type="text" id="userContact" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm flex-1" placeholder="9xxxxxxxxx" inputmode="numeric" maxlength="10"
+                            <input type="text" id="userContact" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm flex-1" placeholder="9xxxxxxxxx" inputmode="numeric" maxlength="10"
                                    oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10);">
                         </div>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_password">Password</label>
-                    <input type="password" id="userPassword" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Leave blank to keep current (if editing)" data-i18n-placeholder="placeholder_password_hint">
+                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_password">Password</label>
+                    <input type="password" id="userPassword" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Leave blank to keep current (if editing)" data-i18n-placeholder="placeholder_password_hint">
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_role">Role</label>
-                        <select id="userRole" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="th_role">Role</label>
+                        <select id="userRole" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
                             <option value="Admin" data-i18n="opt_role_admin">Admin</option>
                             <option value="MAO" data-i18n="opt_role_mao">MAO</option>
                             <option value="Technician" data-i18n="opt_role_technician">Technician</option>
@@ -200,17 +200,17 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_status">Status</label>
-                        <select id="userStatus" class="w-full px-5 py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="th_status">Status</label>
+                        <select id="userStatus" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
                             <option value="Active" data-i18n="status_active">Active</option>
                             <option value="Inactive" data-i18n="status_inactive">Inactive</option>
                         </select>
                     </div>
                 </div>
-                <div class="pt-4 flex gap-3">
-                    <button onclick="closeModal()" class="flex-1 py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
-                    <button onclick="saveData()" class="flex-[2] py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm" data-i18n="btn_save_user">Save User</button>
-                </div>
+            </div>
+            <div class="p-5 sm:p-7 pt-3 sm:pt-4 border-t border-gray-50 flex gap-3 flex-shrink-0">
+                <button onclick="closeModal()" class="flex-1 py-3 sm:py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
+                <button onclick="saveData()" class="flex-[2] py-3 sm:py-3.5 bg-[#11542e] text-white rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all text-sm" data-i18n="btn_save_user">Save User</button>
             </div>
         </div>
     </div>
