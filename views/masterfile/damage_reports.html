@@ -414,6 +414,7 @@
         // Reusable EN / TL switcher (see assets/js/i18n.js)
         const translations = {
             en: {
+                no_area_assigned: "No area assigned",
                 header_title: "Incident Validation", badge_admin_mode: "Admin Mode",
                 search_placeholder: "Search farmer or crop...", role_admin: "Admin",
                 filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
@@ -491,6 +492,7 @@
                 sw_db_connection_failed: "Database connection failed."
             },
             tl: {
+                no_area_assigned: "Walang itinalagang lugar",
                 header_title: "Pagpapatunay ng Insidente", badge_admin_mode: "Admin Mode",
                 search_placeholder: "Maghanap ng magsasaka o pananim...", role_admin: "Admin",
                 filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
@@ -722,7 +724,7 @@
                 if (response.status === 'success') {
                     const select = document.getElementById('technicianId');
                     select.innerHTML = '<option value="">Select Technician...</option>';
-                    response.data.forEach(t => { select.innerHTML += `<option value="${t.id}">${t.name} (${t.area})</option>`; });
+                    response.data.forEach(tech => { select.innerHTML += `<option value="${tech.id}">${tech.name} (${tech.area || t('no_area_assigned')})</option>`; });
                 }
             } catch (e) { console.error("Failed to load technicians"); }
         }
