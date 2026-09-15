@@ -559,10 +559,11 @@
     }
 
     function filterCrops() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
+        const q = document.getElementById('searchInput').value.trim().toLowerCase();
         filteredCrops = allCrops.filter(c =>
             c.name.toLowerCase().includes(q) ||
-            (c.type && c.type.toLowerCase().includes(q))
+            (c.type && c.type.toLowerCase().includes(q)) ||
+            (c.description && c.description.toLowerCase().includes(q))
         );
         currentPage = 1;
         renderCrops();

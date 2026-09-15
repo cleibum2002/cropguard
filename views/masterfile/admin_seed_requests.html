@@ -466,7 +466,7 @@
         }
 
         function filterTable() {
-            const q = document.getElementById("searchInput").value.toLowerCase();
+            const q = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const statusFilter = document.getElementById("statusFilter").value;
             filteredData = allData.filter(i => {
                 const matchText = (i.Farmer_Name    && i.Farmer_Name.toLowerCase().includes(q))

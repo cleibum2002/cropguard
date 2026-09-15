@@ -466,7 +466,7 @@
 
         // UPDATED: Now filters by both Search Text AND Dropdown Category
         function filterTable() {
-            const q = document.getElementById("searchInput").value.toLowerCase();
+            const q = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const cat = document.getElementById("categoryFilter").value;
             const statusFilter = document.getElementById("statusFilter").value;
             

@@ -363,7 +363,7 @@
 
         // 5. Search + Filters
         function filterTable() {
-            const q = document.getElementById("searchInput").value.toLowerCase();
+            const q = document.getElementById("searchInput").value.trim().toLowerCase();
             const statusFilter     = document.getElementById('filterStatus').value;
             const damageTypeFilter = document.getElementById('filterDamageType').value;
             const severityFilter   = document.getElementById('filterSeverity').value;

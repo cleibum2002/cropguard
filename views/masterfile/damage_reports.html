@@ -1104,7 +1104,7 @@
         }
 
         function filterTable() {
-            const q               = document.getElementById("searchInput").value.toLowerCase();
+            const q               = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const statusFilter    = document.getElementById("filterStatus").value;
             const damageTypeFilter = document.getElementById("filterDamageType").value;
             const severityFilter  = document.getElementById("filterSeverity").value;
@@ -1126,7 +1126,7 @@
             }
 
             filteredData = allData.filter(i => {
-                const matchesSearch = !q || (i.farmer && i.farmer.toLowerCase().includes(q)) || (i.crop_name && i.crop_name.toLowerCase().includes(q)) || (i.status && i.status.toLowerCase().includes(q));
+                const matchesSearch = !q || (i.farmer && i.farmer.toLowerCase().includes(q)) || (i.crop_name && i.crop_name.toLowerCase().includes(q)) || (i.status && i.status.toLowerCase().includes(q)) || `rep-${String(i.id).padStart(3, '0')}`.includes(q) || String(i.id).includes(q);
                 const matchesStatus = !statusFilter || i.status === statusFilter;
                 const matchesType   = !damageTypeFilter || i.damage_type === damageTypeFilter;
                 const matchesSev    = !severityFilter || i.severity === severityFilter;

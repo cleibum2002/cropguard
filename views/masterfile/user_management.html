@@ -439,7 +439,7 @@
 
         // ADDED: Modified filterTable to handle both text search and role dropdown
         function filterTable() {
-            const searchQuery = document.getElementById("searchInput").value.toLowerCase();
+            const searchQuery = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const roleFilter = document.getElementById("roleFilter").value;
             const statusFilter = document.getElementById("statusFilter").value;
 

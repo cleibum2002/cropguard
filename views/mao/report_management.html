@@ -394,7 +394,7 @@
     }
 
     function filterReports() {
-        const query = document.getElementById('searchInput').value.toLowerCase();
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
         const statusFilter     = document.getElementById('filterStatus').value;
         const damageTypeFilter = document.getElementById('filterDamageType').value;
         const severityFilter   = document.getElementById('filterSeverity').value;
@@ -424,12 +424,14 @@
             const idStrWithPrefix = 'rep-' + idStr; // so typing the visible "#REP-73" label actually matches
             const name = (r.farmer || r.FarmerName || "").toLowerCase();
             const crop = (r.crop_name || "").toLowerCase();
+            const status = (r.displayStatus || "").toLowerCase();
             const queryClean = query.replace(/^#/, ''); // tolerate a leading # too
             const matchesSearch = !queryClean
                 || idStr.includes(queryClean)
                 || idStrWithPrefix.includes(queryClean)
                 || name.includes(queryClean)
-                || crop.includes(queryClean);
+                || crop.includes(queryClean)
+                || status.includes(queryClean);
 
             const matchesDamageType = !damageTypeFilter || r.damage_type === damageTypeFilter;
             const matchesSeverity   = !severityFilter || r.severity === severityFilter;
