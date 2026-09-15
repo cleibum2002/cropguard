@@ -37,6 +37,10 @@ function validateEmailFormat($email) {
 }
 
 if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) {
+    // strip_tags: names are rendered with innerHTML across the staff dashboards.
+    // See api/auth/register.php.
+    $data->fullname = strip_tags(trim($data->fullname));
+
     $password_error = validatePasswordStrength($data->password);
     if ($password_error) {
         echo json_encode(['status' => 'error', 'message' => $password_error]);

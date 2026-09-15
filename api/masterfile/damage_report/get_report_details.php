@@ -1,7 +1,8 @@
 <?php
 // File Location: api/masterfile/damage_report/get_report_details.php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+// display_errors was left ON here (the only file in the codebase with it on),
+// leaking PHP warnings and stack traces to the browser. Matches the siblings now.
+ini_set('display_errors', 0);
 session_start();
 
 header('Content-Type: application/json');
@@ -17,8 +18,18 @@ if (isset($_GET['id'])) {
     $id = (int)$_GET['id'];
     
     try {
+        // Admin and MAO oversee every report, but a Technician may only open the
+        // ones actually assigned to them - otherwise any technician could walk
+        // ?id=1..N and read every farmer's details, including RSBA_No. Every
+        // other technician endpoint already scopes on Technician_ID; this one
+        // didn't. Same shape as the ownership check in dashboard/calculate_cost.php.
+        $technicianScope = '';
+        if ($_SESSION['Role'] === 'Technician') {
+            $technicianScope = ' AND dr.Technician_ID = ' . (int)$_SESSION['User_ID'];
+        }
+
         // Query to get report and farm details
-        $query = "SELECT dr.*, 
+        $query = "SELECT dr.*,
                          u.Fullname AS FarmerName, u.RSBA_No,
                          fl.Barangay, fl.Area_Size AS Total_Farm_Area, fl.Land_Type,
                          c.Crop_Name, c.Area_Hectares AS Affected_Area, c.Planting_Date, c.Expected_Harvest
@@ -26,12 +37,12 @@ if (isset($_GET['id'])) {
                   LEFT JOIN users u ON dr.Farmer_ID = u.User_ID
                   LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
                   LEFT JOIN crop c ON dr.Crop_ID = c.Crop_ID
-                  WHERE dr.Damage_Report_ID = $id";
-                  
+                  WHERE dr.Damage_Report_ID = $id" . $technicianScope;
+
         $result = $conn->query($query);
-        
+
         if (!$result) {
-            echo json_encode(['status' => 'error', 'message' => 'DB Error on Report: ' . $conn->error]);
+            echo json_encode(['status' => 'error', 'message' => safeErrorMessage(new Exception($conn->error))]);
             exit;
         }
         
@@ -58,7 +69,9 @@ if (isset($_GET['id'])) {
                     ];
                 }
             } else {
-                $report['Description'] .= "\n\n[WARNING: Image fetch error: " . $conn->error . "]";
+                // Log the real DB error rather than splicing it into text that
+                // gets rendered in the Admin/MAO report viewer.
+                error_log('get_report_details.php image fetch failed: ' . $conn->error);
             }
             
             echo json_encode(['status' => 'success', 'report' => $report, 'images' => $images]);

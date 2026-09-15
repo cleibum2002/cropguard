@@ -16,7 +16,9 @@ if (!isset($_SESSION['User_ID'])) {
 $user_id = $_SESSION['User_ID'];
 $input   = json_decode(file_get_contents('php://input'), true);
 
-$fullname = trim($input['fullname'] ?? '');
+// strip_tags: the name is rendered with innerHTML in staff dashboards and chat,
+// and never legitimately contains markup. See api/auth/register.php.
+$fullname = strip_tags(trim($input['fullname'] ?? ''));
 $email    = trim($input['email']    ?? '');
 $contact  = trim($input['contact']  ?? '');
 $rsba     = trim($input['rsba']     ?? '');
