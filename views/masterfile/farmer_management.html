@@ -294,14 +294,19 @@
         }
 
         function filterTable() {
-            const q            = document.getElementById('searchInput').value.toLowerCase();
+            const q            = document.getElementById('searchInput').value.trim().toLowerCase();
             const rsbsaFilter  = document.getElementById('rsbsaFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
 
+            const qDigits = q.replace(/\D/g, '');
+
             filteredFarmers = allFarmers.filter(f => {
+                const rsbsaDigits = (f.rsbsa_no || '').replace(/\D/g, '');
                 const matchesSearch = f.fullname.toLowerCase().includes(q) ||
                     (f.rsbsa_no || '').toLowerCase().includes(q) ||
-                    (f.email || '').toLowerCase().includes(q);
+                    (qDigits && rsbsaDigits.includes(qDigits)) ||
+                    (f.email || '').toLowerCase().includes(q) ||
+                    (f.contact || '').toLowerCase().includes(q);
 
                 const hasRSBSA    = f.rsbsa_no && f.rsbsa_no.trim() !== '';
                 const validFormat = hasRSBSA && /^\d{3}-\d{4}-\d{5}$/.test(f.rsbsa_no);

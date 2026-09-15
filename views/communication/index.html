@@ -263,7 +263,7 @@
         }
 
         function filterUsers() {
-            const q = document.getElementById('searchUser').value.toLowerCase();
+            const q = document.getElementById('searchUser').value.trim().toLowerCase();
             renderUsers(allUsers.filter(u => u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)));
         }
 

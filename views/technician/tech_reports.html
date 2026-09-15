@@ -367,13 +367,18 @@
         let currentFilteredLedger = [];
 
         function renderLedger() {
-            const query          = (document.getElementById('searchInput').value || '').toLowerCase();
+            const query          = (document.getElementById('searchInput').value || '').trim().toLowerCase().replace(/^#/, '');
             const statusFilter   = document.getElementById('filterStatus').value;
             const typeFilter     = document.getElementById('filterDamageType').value;
             const barangayFilter = document.getElementById('filterBarangay').value;
 
             currentFilteredLedger = allLedgerRows.filter(r => {
-                const matchesSearch   = !query || r.farmer_name.toLowerCase().includes(query);
+                const matchesSearch   = !query
+                    || (r.farmer_name && r.farmer_name.toLowerCase().includes(query))
+                    || (r.crop_name && r.crop_name.toLowerCase().includes(query))
+                    || (r.barangay && r.barangay.toLowerCase().includes(query))
+                    || `rep-${String(r.id).padStart(3, '0')}`.includes(query)
+                    || String(r.id).includes(query);
                 const matchesStatus   = !statusFilter || r.status === statusFilter;
                 const matchesType     = !typeFilter || r.damage_type === typeFilter;
                 const matchesBarangay = !barangayFilter || r.barangay === barangayFilter;
