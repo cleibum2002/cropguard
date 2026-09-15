@@ -114,11 +114,13 @@ try {
 
     if ($emailChanged && $isFarmer) {
         sendVerificationEmail($email, $fullname, $new_code); // best-effort
+        // Code intentionally not returned - see the note in api/auth/register.php.
+        // Returning it would let someone move their account onto an address they
+        // don't control and self-verify it.
         echo json_encode([
             'status' => 'success',
             'message' => 'Profile updated. Your new email needs to be verified before you can log in again.',
-            'email_changed' => true,
-            'verification_code' => $new_code
+            'email_changed' => true
         ]);
     } else {
         echo json_encode(['status' => 'success', 'message' => 'Profile updated successfully.']);
