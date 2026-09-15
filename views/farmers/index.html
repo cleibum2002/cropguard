@@ -1099,11 +1099,16 @@
                     unread.forEach(n => {
                         const item = document.createElement('div');
                         item.className = 'alert-item rounded-xl px-5 py-4 flex items-start gap-4';
+                        // The click-to-navigate handler is on the message block only, not
+                        // the whole item - the dismiss (x) button is a sibling of it, so
+                        // clicking dismiss can never also trigger navigation.
+                        const contentClickable = n.Redirect_URL ? ' cursor-pointer' : '';
+                        const contentOnclick   = n.Redirect_URL ? ` onclick="window.location.href='${n.Redirect_URL}'"` : '';
                         item.innerHTML = `
                             <div class="w-10 h-10 rounded-full bg-[#f1c40f]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                                 <i class="fa-solid fa-circle-exclamation text-xl text-[#f1c40f]"></i>
                             </div>
-                            <div class="flex-1">
+                            <div class="flex-1${contentClickable}"${contentOnclick}>
                                 <p class="alert-message">${n.Message}</p>
                                 <p class="text-white/60 text-sm font-medium mt-1">${n.DateStr || 'Just now'}</p>
                             </div>
@@ -1991,7 +1996,14 @@
                     data.data.forEach(n => {
                         const bg  = n.Is_Read == 0 ? 'bg-green-50/30' : '';
                         const dot = n.Is_Read == 0 ? '<div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>' : '';
-                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div></div>';
+                        // Clicking a notification with a Redirect_URL lands the farmer on
+                        // the page that notification is actually about (dashboard for
+                        // report updates, Request Seeds for seed-request updates) instead
+                        // of just showing text with nowhere to go.
+                        const clickable = n.Redirect_URL ? ' cursor-pointer' : '';
+                        const onclickAttr = n.Redirect_URL ? " onclick=\"window.location.href='" + n.Redirect_URL + "'\"" : '';
+                        const arrow = n.Redirect_URL ? '<i class="fa-solid fa-chevron-right text-gray-300 text-xs self-center flex-shrink-0"></i>' : '';
+                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3' + clickable + ' ' + bg + '"' + onclickAttr + '>' + dot + '<div class="flex-1"><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div>' + arrow + '</div>';
                     });
                     // Also update the big alert banner
                     fetchAndShowBigAlerts();

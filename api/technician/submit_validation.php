@@ -55,8 +55,9 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
 
         if ($farmer_id) {
             $notifMsg = "Field inspection completed for Report #REP-$report_id. Status updated to: Inspected.";
-            $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
-            $stmtNotif->bind_param("is", $farmer_id, $notifMsg);
+            $redirectUrl = 'index.html';
+            $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
+            $stmtNotif->bind_param("iss", $farmer_id, $notifMsg, $redirectUrl);
             $stmtNotif->execute();
             $stmtNotif->close();
         }

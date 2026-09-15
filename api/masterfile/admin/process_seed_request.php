@@ -123,9 +123,10 @@ try {
 
     // 4. Send notification to farmer
     if ($farmer_id > 0 && !empty($message)) {
-        $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
+        $redirectUrl = 'request_seeds.html';
+        $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
         if (!$stmtNotif) throw new Exception("Prepare failed (notif): " . $conn->error);
-        $stmtNotif->bind_param("is", $farmer_id, $message);
+        $stmtNotif->bind_param("iss", $farmer_id, $message, $redirectUrl);
         if (!$stmtNotif->execute()) throw new Exception("Execute failed (notif): " . $stmtNotif->error);
         $stmtNotif->close();
     }

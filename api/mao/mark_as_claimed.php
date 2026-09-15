@@ -49,8 +49,9 @@ try {
     // 3. Send farmer notification
     if ($row && $row['Farmer_ID']) {
         $msg = "You have successfully claimed {$row['Quantity']} {$row['Unit']} of {$row['Category']} (Aid #AID-{$dist_id}). Thank you!";
-        $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
-        $notif->bind_param("is", $row['Farmer_ID'], $msg);
+        $redirectUrl = 'index.html';
+        $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
+        $notif->bind_param("iss", $row['Farmer_ID'], $msg, $redirectUrl);
         $notif->execute();
         $notif->close();
     }

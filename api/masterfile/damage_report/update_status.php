@@ -46,8 +46,12 @@ try {
             $msg = "Notice: Your Damage Report #REP-{$data->id} was not approved. Please contact the MAO office for clarification.";
         }
 
-        $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
-        $notif->bind_param("is", $farmer_id, $msg);
+        // Redirect_URL points to the farmer dashboard, where "My Recent Reports"
+        // lives - clicking this notification lands them on the page that shows
+        // this report, not just a generic "you have a notification".
+        $redirectUrl = 'index.html';
+        $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
+        $notif->bind_param("iss", $farmer_id, $msg, $redirectUrl);
         $notif->execute();
         $notif->close();
 

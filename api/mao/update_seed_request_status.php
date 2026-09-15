@@ -52,9 +52,10 @@ try {
         $update->close();
 
         $message = 'Your requested seeds are ready! You can now claim them at the MAO office.';
-        $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
+        $redirectUrl = 'request_seeds.html';
+        $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
         if (!$notif) throw new Exception("Prepare failed (notif): " . $conn->error);
-        $notif->bind_param("is", $farmer_id, $message);
+        $notif->bind_param("iss", $farmer_id, $message, $redirectUrl);
         if (!$notif->execute()) throw new Exception("Execute failed (notif): " . $notif->error);
         $notif->close();
 
