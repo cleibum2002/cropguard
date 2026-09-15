@@ -472,14 +472,6 @@
             msgBox.className = data.status === 'success' ? 'msg-box success' : 'msg-box error';
             msgBox.innerText = data.message;
             if (data.status === 'success') startCountdown();
-
-            if (data.channel === 'phone') {
-                document.getElementById('verifyTitle').innerText = 'Verify Your Phone';
-                document.getElementById('verifyInstructions').innerText = "We've sent a 6-digit code to your phone via SMS. Enter it below.";
-            } else if (data.channel === 'email') {
-                document.getElementById('verifyTitle').innerText = 'Verify Your Email';
-                document.getElementById('verifyInstructions').innerText = "We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.";
-            }
         } catch(e) {
             msgBox.className = 'msg-box error';
             msgBox.innerText = "Server Error. Check console.";
@@ -517,18 +509,7 @@
             });
             const data = await res.json();
 
-            if (data.status === 'success' && data.step === 'phone') {
-                // Email step just finished - now switch to asking for the phone code,
-                // staying on this same form instead of redirecting to login.
-                msgBox.className = 'msg-box success';
-                msgBox.innerText = data.message;
-                document.getElementById('verifyTitle').innerText = 'Verify Your Phone';
-                document.getElementById('verifyInstructions').innerText = "We've sent a 6-digit code to your phone via SMS. Enter it below to finish.";
-                document.querySelectorAll('.code-digit').forEach(b => { b.value = ''; b.classList.remove('filled'); });
-                document.getElementById('verifyCodeInput').value = '';
-                document.querySelector('.code-digit').focus();
-            } else if (data.status === 'success') {
-                // step === 'done' - fully verified now.
+            if (data.status === 'success') {
                 msgBox.className = 'msg-box success';
                 msgBox.innerText = data.message;
                 setTimeout(() => switchForm('login'), 1500);

@@ -1,12 +1,10 @@
 <?php
 // File Location: api/auth/resend_code.php
-// Works for whichever step the account is currently stuck on - resends by email
-// if Email isn't verified yet, or by SMS if email's done but phone isn't.
+// Resends the email verification code for an account that hasn't verified yet.
 session_start();
 header('Content-Type: application/json');
 require_once '../config/db_connection.php';
 require_once '../config/mailer.php';
-require_once '../config/sms.php';
 
 $input = json_decode(file_get_contents("php://input"), true);
 $email = trim($input['email'] ?? '');
@@ -16,7 +14,7 @@ if (!$email) {
     exit;
 }
 
-$stmt = $conn->prepare("SELECT User_ID, Fullname, Contact_Number, Email_Verified, Phone_Verified FROM users WHERE Email = ? AND Email_Verified = 0");
+$stmt = $conn->prepare("SELECT User_ID, Fullname, Contact_Number, Email_Verified FROM users WHERE Email = ? AND Email_Verified = 0");
 $stmt->bind_param("s", $email);
 $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
