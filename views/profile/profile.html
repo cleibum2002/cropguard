@@ -25,13 +25,14 @@
             label_rsba: "RSBA Number", ph_rsba: "Not yet assigned", rsba_hint: "RSBSA number is assigned by the Administrator.",
             label_area: "Assigned Area",
             section_password: "Change Password", password_hint: "\u2014 leave blank to keep current",
+            password_requirements_hint: "Minimum 8 characters, must include at least 1 special character.",
             label_new_password: "New Password", ph_new_password: "Enter new password",
             label_confirm_password: "Confirm Password", ph_confirm_password: "Confirm new password",
             btn_save: "Save Changes",
             sw_missing_title: "Missing Fields", sw_missing_text: "Full name and email are required.",
             sw_invalid_contact_title: "Invalid Contact Number", sw_invalid_contact_text: "Contact number must be exactly 10 digits (e.g. 9171234567).",
             sw_mismatch_title: "Password Mismatch", sw_mismatch_text: "Passwords do not match.",
-            sw_weak_title: "Weak Password", sw_weak_text: "Password must be at least 6 characters.",
+            sw_weak_title: "Weak Password", sw_weak_text: "Password must be at least 8 characters and include at least 1 special character.",
             sw_updated_title: "Profile Updated!", sw_updated_text: "Your changes have been saved.",
             sw_error_title: "Error", sw_update_failed: "Update failed.", sw_server_error: "Server connection failed.",
             sw_signout_title: "Sign Out?", sw_signout_text: "Return to login screen.", sw_signout_confirm: "Logout",
@@ -50,13 +51,14 @@
             label_rsba: "Numero ng RSBA", ph_rsba: "Hindi pa naitalaga", rsba_hint: "Ang RSBSA number ay itinatalaga ng Administrator.",
             label_area: "Nakatalagang Lugar",
             section_password: "Palitan ang Password", password_hint: "\u2014 iwanang blangko para panatilihin ang kasalukuyan",
+            password_requirements_hint: "Minimum na 8 karakter, dapat may kasamang kahit 1 espesyal na simbolo.",
             label_new_password: "Bagong Password", ph_new_password: "Ilagay ang bagong password",
             label_confirm_password: "Kumpirmahin ang Password", ph_confirm_password: "Kumpirmahin ang bagong password",
             btn_save: "I-save ang mga Pagbabago",
             sw_missing_title: "Kulang na Impormasyon", sw_missing_text: "Kailangan ang buong pangalan at email.",
             sw_invalid_contact_title: "Maling Numero", sw_invalid_contact_text: "Ang numero ng contact ay dapat eksaktong 10 digit (hal. 9171234567).",
             sw_mismatch_title: "Hindi Tugma ang Password", sw_mismatch_text: "Hindi magkatugma ang mga password.",
-            sw_weak_title: "Mahinang Password", sw_weak_text: "Dapat hindi bababa sa 6 na karakter ang password.",
+            sw_weak_title: "Mahinang Password", sw_weak_text: "Ang password ay dapat hindi bababa sa 8 karakter at may kasamang kahit 1 espesyal na simbolo.",
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang iyong mga pagbabago.",
             sw_error_title: "Error", sw_update_failed: "Nabigo ang pag-update.", sw_server_error: "Nabigo ang koneksyon sa server.",
             sw_signout_title: "Mag-sign Out?", sw_signout_text: "Babalik sa login screen.", sw_signout_confirm: "Mag-logout",
@@ -75,13 +77,14 @@
             label_rsba: "Numero sa RSBA", ph_rsba: "Wala pa gitakda", rsba_hint: "Ang RSBSA number gitakda sa Administrator.",
             label_area: "Gitakdang Lugar",
             section_password: "Ilisi ang Password", password_hint: "\u2014 biyai og blangko para magpabilin ang karon",
+            password_requirements_hint: "Kinahanglan 8 ka karakter, dapat naay labing gamay 1 ka espesyal nga simbolo.",
             label_new_password: "Bag-ong Password", ph_new_password: "Isulod ang bag-ong password",
             label_confirm_password: "Kumpirmaha ang Password", ph_confirm_password: "Kumpirmaha ang bag-ong password",
             btn_save: "I-save ang mga Kausaban",
             sw_missing_title: "Kulang nga Impormasyon", sw_missing_text: "Gikinahanglan ang tibuok ngalan ug email.",
             sw_invalid_contact_title: "Sayop nga Numero", sw_invalid_contact_text: "Ang numero sa contact kinahanglan eksakto nga 10 ka digit (pananglitan 9171234567).",
             sw_mismatch_title: "Dili Tugma ang Password", sw_mismatch_text: "Dili magkatugma ang mga password.",
-            sw_weak_title: "Huyang nga Password", sw_weak_text: "Dapat dili ubos sa 6 ka karakter ang password.",
+            sw_weak_title: "Huyang nga Password", sw_weak_text: "Ang password kinahanglan dili ubos sa 8 ka karakter ug adunay labing gamay 1 ka espesyal nga simbolo.",
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang imong mga kausaban.",
             sw_error_title: "Error", sw_update_failed: "Napakyas ang pag-update.", sw_server_error: "Napakyas ang koneksyon sa server.",
             sw_signout_title: "Mo-sign Out?", sw_signout_text: "Mobalik sa login screen.", sw_signout_confirm: "Mag-logout",
@@ -292,6 +295,7 @@
                                     </button>
                                 </div>
                             </div>
+                            <p class="text-[10px] text-gray-400 mt-2" data-i18n="password_requirements_hint">Minimum 8 characters, must include at least 1 special character.</p>
                         </div>
 
                         <div class="flex justify-stretch sm:justify-end pt-2">
@@ -383,7 +387,7 @@
                 Swal.fire(t('sw_mismatch_title'), t('sw_mismatch_text'), 'error');
                 return;
             }
-            if (password && password.length < 6) {
+            if (password && (password.length < 8 || !/[!@#$%^&*()_+\-=\[\]{};'":\\|,.<>\/?~`]/.test(password))) {
                 Swal.fire(t('sw_weak_title'), t('sw_weak_text'), 'warning');
                 return;
             }
