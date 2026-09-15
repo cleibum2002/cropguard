@@ -432,7 +432,9 @@
                 sw_gps_required_title: "Location Needed", sw_gps_required_text: "Please tap \"Use My Location\" to save this farm's GPS coordinates. This is required so it shows up correctly on the MAO map.",
                 sw_required_title: "Required", sw_required_text: "Please complete the address up to Barangay level.",
                 sw_farm_saved_title: "Farm Saved!", sw_generic_error_title: "Error", sw_connect_error_text: "Could not connect to server.", sw_invalid_area_text: "Area size must be greater than 0.",
-                sw_cropping_period_required_text: "Please select both the start and end month of the cropping period."
+                sw_cropping_period_required_text: "Please select both the start and end month of the cropping period.",
+                sw_discard_title: "Discard changes?", sw_discard_text: "What you've entered will not be saved.",
+                sw_discard_confirm: "Yes, discard", sw_discard_cancel: "Keep editing"
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
@@ -476,7 +478,9 @@
                 sw_gps_required_title: "Kailangan ang Lokasyon", sw_gps_required_text: "Pakipindot ang \"Use My Location\" para ma-save ang GPS coordinates ng sakahang ito. Kailangan ito para tama ang lalabas sa MAO map.",
                 sw_required_title: "Kailangan", sw_required_text: "Pakikumpleto ang address hanggang antas ng Barangay.",
                 sw_farm_saved_title: "Na-save ang Sakahan!", sw_generic_error_title: "Error", sw_connect_error_text: "Hindi makakonekta sa server.", sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0.",
-                sw_cropping_period_required_text: "Piliin ang simula at katapusang buwan ng cropping period."
+                sw_cropping_period_required_text: "Piliin ang simula at katapusang buwan ng cropping period.",
+                sw_discard_title: "I-discard ang mga pagbabago?", sw_discard_text: "Hindi mase-save ang mga inilagay mo.",
+                sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Ipagpatuloy ang pag-edit"
             },
             ceb: {
                 nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
@@ -520,7 +524,9 @@
                 sw_gps_required_title: "Gikinahanglan ang Lokasyon", sw_gps_required_text: "Palihug pindota ang \"Use My Location\" para ma-save ang GPS coordinates niini nga uma. Gikinahanglan kini aron sakto ang mapakita sa MAO map.",
                 sw_required_title: "Gikinahanglan", sw_required_text: "Palihug kompletoha ang address hangtod sa Barangay.",
                 sw_farm_saved_title: "Na-save ang Uma!", sw_generic_error_title: "Error", sw_connect_error_text: "Dili maka-connect sa server.", sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0.",
-                sw_cropping_period_required_text: "Palihug pilia ang sinugdanan ug kataposang bulan sa cropping period."
+                sw_cropping_period_required_text: "Palihug pilia ang sinugdanan ug kataposang bulan sa cropping period.",
+                sw_discard_title: "I-discard ang mga kausaban?", sw_discard_text: "Dili ma-save ang imong gisulod.",
+                sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Padayon sa pag-edit"
             }
         };
 
@@ -692,6 +698,7 @@
                 pos => {
                     document.getElementById('farmLat').value = pos.coords.latitude.toFixed(8);
                     document.getElementById('farmLng').value = pos.coords.longitude.toFixed(8);
+                    farmFormDirty = true; // .value assignment doesn't fire input/change on its own
                     Swal.fire({ icon: 'success', title: t('sw_location_detected_title'), timer: 1200, showConfirmButton: false });
                 },
                 () => Swal.fire(t('sw_gps_error_title'), t('sw_gps_error_text'), 'error')
@@ -709,7 +716,21 @@
             document.getElementById('manualAddressFields').classList.add('hidden');
             loadRegions();
             loadCropTypesForFarmModal();
+            farmFormDirty = false;
             document.getElementById("farmModal").classList.remove("hidden");
+        }
+
+        // Tracks whether anything has actually been typed/selected in this modal
+        // (shared by both Add and Edit, since they're the same form), so the
+        // discard-confirmation below only interrupts when there's something real
+        // to lose.
+        let farmFormDirty = false;
+        document.getElementById('farmForm').addEventListener('input', () => farmFormDirty = true);
+        document.getElementById('farmForm').addEventListener('change', () => farmFormDirty = true);
+
+        function closeFarmModalForce() {
+            document.getElementById("farmModal").classList.add("hidden");
+            farmFormDirty = false;
         }
 
         function editFarm(id) {
@@ -757,6 +778,10 @@
             gpsBtn.classList.add('text-[#11542e]', 'hover:underline');
             document.getElementById('farmDetailsLockHint').classList.add('hidden');
 
+            // Programmatic .value assignment above doesn't fire input/change, but
+            // set this explicitly rather than rely on that, since editFarm()
+            // bypasses openFarmModal().
+            farmFormDirty = false;
             document.getElementById("farmModal").classList.remove("hidden");
         }
 
@@ -797,7 +822,14 @@
                     if (preselectTypeId) select.value = preselectTypeId;
                 }).catch(() => {});
         }
-        function closeFarmModal() { document.getElementById("farmModal").classList.add("hidden"); }
+        function closeFarmModal() {
+            if (!farmFormDirty) { closeFarmModalForce(); return; }
+            Swal.fire({
+                title: t('sw_discard_title'), text: t('sw_discard_text'), icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626',
+                confirmButtonText: t('sw_discard_confirm'), cancelButtonText: t('sw_discard_cancel')
+            }).then(result => { if (result.isConfirmed) closeFarmModalForce(); });
+        }
 
         function submitFarm(e) {
             e.preventDefault();
@@ -829,7 +861,7 @@
                 }).then(res => res.json()).then(data => {
                     if (data.status === 'success') {
                         Swal.fire({ icon: 'success', title: t('sw_farm_updated_title'), timer: 1500, showConfirmButton: false });
-                        closeFarmModal(); loadFarms();
+                        closeFarmModalForce(); loadFarms();
                     } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
                 }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
                 return;
@@ -873,7 +905,7 @@
             }).then(res => res.json()).then(data => {
                 if (data.status === 'success') {
                     Swal.fire({ icon: 'success', title: t('sw_farm_saved_title'), timer: 1500, showConfirmButton: false });
-                    closeFarmModal(); loadFarms();
+                    closeFarmModalForce(); loadFarms();
                 } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
             }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
         }
