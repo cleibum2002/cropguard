@@ -298,9 +298,40 @@
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Period</label>
-                            <input type="text" id="farmCroppingPeriod" required disabled
-                                   class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed"
-                                   placeholder="e.g. May - October">
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="farmCroppingFrom" required disabled
+                                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
+                                    <option value="" data-i18n="opt_month_from">From...</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                                <select id="farmCroppingTo" required disabled
+                                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
+                                    <option value="" data-i18n="opt_month_to">To...</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -386,6 +417,7 @@
                 label_landmark: "Landmark", label_optional: "(optional)",
                 label_main_crop: "Main Crop Type", opt_select_type: "Select Type...",
                 label_cropping_period: "Cropping Period", label_area_size: "Area Size (Ha)",
+                opt_month_from: "From...", opt_month_to: "To...",
                 label_land_type: "Land Type",
                 btn_use_location: "Use My Location", label_latitude: "Latitude", label_longitude: "Longitude",
                 btn_save_farm: "Save Farm Location",
@@ -399,7 +431,8 @@
                 sw_gps_error_title: "Error", sw_gps_error_text: "Could not detect your location. Please check your device's location settings and try again.",
                 sw_gps_required_title: "Location Needed", sw_gps_required_text: "Please tap \"Use My Location\" to save this farm's GPS coordinates. This is required so it shows up correctly on the MAO map.",
                 sw_required_title: "Required", sw_required_text: "Please complete the address up to Barangay level.",
-                sw_farm_saved_title: "Farm Saved!", sw_generic_error_title: "Error", sw_connect_error_text: "Could not connect to server.", sw_invalid_area_text: "Area size must be greater than 0."
+                sw_farm_saved_title: "Farm Saved!", sw_generic_error_title: "Error", sw_connect_error_text: "Could not connect to server.", sw_invalid_area_text: "Area size must be greater than 0.",
+                sw_cropping_period_required_text: "Please select both the start and end month of the cropping period."
             },
             tl: {
                 nav_profile: "Aking Profile", nav_dashboard: "Aking Dashboard", nav_farms: "Aking mga Sakahan",
@@ -428,6 +461,7 @@
                 label_landmark: "Palatandaan", label_optional: "(opsyonal)",
                 label_main_crop: "Pangunahing Uri ng Pananim", opt_select_type: "Pumili ng Uri...",
                 label_cropping_period: "Panahon ng Pagtatanim", label_area_size: "Sukat ng Lugar (Ha)",
+                opt_month_from: "Mula...", opt_month_to: "Hanggang...",
                 label_land_type: "Uri ng Lupa",
                 btn_use_location: "Gamitin ang Aking Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
                 btn_save_farm: "I-save ang Lokasyon ng Sakahan",
@@ -441,7 +475,8 @@
                 sw_gps_error_title: "Error", sw_gps_error_text: "Hindi makuha ang iyong lokasyon. Pakisuri ang location settings ng iyong device at subukan muli.",
                 sw_gps_required_title: "Kailangan ang Lokasyon", sw_gps_required_text: "Pakipindot ang \"Use My Location\" para ma-save ang GPS coordinates ng sakahang ito. Kailangan ito para tama ang lalabas sa MAO map.",
                 sw_required_title: "Kailangan", sw_required_text: "Pakikumpleto ang address hanggang antas ng Barangay.",
-                sw_farm_saved_title: "Na-save ang Sakahan!", sw_generic_error_title: "Error", sw_connect_error_text: "Hindi makakonekta sa server.", sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0."
+                sw_farm_saved_title: "Na-save ang Sakahan!", sw_generic_error_title: "Error", sw_connect_error_text: "Hindi makakonekta sa server.", sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0.",
+                sw_cropping_period_required_text: "Piliin ang simula at katapusang buwan ng cropping period."
             },
             ceb: {
                 nav_profile: "Akong Profile", nav_dashboard: "Akong Dashboard", nav_farms: "Akong mga Uma",
@@ -470,6 +505,7 @@
                 label_landmark: "Landmark", label_optional: "(opsyonal)",
                 label_main_crop: "Pangunang Klase sa Tanom", opt_select_type: "Pilia ang Klase...",
                 label_cropping_period: "Panahon sa Pagtanom", label_area_size: "Sukod sa Uma (Ha)",
+                opt_month_from: "Gikan...", opt_month_to: "Hangtod...",
                 label_land_type: "Klase sa Yuta",
                 btn_use_location: "Gamiton ang Akong Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
                 btn_save_farm: "I-save ang Lokasyon sa Uma",
@@ -483,7 +519,8 @@
                 sw_gps_error_title: "Error", sw_gps_error_text: "Dili makuha ang imong lokasyon. Palihug susiha ang location settings sa imong device ug sulayi pag-usab.",
                 sw_gps_required_title: "Gikinahanglan ang Lokasyon", sw_gps_required_text: "Palihug pindota ang \"Use My Location\" para ma-save ang GPS coordinates niini nga uma. Gikinahanglan kini aron sakto ang mapakita sa MAO map.",
                 sw_required_title: "Gikinahanglan", sw_required_text: "Palihug kompletoha ang address hangtod sa Barangay.",
-                sw_farm_saved_title: "Na-save ang Uma!", sw_generic_error_title: "Error", sw_connect_error_text: "Dili maka-connect sa server.", sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0."
+                sw_farm_saved_title: "Na-save ang Uma!", sw_generic_error_title: "Error", sw_connect_error_text: "Dili maka-connect sa server.", sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0.",
+                sw_cropping_period_required_text: "Palihug pilia ang sinugdanan ug kataposang bulan sa cropping period."
             }
         };
 
@@ -576,7 +613,7 @@
             const barangaySel = document.getElementById('addrBarangay');
             const unlocked = barangaySel && barangaySel.value && !barangaySel.disabled;
 
-            const fields = ['farmCropType', 'farmCroppingPeriod', 'farmArea', 'farmLandType'];
+            const fields = ['farmCropType', 'farmCroppingFrom', 'farmCroppingTo', 'farmArea', 'farmLandType'];
             fields.forEach(id => {
                 const el = document.getElementById(id);
                 el.disabled = !unlocked;
@@ -691,7 +728,16 @@
 
             loadCropTypesForFarmModal(farm.Type_ID);
 
-            document.getElementById("farmCroppingPeriod").value = farm.Cropping_Period || '';
+            // Existing farms stored this as one free-text string (e.g. "May - October")
+            // from before the two-dropdown change - split it back apart so editing an
+            // old farm doesn't just show blank dropdowns. Only pre-selects a side that
+            // actually matches a real month name; anything that doesn't parse (typos,
+            // old garbage text) is just left unselected rather than guessed at.
+            const savedPeriod = (farm.Cropping_Period || '').split(' - ');
+            const fromSelect = document.getElementById('farmCroppingFrom');
+            const toSelect   = document.getElementById('farmCroppingTo');
+            fromSelect.value = [...fromSelect.options].some(o => o.value === savedPeriod[0]) ? savedPeriod[0] : '';
+            toSelect.value   = [...toSelect.options].some(o => o.value === savedPeriod[1]) ? savedPeriod[1] : '';
             document.getElementById("farmArea").value            = farm.Area_Size || '';
             document.getElementById("farmLandType").value        = farm.Land_Type || 'Irrigated';
             document.getElementById("farmLat").value              = farm.Latitude || '';
@@ -699,7 +745,7 @@
 
             // Edit mode isn't gated by "pick a Barangay first" like Add mode is - the farm
             // already has a real address, so Farm Details can be edited immediately.
-            ['farmCropType', 'farmCroppingPeriod', 'farmArea', 'farmLandType'].forEach(id2 => {
+            ['farmCropType', 'farmCroppingFrom', 'farmCroppingTo', 'farmArea', 'farmLandType'].forEach(id2 => {
                 const el = document.getElementById(id2);
                 el.disabled = false;
                 el.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
@@ -761,13 +807,18 @@
             if (isNaN(areaVal) || areaVal <= 0) {
                 Swal.fire(t('sw_generic_error_title'), t('sw_invalid_area_text'), 'warning'); return;
             }
+            const cropFromVal = document.getElementById('farmCroppingFrom').value;
+            const cropToVal   = document.getElementById('farmCroppingTo').value;
+            if (!cropFromVal || !cropToVal) {
+                Swal.fire(t('sw_required_title'), t('sw_cropping_period_required_text'), 'warning'); return;
+            }
 
             if (editingId) {
                 // ─── UPDATE existing farm (Farm Details only, address untouched) ───
                 const payload = {
                     location_id: editingId,
                     type_id: document.getElementById('farmCropType').value,
-                    cropping_period: document.getElementById('farmCroppingPeriod').value,
+                    cropping_period: cropFromVal + ' - ' + cropToVal,
                     area_size: document.getElementById('farmArea').value,
                     land_type: document.getElementById('farmLandType').value,
                     latitude: document.getElementById('farmLat').value || null,
@@ -811,7 +862,7 @@
             const payload = {
                 barangay: fullAddress,
                 type_id: document.getElementById('farmCropType').value,
-                cropping_period: document.getElementById('farmCroppingPeriod').value,
+                cropping_period: cropFromVal + ' - ' + cropToVal,
                 area_size: document.getElementById('farmArea').value,
                 land_type: document.getElementById('farmLandType').value,
                 latitude: document.getElementById('farmLat').value || null,
