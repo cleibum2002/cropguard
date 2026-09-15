@@ -792,6 +792,8 @@
                 sw_connect_error_text: "Could not connect to server.",
                 sw_invalid_area_text: "Area size must be greater than 0.",
                 sw_cropping_period_required_text: "Please select both the start and end month of the cropping period.",
+                sw_discard_title: "Discard changes?", sw_discard_text: "What you've entered will not be saved.",
+                sw_discard_confirm: "Yes, discard", sw_discard_cancel: "Keep editing",
                 sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
                 sw_date_bounds_text: "Please pick a date between January 2024 and today. Filter cleared.",
                 sw_no_locations_title: "No Farm Locations", sw_no_locations_text: "You need to add a Farm Location before you can file a report.",
@@ -877,6 +879,8 @@
                 sw_connect_error_text: "Hindi makakonekta sa server.",
                 sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0.",
                 sw_cropping_period_required_text: "Piliin ang simula at katapusang buwan ng cropping period.",
+                sw_discard_title: "I-discard ang mga pagbabago?", sw_discard_text: "Hindi mase-save ang mga inilagay mo.",
+                sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Ipagpatuloy ang pag-edit",
                 sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
                 sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon. Nabura ang filter.",
                 sw_no_locations_title: "Walang Lokasyon ng Sakahan", sw_no_locations_text: "Kailangan mong magdagdag ng Lokasyon ng Sakahan bago maghain ng ulat.",
@@ -957,6 +961,8 @@
                 sw_connect_error_text: "Dili maka-connect sa server.",
                 sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0.",
                 sw_cropping_period_required_text: "Palihug pilia ang sinugdanan ug kataposang bulan sa cropping period.",
+                sw_discard_title: "I-discard ang mga kausaban?", sw_discard_text: "Dili ma-save ang imong gisulod.",
+                sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Padayon sa pag-edit",
                 sw_invalid_date_text: "Ang petsa nga 'Gikan' dili pwede mag-una sa 'Hangtod'. Gi-clear ang filter.",
                 sw_date_bounds_text: "Pagpili og petsa tali sa Enero 2024 ug karon. Gi-clear ang filter.",
                 sw_no_locations_title: "Walay Lokasyon sa Uma", sw_no_locations_text: "Kinahanglan ka mag-dugang og Lokasyon sa Uma una ka makahimo og report.",
@@ -1164,6 +1170,7 @@
 
         function removePhoto(index) {
             selectedFiles.splice(index, 1);
+            reportFormDirty = true;
             renderPreviews();
         }
 
@@ -1210,6 +1217,7 @@
         function removeExistingPhoto(imageId) {
             existingImages = existingImages.filter(img => img.id !== imageId);
             removedImageIds.push(imageId);
+            reportFormDirty = true;
             renderPreviews();
         }
 
@@ -1372,6 +1380,7 @@
                 pos => {
                     document.getElementById('farmLat').value = pos.coords.latitude.toFixed(8);
                     document.getElementById('farmLng').value = pos.coords.longitude.toFixed(8);
+                    farmFormDirty = true; // .value assignment doesn't fire input/change on its own
                     Swal.fire({ icon: 'success', title: t('sw_location_detected_title'), timer: 1200, showConfirmButton: false });
                 },
                 () => Swal.fire(t('sw_gps_error_title'), t('sw_gps_error_text'), 'error')
@@ -1384,9 +1393,28 @@
             resetFrom('province');
             document.getElementById('manualAddressFields').classList.add('hidden');
             loadRegions();
+            farmFormDirty = false;
             document.getElementById("farmModal").classList.remove("hidden");
         }
-        function closeFarmModal() { document.getElementById("farmModal").classList.add("hidden"); }
+
+        // Same dirty-tracking pattern as the report modal above.
+        let farmFormDirty = false;
+        document.getElementById('farmForm').addEventListener('input', () => farmFormDirty = true);
+        document.getElementById('farmForm').addEventListener('change', () => farmFormDirty = true);
+
+        function closeFarmModalForce() {
+            document.getElementById("farmModal").classList.add("hidden");
+            farmFormDirty = false;
+        }
+
+        function closeFarmModal() {
+            if (!farmFormDirty) { closeFarmModalForce(); return; }
+            Swal.fire({
+                title: t('sw_discard_title'), text: t('sw_discard_text'), icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626',
+                confirmButtonText: t('sw_discard_confirm'), cancelButtonText: t('sw_discard_cancel')
+            }).then(result => { if (result.isConfirmed) closeFarmModalForce(); });
+        }
 
         function submitFarm(e) {
             e.preventDefault();
@@ -1436,7 +1464,7 @@
             }).then(res => res.json()).then(data => {
                 if (data.status === 'success') {
                     Swal.fire({ icon: 'success', title: t('sw_farm_saved_title'), timer: 1500, showConfirmButton: false });
-                    closeFarmModal(); loadFarmLocations();
+                    closeFarmModalForce(); loadFarmLocations();
                 } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
             }).catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_connect_error_text'), 'error'));
         }
@@ -1793,6 +1821,7 @@
             // .readOnly - without this, a lock left on from a previous crop
             // selection would carry over into a freshly opened modal.
             applyPlantingDateLock('');
+            reportFormDirty = false;
 
             const locationSelect = document.getElementById('farmLocation');
             if (locationSelect.options.length <= 1 && locationSelect.options[0] && locationSelect.options[0].disabled) {
@@ -1805,7 +1834,28 @@
             document.getElementById("modal").classList.remove("hidden");
         }
 
-        function closeModal() { document.getElementById("modal").classList.add("hidden"); }
+        // Tracks whether the farmer has actually typed/selected anything in this
+        // modal, so the discard-confirmation below only interrupts them when
+        // there's something real to lose - not on an untouched blank form.
+        let reportFormDirty = false;
+        document.getElementById('reportForm').addEventListener('input', () => reportFormDirty = true);
+        document.getElementById('reportForm').addEventListener('change', () => reportFormDirty = true);
+
+        // Closes without asking - used after a successful submit, where there's
+        // nothing left to "discard".
+        function closeModalForce() {
+            document.getElementById("modal").classList.add("hidden");
+            reportFormDirty = false;
+        }
+
+        function closeModal() {
+            if (!reportFormDirty) { closeModalForce(); return; }
+            Swal.fire({
+                title: t('sw_discard_title'), text: t('sw_discard_text'), icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc2626',
+                confirmButtonText: t('sw_discard_confirm'), cancelButtonText: t('sw_discard_cancel')
+            }).then(result => { if (result.isConfirmed) closeModalForce(); });
+        }
 
         async function submitReport(e) {
             e.preventDefault();
@@ -1842,7 +1892,7 @@
             .then(data => {
                 if (data.status === 'success') {
                     Swal.fire({ icon: 'success', title: t('sw_success_title'), text: data.message, timer: 1500, showConfirmButton: false });
-                    closeModal(); loadDashboardData();
+                    closeModalForce(); loadDashboardData();
                 } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
             })
             .catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_submit_failed_text'), 'error'));
@@ -1879,6 +1929,10 @@
                     document.getElementById('severity').value     = r.Damage_Severity || 'Low';
                     document.getElementById('description').value  = r.Description     || '';
                     document.getElementById('modalTitle').innerText = t('modal_edit_title');
+                    // Programmatic .value assignment above doesn't fire input/change,
+                    // so this isn't strictly needed - but set explicitly rather than
+                    // rely on that, since editReport() bypasses openReportModal().
+                    reportFormDirty = false;
                     document.getElementById('modal').classList.remove('hidden');
                     renderPreviews();
                 } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
