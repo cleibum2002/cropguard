@@ -83,6 +83,13 @@ if (isset($input['email'], $input['password'])) {
                 exit;
             }
 
+            // Issue a fresh session ID at the moment privileges change. Without
+            // this, the pre-login session ID carries over into the authenticated
+            // session - so anyone who could plant a PHPSESSID value beforehand
+            // (e.g. on a shared office/lab machine) would end up holding a
+            // logged-in session. Must come before the session variables below.
+            session_regenerate_id(true);
+
             // Set secure session variables
             $_SESSION['User_ID'] = $user['User_ID'];
             $_SESSION['Fullname'] = $user['Fullname'];

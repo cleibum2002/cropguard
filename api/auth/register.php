@@ -57,7 +57,11 @@ try {
     }
 
     // 3. Clean inputs to prevent SQL injection
-    $name = $conn->real_escape_string($data->full_name);
+    // strip_tags on the name as well: it's stored raw and later spliced into
+    // admin notification text that the Admin dashboard renders with innerHTML,
+    // so an unauthenticated registration was a route to stored XSS in staff
+    // browsers. Names never legitimately contain markup.
+    $name = $conn->real_escape_string(strip_tags(trim($data->full_name)));
     $contact = $conn->real_escape_string($data->contact_number);
     $email = $conn->real_escape_string($data->email);
     // Hash the password securely!

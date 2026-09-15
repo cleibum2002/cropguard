@@ -1234,6 +1234,16 @@
             } catch (e) { console.error('Failed to load notifications:', e); }
         }
 
+        // Notification text embeds user-supplied names, and this list is built
+        // with innerHTML - so the message must be rendered as literal text, never
+        // parsed as markup. Registration is public, which made this a route to
+        // stored XSS in staff browsers.
+        function escapeHtml(s) {
+            return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
         function renderNotificationList(items) {
             const list = document.getElementById('notifList');
             if (!items || items.length === 0) {
@@ -1243,7 +1253,7 @@
             list.innerHTML = items.map(n => `
                 <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors ${n.Redirect_URL ? 'cursor-pointer flex items-center justify-between gap-3' : ''}" ${n.Redirect_URL ? `onclick="window.location.href='${n.Redirect_URL}'"` : ''}>
                     <div class="min-w-0">
-                        <p class="text-xs text-gray-700 leading-relaxed">${n.Message}</p>
+                        <p class="text-xs text-gray-700 leading-relaxed">${escapeHtml(n.Message)}</p>
                         <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
                     </div>
                     ${n.Redirect_URL ? '<span class="flex-shrink-0 text-[9px] font-black text-white bg-[#11542e] px-2.5 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap flex items-center gap-1">View <i class="fa-solid fa-arrow-right"></i></span>' : ''}

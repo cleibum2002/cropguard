@@ -41,6 +41,25 @@ try {
     $severity      = sanitizeHtmlInput($_POST['severity']);
     $description   = sanitizeHtmlInput($_POST['description'] ?? '');
 
+    // $report_id comes straight from the request. The report UPDATE further down
+    // is scoped with "AND Farmer_ID = ?" so it can't touch someone else's row,
+    // but its affected_rows was never checked - execution carried on into the
+    // image handling below, which scopes deletes image -> report and NOT
+    // image -> report -> farmer. So passing another farmer's report id let you
+    // unlink their evidence photos from disk, and upload photos onto their
+    // report. Verify ownership once, here, before anything uses this id.
+    if ($report_id) {
+        $ownCheck = $conn->prepare("SELECT 1 FROM damage_report WHERE Damage_Report_ID = ? AND Farmer_ID = ?");
+        $ownCheck->bind_param("ii", $report_id, $farmer_id);
+        $ownCheck->execute();
+        $ownsReport = $ownCheck->get_result()->fetch_row() !== null;
+        $ownCheck->close();
+
+        if (!$ownsReport) {
+            throw new Exception('Report not found.');
+        }
+    }
+
     // Find-or-create the actual `crop` row for this Farmer + Location + Type combo.
     // The dropdown now sends a Type_ID (from the farm's own registration), not a
     // guaranteed-to-exist Crop_ID — so we resolve it into a real Crop_ID here.
@@ -82,9 +101,12 @@ try {
         $stmt_report->execute();
         $success_message = 'Report successfully updated!';
 
-        // Delete only the specific photos the farmer explicitly removed - ownership is
-        // re-checked here (Damage_Report_ID + Farmer_ID via the report itself) so a
-        // request can't be crafted to delete another farmer's photos.
+        // Delete only the specific photos the farmer explicitly removed. Scoping
+        // here is image -> report only; what makes that safe is the ownership
+        // check performed on $report_id near the top of this file, which
+        // guarantees this report belongs to the session farmer before we get
+        // here. (That check is why this comment is now accurate - it previously
+        // claimed a re-check that did not exist.)
         if (!empty($_POST['removed_image_ids']) && is_array($_POST['removed_image_ids'])) {
             foreach ($_POST['removed_image_ids'] as $imgId) {
                 $imgId = (int)$imgId;
