@@ -36,8 +36,14 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-if ($password && strlen($password) < 6) {
-    echo json_encode(['status' => 'error', 'message' => 'Password must be at least 6 characters.']);
+// Same 8-character + special-symbol rule enforced at registration and by
+// Admin/MAO's user management (api/auth/register.php, api/masterfile/users/create.php).
+if ($password && strlen($password) < 8) {
+    echo json_encode(['status' => 'error', 'message' => 'Password must be at least 8 characters long.']);
+    exit;
+}
+if ($password && !preg_match('/[!@#$%^&*()_+\-=\[\]{};\'":\\\\|,.<>\/?~`]/', $password)) {
+    echo json_encode(['status' => 'error', 'message' => 'Password must include at least one special character (e.g. ! @ # $ %).']);
     exit;
 }
 
