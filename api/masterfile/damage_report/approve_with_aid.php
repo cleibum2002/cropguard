@@ -74,8 +74,9 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
 
         // STEP 4: Create the Farmer Notification
         $msg = "Good news! Your report for $crop_name (#REP-$report_id) has been approved. You can now claim $qty $unit of $cat at the MAO office.";
-        $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
-        $stmtNotif->bind_param("is", $farmer_id, $msg);
+        $redirectUrl = 'index.html';
+        $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
+        $stmtNotif->bind_param("iss", $farmer_id, $msg, $redirectUrl);
         $stmtNotif->execute();
 
         // STEP 4b: Notify MAO — aid is now sitting in their queue waiting to be handed out

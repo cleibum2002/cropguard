@@ -450,7 +450,14 @@
                     data.data.forEach(n => {
                         const bg  = n.Is_Read == 0 ? 'bg-green-50/30' : '';
                         const dot = n.Is_Read == 0 ? '<div class="w-2 h-2 rounded-full bg-green-500 mt-1.5 flex-shrink-0"></div>' : '';
-                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3 ' + bg + '">' + dot + '<div><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div></div>';
+                        // Clicking a notification with a Redirect_URL lands the farmer on
+                        // the page that notification is actually about (dashboard for
+                        // report updates, Request Seeds for seed-request updates) instead
+                        // of just showing text with nowhere to go.
+                        const clickable = n.Redirect_URL ? ' cursor-pointer' : '';
+                        const onclickAttr = n.Redirect_URL ? " onclick=\"window.location.href='" + n.Redirect_URL + "'\"" : '';
+                        const arrow = n.Redirect_URL ? '<i class="fa-solid fa-chevron-right text-gray-300 text-xs self-center flex-shrink-0"></i>' : '';
+                        list.innerHTML += '<div class="px-4 py-3 hover:bg-gray-50 flex gap-3' + clickable + ' ' + bg + '"' + onclickAttr + '>' + dot + '<div class="flex-1"><p class="text-xs text-gray-700 font-medium">' + n.Message + '</p><p class="text-[10px] text-gray-400 mt-1">' + (n.DateStr || t('just_now')) + '</p></div>' + arrow + '</div>';
                     });
                 }
             }).catch(err => console.error("Notifications error:", err));

@@ -23,9 +23,9 @@ $action = $_GET['action'] ?? 'fetch';
 try {
     if ($action === 'fetch') {
         // Fetch the latest 10 notifications for the current logged-in user
-        $query = "SELECT Notification_ID, Message, Is_Read, DATE_FORMAT(Created_At, '%b %d, %h:%i %p') as DateStr 
-                  FROM notification 
-                  WHERE Farmer_ID = ? 
+        $query = "SELECT Notification_ID, Message, Redirect_URL, Is_Read, DATE_FORMAT(Created_At, '%b %d, %h:%i %p') as DateStr
+                  FROM notification
+                  WHERE Farmer_ID = ?
                   ORDER BY Created_At DESC LIMIT 10";
         
         $stmt = $conn->prepare($query);
