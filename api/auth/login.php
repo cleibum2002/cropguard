@@ -21,7 +21,7 @@ if (isset($input['email'], $input['password'])) {
     $password = $input['password'];
 
     // --- ONLY ONE QUERY NEEDED NOW ---
-    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified, Phone_Verified FROM users WHERE BINARY Email = ?");
+    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified FROM users WHERE BINARY Email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -74,9 +74,7 @@ if (isset($input['email'], $input['password'])) {
                     $redirect_url = 'index.html'; // Fallback
             }
 
-            // All 4 roles must verify their email before logging in. Phone
-            // verification is not part of the login gate right now - Semaphore
-            // isn't fully set up yet (sender name not approved). Reserved for later.
+            // All 4 roles must verify their email before logging in.
             $rolesRequiringVerification = ['Farmer', 'MAO', 'Technician', 'Admin'];
             if (in_array($role, $rolesRequiringVerification) && isset($user['Email_Verified']) && (int)$user['Email_Verified'] !== 1) {
                 echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
@@ -99,11 +97,6 @@ if (isset($input['email'], $input['password'])) {
             // the person actually changes to a password that passes the rule.
             $_SESSION['Weak_Password'] = isPasswordWeak($password);
             $_SESSION['Weak_Password_Alert_Dismissed'] = false;
-            // Phone verification is a post-login reminder, not a login gate (see
-            // earlier revert - Semaphore isn't fully set up yet). Re-checked fresh
-            // on every login so it reappears each time until actually verified.
-            $_SESSION['Phone_Unverified'] = isset($user['Phone_Verified']) && (int)$user['Phone_Verified'] !== 1;
-            $_SESSION['Phone_Alert_Dismissed'] = false;
             // Starts the server-side idle clock (see api/config/session_policy.php).
             $_SESSION['Last_Activity'] = time();
 
