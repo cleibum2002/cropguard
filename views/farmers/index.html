@@ -143,6 +143,14 @@
         .tracker-step.completed .step-label .label-text { color: #11542e; }
         .tracker-step.active .step-label .label-text { color: #92400e; font-weight: 900; }
         .tracker-step.active .step-label .label-sub { color: #b45309; }
+        @media (max-width: 640px) {
+            .tracker-step { padding-bottom: 1rem; }
+            .tracker-step:not(:last-child)::before { left: 1.125rem; top: 2.25rem; }
+            .tracker-step .step-circle { width: 2.25rem; height: 2.25rem; font-size: 0.8rem; border-width: 2px; }
+            .tracker-step .step-label { margin-left: 0.65rem; padding-top: 0.2rem; }
+            .tracker-step .step-label .label-text { font-size: 0.85rem; }
+            .tracker-step .step-label .label-sub { font-size: 0.7rem; margin-top: 0.1rem; }
+        }
         .lang-link { cursor: pointer; }
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
@@ -1057,9 +1065,9 @@
             const currentIndex = statusOrder.indexOf(req.Status);
             const isClaimed = req.Status === 'Claimed';
 
-            let html = `<div class="text-center mb-4">
-                <p class="text-lg font-black text-gray-800">#REQ-${String(req.Request_ID).padStart(3, '0')}</p>
-                <p class="text-sm text-gray-500">${req.Requested_Seed}</p>
+            let html = `<div class="text-center mb-3 sm:mb-4">
+                <p class="text-base sm:text-lg font-black text-gray-800">#REQ-${String(req.Request_ID).padStart(3, '0')}</p>
+                <p class="text-xs sm:text-sm text-gray-500">${req.Requested_Seed}</p>
             </div>
             <div class="relative">`;
 
