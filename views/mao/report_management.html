@@ -120,6 +120,7 @@
         <main class="flex-1 flex overflow-hidden">
             <div id="reportsListPanel" class="w-full md:w-[400px] border-r border-gray-100 bg-gray-50/50 flex md:flex flex-col flex-shrink-0">
                 <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4" id="reportsList"></div>
+                <div id="reportsPagination" class="flex items-center justify-center gap-1 py-3 border-t border-gray-100 flex-shrink-0"></div>
             </div>
 
             <div class="hidden md:block flex-1 overflow-y-auto bg-white p-4 sm:p-10 custom-scrollbar" id="detailPanel">
@@ -439,7 +440,44 @@
             return matchesTab && matchesStatus && matchesSearch && matchesDamageType && matchesSeverity && matchesBarangay && matchesDateFrom && matchesDateTo;
         });
         if (filtered.length === 0) clearDetailPanel();
-        renderList(filtered);
+        currentFilteredReports = filtered;
+        currentReportsPage = 1;
+        renderReportsPage();
+    }
+
+    const REPORTS_PER_PAGE = 5;
+    let currentReportsPage = 1;
+    let currentFilteredReports = [];
+
+    function renderReportsPage() {
+        const start = (currentReportsPage - 1) * REPORTS_PER_PAGE;
+        const pageItems = currentFilteredReports.slice(start, start + REPORTS_PER_PAGE);
+        renderList(pageItems);
+        renderReportsPagination(currentFilteredReports.length);
+    }
+
+    function renderReportsPagination(totalItems) {
+        const container = document.getElementById('reportsPagination');
+        const totalPages = Math.ceil(totalItems / REPORTS_PER_PAGE);
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        let html = '<button onclick="goToReportsPage(' + (currentReportsPage - 1) + ')" ' + (currentReportsPage === 1 ? 'disabled' : '') +
+            ' class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (currentReportsPage === 1 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100') + '"><i class="fa-solid fa-chevron-left"></i></button>';
+
+        for (let i = 1; i <= totalPages; i++) {
+            const active = i === currentReportsPage;
+            html += '<button onclick="goToReportsPage(' + i + ')" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (active ? 'bg-[#11542e] text-white' : 'text-gray-500 hover:bg-gray-100') + '">' + i + '</button>';
+        }
+
+        html += '<button onclick="goToReportsPage(' + (currentReportsPage + 1) + ')" ' + (currentReportsPage === totalPages ? 'disabled' : '') +
+            ' class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-bold ' + (currentReportsPage === totalPages ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:bg-gray-100') + '"><i class="fa-solid fa-chevron-right"></i></button>';
+
+        container.innerHTML = html;
+    }
+
+    function goToReportsPage(page) {
+        currentReportsPage = page;
+        renderReportsPage();
     }
 
     function renderList(reports) {
