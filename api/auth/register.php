@@ -91,10 +91,13 @@ try {
 
     if ($insert_stmt->execute()) {
         sendVerificationEmail($email, $name, $verification_code); // best-effort, result intentionally ignored
+        // The code is deliberately NOT returned in this response. Handing it to
+        // whoever submitted the form defeats the entire point of verifying that
+        // they control the email address - and it was plainly visible in the
+        // browser's Network tab. It goes out by email only.
         echo json_encode([
             'status' => 'success',
-            'message' => 'Registration successful!',
-            'verification_code' => $verification_code
+            'message' => 'Registration successful!'
         ]);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Database error: Could not create account.']);

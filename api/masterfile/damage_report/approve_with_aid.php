@@ -5,8 +5,12 @@ header('Content-Type: application/json');
 
 require_once '../../config/db_connection.php'; 
 
+// Role check was missing here while every sibling file in this folder had it.
+// Without it, any logged-in user - including a Farmer - could approve a report,
+// allocate aid to themselves and deduct real inventory stock, with the audit
+// entry below hardcoded to say "Admin".
 $admin_id = $_SESSION['User_ID'] ?? null;
-if (!$admin_id) {
+if (!$admin_id || !in_array($_SESSION['Role'] ?? '', ['Admin', 'MAO'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
     exit;
 }

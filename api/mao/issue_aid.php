@@ -4,11 +4,13 @@ session_start();
 header('Content-Type: application/json');
 require_once '../config/db_connection.php'; // Adjust path if necessary
 
-// Ensure the user is logged in
+// Ensure the user is logged in AND is actually staff. The role check was
+// missing, so any logged-in user (e.g. a Farmer) could fabricate entries in
+// the aid distribution ledger for any report.
 $mao_id = $_SESSION['User_ID'] ?? null;
-if (!$mao_id) { 
-    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']); 
-    exit; 
+if (!$mao_id || !in_array($_SESSION['Role'] ?? '', ['Admin', 'MAO'])) {
+    echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
+    exit;
 }
 
 // Get the JSON payload from the frontend
