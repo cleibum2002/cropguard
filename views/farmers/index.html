@@ -1030,9 +1030,16 @@
                     return;
                 }
                 section.classList.remove('hidden');
-                // Take the most recent seed request for tracking
-                const latest = data.data.sort((a, b) => new Date(b.DateStr) - new Date(a.DateStr))[0];
-                renderTracker(container, latest);
+                // Prefer an unfinished request (Pending / Approved / Ready for Pickup) over
+                // a Claimed one, so an older still-active request doesn't get hidden behind
+                // a newer request that's already done. Ties broken by most recent first.
+                const sorted = data.data.slice().sort((a, b) => {
+                    const aActive = a.Status !== 'Claimed';
+                    const bActive = b.Status !== 'Claimed';
+                    if (aActive !== bActive) return aActive ? -1 : 1;
+                    return new Date(b.DateStr) - new Date(a.DateStr);
+                });
+                renderTracker(container, sorted[0]);
             } catch (e) {
                 section.classList.add('hidden');
             }
