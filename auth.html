@@ -17,9 +17,17 @@
         // If someone who is already signed in lands here - usually by pressing Back
         // far enough to reach an auth.html entry left over from before they logged
         // in - send them straight back to their own dashboard. replace() so this
-        // never adds a history entry of its own. No redirect loop is possible: this
-        // only fires while the session is ACTIVE, and protected pages only bounce
-        // here while it is INACTIVE.
+        // never adds a history entry of its own.
+        //
+        // The comment that used to be here claimed "no redirect loop is possible"
+        // because this only fires while ACTIVE and protected pages only bounce
+        // back here while INACTIVE - seen live in production to be false (session
+        // status flip-flopping between two requests milliseconds apart sent this
+        // page and a dashboard bouncing off each other hundreds of times a
+        // minute). LOOP_KEY matches the copy of this same guard in
+        // assets/js/session_guard.js's leaveTo() - the two pages are the two ends
+        // of the loop, so they share one counter in sessionStorage (survives the
+        // full-page navigations a loop like this does, unlike a JS variable).
         (function () {
             var ROLE_HOME = {
                 admin:      'views/masterfile/dashboard.html',
@@ -27,12 +35,36 @@
                 technician: 'views/technician/dashboard.html',
                 mao:        'views/mao/index.html'
             };
+            var LOOP_KEY = 'cg_redirect_burst';
+            var LOOP_MAX = 5;
+            var LOOP_MS  = 8000;
+
+            function inRedirectLoop() {
+                var now = Date.now(), hits;
+                try { hits = JSON.parse(sessionStorage.getItem(LOOP_KEY) || '[]'); } catch (e) { hits = []; }
+                hits = hits.filter(function (t) { return now - t < LOOP_MS; });
+                hits.push(now);
+                try { sessionStorage.setItem(LOOP_KEY, JSON.stringify(hits)); } catch (e) {}
+                return hits.length > LOOP_MAX;
+            }
+
             fetch('api/auth/session_check.php', { cache: 'no-store', credentials: 'same-origin' })
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
                     if (!data || data.status !== 'active') return;
                     var home = ROLE_HOME[String(data.role || '').toLowerCase()];
-                    if (home) window.location.replace(home);
+                    if (!home) return;
+                    if (inRedirectLoop()) {
+                        // Stop dead instead of bouncing again: destroy whatever
+                        // session state exists and stay right here, fully logged
+                        // out, with nothing left to flip-flop.
+                        try { sessionStorage.removeItem(LOOP_KEY); } catch (e) {}
+                        fetch('api/auth/logout.php', { cache: 'no-store', credentials: 'same-origin' }).catch(function () {}).then(function () {
+                            alert('Something kept signing you in and out too quickly, so we stopped it and signed you out completely. Please log in again - if this keeps happening, tell your administrator.');
+                        });
+                        return;
+                    }
+                    window.location.replace(home);
                 })
                 .catch(function () { /* offline or server down - just show the login form */ });
         })();
