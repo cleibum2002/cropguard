@@ -471,6 +471,14 @@
         loadData(); // re-renders assignments/completed lists with translated text
     }
 
+    // Farmer/Technician free text is spliced into innerHTML templates below -
+    // must be rendered as literal text, never parsed as markup.
+    function escapeHtml(s) {
+        return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
     let selectedFiles = [];
 
     document.addEventListener('DOMContentLoaded', loadData);
@@ -678,6 +686,10 @@
                     techNotes = parts[1].trim();
                     hasTechFindings = true;
                 }
+                // Escaped before being spliced into the innerHTML template below -
+                // this is free text from the Farmer/Technician, not markup.
+                farmerNotes = escapeHtml(farmerNotes);
+                techNotes = escapeHtml(techNotes);
 
                 const locationStr = r.Barangay ? r.Barangay : t('label_location_missing');
 
