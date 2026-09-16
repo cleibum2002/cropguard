@@ -13,15 +13,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
-    <script src="../../assets/js/session_guard.js?v=5"></script>
+    <script src="../../assets/js/session_guard.js?v=6"></script>
 
     <script>
         CropGuardSession.protect({
             roles: ['admin'],
             onReady: (data) => {
-                document.getElementById('adminName').innerText = data.user.fullname;
-                document.getElementById('adminNameSidebar').innerText = data.user.fullname;
-                document.getElementById('welcomeName').innerText = data.user.fullname.split(' ')[0];
+                // 'adminName' and 'welcomeName' do not exist on this page - they were
+                // left behind by an earlier version of the header. Writing to them
+                // threw, and that error used to reach session_guard's .catch(), which
+                // read it as "no valid session" and bounced to auth.html - straight
+                // into a permanent auth<->dashboard redirect loop.
+                const sidebarName = document.getElementById('adminNameSidebar');
+                if (sidebarName) sidebarName.innerText = data.user.fullname;
             }
         });
     </script>
