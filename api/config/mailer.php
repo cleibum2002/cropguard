@@ -7,13 +7,19 @@
 // never blocked, so this works reliably where SMTP did not.
 // PHPMailer/Composer are no longer needed for this - removed to keep things simple.
 
-// Fallback covers local XAMPP, where Railway's BREVO_API_KEY env var isn't set -
-// getenv() still wins whenever it IS set (Railway), so production is unaffected.
-define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: 'REMOVED_BREVO_API_KEY');
+// getenv() wins whenever BREVO_API_KEY is set (Railway); local XAMPP needs its
+// own env var set to send real emails - see api/config/mailer.php's history
+// for why a real key must never be hardcoded here as a fallback again.
+define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: '');
 define('BREVO_SENDER_EMAIL', 'person1@example.com');
 define('BREVO_SENDER_NAME', 'CropGuard');
 
 function sendVerificationEmail($toEmail, $toName, $code) {
+    if (empty(BREVO_API_KEY)) {
+        error_log('[' . date('Y-m-d H:i:s') . '] Brevo send skipped: BREVO_API_KEY not configured.');
+        return false;
+    }
+
     $htmlBody = "
         <div style=\"font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;\">
             <h2 style=\"color: #11542e;\">Welcome to CropGuard, $toName!</h2>
