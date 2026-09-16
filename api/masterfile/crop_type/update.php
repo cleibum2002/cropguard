@@ -8,6 +8,22 @@ if (!isset($_SESSION['User_ID']) || $_SESSION['Role'] !== 'Admin') {
     exit;
 }
 
+// Same guard as crop_type/create.php - see the note there for why zero and
+// absurdly high values are both rejected rather than quietly stored.
+function validateProductionCost($value) {
+    if (!is_numeric($value)) {
+        return 'Standard production cost must be a number.';
+    }
+    $cost = (float)$value;
+    if ($cost <= 0) {
+        return 'Standard production cost must be greater than zero - it is multiplied into every damage report estimate for this crop.';
+    }
+    if ($cost > 1000000) {
+        return 'Standard production cost looks too high (over 1,000,000 per hectare). Please check for a typo.';
+    }
+    return null;
+}
+
 try {
     include_once '../../config/db_connection.php';
 
@@ -17,11 +33,17 @@ try {
         exit;
     }
 
+    $cost_error = validateProductionCost($data->prod_cost ?? null);
+    if ($cost_error) {
+        echo json_encode(["status" => "error", "message" => $cost_error]);
+        exit;
+    }
+
     $id          = (int)$data->id;
     $name        = $data->name;
     $type        = $data->type ?? null;
     $period      = $data->period ?? null;
-    $prod_cost   = isset($data->prod_cost) ? (float)$data->prod_cost : 0;
+    $prod_cost   = (float)$data->prod_cost;
     $description = $data->description ?? null;
 
     $stmt = $conn->prepare("UPDATE crop_type SET Crop_Name = ?, Commodity_Type = ?, Growth_Duration = ?, Standard_Production_Cost = ?, Description = ? WHERE Type_ID = ?");

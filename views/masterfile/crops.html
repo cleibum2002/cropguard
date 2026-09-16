@@ -198,8 +198,10 @@
 
             <div>
                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_prod_cost_php">Std. Production Cost (₱)</label>
-                <input type="number" id="cropProdCost" placeholder="e.g. 45000" min="0" step="0.01"
+                <input type="number" id="cropProdCost" placeholder="e.g. 45000" min="0" step="0.01" oninput="renderCostPreview()"
                        class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm">
+                <p class="text-[10px] text-gray-400 mt-1.5" data-i18n="label_prod_cost_hint">Cost per hectare. This is multiplied into the estimated loss on every damage report for this crop.</p>
+                <p id="costPreview" class="hidden text-[11px] font-bold text-[#11542e] bg-green-50 border border-green-100 rounded-lg px-3 py-2 mt-2"></p>
             </div>
 
             <div>
@@ -234,6 +236,8 @@
             modal_title_register: "Register New Crop", modal_title_edit: "Edit Crop",
             label_crop_name_variety: "Crop Name / Variety", label_commodity_type: "Commodity Type", label_growth_duration: "Growth Duration",
             label_prod_cost_php: "Std. Production Cost (₱)", label_description: "Description",
+            label_prod_cost_hint: "Cost per hectare. This is multiplied into the estimated loss on every damage report for this crop.",
+            label_cost_preview: "At {cost}/ha, a 1-hectare farm at Total Loss = {total}",
             crop_type_rice: "Rice", crop_type_corn: "Corn", crop_type_banana: "Banana",
             crop_type_vegetables: "Vegetables", crop_type_eggplant: "Eggplant", crop_type_other: "Other",
             btn_cancel: "Cancel", btn_save_crop: "Save Crop", btn_saving: "Saving...",
@@ -242,6 +246,7 @@
             no_crops_found: "No crops found.", no_crops_registered: "No crops registered yet.",
             label_type: "Type", label_production_cost: "Production Cost",
             sw_required_title: "Required", sw_required_crop_name: "Please enter the crop name.",
+            sw_invalid_cost_text: "Enter a standard production cost between ₱1 and ₱1,000,000 per hectare. This number is multiplied into the estimated loss on every damage report for this crop, so it can't be left blank or set to zero.",
             sw_saved_title: "Saved!", sw_saved_text: "Crop saved successfully.", sw_error_title: "Error",
             sw_remove_title: "Remove Crop?", sw_remove_text: "This crop will be removed from the masterlist.", sw_yes_remove: "Yes, Remove",
             sw_removed_title: "Removed!",
@@ -259,6 +264,8 @@
             modal_title_register: "Irehistro ang Bagong Pananim", modal_title_edit: "I-edit ang Pananim",
             label_crop_name_variety: "Pangalan/Barayti ng Pananim", label_commodity_type: "Uri ng Commodity", label_growth_duration: "Tagal ng Paglago",
             label_prod_cost_php: "Karaniwang Gastos sa Produksyon (₱)", label_description: "Deskripsyon",
+            label_prod_cost_hint: "Gastos kada ektarya. Ito ang pinaparami sa tinatayang pagkalugi sa bawat ulat ng pinsala para sa pananim na ito.",
+            label_cost_preview: "Sa {cost}/ektarya, ang 1-ektaryang bukid na Total Loss = {total}",
             crop_type_rice: "Palay", crop_type_corn: "Mais", crop_type_banana: "Saging",
             crop_type_vegetables: "Gulay", crop_type_eggplant: "Talong", crop_type_other: "Iba Pa",
             btn_cancel: "Kanselahin", btn_save_crop: "I-save ang Pananim", btn_saving: "Sine-save...",
@@ -267,6 +274,7 @@
             no_crops_found: "Walang nahanap na pananim.", no_crops_registered: "Wala pang nakarehistrong pananim.",
             label_type: "Uri", label_production_cost: "Gastos sa Produksyon",
             sw_required_title: "Kailangan", sw_required_crop_name: "Pakilagay ang pangalan ng pananim.",
+            sw_invalid_cost_text: "Maglagay ng karaniwang gastos sa produksyon sa pagitan ng ₱1 at ₱1,000,000 kada ektarya. Pinaparami ang numerong ito sa tinatayang pagkalugi sa bawat ulat ng pinsala para sa pananim na ito, kaya hindi ito maaaring iwanang blangko o gawing zero.",
             sw_saved_title: "Na-save na!", sw_saved_text: "Matagumpay na na-save ang pananim.", sw_error_title: "Error",
             sw_remove_title: "Alisin ang Pananim?", sw_remove_text: "Aalisin ang pananim na ito sa masterlist.", sw_yes_remove: "Oo, Alisin",
             sw_removed_title: "Naalis na!",
@@ -578,6 +586,7 @@
         document.getElementById('cropPeriod').value  = "";
         document.getElementById('cropProdCost').value = "";
         document.getElementById('cropDesc').value    = "";
+        renderCostPreview();
         document.getElementById('cropModal').classList.remove('hidden');
     }
 
@@ -591,6 +600,7 @@
         document.getElementById('cropPeriod').value       = crop.period || "";
         document.getElementById('cropProdCost').value     = crop.prod_cost || "";
         document.getElementById('cropDesc').value         = crop.description || "";
+        renderCostPreview();
         document.getElementById('cropModal').classList.remove('hidden');
     }
 
@@ -616,17 +626,53 @@
     }
 
     // ── Save (create or update) ───────────────────────────────────────────────
+    // Production cost is multiplied into the estimated loss of every damage
+    // report for this crop (api/dashboard/calculate_cost.php), so a typo here
+    // silently rewrites real money figures system-wide. Kept in step with the
+    // matching server-side check in crop_type/create.php and update.php.
+    const COST_MIN = 0;         // exclusive - zero would silently zero out every estimate
+    const COST_MAX = 1000000;   // beyond any real per-hectare cost, so it's a typo
+
+    function pesos(n) {
+        return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Shows the worked math for the simplest case (1 ha at Total Loss, whose
+    // multiplier is 1.00) so an extra zero is obvious before it's ever saved.
+    function renderCostPreview() {
+        const box  = document.getElementById('costPreview');
+        const cost = parseFloat(document.getElementById('cropProdCost').value);
+
+        if (isNaN(cost) || cost <= COST_MIN || cost > COST_MAX) {
+            box.classList.add('hidden');
+            box.innerText = '';
+            return;
+        }
+
+        box.innerText = t('label_cost_preview')
+            .replace('{cost}',  pesos(cost))
+            .replace('{total}', pesos(cost * 1.00));
+        box.classList.remove('hidden');
+    }
+
     async function saveCrop() {
         const id   = document.getElementById('cropId').value;
         const name = document.getElementById('cropName').value.trim();
 
         if (!name) { Swal.fire(t('sw_required_title'), t('sw_required_crop_name'), "warning"); return; }
 
+        const costRaw = document.getElementById('cropProdCost').value.trim();
+        const cost    = parseFloat(costRaw);
+        if (!costRaw || isNaN(cost) || cost <= COST_MIN || cost > COST_MAX) {
+            Swal.fire(t('sw_required_title'), t('sw_invalid_cost_text'), "warning");
+            return;
+        }
+
         const payload = {
             name,
             type:        document.getElementById('cropType').value,
             period:      document.getElementById('cropPeriod').value.trim(),
-            prod_cost:   parseFloat(document.getElementById('cropProdCost').value) || 0,
+            prod_cost:   cost,
             description: document.getElementById('cropDesc').value.trim()
         };
         if (id) payload.id = id;

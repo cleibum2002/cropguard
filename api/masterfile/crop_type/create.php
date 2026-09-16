@@ -8,6 +8,27 @@ if (!isset($_SESSION['User_ID']) || $_SESSION['Role'] !== 'Admin') {
     exit;
 }
 
+// Standard_Production_Cost is multiplied into the estimated loss of every
+// damage report for this crop (api/dashboard/calculate_cost.php), so a bad
+// value here silently rewrites real money figures system-wide. Zero is
+// rejected specifically because it makes every estimate compute to P0.00,
+// which reads on screen as a number rather than as an error. Duplicated in
+// crop_type/update.php, matching how validatePasswordStrength() is duplicated
+// across api/auth/register.php and api/masterfile/users/create.php.
+function validateProductionCost($value) {
+    if (!is_numeric($value)) {
+        return 'Standard production cost must be a number.';
+    }
+    $cost = (float)$value;
+    if ($cost <= 0) {
+        return 'Standard production cost must be greater than zero - it is multiplied into every damage report estimate for this crop.';
+    }
+    if ($cost > 1000000) {
+        return 'Standard production cost looks too high (over 1,000,000 per hectare). Please check for a typo.';
+    }
+    return null;
+}
+
 try {
     include_once '../../config/db_connection.php';
 
@@ -17,10 +38,16 @@ try {
         exit;
     }
 
+    $cost_error = validateProductionCost($data->prod_cost ?? null);
+    if ($cost_error) {
+        echo json_encode(["status" => "error", "message" => $cost_error]);
+        exit;
+    }
+
     $name        = $data->name;
     $type        = $data->type ?? null;
     $period      = $data->period ?? null;
-    $prod_cost   = isset($data->prod_cost) ? (float)$data->prod_cost : 0;
+    $prod_cost   = (float)$data->prod_cost;
     $description = $data->description ?? null;
 
     $stmt = $conn->prepare("INSERT INTO crop_type (Crop_Name, Commodity_Type, Growth_Duration, Standard_Production_Cost, Description, Status) VALUES (?, ?, ?, ?, ?, 'Active')");
