@@ -62,8 +62,8 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
         $stmtInfo->close();
 
         // STEP 2: Update Damage Report Status to 'Approved'
-        $stmt1 = $conn->prepare("UPDATE damage_report SET Status = 'Approved' WHERE Damage_Report_ID = ?");
-        $stmt1->bind_param("i", $report_id);
+        $stmt1 = $conn->prepare("UPDATE damage_report SET Status = 'Approved', Approved_By = ? WHERE Damage_Report_ID = ?");
+        $stmt1->bind_param("ii", $admin_id, $report_id);
         $stmt1->execute();
 
         // STEP 3: Create the Aid Distribution record 
