@@ -21,7 +21,7 @@ if (isset($input['email'], $input['password'])) {
     $password = $input['password'];
 
     // --- ONLY ONE QUERY NEEDED NOW ---
-    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified FROM users WHERE BINARY Email = ?");
+    $stmt = $conn->prepare("SELECT User_ID, Role, Fullname, Password, STATUS, Email_Verified, Failed_Login_Attempts, Lockout_Until FROM users WHERE BINARY Email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -33,6 +33,14 @@ if (isset($input['email'], $input['password'])) {
         if ($user['STATUS'] === 'Inactive') {
         echo json_encode(['status' => 'error', 'message' => 'Your account has been deactivated. Please contact the administrator.']);
         exit;
+        }
+
+        // Locked out after too many wrong passwords - checked before any
+        // password comparison at all, so a lockout can't be probed around.
+        if (!empty($user['Lockout_Until']) && strtotime($user['Lockout_Until']) > time()) {
+            $minutesLeft = (int)ceil((strtotime($user['Lockout_Until']) - time()) / 60);
+            echo json_encode(['status' => 'error', 'message' => "Too many failed attempts. Try again in $minutesLeft minute(s)."]);
+            exit;
         }
 
         // 1. Standard Check: Is the password properly hashed?
@@ -88,6 +96,13 @@ if (isset($input['email'], $input['password'])) {
             // logged-in session. Must come before the session variables below.
             session_regenerate_id(true);
 
+            // Clears any accumulated lockout state now that the real password
+            // has been confirmed.
+            $resetStmt = $conn->prepare("UPDATE users SET Failed_Login_Attempts = 0, Lockout_Until = NULL WHERE User_ID = ?");
+            $resetStmt->bind_param("i", $user['User_ID']);
+            $resetStmt->execute();
+            $resetStmt->close();
+
             // Set secure session variables
             $_SESSION['User_ID'] = $user['User_ID'];
             $_SESSION['Fullname'] = $user['Fullname'];
@@ -119,6 +134,24 @@ if (isset($input['email'], $input['password'])) {
         }
     }
     
+    // Wrong password on a real account - count it, and lock the account out
+    // after too many in a row. Unknown emails aren't counted (no row to
+    // count against), which is fine: this defends the account itself, not
+    // against probing which emails exist.
+    if ($user) {
+        $newCount = (int)($user['Failed_Login_Attempts'] ?? 0) + 1;
+        if ($newCount >= 5) {
+            $lockUntil = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+            $failStmt = $conn->prepare("UPDATE users SET Failed_Login_Attempts = ?, Lockout_Until = ? WHERE User_ID = ?");
+            $failStmt->bind_param("isi", $newCount, $lockUntil, $user['User_ID']);
+        } else {
+            $failStmt = $conn->prepare("UPDATE users SET Failed_Login_Attempts = ? WHERE User_ID = ?");
+            $failStmt->bind_param("ii", $newCount, $user['User_ID']);
+        }
+        $failStmt->execute();
+        $failStmt->close();
+    }
+
     // If user not found or password incorrect
     echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
     if(isset($stmt)) $stmt->close();
