@@ -25,6 +25,6 @@ if ($result) {
     }
     echo json_encode(['status' => 'success', 'data' => $data]);
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Query failed: ' . $conn->error]);
+    echo json_encode(['status' => 'error', 'message' => safeErrorMessage(new Exception($conn->error))]);
 }
 ?>

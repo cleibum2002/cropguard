@@ -32,7 +32,7 @@ if ($action === 'check_crop') {
 
     $stmt = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(Crop_Name) = LOWER(?) LIMIT 1");
     if (!$stmt) {
-        echo json_encode(['status' => 'error', 'message' => 'DB prepare failed: ' . $conn->error]);
+        echo json_encode(['status' => 'error', 'message' => safeErrorMessage(new Exception($conn->error))]);
         exit();
     }
     $stmt->bind_param("s", $requested_seed);

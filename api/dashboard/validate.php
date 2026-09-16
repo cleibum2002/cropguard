@@ -50,7 +50,7 @@ if (isset($input['id']) && isset($input['status'])) {
         );
         echo json_encode(['status' => 'success', 'message' => 'Status updated to ' . $new_status]);
     } else {
-        echo json_encode(['status' => 'error', 'message' => $conn->error]);
+        echo json_encode(['status' => 'error', 'message' => safeErrorMessage(new Exception($conn->error))]);
     }
     $stmt->close();
 } else {
