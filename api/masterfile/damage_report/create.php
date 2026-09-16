@@ -39,13 +39,17 @@ try {
         $crop_id = $conn->insert_id;
         $stmtCrop->close();
 
-        $queryReport = "INSERT INTO damage_report (Farmer_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status) VALUES (?, ?, ?, ?, ?, ?, 'Validated')";
+        // Entered directly at 'Validated' status (skips the MAO review step a
+        // farmer-submitted report would need) - the staff member entering it is
+        // effectively the one validating it, so they're recorded as such.
+        $validated_by = $_SESSION['User_ID'];
+        $queryReport = "INSERT INTO damage_report (Farmer_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status, Validated_By) VALUES (?, ?, ?, ?, ?, ?, 'Validated', ?)";
         $stmtReport = $conn->prepare($queryReport);
         if (!$stmtReport) throw new Exception("Report Insert Error: " . $conn->error);
-        
+
         // Farmer_Reported_Severity permanently snapshots the original value — Damage_Severity
         // gets overwritten later once a technician inspects the farm.
-        $stmtReport->bind_param("iissss", $farmer_id, $crop_id, $data->damage_type, $data->severity, $data->severity, $data->description);
+        $stmtReport->bind_param("iissssi", $farmer_id, $crop_id, $data->damage_type, $data->severity, $data->severity, $data->description, $validated_by);
         
         if ($stmtReport->execute()) {
             echo json_encode(["status" => "success", "message" => "Damage Report successfully submitted."]);

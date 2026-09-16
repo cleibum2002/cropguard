@@ -29,10 +29,18 @@ try {
             throw new Exception("Farmer not found for this report.");
         }
 
-        // 2. Update the report status
-        $query = "UPDATE damage_report SET Status = ? WHERE Damage_Report_ID = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("si", $data->status, $data->id);
+        // 2. Update the report status. Also record who validated it, specifically
+        // for the Validated transition - this endpoint is shared with Reject and
+        // Archive too, which have no equivalent "by" column to fill in.
+        if ($data->status === 'Validated') {
+            $query = "UPDATE damage_report SET Status = ?, Validated_By = ? WHERE Damage_Report_ID = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("sii", $data->status, $_SESSION['User_ID'], $data->id);
+        } else {
+            $query = "UPDATE damage_report SET Status = ? WHERE Damage_Report_ID = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("si", $data->status, $data->id);
+        }
         $stmt->execute();
         $stmt->close();
 

@@ -36,11 +36,15 @@ try {
             dr.Status as status,
             dr.Description as description,
             t.Fullname as technician_name,
+            v.Fullname as validated_by_name,
+            ap.Fullname as approved_by_name,
             fl.Barangay as barangay_raw
         FROM damage_report dr
         LEFT JOIN users f ON dr.Farmer_ID = f.User_ID AND f.Role = 'Farmer'
         LEFT JOIN crop c ON dr.Crop_ID = c.Crop_ID
         LEFT JOIN users t ON dr.Technician_ID = t.User_ID AND t.Role = 'Technician'
+        LEFT JOIN users v ON dr.Validated_By = v.User_ID
+        LEFT JOIN users ap ON dr.Approved_By = ap.User_ID
         LEFT JOIN farm_location fl ON dr.Location_ID = fl.Location_ID
         WHERE $statusCondition
         ORDER BY dr.Last_Updated DESC, dr.Damage_Report_ID DESC
