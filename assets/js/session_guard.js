@@ -289,7 +289,23 @@
             revealBody();
             watchActivity();
             if (typeof options.onReady === 'function') {
-                whenPageReady(function () { options.onReady(data); });
+                whenPageReady(function () {
+                    // A page's own onReady blowing up is a bug in that page - it must
+                    // never reach the .catch() below, which treats any rejection as
+                    // "no valid session" and bounces to auth.html. whenPageReady runs
+                    // this synchronously inside the .then() whenever the document has
+                    // already finished loading (the normal case on a remote host,
+                    // where the session fetch resolves after load), so an uncaught
+                    // error here did exactly that: the Admin dashboard threw on a
+                    // long-deleted element, got sent to auth.html, auth.html saw a
+                    // live session and sent it straight back - a permanent redirect
+                    // loop, hundreds of page loads a minute, live in production.
+                    try {
+                        options.onReady(data);
+                    } catch (err) {
+                        console.error('onReady failed for this page:', err);
+                    }
+                });
             }
         }).catch(leaveToAuth);
     }
