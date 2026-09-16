@@ -185,14 +185,28 @@
                         </div>
                     </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_password">Password</label>
-                    <input type="password" id="userPassword" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Leave blank to keep current (if editing)" data-i18n-placeholder="placeholder_password_hint">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div class="relative">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_password">Password</label>
+                        <input type="password" id="userPassword" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 pr-10 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Leave blank to keep current (if editing)" data-i18n-placeholder="placeholder_password_hint">
+                        <button type="button" onclick="togglePassword('userPassword','userPasswordEye')" class="absolute right-3 top-9 text-gray-400 hover:text-gray-600">
+                            <i id="userPasswordEye" class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_confirm_password">Confirm Password</label>
+                        <input type="password" id="userConfirmPassword" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 pr-10 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="Confirm new password" data-i18n-placeholder="ph_confirm_password">
+                        <button type="button" onclick="togglePassword('userConfirmPassword','userConfirmPasswordEye')" class="absolute right-3 top-9 text-gray-400 hover:text-gray-600">
+                            <i id="userConfirmPasswordEye" class="fa-solid fa-eye text-sm"></i>
+                        </button>
+                    </div>
                 </div>
+                <p class="text-[10px] text-gray-400 -mt-2 sm:-mt-3" data-i18n="password_requirements_hint">Minimum 8 characters, must include at least 1 special character.</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="th_role">Role</label>
                         <select id="userRole" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none text-sm focus:ring-2 focus:ring-[#11542e]">
+                            <option value="" disabled data-i18n="opt_select_role">Select Role...</option>
                             <option value="Admin" data-i18n="opt_role_admin">Admin</option>
                             <option value="MAO" data-i18n="opt_role_mao">MAO</option>
                             <option value="Technician" data-i18n="opt_role_technician">Technician</option>
@@ -222,7 +236,7 @@
                 header_title: "User Management",  role_admin: "Admin",
                 search_placeholder: "Search name or email...",
                 filter_all_roles: "All Roles", filter_all_statuses: "All Statuses", opt_role_admin: "Admin", opt_role_mao: "MAO",
-                opt_role_technician: "Technician", opt_role_farmer: "Farmer",
+                opt_role_technician: "Technician", opt_role_farmer: "Farmer", opt_select_role: "Select Role...",
                 offline_ready: "Offline Mode Ready",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 page_title: "System Users", page_sub: "DA Region X — Manage access and credentials for all roles.",
@@ -233,10 +247,15 @@
                 label_full_name: "Full Name", label_email_address: "Email Address", label_contact_number: "Contact Number",
                 label_password: "Password", placeholder_password_hint: "Leave blank to keep current (if editing)",
                 placeholder_password_required: "Required for new users",
+                label_confirm_password: "Confirm Password", ph_confirm_password: "Confirm new password",
+                password_requirements_hint: "Minimum 8 characters, must include at least 1 special character.",
                 status_active: "Active", status_inactive: "Inactive",
                 btn_cancel: "Cancel", btn_save_user: "Save User",
                 no_users_found: "No users found matching your filters.", label_no_email: "No email",
                 sw_required_title: "Required", sw_required_name_email: "Please enter full name and email.", sw_required_password: "Please assign a password for the new user.",
+                sw_required_role: "Please select a role.",
+                sw_mismatch_title: "Password Mismatch", sw_mismatch_text: "Passwords do not match.",
+                sw_weak_title: "Weak Password", sw_weak_text: "Password must be at least 8 characters and include at least 1 special character.",
                 sw_saved_title: "Saved!", sw_error_title: "Error", sw_server_failed: "Server connection failed.",
                 title_deactivate: "Deactivate", title_activate: "Activate",
                 sw_activate_title: "Restore Access?", sw_activate_text: "This will reactivate the user's account.", sw_yes_activate: "Yes, Activate",
@@ -251,7 +270,7 @@
                 header_title: "Pamamahala ng User",  role_admin: "Admin",
                 search_placeholder: "Maghanap ng pangalan o email...",
                 filter_all_roles: "Lahat ng Tungkulin", filter_all_statuses: "Lahat ng Katayuan", opt_role_admin: "Admin", opt_role_mao: "MAO",
-                opt_role_technician: "Technician", opt_role_farmer: "Magsasaka",
+                opt_role_technician: "Technician", opt_role_farmer: "Magsasaka", opt_select_role: "Pumili ng Tungkulin...",
                 offline_ready: "Handa ang Offline Mode",
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
                 page_title: "Mga User ng Sistema", page_sub: "DA Region X — Pamahalaan ang access at kredensyal para sa lahat ng tungkulin.",
@@ -262,10 +281,15 @@
                 label_full_name: "Buong Pangalan", label_email_address: "Email Address", label_contact_number: "Contact Number",
                 label_password: "Password", placeholder_password_hint: "Iwanang blangko para panatilihin ang kasalukuyan (kung ine-edit)",
                 placeholder_password_required: "Kailangan para sa bagong user",
+                label_confirm_password: "Kumpirmahin ang Password", ph_confirm_password: "Kumpirmahin ang bagong password",
+                password_requirements_hint: "Minimum na 8 karakter, dapat may kasamang kahit 1 espesyal na simbolo.",
                 status_active: "Aktibo", status_inactive: "Hindi Aktibo",
                 btn_cancel: "Kanselahin", btn_save_user: "I-save ang User",
                 no_users_found: "Walang nahanap na user na tumutugma sa iyong mga filter.", label_no_email: "Walang email",
                 sw_required_title: "Kailangan", sw_required_name_email: "Ilagay ang buong pangalan at email.", sw_required_password: "Magtalaga ng password para sa bagong user.",
+                sw_required_role: "Pumili ng tungkulin.",
+                sw_mismatch_title: "Hindi Tugma ang Password", sw_mismatch_text: "Hindi magkatugma ang mga password.",
+                sw_weak_title: "Mahinang Password", sw_weak_text: "Ang password ay dapat hindi bababa sa 8 karakter at may kasamang kahit 1 espesyal na simbolo.",
                 sw_saved_title: "Na-save na!", sw_error_title: "Error", sw_server_failed: "Nabigo ang koneksyon sa server.",
                 title_deactivate: "I-deactivate", title_activate: "I-activate",
                 sw_activate_title: "Ibalik ang Access?", sw_activate_text: "Ire-reactivate nito ang account ng user.", sw_yes_activate: "Oo, I-activate",
@@ -469,15 +493,42 @@
 
         function changePage(dir) { currentPage += dir; renderTable(); }
 
+        // Both fields always start hidden/blank whenever the modal (re)opens,
+        // Add or Edit - stops a password typed and revealed last time from
+        // lingering visible (or a stale mismatch) the next time it's opened.
+        function resetPasswordFields() {
+            document.getElementById("userPassword").value = "";
+            document.getElementById("userPassword").type = "password";
+            document.getElementById("userPasswordEye").classList.replace('fa-eye-slash', 'fa-eye');
+            document.getElementById("userConfirmPassword").value = "";
+            document.getElementById("userConfirmPassword").type = "password";
+            document.getElementById("userConfirmPasswordEye").classList.replace('fa-eye-slash', 'fa-eye');
+        }
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
         function openModal() {
             document.getElementById("modalTitle").innerText = t('modal_title_add_user');
             document.getElementById("editId").value = "";
             document.getElementById("userFullName").value = "";
             document.getElementById("userEmail").value = "";
             document.getElementById("userContact").value = "";
-            document.getElementById("userPassword").value = "";
+            resetPasswordFields();
             document.getElementById("userPassword").placeholder = t('placeholder_password_required');
-            document.getElementById("userRole").value = "Admin";
+            // No role pre-selected - Admin is the most privileged option in the
+            // list, and defaulting to it meant an untouched dropdown silently
+            // created a new Admin account.
+            document.getElementById("userRole").value = "";
             document.getElementById("userStatus").value = "Active";
             document.getElementById("modal").classList.remove("hidden");
         }
@@ -490,7 +541,7 @@
             document.getElementById("userEmail").value = i.email || "";
             const rawContact = (i.contact_number || '').replace(/\D/g, '');
             document.getElementById("userContact").value = rawContact.slice(-10);
-            document.getElementById("userPassword").value = ""; 
+            resetPasswordFields();
             document.getElementById("userPassword").placeholder = t('placeholder_password_hint');
             document.getElementById("userRole").value = i.role;
             document.getElementById("userStatus").value = i.status;
@@ -514,7 +565,17 @@
             };
 
             if (!data.fullname || !data.email) return Swal.fire(t('sw_required_title'), t('sw_required_name_email'), "warning");
+            if (!data.role) return Swal.fire(t('sw_required_title'), t('sw_required_role'), "warning");
             if (!id && !data.password) return Swal.fire(t('sw_required_title'), t('sw_required_password'), "warning");
+
+            const confirmPassword = document.getElementById("userConfirmPassword").value.trim();
+            if (data.password || confirmPassword) {
+                if (data.password !== confirmPassword) return Swal.fire(t('sw_mismatch_title'), t('sw_mismatch_text'), "error");
+                if (data.password.length < 8 || !/[!@#$%^&*()_+\-=\[\]{};'":\\|,.<>\/?~`]/.test(data.password)) {
+                    return Swal.fire(t('sw_weak_title'), t('sw_weak_text'), "warning");
+                }
+            }
+
             if (id) data.id = id;
 
             try {
