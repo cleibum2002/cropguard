@@ -59,10 +59,61 @@
     var lastBeat     = 0;
     var leaving      = false;
 
+    // Circuit breaker for a redirect loop between here and auth.html (seen
+    // live: session_check.php flip-flopping active/not-active between two
+    // requests milliseconds apart sent both pages bouncing off each other,
+    // hundreds of times a minute, forever). sessionStorage survives across
+    // the full-page navigations a loop like this does - a plain JS variable
+    // would just reset on every hop and never notice. auth.html carries an
+    // equivalent copy of this same check, keyed to the same storage entry,
+    // since the two pages are the two ends of the loop.
+    var LOOP_KEY  = 'cg_redirect_burst';
+    var LOOP_MAX  = 5;     // this many redirects...
+    var LOOP_MS   = 8000;  // ...within this many milliseconds = a loop, not normal use
+
+    function inRedirectLoop() {
+        var now = Date.now(), hits;
+        try { hits = JSON.parse(sessionStorage.getItem(LOOP_KEY) || '[]'); } catch (e) { hits = []; }
+        hits = hits.filter(function (t) { return now - t < LOOP_MS; });
+        hits.push(now);
+        try { sessionStorage.setItem(LOOP_KEY, JSON.stringify(hits)); } catch (e) { /* storage unavailable - can't track, let it through */ }
+        return hits.length > LOOP_MAX;
+    }
+
+    function clearRedirectLoopTracking() {
+        try { sessionStorage.removeItem(LOOP_KEY); } catch (e) {}
+    }
+
+    // Stops the loop dead instead of bouncing forever: destroys whatever
+    // session state exists and lands on a clean, static auth.html - no
+    // further session_check.php call from this landing, so there is nothing
+    // left to flip-flop.
+    function breakRedirectLoop() {
+        leaving = true;
+        clearTimeout(idleTimer);
+        clearRedirectLoopTracking();
+        fetch(URL_LOGOUT, { cache: 'no-store', credentials: 'same-origin' }).catch(function () {}).then(function () {
+            var msg = translate('sw_loop_text', 'Something kept signing you in and out too quickly, so we stopped it and signed you out completely. Please log in again - if this keeps happening, tell your administrator.');
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: translate('sw_loop_title', 'Signed Out'),
+                    text: msg,
+                    confirmButtonColor: '#11542e',
+                    allowOutsideClick: false
+                }).then(function () { window.location.replace(URL_AUTH); });
+            } else {
+                alert(msg);
+                window.location.replace(URL_AUTH);
+            }
+        });
+    }
+
     // replace(), not href: the dead page must not stay in history where the
     // Back button can reach it.
     function leaveTo(url) {
         if (leaving) return;
+        if (inRedirectLoop()) { breakRedirectLoop(); return; }
         leaving = true;
         clearTimeout(idleTimer);
         window.location.replace(url);
@@ -210,6 +261,7 @@
 
             ask().then(function (data) {
                 if (!isAllowed(data)) { denyAccess(data); return; }
+                clearRedirectLoopTracking();
                 document.documentElement.style.visibility = '';
                 restartIdleTimer();
             }).catch(function () {
@@ -233,6 +285,7 @@
 
         ask().then(function (data) {
             if (!isAllowed(data)) { denyAccess(data); return; }
+            clearRedirectLoopTracking();
             revealBody();
             watchActivity();
             if (typeof options.onReady === 'function') {
@@ -244,6 +297,7 @@
     // Destroys the server session, then leaves. Every page's confirmLogout()
     // should route through this rather than rolling its own fetch.
     function logout() {
+        clearRedirectLoopTracking();
         return fetch(URL_LOGOUT, { cache: 'no-store', credentials: 'same-origin' })
             .catch(function () { /* leave regardless - the cookie is gone */ })
             .then(leaveToAuth);
