@@ -272,6 +272,14 @@
         loadMaoNotifications();
     }
 
+    // Farmer/Technician free text is spliced into innerHTML templates below -
+    // must be rendered as literal text, never parsed as markup.
+    function escapeHtml(s) {
+        return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
     // Translates the status word used in badges and the "locked" message
     function reportStatusLabel(status) {
         const map = { Pending: 'status_pending', Validated: 'status_validated', Inspected: 'status_inspected', Approved: 'status_approved', Rejected: 'status_rejected' };
@@ -572,6 +580,10 @@
                 techNotes = parts[1].trim();
                 hasTechFindings = true;
             }
+            // Escaped before being spliced into the innerHTML template below -
+            // this is free text from the Farmer/Technician, not markup.
+            farmerNotes = escapeHtml(farmerNotes);
+            techNotes = escapeHtml(techNotes);
 
             const remarksHTML = hasTechFindings ? `
                 <div class="mb-3 sm:mb-6">

@@ -12,7 +12,7 @@ if (!$tech_id) {
 
 if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
     $report_id = (int)$_POST['id'];
-    $findings = trim($_POST['observations']);
+    $findings = strip_tags(trim($_POST['observations']));
     $final_severity = $_POST['severity'];
 
     if (empty($findings)) {
