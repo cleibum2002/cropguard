@@ -34,6 +34,9 @@ function validateGrowthDuration($value) {
     if (!preg_match('/^\d+(\.\d+)?/', $period, $m) || (float)$m[0] <= 0) {
         return 'Growth duration must start with a positive number, for example "110 Days".';
     }
+    if (floor((float)$m[0]) != (float)$m[0]) {
+        return 'Growth duration must be a whole number - no decimals.';
+    }
     return null;
 }
 
