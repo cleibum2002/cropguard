@@ -24,6 +24,19 @@ function validateProductionCost($value) {
     return null;
 }
 
+// Same guard as crop_type/create.php - see the note there for why this is a
+// text check rather than a numeric one.
+function validateGrowthDuration($value) {
+    $period = trim((string)($value ?? ''));
+    if ($period === '') {
+        return null;
+    }
+    if (!preg_match('/^\d+(\.\d+)?/', $period, $m) || (float)$m[0] <= 0) {
+        return 'Growth duration must start with a positive number, for example "110 Days".';
+    }
+    return null;
+}
+
 try {
     include_once '../../config/db_connection.php';
 
@@ -36,6 +49,12 @@ try {
     $cost_error = validateProductionCost($data->prod_cost ?? null);
     if ($cost_error) {
         echo json_encode(["status" => "error", "message" => $cost_error]);
+        exit;
+    }
+
+    $period_error = validateGrowthDuration($data->period ?? null);
+    if ($period_error) {
+        echo json_encode(["status" => "error", "message" => $period_error]);
         exit;
     }
 
