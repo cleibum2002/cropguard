@@ -197,7 +197,10 @@
                     </div>
                     <div class="col-span-2">
                         <label id="stockLabel" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_initial_stock">Initial Stock</label>
-                        <input type="number" step="0.01" min="0" id="itemStock" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="0">
+                        <input type="text" inputmode="numeric" id="itemStock" maxlength="6"
+                               oninput="this.value = this.value.replace(/\D/g, '')"
+                               class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="0">
+                        <p class="text-[10px] text-gray-400 mt-1.5" data-i18n="label_stock_hint">Whole numbers only, up to 500,000.</p>
                     </div>
                     <input type="hidden" id="itemPrice" value="0">
                     <div class="col-span-2">
@@ -246,6 +249,10 @@
                 sw_error_title: "Error", sw_failed_connect_db: "Failed to connect to the database.",
                 sw_required_title: "Required", sw_required_commodity_name: "Please enter the commodity name.",
                 sw_negative_stock: "Stock cannot be a negative number.",
+                label_stock_hint: "Whole numbers only, up to 500,000.",
+                sw_whole_number_stock: "Stock must be a whole number - no decimals.",
+                sw_stock_limit: "Stock can't be higher than 500,000. Please check the amount.",
+                sw_duplicate_name: "A commodity with this name already exists. Names must be unique, regardless of capitalization.",
                 label_qty_php: "QTY (PHP)",
                 sw_saved_title: "Saved!", sw_saved_text: "Item saved successfully.", sw_server_failed: "Server connection failed.",
                 sw_deactivate_title: "Deactivate Commodity?", sw_deactivate_text: "This will set the status to Inactive.", sw_yes_deactivate: "Yes, Deactivate",
@@ -276,6 +283,10 @@
                 sw_error_title: "Error", sw_failed_connect_db: "Nabigong kumonekta sa database.",
                 sw_required_title: "Kailangan", sw_required_commodity_name: "Pakilagay ang pangalan ng commodity.",
                 sw_negative_stock: "Hindi maaaring negatibo ang stock.",
+                label_stock_hint: "Buong numero lamang, hanggang 500,000.",
+                sw_whole_number_stock: "Dapat buong numero ang stock - walang decimal.",
+                sw_stock_limit: "Hindi maaaring lumampas sa 500,000 ang stock. Pakisuri ang halaga.",
+                sw_duplicate_name: "May commodity nang ganitong pangalan. Dapat natatangi ang mga pangalan, kahit magkaiba ang malaki o maliit na letra.",
                 label_qty_php: "DAMI (PHP)",
                 sw_saved_title: "Na-save na!", sw_saved_text: "Matagumpay na na-save ang item.", sw_server_failed: "Nabigo ang koneksyon sa server.",
                 sw_deactivate_title: "I-deactivate ang Commodity?", sw_deactivate_text: "Itatakda nito ang katayuan sa Hindi Aktibo.", sw_yes_deactivate: "Oo, I-deactivate",
@@ -424,7 +435,9 @@
                 const stockColor = parseFloat(item.current_stock) > 10 ? 'text-green-600' : 'text-red-500';
                 
                 const displayPrice = parseFloat(item.price || 0).toFixed(2);
-                const displayStock = parseFloat(item.current_stock || 0).toString();
+                // Thousand separators for every commodity, cash or not - "90,000"
+                // reads at a glance where "90000" has to be counted digit by digit.
+                const displayStock = parseFloat(item.current_stock || 0).toLocaleString('en-US');
                 const displayUnit = item.unit || t('label_unit_fallback');
 
                 tbody.innerHTML += `
@@ -543,11 +556,20 @@
 
         function closeModal() { document.getElementById("modal").classList.add("hidden"); }
 
+        const STOCK_MAX = 500000;
+
         async function saveData() {
             const id = document.getElementById("editId").value;
-            const stockVal = parseFloat(document.getElementById("itemStock").value);
-            if (isNaN(stockVal) || stockVal < 0) {
+            const stockRaw = document.getElementById("itemStock").value.trim();
+            const stockVal = parseFloat(stockRaw);
+            if (stockRaw === '' || isNaN(stockVal) || stockVal < 0) {
                 return Swal.fire(t('sw_required_title'), t('sw_negative_stock'), 'warning');
+            }
+            if (!Number.isInteger(stockVal)) {
+                return Swal.fire(t('sw_required_title'), t('sw_whole_number_stock'), 'warning');
+            }
+            if (stockVal > STOCK_MAX) {
+                return Swal.fire(t('sw_required_title'), t('sw_stock_limit'), 'warning');
             }
             const data = {
                 item_name: document.getElementById("itemName").value.trim(),
@@ -560,6 +582,15 @@
             };
 
             if (!data.item_name) return Swal.fire(t('sw_required_title'), t('sw_required_commodity_name'), "warning");
+
+            // Case-insensitive duplicate check, so "Cash Aid" and "cash aid" can't
+            // both exist. Compares against every loaded commodity including
+            // Inactive ones, since get_all.php returns those too and they stay
+            // visible in the table. The server repeats this check authoritatively.
+            const nameKey = data.item_name.toLowerCase();
+            const clash = allData.some(x => String(x.item_name || '').trim().toLowerCase() === nameKey && String(x.id) !== String(id));
+            if (clash) return Swal.fire(t('sw_required_title'), t('sw_duplicate_name'), "warning");
+
             if (id) data.id = id;
 
             try {
