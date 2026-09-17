@@ -35,13 +35,45 @@
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
         
         @media print {
-            body { background-color: white; }
+            body { background-color: white !important; }
             aside, header, #reportConfigCard, .no-print { display: none !important; }
-            #mainContent { padding: 0 !important; margin: 0 !important; overflow: visible !important; }
+            #mainContent { padding: 0 !important; margin: 0 !important; overflow: visible !important; background-color: white !important; }
             /* Fixed: Changed shadow to box-shadow to prevent CSS errors */
-            #reportPreviewCard { box-shadow: none !important; border: none !important; }
+            #reportPreviewCard { box-shadow: none !important; border: none !important; border-radius: 0 !important; }
             .print-header { display: block !important; }
             .print-signatures { display: flex !important; }
+
+            /* ═══ GOVERNMENT-STYLE TABLE GRID ═══ */
+            #reportPreviewCard table {
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            #reportPreviewCard table th,
+            #reportPreviewCard table td {
+                border: 1px solid #000 !important;
+                padding: 5px 6px !important;
+            }
+            #reportPreviewCard table thead {
+                display: table-header-group;
+            }
+            #reportPreviewCard table th {
+                background-color: #dcdcdc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            #reportPreviewCard table tr {
+                page-break-inside: avoid;
+            }
+
+            /* Summary stat boxes removed entirely from the printed version */
+            #reportPreviewCard .grid.grid-cols-3 {
+                display: none !important;
+            }
+
+            /* Ensure the mobile card view never shows up in print, even if this
+               page is ever printed from a narrow/mobile viewport */
+            #ledgerCardsList { display: none !important; }
+            #reportPreviewCard .hidden.md\:block { display: block !important; }
         }
     </style>
 </head>
@@ -127,10 +159,21 @@
         <main id="mainContent" class="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 md:pb-6 bg-[#f0f2f0] custom-scrollbar">
             <div class="max-w-5xl mx-auto space-y-6">
 
-                <div class="print-header hidden text-center mb-8 border-b-2 border-gray-800 pb-4">
-                    <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tighter">Office of the Municipal Agriculturist</h1>
-                    <p class="text-sm font-bold text-gray-600 uppercase tracking-widest mt-1">Technician Field Validation Report</p>
-                    <p class="text-xs text-gray-500 mt-2">Report Summary Generated: <span id="printDate"></span></p>
+                <div class="print-header hidden" style="text-align: center; padding-bottom: 6px;">
+                    <img src="../../assets/images/DA.png" alt="Department of Agriculture Logo"
+                         style="height: 90px; width: auto; margin: 0 auto 8px auto; display: block;">
+                    <p style="font-size: 10px; color: #333; margin: 0; letter-spacing: 0.06em;">Republic of the Philippines</p>
+                    <p style="font-size: 15px; font-weight: 900; color: #000; margin: 2px 0 0 0; text-transform: uppercase; letter-spacing: 0.05em;">Department of Agriculture</p>
+                    <p style="font-size: 11px; font-weight: 700; color: #000; margin: 1px 0 0 0; text-transform: uppercase;">Office of the Municipal Agriculturist</p>
+                    <p style="font-size: 10px; color: #444; margin: 2px 0 10px 0;">Balingasag, Misamis Oriental — Region X, Northern Mindanao</p>
+
+                    <div style="border-top: 2.5px solid #000; border-bottom: 1px solid #000; padding: 6px 0; margin: 8px 0 4px 0;">
+                        <p style="font-size: 14px; font-weight: 900; color: #000; margin: 0; text-transform: uppercase; letter-spacing: 0.12em;">Technician Field Validation Report</p>
+                    </div>
+
+                    <p style="font-size: 9px; color: #555; margin: 6px 0 20px 0;">
+                        Report Summary Generated: <span id="printDate"></span>
+                    </p>
                 </div>
 
                 <div id="reportConfigCard" class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 no-print">
