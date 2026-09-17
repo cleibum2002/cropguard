@@ -192,12 +192,18 @@
             .catch(function () { /* redirect regardless */ })
             .then(function () {
                 if (typeof Swal === 'undefined') { leaveToAuth(); return; }
+                // No confirm button: the redirect to auth.html happens either way,
+                // so an OK button only adds a click between the user and the login
+                // screen. The message still shows - just long enough to read why
+                // they were signed out - then it moves on by itself.
                 Swal.fire({
                     icon: 'warning',
                     title: translate('sw_session_expired_title', 'Session Expired'),
                     text: translate('sw_session_expired_text',
                         'You have been logged out due to 5 minutes of inactivity.'),
-                    confirmButtonColor: '#11542e',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
                     allowOutsideClick: false
                 }).then(leaveToAuth);
             });
