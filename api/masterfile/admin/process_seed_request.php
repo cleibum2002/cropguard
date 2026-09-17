@@ -8,6 +8,24 @@ if (!isset($_SESSION['Role']) || $_SESSION['Role'] !== 'Admin') {
     exit();
 }
 
+// Approving a seed request for an unlisted variety registers a new crop_type
+// right here, which is a second way into the Crops Masterlist. Same guard as
+// crop_type/create.php and crop_type/update.php - see the note in create.php
+// for why a zero cost is rejected rather than quietly stored.
+function validateProductionCost($value) {
+    if (!is_numeric($value)) {
+        return 'Standard production cost must be a number.';
+    }
+    $cost = (float)$value;
+    if ($cost <= 0) {
+        return 'Standard production cost must be greater than zero - it is multiplied into every damage report estimate for this crop.';
+    }
+    if ($cost > 1000000) {
+        return 'Standard production cost looks too high (over 1,000,000 per hectare). Please check for a typo.';
+    }
+    return null;
+}
+
 $raw  = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
@@ -89,6 +107,16 @@ try {
         if (!$alreadyExists) {
             if (empty($crop_type) || empty($growth_period)) {
                 throw new Exception("Commodity Type and Growth Duration are required to register a new crop.");
+            }
+
+            // Returned directly rather than thrown: safeErrorMessage() in the catch
+            // below replaces the real text with a generic "A server error occurred",
+            // and the Admin needs to be told what is actually wrong with the value.
+            $cost_error = validateProductionCost($data['prod_cost'] ?? null);
+            if ($cost_error) {
+                $conn->rollback();
+                echo json_encode(['status' => 'error', 'message' => $cost_error]);
+                exit();
             }
 
             $stmtInsert = $conn->prepare(
