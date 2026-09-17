@@ -247,6 +247,7 @@
             label_type: "Type", label_production_cost: "Production Cost",
             sw_required_title: "Required", sw_required_crop_name: "Please enter the crop name.",
             sw_invalid_cost_text: "Enter a standard production cost between ₱1 and ₱1,000,000 per hectare. This number is multiplied into the estimated loss on every damage report for this crop, so it can't be left blank or set to zero.",
+            sw_invalid_period_text: "Growth duration must start with a positive number, for example \"110 Days\". Negative values and zero are not allowed. You may leave it blank.",
             sw_saved_title: "Saved!", sw_saved_text: "Crop saved successfully.", sw_error_title: "Error",
             sw_remove_title: "Remove Crop?", sw_remove_text: "This crop will be removed from the masterlist.", sw_yes_remove: "Yes, Remove",
             sw_removed_title: "Removed!",
@@ -275,6 +276,7 @@
             label_type: "Uri", label_production_cost: "Gastos sa Produksyon",
             sw_required_title: "Kailangan", sw_required_crop_name: "Pakilagay ang pangalan ng pananim.",
             sw_invalid_cost_text: "Maglagay ng karaniwang gastos sa produksyon sa pagitan ng ₱1 at ₱1,000,000 kada ektarya. Pinaparami ang numerong ito sa tinatayang pagkalugi sa bawat ulat ng pinsala para sa pananim na ito, kaya hindi ito maaaring iwanang blangko o gawing zero.",
+            sw_invalid_period_text: "Ang tagal ng paglago ay dapat magsimula sa positibong numero, halimbawa \"110 Days\". Hindi pinapayagan ang negatibo at zero. Maaari itong iwanang blangko.",
             sw_saved_title: "Na-save na!", sw_saved_text: "Matagumpay na na-save ang pananim.", sw_error_title: "Error",
             sw_remove_title: "Alisin ang Pananim?", sw_remove_text: "Aalisin ang pananim na ito sa masterlist.", sw_yes_remove: "Oo, Alisin",
             sw_removed_title: "Naalis na!",
@@ -633,6 +635,17 @@
     const COST_MIN = 0;         // exclusive - zero would silently zero out every estimate
     const COST_MAX = 1000000;   // beyond any real per-hectare cost, so it's a typo
 
+    // Growth Duration stays a free-text field because existing rows are stored
+    // as "110 Days" / "3 months", not bare numbers - but it must still start
+    // with a positive number, so "-50" and "0 Days" can't be saved. Blank is
+    // still allowed, as it always has been. Kept in step with the matching
+    // server-side check in crop_type/create.php and update.php.
+    function isValidPeriod(value) {
+        if (value === '') return true;
+        const m = value.match(/^\d+(\.\d+)?/);   // must START with a number - no minus sign
+        return m !== null && parseFloat(m[0]) > 0;
+    }
+
     function pesos(n) {
         return '₱' + n.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
@@ -668,10 +681,16 @@
             return;
         }
 
+        const period = document.getElementById('cropPeriod').value.trim();
+        if (!isValidPeriod(period)) {
+            Swal.fire(t('sw_required_title'), t('sw_invalid_period_text'), "warning");
+            return;
+        }
+
         const payload = {
             name,
             type:        document.getElementById('cropType').value,
-            period:      document.getElementById('cropPeriod').value.trim(),
+            period,
             prod_cost:   cost,
             description: document.getElementById('cropDesc').value.trim()
         };
