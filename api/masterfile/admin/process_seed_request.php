@@ -26,6 +26,20 @@ function validateProductionCost($value) {
     return null;
 }
 
+// Same guard as crop_type/create.php - see the note there for why this is a
+// text check rather than a numeric one. Without it this path would still
+// accept "-50", which the Crops Masterlist now refuses.
+function validateGrowthDuration($value) {
+    $period = trim((string)($value ?? ''));
+    if ($period === '') {
+        return null;
+    }
+    if (!preg_match('/^\d+(\.\d+)?/', $period, $m) || (float)$m[0] <= 0) {
+        return 'Growth duration must start with a positive number, for example "110 Days".';
+    }
+    return null;
+}
+
 $raw  = file_get_contents("php://input");
 $data = json_decode($raw, true);
 
@@ -48,7 +62,7 @@ if ($action === 'check_crop') {
         exit();
     }
 
-    $stmt = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(Crop_Name) = LOWER(?) LIMIT 1");
+    $stmt = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(TRIM(Crop_Name)) = LOWER(?) LIMIT 1");
     if (!$stmt) {
         echo json_encode(['status' => 'error', 'message' => safeErrorMessage(new Exception($conn->error))]);
         exit();
@@ -96,7 +110,7 @@ try {
     // 2. If Approved → maybe insert into crop_type
     if ($normalized_status === 'Approved by Admin') {
 
-        $stmtCheck = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(Crop_Name) = LOWER(?) LIMIT 1");
+        $stmtCheck = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(TRIM(Crop_Name)) = LOWER(?) LIMIT 1");
         if (!$stmtCheck) throw new Exception("Prepare failed (check): " . $conn->error);
         $stmtCheck->bind_param("s", $requested_seed);
         $stmtCheck->execute();
@@ -116,6 +130,13 @@ try {
             if ($cost_error) {
                 $conn->rollback();
                 echo json_encode(['status' => 'error', 'message' => $cost_error]);
+                exit();
+            }
+
+            $period_error = validateGrowthDuration($growth_period);
+            if ($period_error) {
+                $conn->rollback();
+                echo json_encode(['status' => 'error', 'message' => $period_error]);
                 exit();
             }
 
