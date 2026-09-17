@@ -254,7 +254,7 @@
             label_type: "Type", label_production_cost: "Production Cost",
             sw_required_title: "Required", sw_required_crop_name: "Please enter the crop name.",
             sw_invalid_cost_text: "Enter a standard production cost between ₱1 and ₱1,000,000 per hectare. This number is multiplied into the estimated loss on every damage report for this crop, so it can't be left blank or set to zero.",
-            sw_invalid_period_text: "Growth duration must be a positive number. Negative values and zero are not allowed. You may leave it blank.",
+            sw_invalid_period_text: "Growth duration must be a whole number greater than zero - no decimals. You may leave it blank.",
             unit_days: "Days", unit_months: "Months",
             sw_saved_title: "Saved!", sw_saved_text: "Crop saved successfully.", sw_error_title: "Error",
             sw_remove_title: "Remove Crop?", sw_remove_text: "This crop will be removed from the masterlist.", sw_yes_remove: "Yes, Remove",
@@ -284,7 +284,7 @@
             label_type: "Uri", label_production_cost: "Gastos sa Produksyon",
             sw_required_title: "Kailangan", sw_required_crop_name: "Pakilagay ang pangalan ng pananim.",
             sw_invalid_cost_text: "Maglagay ng karaniwang gastos sa produksyon sa pagitan ng ₱1 at ₱1,000,000 kada ektarya. Pinaparami ang numerong ito sa tinatayang pagkalugi sa bawat ulat ng pinsala para sa pananim na ito, kaya hindi ito maaaring iwanang blangko o gawing zero.",
-            sw_invalid_period_text: "Ang tagal ng paglago ay dapat positibong numero. Hindi pinapayagan ang negatibo at zero. Maaari itong iwanang blangko.",
+            sw_invalid_period_text: "Ang tagal ng paglago ay dapat buong numero na mas mataas sa zero - walang decimal. Maaari itong iwanang blangko.",
             unit_days: "Araw", unit_months: "Buwan",
             sw_saved_title: "Na-save na!", sw_saved_text: "Matagumpay na na-save ang pananim.", sw_error_title: "Error",
             sw_remove_title: "Alisin ang Pananim?", sw_remove_text: "Aalisin ang pananim na ito sa masterlist.", sw_yes_remove: "Oo, Alisin",
@@ -700,7 +700,7 @@
         let   period    = '';
         if (periodRaw !== '') {
             const periodNum = parseFloat(periodRaw);
-            if (isNaN(periodNum) || periodNum <= 0) {
+            if (isNaN(periodNum) || periodNum <= 0 || !Number.isInteger(periodNum)) {
                 Swal.fire(t('sw_required_title'), t('sw_invalid_period_text'), "warning");
                 return;
             }
