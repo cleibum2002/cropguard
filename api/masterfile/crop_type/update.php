@@ -59,11 +59,26 @@ try {
     }
 
     $id          = (int)$data->id;
-    $name        = $data->name;
+    $name        = trim($data->name);
     $type        = $data->type ?? null;
     $period      = $data->period ?? null;
     $prod_cost   = (float)$data->prod_cost;
     $description = $data->description ?? null;
+
+    // Same exact-name rule as crop_type/create.php - see the note there. The
+    // Type_ID != ? excludes this crop's own row, so saving it without renaming
+    // doesn't collide with itself.
+    $dupe = $conn->prepare("SELECT Type_ID FROM crop_type WHERE Crop_Name = ? AND Type_ID != ? LIMIT 1");
+    $dupe->bind_param("si", $name, $id);
+    $dupe->execute();
+    $dupe->store_result();
+    $isDuplicate = $dupe->num_rows > 0;
+    $dupe->close();
+
+    if ($isDuplicate) {
+        echo json_encode(["status" => "error", "message" => "Another crop named \"$name\" is already in the Crops Masterlist. Use a different name."]);
+        exit;
+    }
 
     $stmt = $conn->prepare("UPDATE crop_type SET Crop_Name = ?, Commodity_Type = ?, Growth_Duration = ?, Standard_Production_Cost = ?, Description = ? WHERE Type_ID = ?");
     $stmt->bind_param("sssdsi", $name, $type, $period, $prod_cost, $description, $id);

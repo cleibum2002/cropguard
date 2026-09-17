@@ -65,11 +65,28 @@ try {
         exit;
     }
 
-    $name        = $data->name;
+    $name        = trim($data->name);
     $type        = $data->type ?? null;
     $period      = $data->period ?? null;
     $prod_cost   = (float)$data->prod_cost;
     $description = $data->description ?? null;
+
+    // Exact-name duplicates only. The crop_type collation is utf8mb4_general_ci,
+    // so "=" already matches case-insensitively; the trim() above handles stray
+    // spaces. Deliberately NOT a fuzzy match: real variety names run in series
+    // ("Tubigan 4" vs "Tubigan 14", "Sahod Ulan 1" vs "Sahod Ulan 11"), so
+    // near-identical names are usually different crops, not typos.
+    $dupe = $conn->prepare("SELECT Type_ID FROM crop_type WHERE Crop_Name = ? LIMIT 1");
+    $dupe->bind_param("s", $name);
+    $dupe->execute();
+    $dupe->store_result();
+    $isDuplicate = $dupe->num_rows > 0;
+    $dupe->close();
+
+    if ($isDuplicate) {
+        echo json_encode(["status" => "error", "message" => "\"$name\" is already in the Crops Masterlist. Use a different name, or edit the existing entry."]);
+        exit;
+    }
 
     $stmt = $conn->prepare("INSERT INTO crop_type (Crop_Name, Commodity_Type, Growth_Duration, Standard_Production_Cost, Description, Status) VALUES (?, ?, ?, ?, ?, 'Active')");
     $stmt->bind_param("sssds", $name, $type, $period, $prod_cost, $description);
