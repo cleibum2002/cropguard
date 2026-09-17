@@ -65,10 +65,10 @@ try {
     $prod_cost   = (float)$data->prod_cost;
     $description = $data->description ?? null;
 
-    // Same exact-name rule as crop_type/create.php - see the note there. The
-    // Type_ID != ? excludes this crop's own row, so saving it without renaming
-    // doesn't collide with itself.
-    $dupe = $conn->prepare("SELECT Type_ID FROM crop_type WHERE Crop_Name = ? AND Type_ID != ? LIMIT 1");
+    // Same rule as crop_type/create.php - see the note there. The Type_ID != ?
+    // excludes this crop's own row, so saving it without renaming doesn't
+    // collide with itself.
+    $dupe = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(TRIM(Crop_Name)) = LOWER(?) AND Type_ID != ? LIMIT 1");
     $dupe->bind_param("si", $name, $id);
     $dupe->execute();
     $dupe->store_result();

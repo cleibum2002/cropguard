@@ -71,12 +71,12 @@ try {
     $prod_cost   = (float)$data->prod_cost;
     $description = $data->description ?? null;
 
-    // Exact-name duplicates only. The crop_type collation is utf8mb4_general_ci,
-    // so "=" already matches case-insensitively; the trim() above handles stray
-    // spaces. Deliberately NOT a fuzzy match: real variety names run in series
-    // ("Tubigan 4" vs "Tubigan 14", "Sahod Ulan 1" vs "Sahod Ulan 11"), so
-    // near-identical names are usually different crops, not typos.
-    $dupe = $conn->prepare("SELECT Type_ID FROM crop_type WHERE Crop_Name = ? LIMIT 1");
+    // Case-insensitive uniqueness, same shape as the check in items/create.php.
+    // Deliberately an exact-name match and NOT a fuzzy one: real variety names
+    // run in numbered series ("Tubigan 4" vs "Tubigan 14", "Sahod Ulan 1" vs
+    // "Sahod Ulan 11"), so near-identical names are usually different crops
+    // rather than typos.
+    $dupe = $conn->prepare("SELECT Type_ID FROM crop_type WHERE LOWER(TRIM(Crop_Name)) = LOWER(?) LIMIT 1");
     $dupe->bind_param("s", $name);
     $dupe->execute();
     $dupe->store_result();
