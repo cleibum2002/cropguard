@@ -160,7 +160,17 @@
                         </div>
                     </div>
 
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6" data-i18n="label_priority_queue">Priority Queue</h4>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4" data-i18n="label_priority_queue">Priority Queue</h4>
+                    <div class="flex flex-wrap items-center gap-3 mb-6">
+                        <div class="relative flex-1 min-w-[160px]">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
+                            <input type="text" id="assignSearchInput" onkeyup="filterAssignments()" placeholder="Search farmer or crop..." data-i18n-placeholder="search_placeholder"
+                                   class="bg-gray-50 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
+                        </div>
+                        <select id="assignBarangayFilter" onchange="filterAssignments()" class="bg-gray-50 border-none rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                            <option value="ALL" data-i18n="filter_all_barangays">All Barangays</option>
+                        </select>
+                    </div>
                     <div id="assignmentList" class="space-y-4"></div>
                 </div>
 
@@ -251,6 +261,11 @@
 
                 <!-- ── COMPLETED TAB ── -->
                 <div id="sectionCompleted" class="hidden">
+                    <div class="relative mb-6 max-w-md">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
+                        <input type="text" id="completedSearchInput" onkeyup="filterCompleted()" placeholder="Search farmer or crop..." data-i18n-placeholder="search_placeholder"
+                               class="bg-gray-50 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
+                    </div>
                     <div id="completedList" class="grid grid-cols-1 gap-4"></div>
                     <div id="completedPagination" class="hidden mt-6 flex flex-col sm:flex-row items-center sm:justify-between gap-3">
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="completedPageInfo"></p>
@@ -375,7 +390,8 @@
             page_title: "Technician Dashboard", page_sub: "Manage your assigned field validations and inspection logs.",
             tab_my_assignments: "My Assignments", tab_field_validation: "Field Validation", tab_completed: "Completed",
             stat_assigned_reports: "Assigned Reports", stat_urgent_tasks: "Urgent Tasks", stat_inspections_done: "Inspections Done",
-            label_priority_queue: "Priority Queue",
+            label_priority_queue: "Priority Queue", search_placeholder: "Search farmer or crop...",
+            filter_all_barangays: "All Barangays", label_no_match_filters: "No results match your filters.",
             label_crop_damage_inspection: "Crop Damage Inspection", label_brgy_loading: "Brgy. Loading...", label_location: "Location",
             label_observations: "Observations / Field Findings", placeholder_observations: "Describe the current state of the crop...",
             label_damage_classification: "Damage Classification",
@@ -423,7 +439,8 @@
             page_title: "Dashboard ng Technician", page_sub: "Pamahalaan ang mga itinalagang field validation at talaan ng inspeksyon.",
             tab_my_assignments: "Aking mga Atas", tab_field_validation: "Field Validation", tab_completed: "Tapos na",
             stat_assigned_reports: "Itinalagang Ulat", stat_urgent_tasks: "Madaliang Gawain", stat_inspections_done: "Natapos na Inspeksyon",
-            label_priority_queue: "Priority Queue",
+            label_priority_queue: "Priority Queue", search_placeholder: "Maghanap ng magsasaka o pananim...",
+            filter_all_barangays: "Lahat ng Barangay", label_no_match_filters: "Walang resultang tumutugma sa mga filter.",
             label_crop_damage_inspection: "Inspeksyon ng Pinsala sa Pananim", label_brgy_loading: "Brgy. Nilo-load...", label_location: "Lokasyon",
             label_observations: "Obserbasyon / Natuklasan sa Field", placeholder_observations: "Ilarawan ang kasalukuyang kalagayan ng pananim...",
             label_damage_classification: "Klasipikasyon ng Pinsala",
@@ -534,11 +551,54 @@
                 document.getElementById('statUrgent').innerText   = data.stats.urgent;
                 document.getElementById('statDone').innerText     = data.stats.completed;
 
-                const list = document.getElementById('assignmentList');
-                if (data.assignments.length === 0) {
-                    list.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_pending_assignments')}</p>`;
-                } else {
-                    list.innerHTML = data.assignments.map(a => `
+                allAssignments = data.assignments || [];
+                populateBarangayFilter();
+                filterAssignments();
+
+                // Sorted newest-first so a report just re-edited (or freshly inspected)
+                // surfaces on page 1 instead of wherever its report date happened to land.
+                completedData = data.completed_list || [];
+                completedPage = 1;
+                filterCompleted();
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    // ── Assignments Tab: search + barangay filter ──────────────────────
+    let allAssignments = [];
+
+    function populateBarangayFilter() {
+        const select = document.getElementById('assignBarangayFilter');
+        const current = select.value;
+        const barangays = [...new Set(allAssignments.map(a => a.barangay).filter(Boolean))].sort();
+        select.innerHTML = `<option value="ALL">${t('filter_all_barangays')}</option>` +
+            barangays.map(b => `<option value="${b}">${b}</option>`).join('');
+        if (barangays.includes(current)) select.value = current;
+    }
+
+    function filterAssignments() {
+        const q = (document.getElementById('assignSearchInput').value || '').toLowerCase();
+        const brgy = document.getElementById('assignBarangayFilter').value;
+
+        const filtered = allAssignments.filter(a => {
+            const matchesSearch = !q ||
+                (a.farmer_name && a.farmer_name.toLowerCase().includes(q)) ||
+                (a.crop_name && a.crop_name.toLowerCase().includes(q)) ||
+                `rep-${a.id}`.includes(q) || String(a.id).includes(q);
+            const matchesBarangay = brgy === 'ALL' || a.barangay === brgy;
+            return matchesSearch && matchesBarangay;
+        });
+
+        renderAssignmentList(filtered);
+    }
+
+    function renderAssignmentList(list) {
+        const container = document.getElementById('assignmentList');
+        if (!list.length) {
+            container.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_pending_assignments')}</p>`;
+            return;
+        }
+        container.innerHTML = list.map(a => `
                         <div class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-50 hover:shadow-md transition-all">
                             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                 <div class="flex-1">
@@ -567,21 +627,25 @@
                             </div>
                         </div>
                     `).join('');
-                }
-
-                // Sorted newest-first so a report just re-edited (or freshly inspected)
-                // surfaces on page 1 instead of wherever its report date happened to land.
-                completedData = data.completed_list || [];
-                completedPage = 1;
-                renderCompletedPage();
-            }
-        } catch (e) { console.error(e); }
     }
 
-    // ── Completed Tab: pagination + status-aware cards ────────────────
+    // ── Completed Tab: search + pagination + status-aware cards ────────
     let completedData = [];
+    let filteredCompletedData = [];
     let completedPage = 1;
     const COMPLETED_PAGE_SIZE = 5;
+
+    function filterCompleted() {
+        const q = (document.getElementById('completedSearchInput').value || '').toLowerCase();
+        filteredCompletedData = completedData.filter(c =>
+            !q ||
+            (c.farmer_name && c.farmer_name.toLowerCase().includes(q)) ||
+            (c.crop_name && c.crop_name.toLowerCase().includes(q)) ||
+            `rep-${c.id}`.includes(q) || String(c.id).includes(q)
+        );
+        completedPage = 1;
+        renderCompletedPage();
+    }
 
     function completedStatusBadge(status) {
         if (status === 'Approved') return { label: t('status_approved'), cls: 'bg-blue-100 text-blue-700 border-blue-200' };
@@ -593,16 +657,17 @@
         const cList = document.getElementById('completedList');
         const pagination = document.getElementById('completedPagination');
 
-        if (completedData.length === 0) {
-            cList.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_completed')}</p>`;
+        if (filteredCompletedData.length === 0) {
+            const msg = completedData.length ? t('label_no_match_filters') : t('label_no_completed');
+            cList.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${msg}</p>`;
             pagination.classList.add('hidden');
             return;
         }
 
-        const totalPages = Math.max(1, Math.ceil(completedData.length / COMPLETED_PAGE_SIZE));
+        const totalPages = Math.max(1, Math.ceil(filteredCompletedData.length / COMPLETED_PAGE_SIZE));
         if (completedPage > totalPages) completedPage = totalPages;
         const start = (completedPage - 1) * COMPLETED_PAGE_SIZE;
-        const pageItems = completedData.slice(start, start + COMPLETED_PAGE_SIZE);
+        const pageItems = filteredCompletedData.slice(start, start + COMPLETED_PAGE_SIZE);
 
         cList.innerHTML = pageItems.map(c => {
             const badge = completedStatusBadge(c.current_status);
@@ -635,10 +700,10 @@
             `;
         }).join('');
 
-        pagination.classList.toggle('hidden', completedData.length <= COMPLETED_PAGE_SIZE);
-        const rangeEnd = Math.min(start + COMPLETED_PAGE_SIZE, completedData.length);
+        pagination.classList.toggle('hidden', filteredCompletedData.length <= COMPLETED_PAGE_SIZE);
+        const rangeEnd = Math.min(start + COMPLETED_PAGE_SIZE, filteredCompletedData.length);
         document.getElementById('completedPageInfo').innerText =
-            `${t('label_showing')} ${start + 1} ${t('label_to')} ${rangeEnd} ${t('label_of')} ${completedData.length}`;
+            `${t('label_showing')} ${start + 1} ${t('label_to')} ${rangeEnd} ${t('label_of')} ${filteredCompletedData.length}`;
         document.getElementById('completedPrevBtn').disabled = completedPage <= 1;
         document.getElementById('completedNextBtn').disabled = completedPage >= totalPages;
     }
