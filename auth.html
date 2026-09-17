@@ -254,6 +254,16 @@
         document.getElementById('verifyMsg').innerText = '';
         document.getElementById('verifyMsg').className = 'msg-box';
 
+        // Wipe every field on the way out. Without this, whatever was typed on
+        // one form was still sitting there after switching away and back - so an
+        // email and password left on the login screen stayed filled in behind
+        // the register form. Callers that need a value (handleLogin and
+        // handleRegister both set verifyEmail) do so AFTER calling this, so
+        // resetting here is safe.
+        loginForm.reset();
+        registerForm.reset();
+        verifyForm.reset();
+
         loginForm.classList.add('hidden');
         registerForm.classList.add('hidden');
         verifyForm.classList.add('hidden');
@@ -446,27 +456,33 @@
     })();
 
     let countdownInterval = null;
+    let countdownTick     = null;
+    let countdownWatching = false;
 
     function startCountdown() {
         clearInterval(countdownInterval);
-        let seconds = 300; // 5 minutes
         const display = document.getElementById('verifyCountdown');
-        const resendLink = document.getElementById('resendLink');
-        if (display) {
-            display.innerText = '5:00';
-            display.style.color = '#11542e';
-        }
-        countdownInterval = setInterval(() => {
-            seconds--;
-            const m = Math.floor(seconds / 60);
-            const s = seconds % 60;
+
+        // Anchored to a real wall-clock deadline instead of counting a variable
+        // down once per tick. Browsers throttle setInterval in a background tab
+        // - often to once a minute - so a decrementing counter falls behind real
+        // time and would still show minutes remaining after the server-side code
+        // (Verification_Token_Expires, 5 minutes) had already expired. Reading
+        // the clock each tick means being throttled costs accuracy of the
+        // display, never the deadline itself.
+        const deadline = Date.now() + 5 * 60 * 1000;
+
+        countdownTick = function () {
+            const remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
+
             if (display) {
-                display.innerText = m + ':' + String(s).padStart(2, '0');
-                if (seconds <= 60) display.style.color = '#dc2626'; // red when 1 min left
+                display.innerText = Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0');
+                display.style.color = remaining <= 60 ? '#dc2626' : '#11542e'; // red when 1 min left
             }
-            if (seconds <= 0) {
+
+            if (remaining <= 0) {
                 clearInterval(countdownInterval);
-                if (display) display.innerText = '0:00';
+                countdownTick = null;
                 // Code expired — redirect to login
                 const msgBox = document.getElementById('verifyMsg');
                 if (msgBox) {
@@ -475,6 +491,21 @@
                 }
                 setTimeout(() => { switchForm('login'); }, 3000);
             }
+        };
+
+        // Coming back to a throttled tab, resync straight away rather than
+        // showing a stale number until the next (possibly minute-late) tick.
+        // Bound once, not per countdown, so repeat calls don't stack listeners.
+        if (!countdownWatching) {
+            countdownWatching = true;
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden && countdownTick) countdownTick();
+            });
+        }
+
+        countdownTick();
+        countdownInterval = setInterval(function () {
+            if (countdownTick) countdownTick();
         }, 1000);
     }
 
