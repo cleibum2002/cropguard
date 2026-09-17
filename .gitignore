@@ -1,3 +1,10 @@
 vendor/
 *.sql
 /database/
+
+# Farmer/technician photo uploads. On Railway these live on the attached
+# Volume mounted at /app/uploads, so they never need to be in git - anything
+# here is just local test data. Files committed before this rule stay tracked;
+# this only stops new ones being picked up by a broad `git add`.
+uploads/evidence/
+uploads/reports/
