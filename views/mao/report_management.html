@@ -32,11 +32,11 @@
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden" style="display:none!important">
+<body class="h-[100dvh] flex overflow-hidden" style="display:none!important">
 
 <div id="sidebar-container"></div>
 
-    <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <div class="flex-1 flex flex-col h-[100dvh] overflow-hidden">
                 <header class="min-h-[4rem] flex flex-wrap items-center gap-2 sm:gap-4 px-4 sm:px-8 py-3 bg-white border-b border-gray-100 flex-shrink-0 z-20">
             <div class="order-1 flex items-center gap-2 sm:gap-4 flex-shrink-0">
                 <span class="text-xs sm:text-sm font-black text-gray-800 uppercase flex-shrink-0" data-i18n="header_title">Report Management</span>
@@ -634,7 +634,7 @@
             const rsbaDisplay = detail.RSBA_No || baseReport?.RSBA_No || detail.rsba_no || t('unregistered');
 
             document.getElementById('detailPanel').innerHTML = `
-                <div class="max-w-4xl mx-auto pb-4 sm:pb-10">
+                <div class="max-w-4xl mx-auto pb-24 sm:pb-10">
                     <button onclick="clearDetailPanel()" class="md:hidden mb-3 flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#11542e]"><i class="fa-solid fa-arrow-left"></i> ${t('btn_back_to_list')}</button>
                     <div class="flex flex-wrap justify-between items-center gap-3 mb-4 sm:mb-8 pb-3 sm:pb-6 border-b border-gray-100">
                         <div>
