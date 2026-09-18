@@ -30,6 +30,10 @@
         .report-card.selected { border: 2px solid #11542e; background-color: #f0fdf4; }
         .lang-link { cursor: pointer; }
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
+
+        /* Proof-of-presence caption under each evidence photo */
+        .geotagged { color: #16a34a; }
+        .no-geo    { color: #dc2626; }
     </style>
 </head>
 <body class="h-[100dvh] flex overflow-hidden" style="display:none!important">
@@ -147,6 +151,8 @@
             no_matching_records: "No matching records", crop_report_fallback: "Crop Report",
             area_label: "Area", na_fallback: "N/A",
             initial_evidence: "Initial Evidence", no_evidence: "No photographic evidence was attached to this report.",
+            geo_no_gps_recorded: "No GPS recorded", geo_farm_not_registered: "Farm location not registered",
+            geo_at_farm: "✓ At farm ({d})", geo_away_from_farm: "⚠ {d} from farm",
             mao_verification_title: "MAO Identity Verification",
             mao_verification_desc: "Verify if this farmer is a legitimate resident (check RSBA) and actually operates in the reported location.",
             btn_approve_verification: "Approve Verification", btn_reject_report: "Reject Report",
@@ -188,6 +194,8 @@
             no_matching_records: "Walang tumugmang record", crop_report_fallback: "Ulat ng Pananim",
             area_label: "Sukat", na_fallback: "N/A",
             initial_evidence: "Paunang Ebidensya", no_evidence: "Walang larawang ebidensya na kalakip sa ulat na ito.",
+            geo_no_gps_recorded: "Walang naitalang GPS", geo_farm_not_registered: "Hindi nakarehistro ang lokasyon ng bukid",
+            geo_at_farm: "✓ Nasa bukid ({d})", geo_away_from_farm: "⚠ {d} mula sa bukid",
             mao_verification_title: "Pagpapatunay ng Pagkakakilanlan ng MAO",
             mao_verification_desc: "Tiyakin kung ang magsasakang ito ay lehitimong residente (tingnan ang RSBA) at talagang nagsasaka sa nakasaad na lokasyon.",
             btn_approve_verification: "Aprubahan ang Pagpapatunay", btn_reject_report: "Tanggihan ang Ulat",
@@ -278,6 +286,38 @@
         return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
+    }
+
+    // How far from the farmer's registered farm still counts as "at the farm".
+    // Deliberately generous: GPS drifts badly under tree cover and in bad weather,
+    // and these coordinates are proof of presence, not a fence. A photo outside
+    // the radius is flagged for a human to judge, never rejected. Same helper
+    // lives in views/masterfile/dashboard.html.
+    const GEO_AT_FARM_METRES = 500;
+
+    function geoProofLabel(img, farmLat, farmLng) {
+        if (img.geo_lat === null || img.geo_lat === undefined ||
+            img.geo_lng === null || img.geo_lng === undefined) {
+            return { cls: 'no-geo', text: t('geo_no_gps_recorded') };
+        }
+        if (farmLat === null || farmLat === undefined ||
+            farmLng === null || farmLng === undefined) {
+            return { cls: '', text: t('geo_farm_not_registered') };
+        }
+
+        // Haversine. DECIMAL columns arrive as strings in JSON, hence Number().
+        const lat = Number(img.geo_lat), lng = Number(img.geo_lng);
+        const fLat = Number(farmLat),    fLng = Number(farmLng);
+        const R = 6371000, rad = d => d * Math.PI / 180;
+        const dLat = rad(lat - fLat), dLng = rad(lng - fLng);
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(rad(fLat)) * Math.cos(rad(lat)) * Math.sin(dLng / 2) ** 2;
+        const metres = Math.round(2 * R * Math.asin(Math.sqrt(a)));
+        const pretty = metres < 1000 ? `${metres} m` : `${(metres / 1000).toFixed(1)} km`;
+
+        return metres <= GEO_AT_FARM_METRES
+            ? { cls: 'geotagged', text: t('geo_at_farm').replace('{d}', pretty) }
+            : { cls: 'no-geo',    text: t('geo_away_from_farm').replace('{d}', pretty) };
     }
 
     // Translates the status word used in badges and the "locked" message
@@ -553,10 +593,15 @@
                 galleryHTML = `
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
                     <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">
-                        ${images.map(img => `
-                            <a href="${img.path || img}" target="_blank" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
-                                <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
-                            </a>`).join('')}
+                        ${images.map(img => {
+                            const proof = geoProofLabel(img, detail.Farm_Lat, detail.Farm_Lng);
+                            return `
+                            <div class="w-20 sm:w-24">
+                                <a href="${img.path || img}" target="_blank" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
+                                    <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
+                                </a>
+                                <p class="mt-1 text-[8px] font-black text-center leading-tight ${proof.cls}">${proof.text}</p>
+                            </div>`; }).join('')}
                     </div>`;
             } else {
                 galleryHTML = `

@@ -459,6 +459,8 @@
                 error_loading_details: "Error loading details.", failed_connect_server: "Failed to connect to server.",
                 badge_all_geotagged: "✓ All {n} photos geotagged", badge_no_geotagged: "No photos geotagged", badge_partial_geotagged: "{a}/{b} geotagged",
                 no_photo_evidence: "No photographic evidence is attached to this report.", label_evidence_photo: "Evidence photo",
+                geo_no_gps_recorded: "No GPS recorded", geo_farm_not_registered: "Farm location not registered",
+                geo_at_farm: "✓ At farm ({d})", geo_away_from_farm: "⚠ {d} from farm",
                 label_assign_technician: "Assign Technician", label_report_hash: "Report #", label_field_officer: "Field Officer",
                 placeholder_select_technician: "Select Technician...", label_scheduled_visit: "Scheduled Visit Date",
                 hint_visit_date: "Set the date the technician should visit the farm.", btn_confirm_assignment: "Confirm Assignment", btn_cancel: "Cancel",
@@ -537,6 +539,8 @@
                 error_loading_details: "Error sa pag-load ng detalye.", failed_connect_server: "Hindi makakonekta sa server.",
                 badge_all_geotagged: "✓ Lahat ng {n} larawan may GPS", badge_no_geotagged: "Walang larawang may GPS", badge_partial_geotagged: "{a}/{b} may GPS",
                 no_photo_evidence: "Walang larawang ebidensya na nakalakip sa ulat na ito.", label_evidence_photo: "Larawang ebidensya",
+                geo_no_gps_recorded: "Walang naitalang GPS", geo_farm_not_registered: "Hindi nakarehistro ang lokasyon ng bukid",
+                geo_at_farm: "✓ Nasa bukid ({d})", geo_away_from_farm: "⚠ {d} mula sa bukid",
                 label_assign_technician: "Magtalaga ng Technician", label_report_hash: "Ulat #", label_field_officer: "Field Officer",
                 placeholder_select_technician: "Pumili ng Technician...", label_scheduled_visit: "Iskedyul ng Pagbisita",
                 hint_visit_date: "Itakda ang petsa kung kailan dapat bisitahin ng technician ang bukid.", btn_confirm_assignment: "Kumpirmahin ang Pagtatalaga", btn_cancel: "Kanselahin",
@@ -804,7 +808,39 @@
         }
 
         // ─── PHOTO GALLERY RENDERER ───────────────────────────────────────
-        function renderGeoGallery(containerId, images) {
+        // How far from the farmer's registered farm still counts as "at the farm".
+        // Deliberately generous: GPS drifts badly under tree cover and in bad
+        // weather, and these coordinates are proof of presence, not a fence. A
+        // photo outside the radius is flagged for a human to judge, never
+        // rejected. Same helper lives in views/masterfile/dashboard.html.
+        const GEO_AT_FARM_METRES = 500;
+
+        function geoProofLabel(img, farmLat, farmLng) {
+            if (img.geo_lat === null || img.geo_lat === undefined ||
+                img.geo_lng === null || img.geo_lng === undefined) {
+                return { cls: 'no-geo', text: t('geo_no_gps_recorded') };
+            }
+            if (farmLat === null || farmLat === undefined ||
+                farmLng === null || farmLng === undefined) {
+                return { cls: '', text: t('geo_farm_not_registered') };
+            }
+
+            // Haversine. DECIMAL columns arrive as strings in JSON, hence Number().
+            const lat = Number(img.geo_lat), lng = Number(img.geo_lng);
+            const fLat = Number(farmLat),    fLng = Number(farmLng);
+            const R = 6371000, rad = d => d * Math.PI / 180;
+            const dLat = rad(lat - fLat), dLng = rad(lng - fLng);
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.cos(rad(fLat)) * Math.cos(rad(lat)) * Math.sin(dLng / 2) ** 2;
+            const metres = Math.round(2 * R * Math.asin(Math.sqrt(a)));
+            const pretty = metres < 1000 ? `${metres} m` : `${(metres / 1000).toFixed(1)} km`;
+
+            return metres <= GEO_AT_FARM_METRES
+                ? { cls: 'geotagged', text: t('geo_at_farm').replace('{d}', pretty) }
+                : { cls: 'no-geo',    text: t('geo_away_from_farm').replace('{d}', pretty) };
+        }
+
+        function renderGeoGallery(containerId, images, farmLat, farmLng) {
             const gallery = document.getElementById(containerId);
             gallery.innerHTML = '';
             if (!images || !images.length) {
@@ -812,10 +848,12 @@
                 return;
             }
             images.forEach((img, idx) => {
+                const proof = geoProofLabel(img, farmLat, farmLng);
                 const card = document.createElement('div');
                 card.className = 'geo-photo-card';
                 card.innerHTML = `
                     <a href="${img.path || img}" target="_blank"><img src="${img.path || img}" alt="${t('label_evidence_photo')} ${idx + 1}" loading="lazy"></a>
+                    <div class="geo-info ${proof.cls}">${proof.text}</div>
                 `;
                 gallery.appendChild(card);
             });
@@ -926,8 +964,8 @@
                         );
                         const farmerImages = imagesNormalized.filter(img => (img.uploaded_by || 'Farmer') !== 'Technician');
                         const techImages   = imagesNormalized.filter(img => img.uploaded_by === 'Technician');
-                        renderGeoGallery('reviewFarmerGallery', farmerImages);
-                        renderGeoGallery('reviewTechGallery', techImages);
+                        renderGeoGallery('reviewFarmerGallery', farmerImages, detail.Farm_Lat, detail.Farm_Lng);
+                        renderGeoGallery('reviewTechGallery', techImages, detail.Farm_Lat, detail.Farm_Lng);
                     } else {
                         document.getElementById('reviewFarmerNotes').innerText = t('error_loading_details');
                     }

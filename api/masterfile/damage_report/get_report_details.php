@@ -32,6 +32,7 @@ if (isset($_GET['id'])) {
         $query = "SELECT dr.*,
                          u.Fullname AS FarmerName, u.RSBA_No,
                          fl.Barangay, fl.Area_Size AS Total_Farm_Area, fl.Land_Type,
+                         fl.Latitude AS Farm_Lat, fl.Longitude AS Farm_Lng,
                          c.Crop_Name, c.Area_Hectares AS Affected_Area, c.Planting_Date, c.Expected_Harvest
                   FROM damage_report dr
                   LEFT JOIN users u ON dr.Farmer_ID = u.User_ID

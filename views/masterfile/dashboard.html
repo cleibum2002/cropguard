@@ -488,7 +488,39 @@
         }
 
         // ─── PHOTO GALLERY RENDERER ───────────────────────────────────────
-        function renderGeoGallery(containerId, images) {
+        // How far from the farmer's registered farm still counts as "at the farm".
+        // Deliberately generous: GPS drifts badly under tree cover and in bad
+        // weather, and these coordinates are proof of presence, not a fence.
+        // Nothing is ever blocked by this - a photo outside the radius is flagged
+        // for a human to judge, not rejected.
+        const GEO_AT_FARM_METRES = 500;
+
+        function geoProofLabel(img, farmLat, farmLng) {
+            if (img.geo_lat === null || img.geo_lat === undefined ||
+                img.geo_lng === null || img.geo_lng === undefined) {
+                return { cls: 'no-geo', text: 'No GPS recorded' };
+            }
+            if (farmLat === null || farmLat === undefined ||
+                farmLng === null || farmLng === undefined) {
+                return { cls: '', text: 'Farm location not registered' };
+            }
+
+            // Haversine. DECIMAL columns arrive as strings in JSON, hence Number().
+            const lat = Number(img.geo_lat),  lng = Number(img.geo_lng);
+            const fLat = Number(farmLat),     fLng = Number(farmLng);
+            const R = 6371000, rad = d => d * Math.PI / 180;
+            const dLat = rad(lat - fLat), dLng = rad(lng - fLng);
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.cos(rad(fLat)) * Math.cos(rad(lat)) * Math.sin(dLng / 2) ** 2;
+            const metres = Math.round(2 * R * Math.asin(Math.sqrt(a)));
+            const pretty = metres < 1000 ? `${metres} m` : `${(metres / 1000).toFixed(1)} km`;
+
+            return metres <= GEO_AT_FARM_METRES
+                ? { cls: 'geotagged', text: `✓ At farm (${pretty})` }
+                : { cls: 'no-geo',    text: `⚠ ${pretty} from farm` };
+        }
+
+        function renderGeoGallery(containerId, images, farmLat, farmLng) {
             const gallery = document.getElementById(containerId);
             gallery.innerHTML = '';
 
@@ -498,12 +530,14 @@
             }
 
             images.forEach((img, idx) => {
+                const proof = geoProofLabel(img, farmLat, farmLng);
                 const card = document.createElement('div');
                 card.className = 'geo-photo-card';
                 card.innerHTML = `
                     <a href="${img.path || img}" target="_blank">
                         <img src="${img.path || img}" alt="Evidence photo ${idx + 1}" loading="lazy">
                     </a>
+                    <div class="geo-info ${proof.cls}">${proof.text}</div>
                 `;
                 gallery.appendChild(card);
             });
@@ -699,7 +733,7 @@
                         const imagesNormalized = (data.images || []).map(img =>
                             typeof img === 'string' ? { path: img } : img
                         );
-                        renderGeoGallery('reviewGallery', imagesNormalized);
+                        renderGeoGallery('reviewGallery', imagesNormalized, detail.Farm_Lat, detail.Farm_Lng);
                     } else {
                         document.getElementById('reviewFarmerNotes').innerText = "Error loading details.";
                     }
