@@ -77,8 +77,8 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
 
         if (isset($_FILES['evidencePhotos']) && !empty($_FILES['evidencePhotos']['name'][0])) {
             $fileCount = count($_FILES['evidencePhotos']['name']);
-            $imgStmt = $conn->prepare("INSERT INTO damage_report_images (Damage_Report_ID, Image_Path, Uploaded_By_Role) VALUES (?, ?, 'Technician')");
-            
+            $imgStmt = $conn->prepare("INSERT INTO damage_report_images (Damage_Report_ID, Image_Path, Uploaded_By_Role, Geo_Lat, Geo_Lng) VALUES (?, ?, 'Technician', ?, ?)");
+
             for ($i = 0; $i < $fileCount; $i++) {
                 $tmpName = $_FILES['evidencePhotos']['tmp_name'][$i];
                 $fileName = $_FILES['evidencePhotos']['name'][$i];
@@ -97,8 +97,13 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
                         $destination = $uploadDir . $newFileName;
 
                         if (move_uploaded_file($tmpName, $destination)) {
-                            $dbPath = 'uploads/evidence/' . $newFileName; 
-                            $imgStmt->bind_param("is", $report_id, $dbPath);
+                            $dbPath = 'uploads/evidence/' . $newFileName;
+                            // $i is this loop's position over evidencePhotos[], which is
+                            // the order the client appended them in - same convention
+                            // submit_report.php uses for the farmer's photos.
+                            $lat = !empty($_POST["geo_lat_$i"]) ? (float)$_POST["geo_lat_$i"] : null;
+                            $lng = !empty($_POST["geo_lng_$i"]) ? (float)$_POST["geo_lng_$i"] : null;
+                            $imgStmt->bind_param("isdd", $report_id, $dbPath, $lat, $lng);
                             $imgStmt->execute();
                         }
                     }

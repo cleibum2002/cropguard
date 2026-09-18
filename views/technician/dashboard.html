@@ -424,7 +424,7 @@
             sw_fetching_report: "Fetching Report...", sw_error_title: "Error", sw_could_not_load_report: "Could not load report details.", sw_failed_connect: "Failed to connect to the server.",
             sw_action_required_title: "Action Required", sw_action_required_text: "Please select a report from 'My Assignments' first.",
             crop_damage_validation_suffix: "Damage Validation",
-            geo_locating: "Locating...", geo_no_gps: "No GPS",
+            geo_locating: "Locating...", geo_no_gps: "No GPS", geo_located: "Located",
             sw_uploading_title: "Uploading Data...", sw_uploading_text: "Submitting your report and evidence photos.",
             sw_submitted_title: "Inspection Submitted", sw_submitted_text: "Admin notified and photos uploaded.",
             btn_view: "View", btn_edit: "Edit", status_approved: "Approved", status_rejected: "Rejected",
@@ -474,7 +474,7 @@
             sw_fetching_report: "Kinukuha ang Ulat...", sw_error_title: "Error", sw_could_not_load_report: "Hindi ma-load ang detalye ng ulat.", sw_failed_connect: "Nabigong kumonekta sa server.",
             sw_action_required_title: "Kailangan ng Aksyon", sw_action_required_text: "Pumili muna ng ulat mula sa 'Aking mga Atas'.",
             crop_damage_validation_suffix: "Damage Validation",
-            geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS",
+            geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS", geo_located: "Natukoy",
             sw_uploading_title: "Ina-upload ang Datos...", sw_uploading_text: "Isinusumite ang iyong ulat at mga larawang ebidensya.",
             sw_submitted_title: "Naisumite ang Inspeksyon", sw_submitted_text: "Naabisuhan ang Admin at na-upload na ang mga larawan.",
             btn_view: "Tingnan", btn_edit: "I-edit", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
@@ -505,6 +505,7 @@
     }
 
     let selectedFiles = [];
+    let photoGeo      = [];   // runs parallel to selectedFiles - {state, lat, lng, accuracy}
 
     document.addEventListener('DOMContentLoaded', loadData);
 
@@ -864,15 +865,55 @@
 
         document.getElementById('inspectionForm').reset();
         selectedFiles = [];
+        photoGeo = [];
         renderPreviews();
         switchTab('validation');
     }
 
     // ── File Handling ────────────────────────────────────────────────
+    // Keyed on the File object, never on an index: a fix can still be in flight
+    // when the technician deletes an earlier photo, and by the time it lands the
+    // index it was started with points at a different file. The accessors are
+    // functions because the arrays get reassigned on reset, and a stale closure
+    // must not write into the live one.
+    function capturePhotoGeo(file, getFiles, getGeo, rerender) {
+        const settle = geo => {
+            const i = getFiles().indexOf(file);
+            if (i === -1) return;   // photo was removed while we were locating
+            getGeo()[i] = geo;
+            rerender();
+        };
+
+        if (!navigator.geolocation) {
+            settle({ state: 'failed', lat: null, lng: null, accuracy: null });
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            pos => settle({
+                state: 'success',
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                accuracy: pos.coords.accuracy
+            }),
+            () => settle({ state: 'failed', lat: null, lng: null, accuracy: null }),
+            { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
+        );
+    }
+
+    function geoBadgeLabel(geo) {
+        if (!geo) return t('geo_no_gps');
+        if (geo.state === 'success') return t('geo_located');
+        if (geo.state === 'loading')  return t('geo_locating');
+        return t('geo_no_gps');
+    }
+
     function handleFileSelection(event) {
         const newFiles = Array.from(event.target.files);
         newFiles.forEach(f => {
             selectedFiles.push(f);
+            photoGeo.push({ state: 'loading', lat: null, lng: null, accuracy: null });
+            capturePhotoGeo(f, () => selectedFiles, () => photoGeo, renderPreviews);
         });
         event.target.value = '';
         renderPreviews();
@@ -885,12 +926,14 @@
         if (selectedFiles.length > 0) {
             container.classList.remove('hidden');
             selectedFiles.forEach((file, index) => {
+                const geo = photoGeo[index] || { state: 'failed' };
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imgDiv = document.createElement('div');
                     imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
                     imgDiv.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover">
+                        <span class="geo-badge ${geo.state}">${geoBadgeLabel(geo)}</span>
                         <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
                             <button type="button" onclick="removeFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
@@ -908,6 +951,7 @@
 
     function removeFile(index) {
         selectedFiles.splice(index, 1);
+        photoGeo.splice(index, 1);
         renderPreviews();
     }
 
@@ -916,6 +960,7 @@
     // different forms (new assignment vs. editing an already-submitted one)
     // that can, in principle, both have unsaved state at once.
     let editSelectedFiles = [];
+    let editPhotoGeo      = [];   // runs parallel to editSelectedFiles
 
     async function openEditInspection(id) {
         Swal.fire({ title: t('sw_fetching_report'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -950,6 +995,7 @@
             renderEditExistingPhotos(techPhotos);
 
             editSelectedFiles = [];
+            editPhotoGeo = [];
             renderEditPreviews();
 
             document.getElementById('editModal').classList.remove('hidden');
@@ -1001,7 +1047,11 @@
     }
 
     function handleEditFileSelection(event) {
-        Array.from(event.target.files).forEach(f => editSelectedFiles.push(f));
+        Array.from(event.target.files).forEach(f => {
+            editSelectedFiles.push(f);
+            editPhotoGeo.push({ state: 'loading', lat: null, lng: null, accuracy: null });
+            capturePhotoGeo(f, () => editSelectedFiles, () => editPhotoGeo, renderEditPreviews);
+        });
         event.target.value = '';
         renderEditPreviews();
     }
@@ -1013,12 +1063,14 @@
         if (editSelectedFiles.length > 0) {
             container.classList.remove('hidden');
             editSelectedFiles.forEach((file, index) => {
+                const geo = editPhotoGeo[index] || { state: 'failed' };
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imgDiv = document.createElement('div');
                     imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
                     imgDiv.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-full object-cover">
+                        <span class="geo-badge ${geo.state}">${geoBadgeLabel(geo)}</span>
                         <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
                             <button type="button" onclick="removeEditFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
@@ -1036,6 +1088,7 @@
 
     function removeEditFile(index) {
         editSelectedFiles.splice(index, 1);
+        editPhotoGeo.splice(index, 1);
         renderEditPreviews();
     }
 
@@ -1047,7 +1100,16 @@
         formData.append('observations', document.getElementById('editObsField').value);
         const severityEl = document.querySelector('#editInspectionForm input[name="editSeverity"]:checked');
         formData.append('severity', severityEl ? severityEl.value : '');
-        editSelectedFiles.forEach(file => formData.append('evidencePhotos[]', file));
+        // update_inspection.php reads geo_lat_$i / geo_lng_$i by its own loop
+        // position over evidencePhotos[], so this i is the append order.
+        editSelectedFiles.forEach((file, i) => {
+            formData.append('evidencePhotos[]', file);
+            const geo = editPhotoGeo[i];
+            if (geo && geo.state === 'success') {
+                formData.append(`geo_lat_${i}`, geo.lat);
+                formData.append(`geo_lng_${i}`, geo.lng);
+            }
+        });
 
         Swal.fire({ title: t('sw_updating_title'), text: t('sw_updating_text'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -1071,6 +1133,7 @@
         document.getElementById('editModal').classList.add('hidden');
         document.getElementById('editInspectionForm').reset();
         editSelectedFiles = [];
+        editPhotoGeo = [];
         renderEditPreviews();
     }
 
@@ -1079,8 +1142,15 @@
         e.preventDefault();
 
         const formData = new FormData(document.getElementById('inspectionForm'));
+        // submit_validation.php reads geo_lat_$i / geo_lng_$i by its own loop
+        // position over evidencePhotos[], so this i is the append order.
         selectedFiles.forEach((file, i) => {
             formData.append('evidencePhotos[]', file);
+            const geo = photoGeo[i];
+            if (geo && geo.state === 'success') {
+                formData.append(`geo_lat_${i}`, geo.lat);
+                formData.append(`geo_lng_${i}`, geo.lng);
+            }
         });
 
         Swal.fire({ title: 'Uploading Data...', text: 'Submitting your report and evidence photos.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -1093,6 +1163,7 @@
                 Swal.fire({ icon: 'success', title: 'Inspection Submitted', text: 'Admin notified and photos uploaded.', showConfirmButton: false, timer: 1500 });
                 document.getElementById('inspectionForm').reset();
                 selectedFiles = [];
+                photoGeo = [];
                 document.getElementById('reportIdField').value = '';
                 renderPreviews();
                 loadData();
