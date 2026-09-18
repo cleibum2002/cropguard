@@ -31,6 +31,10 @@
         .geo-badge.success { color: #16a34a; }
         .geo-badge.loading { color: #d97706; }
         .geo-badge.failed  { color: #dc2626; }
+
+        /* Proof-of-presence caption under each photo in the report viewer */
+        .geotagged { color: #16a34a; }
+        .no-geo    { color: #dc2626; }
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .tab-btn.active { border-bottom: 3px solid #11542e; color: #11542e; font-weight: 800; }
         .sidebar-link.active { background: rgba(255,255,255,0.1); border-left: 4px solid #f1c40f; }
@@ -425,6 +429,8 @@
             sw_action_required_title: "Action Required", sw_action_required_text: "Please select a report from 'My Assignments' first.",
             crop_damage_validation_suffix: "Damage Validation",
             geo_locating: "Locating...", geo_no_gps: "No GPS", geo_located: "Located",
+            geo_no_gps_recorded: "No GPS recorded", geo_farm_not_registered: "Farm location not registered",
+            geo_at_farm: "✓ At farm ({d})", geo_away_from_farm: "⚠ {d} from farm",
             sw_uploading_title: "Uploading Data...", sw_uploading_text: "Submitting your report and evidence photos.",
             sw_submitted_title: "Inspection Submitted", sw_submitted_text: "Admin notified and photos uploaded.",
             btn_view: "View", btn_edit: "Edit", status_approved: "Approved", status_rejected: "Rejected",
@@ -475,6 +481,8 @@
             sw_action_required_title: "Kailangan ng Aksyon", sw_action_required_text: "Pumili muna ng ulat mula sa 'Aking mga Atas'.",
             crop_damage_validation_suffix: "Damage Validation",
             geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS", geo_located: "Natukoy",
+            geo_no_gps_recorded: "Walang naitalang GPS", geo_farm_not_registered: "Hindi nakarehistro ang lokasyon ng bukid",
+            geo_at_farm: "✓ Nasa bukid ({d})", geo_away_from_farm: "⚠ {d} mula sa bukid",
             sw_uploading_title: "Ina-upload ang Datos...", sw_uploading_text: "Isinusumite ang iyong ulat at mga larawang ebidensya.",
             sw_submitted_title: "Naisumite ang Inspeksyon", sw_submitted_text: "Naabisuhan ang Admin at na-upload na ang mga larawan.",
             btn_view: "Tingnan", btn_edit: "I-edit", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
@@ -741,7 +749,12 @@
                 const farmerImgs = images.filter(img => (img.uploaded_by || 'Farmer') === 'Farmer');
                 const techImgs   = images.filter(img => img.uploaded_by === 'Technician');
                 const renderImgs = list => list.length > 0
-                    ? list.map(img => `<img src="${img.path}" class="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-80" onclick="window.open('${img.path}', '_blank')">`).join('')
+                    ? list.map(img => {
+                        const proof = geoProofLabel(img, r.Farm_Lat, r.Farm_Lng);
+                        return `<div>
+                            <img src="${img.path}" class="w-full h-28 object-cover rounded-xl border border-gray-200 cursor-pointer hover:opacity-80" onclick="window.open('${img.path}', '_blank')">
+                            <p class="mt-1 text-[9px] font-black text-center leading-tight ${proof.cls}">${proof.text}</p>
+                        </div>`; }).join('')
                     : `<p class="text-xs text-gray-400 italic col-span-3">${t('no_field_photos')}</p>`;
 
                 // Same "--- TECH FINDINGS ---" marker convention used in
@@ -899,6 +912,38 @@
             () => settle({ state: 'failed', lat: null, lng: null, accuracy: null }),
             { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
         );
+    }
+
+    // How far from the farmer's registered farm still counts as "at the farm".
+    // Deliberately generous: GPS drifts badly under tree cover and in bad weather,
+    // and these coordinates are proof of presence, not a fence. A photo outside
+    // the radius is flagged for a human to judge, never rejected. Same helper
+    // lives in views/masterfile/dashboard.html.
+    const GEO_AT_FARM_METRES = 500;
+
+    function geoProofLabel(img, farmLat, farmLng) {
+        if (img.geo_lat === null || img.geo_lat === undefined ||
+            img.geo_lng === null || img.geo_lng === undefined) {
+            return { cls: 'no-geo', text: t('geo_no_gps_recorded') };
+        }
+        if (farmLat === null || farmLat === undefined ||
+            farmLng === null || farmLng === undefined) {
+            return { cls: '', text: t('geo_farm_not_registered') };
+        }
+
+        // Haversine. DECIMAL columns arrive as strings in JSON, hence Number().
+        const lat = Number(img.geo_lat), lng = Number(img.geo_lng);
+        const fLat = Number(farmLat),    fLng = Number(farmLng);
+        const R = 6371000, rad = d => d * Math.PI / 180;
+        const dLat = rad(lat - fLat), dLng = rad(lng - fLng);
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(rad(fLat)) * Math.cos(rad(lat)) * Math.sin(dLng / 2) ** 2;
+        const metres = Math.round(2 * R * Math.asin(Math.sqrt(a)));
+        const pretty = metres < 1000 ? `${metres} m` : `${(metres / 1000).toFixed(1)} km`;
+
+        return metres <= GEO_AT_FARM_METRES
+            ? { cls: 'geotagged', text: t('geo_at_farm').replace('{d}', pretty) }
+            : { cls: 'no-geo',    text: t('geo_away_from_farm').replace('{d}', pretty) };
     }
 
     function geoBadgeLabel(geo) {
