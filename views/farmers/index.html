@@ -759,6 +759,7 @@
                 label_photos: "Photographic Evidence",
                 photo_info: "Upload clear photos showing the extent of the crop damage.",
                 btn_take_photo: "Take Photo", btn_upload_gallery: "Upload from Gallery", btn_cancel: "Cancel", btn_submit_report: "Submit Report",
+                geo_located: "Located", geo_locating: "Locating...", geo_no_gps: "No GPS",
                 sw_bad_format_title: "Unsupported Photo Format", sw_bad_format_text_one: "That file was skipped - only JPG, JPEG, and PNG photos are allowed.",
                 sw_bad_format_text_many: "{n} files were skipped - only JPG, JPEG, and PNG photos are allowed.",
                 modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
@@ -845,6 +846,7 @@
                 label_photos: "Larawan bilang Ebidensya",
                 photo_info: "Mag-upload ng malinaw na mga larawan na nagpapakita ng lawak ng pinsala sa pananim.",
                 btn_take_photo: "Kumuha ng Larawan", btn_upload_gallery: "Mag-upload mula sa Gallery", btn_cancel: "Kanselahin", btn_submit_report: "Isumite ang Ulat",
+                geo_located: "Natukoy", geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS",
                 sw_bad_format_title: "Hindi Suportadong Format", sw_bad_format_text_one: "Nalaktawan ang file na iyon - JPG, JPEG, at PNG lang ang pinapayagan.",
                 sw_bad_format_text_many: "{n} na file ang nalaktawan - JPG, JPEG, at PNG lang ang pinapayagan.",
                 modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
@@ -927,6 +929,7 @@
                 label_photos: "Litrato nga Ebidensya",
                 photo_info: "Pag-upload og klaro nga mga litrato nga nagpakita sa gidak-on sa kadaot sa tanom.",
                 btn_take_photo: "Pagkuha og Litrato", btn_upload_gallery: "Pag-upload gikan sa Gallery", btn_cancel: "Kanselahon", btn_submit_report: "I-submit ang Report",
+                geo_located: "Nakit-an", geo_locating: "Gipangita...", geo_no_gps: "Walay GPS",
                 sw_bad_format_title: "Dili Suportado nga Format", sw_bad_format_text_one: "Gilaktawan ang maong file - JPG, JPEG, ug PNG ra ang gitugotan.",
                 sw_bad_format_text_many: "{n} ka file ang gilaktawan - JPG, JPEG, ug PNG ra ang gitugotan.",
                 modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
@@ -993,6 +996,7 @@
         const REGION_X_NAME = 'Region X \u2013 Northern Mindanao';
 
         let selectedFiles   = [];  // newly picked files, not yet uploaded
+        let photoGeo        = [];  // runs parallel to selectedFiles - {state, lat, lng, accuracy}
         let existingImages  = [];  // {id, path} - already-saved photos, shown when editing
         let removedImageIds = [];  // ids of existingImages the farmer explicitly removed
 
@@ -1173,6 +1177,8 @@
                 const isDupe = selectedFiles.some(s => s.name === f.name && s.size === f.size);
                 if (!isDupe) {
                     selectedFiles.push(f);
+                    photoGeo.push({ state: 'loading', lat: null, lng: null, accuracy: null });
+                    capturePhotoGeo(f);
                 }
             });
 
@@ -1188,8 +1194,41 @@
             renderPreviews();
         }
 
+        // Keyed on the File object, never on an index: a fix can still be in flight
+        // when the farmer deletes an earlier photo, and by the time it lands the
+        // index it was started with points at a different file. Looking the index
+        // up here means a removed photo's late fix is simply dropped.
+        function capturePhotoGeo(file) {
+            const settle = geo => {
+                const i = selectedFiles.indexOf(file);
+                if (i === -1) return;   // photo was removed while we were locating
+                photoGeo[i] = geo;
+                renderPreviews();
+            };
+
+            if (!navigator.geolocation) {
+                settle({ state: 'failed', lat: null, lng: null, accuracy: null });
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                pos => settle({
+                    state: 'success',
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    accuracy: pos.coords.accuracy
+                }),
+                () => settle({ state: 'failed', lat: null, lng: null, accuracy: null }),
+                // High accuracy because this is proof of presence, not a rough area.
+                // maximumAge lets several photos taken in a row reuse one fix instead
+                // of waking the GPS for each.
+                { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 }
+            );
+        }
+
         function removePhoto(index) {
             selectedFiles.splice(index, 1);
+            photoGeo.splice(index, 1);
             reportFormDirty = true;
             renderPreviews();
         }
@@ -1223,12 +1262,17 @@
             // Newly-picked photos for this session, not yet uploaded.
             selectedFiles.forEach((file, i) => {
                 const url = URL.createObjectURL(file);
+                const geo = photoGeo[i] || { state: 'failed' };
+                const geoLabel = geo.state === 'success' ? t('geo_located')
+                               : geo.state === 'loading' ? t('geo_locating')
+                               : t('geo_no_gps');
 
                 const wrap = document.createElement('div');
                 wrap.className = 'img-thumb';
                 wrap.innerHTML = `
                     <img src="${url}" alt="Photo ${i + 1}">
                     <button type="button" class="remove-btn" onclick="removePhoto(${i})" title="Remove photo">&times;</button>
+                    <span class="geo-badge ${geo.state}">${geoLabel}</span>
                 `;
                 container.appendChild(wrap);
             });
@@ -1833,6 +1877,7 @@
         function openReportModal(editId) {
             document.getElementById("reportForm").reset();
             selectedFiles = [];
+            photoGeo = [];
             existingImages = [];
             removedImageIds = [];
             document.getElementById('imagePreviewContainer').innerHTML = '';
@@ -1898,8 +1943,17 @@
             formData.append('severity',      document.getElementById('severity').value);
             formData.append('description',   document.getElementById('description').value);
 
+            // submit_report.php reads geo_lat_$i / geo_lng_$i using its own loop
+            // position over $_FILES['images'], so this i must stay the append order
+            // of images[]. Pairs are omitted unless the fix actually succeeded -
+            // the server already treats a missing value as NULL.
             selectedFiles.forEach((file, i) => {
                 formData.append('images[]', file);
+                const geo = photoGeo[i];
+                if (geo && geo.state === 'success') {
+                    formData.append(`geo_lat_${i}`, geo.lat);
+                    formData.append(`geo_lng_${i}`, geo.lng);
+                }
             });
             removedImageIds.forEach(id => {
                 formData.append('removed_image_ids[]', id);
@@ -1925,6 +1979,7 @@
                 if (data.status === 'success') {
                     const r = data.data;
                     selectedFiles   = [];
+                    photoGeo        = [];
                     existingImages  = r.images || [];
                     removedImageIds = [];
                     document.getElementById('reportId').value     = r.Damage_Report_ID;
