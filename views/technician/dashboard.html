@@ -365,16 +365,21 @@
 
                     <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_attach_evidence">Attach Field Evidence (Photos)</label>
-                        <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center hover:bg-blue-50 hover:border-blue-300 transition-all">
-                            <div class="file-upload-wrapper w-full">
-                                <div class="pointer-events-none">
-                                    <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400 mb-2"></i>
-                                    <p class="text-sm font-bold text-gray-700" data-i18n="label_click_upload">Click to upload photos</p>
-                                    <p class="text-xs text-gray-400 mt-1" data-i18n="label_upload_hint">Accepts JPG, PNG (Max 5MB per file)</p>
-                                </div>
-                                <input type="file" id="editEvidencePhotos" accept="image/*" multiple onchange="handleEditFileSelection(event)">
-                            </div>
+                        <!-- Same two-button pattern as the main inspection form above:
+                             a technician correcting an inspection may still be standing
+                             in the field and need to shoot a replacement photo there. -->
+                        <input type="file" id="editEvidencePhotosCamera" accept="image/jpeg,image/png,image/jpg" capture="environment" class="hidden" onchange="handleEditFileSelection(event)">
+                        <input type="file" id="editEvidencePhotos" accept="image/jpeg,image/png,image/jpg" multiple class="hidden" onchange="handleEditFileSelection(event)">
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="document.getElementById('editEvidencePhotosCamera').click()" class="py-3 border-2 border-dashed border-blue-200 rounded-xl bg-blue-50 text-blue-700 font-bold text-sm hover:bg-blue-100 hover:border-blue-400 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-camera text-lg"></i> <span data-i18n="btn_take_photo">Take Photo</span>
+                            </button>
+                            <button type="button" onclick="document.getElementById('editEvidencePhotos').click()" class="py-3 border-2 border-dashed border-blue-200 rounded-xl bg-blue-50 text-blue-700 font-bold text-sm hover:bg-blue-100 hover:border-blue-400 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-images text-lg"></i> <span data-i18n="btn_upload_gallery">Upload from Gallery</span>
+                            </button>
                         </div>
+                        <p class="text-[10px] text-gray-400 mt-2 text-center" data-i18n="label_upload_hint">Accepts JPG, PNG (Max 5MB per file)</p>
                         <div id="editImagePreviewContainer" class="flex flex-wrap gap-3 mt-4 hidden"></div>
                     </div>
                 </div>
