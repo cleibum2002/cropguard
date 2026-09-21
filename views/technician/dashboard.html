@@ -970,24 +970,27 @@
 
         if (selectedFiles.length > 0) {
             container.classList.remove('hidden');
+            // Built synchronously with createObjectURL rather than FileReader.
+            // renderPreviews() now runs a second time when a GPS fix lands, and
+            // FileReader's onload fired after the container had already been
+            // cleared and re-rendered - so the stale read appended a duplicate
+            // thumbnail carrying the old badge state. Same approach the farmer's
+            // report form uses in views/farmers/index.html.
             selectedFiles.forEach((file, index) => {
                 const geo = photoGeo[index] || { state: 'failed' };
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgDiv = document.createElement('div');
-                    imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
-                    imgDiv.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-full object-cover">
-                        <span class="geo-badge ${geo.state}">${geoBadgeLabel(geo)}</span>
-                        <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
-                            <button type="button" onclick="removeFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
-                                <i class="fa-solid fa-trash text-[10px]"></i>
-                            </button>
-                        </div>`;
-                    container.appendChild(imgDiv);
-                };
-                reader.readAsDataURL(file);
+                const url = URL.createObjectURL(file);
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
+                imgDiv.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <span class="geo-badge ${geo.state}">${geoBadgeLabel(geo)}</span>
+                    <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
+                        <button type="button" onclick="removeFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
+                            <i class="fa-solid fa-trash text-[10px]"></i>
+                        </button>
+                    </div>`;
+                container.appendChild(imgDiv);
             });
         } else {
             container.classList.add('hidden');
@@ -1107,24 +1110,24 @@
 
         if (editSelectedFiles.length > 0) {
             container.classList.remove('hidden');
+            // Synchronous for the same reason as renderPreviews() above - a
+            // FileReader read that finished after a re-render appended a
+            // duplicate thumbnail.
             editSelectedFiles.forEach((file, index) => {
                 const geo = editPhotoGeo[index] || { state: 'failed' };
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imgDiv = document.createElement('div');
-                    imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
-                    imgDiv.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-full object-cover">
-                        <span class="geo-badge ${geo.state}">${geoBadgeLabel(geo)}</span>
-                        <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
-                            <button type="button" onclick="removeEditFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
-                                <i class="fa-solid fa-trash text-[10px]"></i>
-                            </button>
-                        </div>`;
-                    container.appendChild(imgDiv);
-                };
-                reader.readAsDataURL(file);
+                const url = URL.createObjectURL(file);
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'relative w-24 h-24 rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm group';
+                imgDiv.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <span class="geo-badge ${geo.state}">${geoBadgeLabel(geo)}</span>
+                    <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-[8px] text-white font-black uppercase text-center truncate w-full px-2">${file.name}</p>
+                        <button type="button" onclick="removeEditFile(${index})" class="mt-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 flex items-center justify-center">
+                            <i class="fa-solid fa-trash text-[10px]"></i>
+                        </button>
+                    </div>`;
+                container.appendChild(imgDiv);
             });
         } else {
             container.classList.add('hidden');
