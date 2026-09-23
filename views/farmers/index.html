@@ -819,6 +819,7 @@
                 status_pending: "Pending", status_validated: "Validated", status_approved: "Approved", status_completed: "Completed", status_rejected: "Rejected", status_archived: "Archived",
                 opt_select_location: "Select a Location...", opt_no_locations: "No locations found. Add one first.", opt_locations_error: "Could not load locations",
                 opt_select_crop: "— Select your crop —", opt_no_crops: "No crops registered yet", crop_type_auto: "Type ID {id} auto-selected",
+                opt_loading_crops: "Loading crops for this farm...", opt_crops_offline: "No internet — open this farm once while online",
                 opt_select_province: "— Select Province —", opt_select_city: "— Select City / Municipality —", opt_select_barangay: "— Select Barangay —",
                 loading_provinces: "Loading provinces...", loading_cities: "Loading cities/municipalities...", loading_barangays: "Loading barangays...",
                 failed_provinces: "Failed to load provinces", failed_cities: "Failed to load cities", failed_barangays: "Failed to load barangays",
@@ -916,6 +917,7 @@
                 status_pending: "Naghihintay", status_validated: "Na-validate", status_approved: "Naaprubahan", status_completed: "Nakumpleto", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
                 opt_select_location: "Pumili ng Lokasyon...", opt_no_locations: "Walang nahanap na lokasyon. Magdagdag muna.", opt_locations_error: "Hindi na-load ang mga lokasyon",
                 opt_select_crop: "— Pumili ng iyong pananim —", opt_no_crops: "Wala pang nakarehistrong pananim", crop_type_auto: "Type ID {id} awtomatikong napili",
+                opt_loading_crops: "Kinukuha ang mga pananim...", opt_crops_offline: "Walang internet — buksan ang bukid na ito habang may signal",
                 opt_select_province: "— Pumili ng Probinsya —", opt_select_city: "— Pumili ng Lungsod / Munisipalidad —", opt_select_barangay: "— Pumili ng Barangay —",
                 loading_provinces: "Nilo-load ang mga probinsya...", loading_cities: "Nilo-load ang mga lungsod/munisipalidad...", loading_barangays: "Nilo-load ang mga barangay...",
                 failed_provinces: "Hindi na-load ang mga probinsya", failed_cities: "Hindi na-load ang mga lungsod", failed_barangays: "Hindi na-load ang mga barangay",
@@ -1009,6 +1011,7 @@
                 status_pending: "Naghulat", status_validated: "Na-validate", status_approved: "Na-aprubahan", status_completed: "Nahuman", status_rejected: "Gibalibaran", status_archived: "Naka-archive",
                 opt_select_location: "Pilia ang Lokasyon...", opt_no_locations: "Walay nakit-an nga lokasyon. Pagdugang una.", opt_locations_error: "Wala ma-load ang mga lokasyon",
                 opt_select_crop: "— Pilia ang imong tanom —", opt_no_crops: "Wala pay narehistro nga tanom", crop_type_auto: "Type ID {id} awtomatik napili",
+                opt_loading_crops: "Gikuha ang mga tanom...", opt_crops_offline: "Walay internet — ablihi ni nga uma samtang naa pay signal",
                 opt_select_province: "— Pilia ang Probinsya —", opt_select_city: "— Pilia ang Siyudad / Munisipyo —", opt_select_barangay: "— Pilia ang Barangay —",
                 loading_provinces: "Ginaload ang mga probinsya...", loading_cities: "Ginaload ang mga siyudad/munisipyo...", loading_barangays: "Ginaload ang mga barangay...",
                 failed_provinces: "Wala ma-load ang mga probinsya", failed_cities: "Wala ma-load ang mga siyudad", failed_barangays: "Wala ma-load ang mga barangay",
@@ -1862,7 +1865,46 @@
             return shortName.length > 40 ? shortName.slice(0, 37) + '…' : shortName;
         }
 
+        // ─── OFFLINE CROP CACHE ───────────────────────────────────────────────
+        // updateMaxArea() re-fetches a farm's crop list every time the farmer
+        // changes farm, and with no signal that one request is the only thing
+        // standing between them and a finished report - the picker would sit on
+        // "Loading crops..." forever and crop_id would never be set. So each
+        // farm's crop list is kept here once it has been fetched successfully,
+        // and every farm is warmed up at page load while there is still a
+        // connection. localStorage rather than IndexedDB: this is a handful of
+        // small rows, and it needs to be readable synchronously on render.
+        const CROP_CACHE_KEY = 'cropguard_crops_by_location';
+        let cropCache = {};
+
+        function loadCropCache() {
+            try { cropCache = JSON.parse(localStorage.getItem(CROP_CACHE_KEY) || '{}'); }
+            catch (e) { cropCache = {}; }
+        }
+
+        function saveCropCache() {
+            try { localStorage.setItem(CROP_CACHE_KEY, JSON.stringify(cropCache)); }
+            catch (e) { /* private window or storage full - the in-memory copy still works */ }
+        }
+
+        // Fetches each farm's crops once, quietly, so a farm the farmer has not
+        // opened this session is still usable after the signal drops.
+        function warmCropCache(locationIds) {
+            locationIds.forEach(id => {
+                fetch('../../api/dashboard/get_crop_options.php?location_id=' + id)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            cropCache[id] = data.crops || [];
+                            saveCropCache();
+                        }
+                    })
+                    .catch(() => { /* offline already - nothing to warm */ });
+            });
+        }
+
         function loadFarmLocations() {
+            loadCropCache();
             fetch('../../api/dashboard/get_farm_locations.php')
                 .then(res => res.json())
                 .then(data => {
@@ -1873,11 +1915,19 @@
                             const fullAddress = (loc.Barangay || '').replace(/"/g, '&quot;');
                             select.innerHTML += '<option value="' + loc.Location_ID + '" data-max-area="' + loc.Area_Size + '" title="' + fullAddress + '">' + shortLocationLabel(loc.Barangay) + ' - ' + loc.Area_Size + ' Ha</option>';
                         });
+                        // Remembered so the farm dropdown itself survives too.
+                        try { localStorage.setItem('cropguard_locations', select.innerHTML); } catch (e) {}
+                        warmCropCache(data.locations.map(loc => loc.Location_ID));
                     } else {
                         select.innerHTML = '<option value="" disabled>' + t('opt_no_locations') + '</option>';
                     }
                 }).catch(() => {
-                    document.getElementById('farmLocation').innerHTML = '<option value="" disabled>' + t('opt_locations_error') + '</option>';
+                    // Offline: fall back to the farm list from the last online load.
+                    let cached = null;
+                    try { cached = localStorage.getItem('cropguard_locations'); } catch (e) {}
+                    document.getElementById('farmLocation').innerHTML = cached
+                        ? cached
+                        : '<option value="" disabled>' + t('opt_locations_error') + '</option>';
                 });
         }
 
@@ -1898,19 +1948,37 @@
                 farmerCropsData = [];
                 return Promise.resolve();
             }
-            picker.innerHTML = '<option value="" disabled selected>Loading crops for this farm...</option>';
+            const paintPicker = () => {
+                picker.innerHTML = '<option value="">' + t('opt_select_crop') + '</option>';
+                farmerCropsData.forEach(c => {
+                    picker.innerHTML += '<option value="' + c.Crop_ID + '">' + c.Crop_Name + '</option>';
+                });
+                if (!farmerCropsData.length) {
+                    picker.innerHTML = '<option value="" disabled>' + t('opt_no_crops') + '</option>';
+                }
+            };
+
+            picker.innerHTML = '<option value="" disabled selected>' + t('opt_loading_crops') + '</option>';
             return fetch('../../api/dashboard/get_crop_options.php?location_id=' + locationId)
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success') {
                         farmerCropsData = data.crops || [];
-                        picker.innerHTML = '<option value="">' + t('opt_select_crop') + '</option>';
-                        farmerCropsData.forEach(c => {
-                            picker.innerHTML += '<option value="' + c.Crop_ID + '">' + c.Crop_Name + '</option>';
-                        });
-                        if (!farmerCropsData.length) {
-                            picker.innerHTML = '<option value="" disabled>' + t('opt_no_crops') + '</option>';
-                        }
+                        cropCache[locationId] = farmerCropsData;
+                        saveCropCache();
+                        paintPicker();
+                    }
+                })
+                .catch(() => {
+                    // No signal. Use whatever was cached while online, so the
+                    // farmer can still finish the report and let it queue.
+                    const cached = cropCache[locationId];
+                    if (cached && cached.length) {
+                        farmerCropsData = cached;
+                        paintPicker();
+                    } else {
+                        farmerCropsData = [];
+                        picker.innerHTML = '<option value="" disabled>' + t('opt_crops_offline') + '</option>';
                     }
                 });
         }
