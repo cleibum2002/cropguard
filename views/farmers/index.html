@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
+    <script src="../../assets/js/offline_queue.js?v=1"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -274,6 +275,31 @@
                         <button onclick="openReportModal()" class="bg-[#11542e] text-white px-3 py-2.5 sm:px-6 sm:py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center justify-center gap-2 text-xs sm:text-sm">
                             <i class="fa-solid fa-plus"></i> <span data-i18n="btn_new_report">File New Report</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- ═══ OFFLINE QUEUE BANNER ═══ -->
+                <!-- Same large, plain styling as the elder-friendly alert below,
+                     since it is aimed at the same reader. -->
+                <div id="offlineQueueBanner" class="hidden rounded-2xl p-5 mb-6 bg-amber-50 border-2 border-amber-300 text-amber-900">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 rounded-full bg-amber-200/70 flex items-center justify-center flex-shrink-0">
+                            <i class="fa-solid fa-cloud-arrow-up text-2xl text-amber-700"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p id="offlineQueueTitle" class="text-base sm:text-lg font-black leading-tight"></p>
+                            <p id="offlineQueueSub" class="text-xs sm:text-sm font-semibold mt-1 opacity-90"></p>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <button type="button" id="offlineQueueSendBtn" onclick="CropGuardQueue.flush()"
+                                        class="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-amber-700 transition-all">
+                                    <i class="fa-solid fa-paper-plane mr-1"></i> <span data-i18n="off_send_now">Send now</span>
+                                </button>
+                                <a id="offlineQueueLoginBtn" href="../../auth.html"
+                                   class="hidden px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all">
+                                    <i class="fa-solid fa-right-to-bracket mr-1"></i> <span data-i18n="off_login_now">Log in</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -760,6 +786,16 @@
                 photo_info: "Upload clear photos showing the extent of the crop damage.",
                 btn_take_photo: "Take Photo", btn_upload_gallery: "Upload from Gallery", btn_cancel: "Cancel", btn_submit_report: "Submit Report",
                 geo_located: "Located", geo_locating: "Locating...", geo_no_gps: "No GPS",
+                off_banner_one: "1 report waiting to be sent",
+                off_banner_many: "{n} reports waiting to be sent",
+                off_banner_sub: "They will send by themselves once you have internet. You don't need to do anything.",
+                off_banner_sub_auth: "Your session ended. Log in again and your saved report will be sent.",
+                off_banner_sub_stuck: "We couldn't send this after several tries. Tap Send now to try again.",
+                off_send_now: "Send now", off_login_now: "Log in",
+                off_saved_title: "Saved on this phone",
+                off_saved_text: "No internet right now. Your report and photos are saved on this phone and will be sent by themselves once you have a signal. Please don't clear your browser data.",
+                off_cannot_save: "This phone can't save the report offline. Please try again when you have a signal.",
+                off_edit_title: "No internet", off_edit_text: "You need a connection to edit a report. Your changes are still here - try again once you have a signal.",
                 sw_bad_format_title: "Unsupported Photo Format", sw_bad_format_text_one: "That file was skipped - only JPG, JPEG, and PNG photos are allowed.",
                 sw_bad_format_text_many: "{n} files were skipped - only JPG, JPEG, and PNG photos are allowed.",
                 modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
@@ -847,6 +883,16 @@
                 photo_info: "Mag-upload ng malinaw na mga larawan na nagpapakita ng lawak ng pinsala sa pananim.",
                 btn_take_photo: "Kumuha ng Larawan", btn_upload_gallery: "Mag-upload mula sa Gallery", btn_cancel: "Kanselahin", btn_submit_report: "Isumite ang Ulat",
                 geo_located: "Natukoy", geo_locating: "Hinahanap...", geo_no_gps: "Walang GPS",
+                off_banner_one: "1 ulat ang naghihintay maipadala",
+                off_banner_many: "{n} ulat ang naghihintay maipadala",
+                off_banner_sub: "Awtomatiko itong maipapadala kapag may internet ka na. Wala ka nang kailangang gawin.",
+                off_banner_sub_auth: "Natapos ang iyong session. Mag-log in ulit at ipapadala ang naka-save mong ulat.",
+                off_banner_sub_stuck: "Hindi namin ito naipadala matapos ang ilang subok. Pindutin ang Ipadala na para subukan ulit.",
+                off_send_now: "Ipadala na", off_login_now: "Mag-log in",
+                off_saved_title: "Naka-save sa telepono",
+                off_saved_text: "Walang internet ngayon. Naka-save sa teleponong ito ang iyong ulat at mga larawan, at awtomatikong ipapadala kapag may signal ka na. Huwag pong i-clear ang browser data.",
+                off_cannot_save: "Hindi kayang i-save ng teleponong ito ang ulat offline. Subukan ulit kapag may signal.",
+                off_edit_title: "Walang internet", off_edit_text: "Kailangan mo ng koneksyon para mag-edit ng ulat. Nandiyan pa ang mga binago mo - subukan ulit kapag may signal.",
                 sw_bad_format_title: "Hindi Suportadong Format", sw_bad_format_text_one: "Nalaktawan ang file na iyon - JPG, JPEG, at PNG lang ang pinapayagan.",
                 sw_bad_format_text_many: "{n} na file ang nalaktawan - JPG, JPEG, at PNG lang ang pinapayagan.",
                 modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
@@ -930,6 +976,16 @@
                 photo_info: "Pag-upload og klaro nga mga litrato nga nagpakita sa gidak-on sa kadaot sa tanom.",
                 btn_take_photo: "Pagkuha og Litrato", btn_upload_gallery: "Pag-upload gikan sa Gallery", btn_cancel: "Kanselahon", btn_submit_report: "I-submit ang Report",
                 geo_located: "Nakit-an", geo_locating: "Gipangita...", geo_no_gps: "Walay GPS",
+                off_banner_one: "1 ka report ang naghulat ipadala",
+                off_banner_many: "{n} ka report ang naghulat ipadala",
+                off_banner_sub: "Awtomatikong ipadala ni kung naa nay internet. Wala na kay buhaton.",
+                off_banner_sub_auth: "Natapos ang imong session. Pag-log in balik ug ipadala ang imong na-save nga report.",
+                off_banner_sub_stuck: "Wala namo ni mapadala human sa pipila ka sulay. Pindota ang Ipadala karon aron sulayan balik.",
+                off_send_now: "Ipadala karon", off_login_now: "Pag-log in",
+                off_saved_title: "Na-save sa telepono",
+                off_saved_text: "Walay internet karon. Na-save sa telepono ang imong report ug mga litrato, ug awtomatikong ipadala kung naa nay signal. Ayaw i-clear ang browser data.",
+                off_cannot_save: "Dili makasave ang telepono sa report offline. Sulayi balik kung naa nay signal.",
+                off_edit_title: "Walay internet", off_edit_text: "Kinahanglan og koneksyon aron mag-edit og report. Naa pa ang imong gibag-o - sulayi balik kung naa nay signal.",
                 sw_bad_format_title: "Dili Suportado nga Format", sw_bad_format_text_one: "Gilaktawan ang maong file - JPG, JPEG, ug PNG ra ang gitugotan.",
                 sw_bad_format_text_many: "{n} ka file ang gilaktawan - JPG, JPEG, ug PNG ra ang gitugotan.",
                 modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
@@ -1017,6 +1073,13 @@
             loadCropOptions();
             loadFarmLocations();
             loadSeedTracker();
+            // Flushes here as well as on the 'online' event, because a report
+            // queued while the session was expiring only gets sent once the
+            // farmer has logged back in and landed on this page again.
+            CropGuardQueue.init({
+                onChange:  renderOfflineBanner,
+                onFlushed: loadDashboardData
+            });
             const today = (() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); })();
             document.getElementById('plantingDate').setAttribute('max', today);
         });
@@ -1922,26 +1985,109 @@
             }).then(result => { if (result.isConfirmed) closeModalForce(); });
         }
 
+        // Shows how many reports are waiting on this phone. Driven by the queue
+        // module, which calls this whenever the queue changes.
+        function renderOfflineBanner(state) {
+            const banner = document.getElementById('offlineQueueBanner');
+            if (!banner) return;
+
+            if (!state || !state.total) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            const title = state.total === 1
+                ? t('off_banner_one')
+                : t('off_banner_many').replace('{n}', state.total);
+
+            document.getElementById('offlineQueueTitle').innerText = title;
+            document.getElementById('offlineQueueSub').innerText =
+                state.blockedAuth    ? t('off_banner_sub_auth')
+              : state.needsAttention ? t('off_banner_sub_stuck')
+              : t('off_banner_sub');
+
+            document.getElementById('offlineQueueLoginBtn').classList.toggle('hidden', !state.blockedAuth);
+            document.getElementById('offlineQueueSendBtn').classList.toggle('hidden', state.blockedAuth);
+            banner.classList.remove('hidden');
+        }
+
         async function submitReport(e) {
             e.preventDefault();
 
-            const rsbsaCheck = await fetch('../../api/farmer/check_rsbsa.php').then(r => r.json());
-            if (rsbsaCheck.status !== 'valid') {
+            // Only brand-new reports are ever queued. An edit carries
+            // removed_image_ids[] and overwrites Damage_Severity, so replaying a
+            // stale one could undo a technician's assessment or resurrect photos
+            // an admin deleted.
+            const isEdit = !!document.getElementById('reportId').value;
+
+            // Snapshotted BEFORE any network call, so nothing the farmer typed
+            // can be lost by a failure further down.
+            const fields = {
+                location_id:   document.getElementById('farmLocation').value,
+                crop_id:       document.getElementById('cropName').value,
+                type_id:       document.getElementById('cropType').value,
+                planting_date: document.getElementById('plantingDate').value,
+                area:          document.getElementById('landArea').value,
+                damage_type:   document.getElementById('damageType').value,
+                severity:      document.getElementById('severity').value,
+                description:   document.getElementById('description').value
+            };
+
+            const queueThis = async () => {
+                if (!CropGuardQueue.isAvailable()) {
+                    // No IndexedDB (private window, blocked storage). Say so
+                    // plainly and leave the modal open rather than claiming a
+                    // save that did not happen.
+                    Swal.fire(t('sw_generic_error_title'), t('off_cannot_save'), 'error');
+                    return;
+                }
+                try {
+                    await CropGuardQueue.enqueue(fields, selectedFiles, photoGeo, null);
+                    Swal.fire({
+                        icon: 'success',
+                        title: t('off_saved_title'),
+                        text:  t('off_saved_text'),
+                        confirmButtonColor: '#11542e'
+                    });
+                    closeModalForce();
+                } catch (err) {
+                    console.error('could not queue report', err);
+                    Swal.fire(t('sw_generic_error_title'), t('off_cannot_save'), 'error');
+                }
+            };
+
+            // Known-offline: don't make the farmer wait on a request that cannot
+            // succeed. navigator.onLine is only trusted when it says false.
+            if (!isEdit && CropGuardQueue.definitelyOffline()) {
+                await queueThis();
+                return;
+            }
+
+            // The RSBSA pre-flight is the first thing that fails with no signal,
+            // and it used to reject with nothing caught - the farmer tapped
+            // Submit and got silence.
+            let rsbsaCheck = null;
+            try {
+                rsbsaCheck = await fetch('../../api/farmer/check_rsbsa.php').then(r => r.json());
+            } catch (err) {
+                if (CropGuardQueue.isNetworkError(err)) {
+                    if (isEdit) {
+                        Swal.fire({ icon: 'info', title: t('off_edit_title'), text: t('off_edit_text') });
+                        return;
+                    }
+                    await queueThis();
+                    return;
+                }
+            }
+            if (rsbsaCheck && rsbsaCheck.status !== 'valid') {
                 Swal.fire({ icon: 'warning', title: t('sw_rsbsa_title'), text: rsbsaCheck.message, confirmButtonColor: '#11542e', confirmButtonText: t('sw_go_to_profile') })
                     .then(() => window.location.href = '../profile/profile.html');
                 return;
             }
 
             const formData = new FormData();
-            formData.append('id',            document.getElementById('reportId').value);
-            formData.append('location_id',   document.getElementById('farmLocation').value);
-            formData.append('crop_id',       document.getElementById('cropName').value);
-            formData.append('type_id',       document.getElementById('cropType').value);
-            formData.append('planting_date', document.getElementById('plantingDate').value);
-            formData.append('area',          document.getElementById('landArea').value);
-            formData.append('damage_type',   document.getElementById('damageType').value);
-            formData.append('severity',      document.getElementById('severity').value);
-            formData.append('description',   document.getElementById('description').value);
+            formData.append('id', document.getElementById('reportId').value);
+            Object.keys(fields).forEach(k => formData.append(k, fields[k]));
 
             // submit_report.php reads geo_lat_$i / geo_lng_$i using its own loop
             // position over $_FILES['images'], so this i must stay the append order
@@ -1961,15 +2107,25 @@
 
             Swal.fire({ title: t('sw_submitting_title'), text: t('sw_submitting_text'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-            fetch('../../api/dashboard/submit_report.php', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
+            try {
+                const res  = await fetch('../../api/dashboard/submit_report.php', { method: 'POST', body: formData });
+                const data = await res.json();
                 if (data.status === 'success') {
                     Swal.fire({ icon: 'success', title: t('sw_success_title'), text: data.message, timer: 1500, showConfirmButton: false });
                     closeModalForce(); loadDashboardData();
-                } else { Swal.fire(t('sw_generic_error_title'), data.message, 'error'); }
-            })
-            .catch(() => Swal.fire(t('sw_generic_error_title'), t('sw_submit_failed_text'), 'error'));
+                } else {
+                    Swal.fire(t('sw_generic_error_title'), data.message, 'error');
+                }
+            } catch (err) {
+                // The connection dropped between the pre-flight and here. A
+                // resolved response of any status would NOT land in this catch,
+                // so this really is "we never reached the server".
+                if (!isEdit && CropGuardQueue.isNetworkError(err)) {
+                    await queueThis();
+                    return;
+                }
+                Swal.fire(t('sw_generic_error_title'), t('sw_submit_failed_text'), 'error');
+            }
         }
 
         function editReport(id) {
