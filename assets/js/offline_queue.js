@@ -33,10 +33,11 @@
     var RETRY_MS    = 60 * 1000;  // safety net for when the 'online' event never fires
     var MAX_ATTEMPTS = 6;
 
-    var opts      = {};
-    var dbPromise = null;
-    var flushing  = false;
-    var timer     = null;
+    var opts        = {};
+    var dbPromise   = null;
+    var flushing    = false;
+    var timer       = null;
+    var knownUserId = null;   // who is signed in on this device right now
 
     // ── Translation, defensively ────────────────────────────────────────────
     // `translations` is page-local and this file is shared, so t() may not
@@ -205,7 +206,27 @@
     function currentSession() {
         return fetch(URL_CHECK, { cache: 'no-store', credentials: 'same-origin' })
             .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.status === 'active' && data.user) {
+                    knownUserId = data.user.id;
+                }
+                return data;
+            })
             .catch(function () { return null; });
+    }
+
+    // The queue is one shared box on one device, but a banner about a report is
+    // private to the farmer who saved it. On a shared phone - which is the whole
+    // reason the owner check exists - showing every queued report to whoever is
+    // signed in tells Cleo that Jaylyn filed a report, and offers her a button to
+    // send it. With five farmers on one handset nobody could tell whose reminder
+    // they were looking at.
+    function ownedByCurrentUser(item) {
+        // Owner not established yet: show it rather than hide something real.
+        if (knownUserId === null || knownUserId === undefined) return true;
+        // Queued before owners were recorded - unattributable, so leave it visible.
+        if (item.user_id === null || item.user_id === undefined || item.user_id === '') return true;
+        return String(item.user_id) === String(knownUserId);
     }
 
     // Only blocks when we positively know it is someone else. An item queued
@@ -304,7 +325,9 @@
     // ── State for the page's banner ─────────────────────────────────────────
     function summary() {
         return allItems().then(function (items) {
-            items = items || [];
+            // Only this farmer's reports. Someone else's queued report is still
+            // in the box and still protected - it is simply not their business.
+            items = (items || []).filter(ownedByCurrentUser);
             return {
                 total:          items.length,
                 blockedAuth:    items.some(function (i) { return i.status === 'blocked_auth'; }),
@@ -359,7 +382,11 @@
         document.addEventListener('visibilitychange', function () {
             if (document.visibilityState === 'visible') flush();
         });
-        notifyChange().then(function (s) { if (s.total > 0) flush(); });
+        // Establish who is signed in BEFORE the first banner render, otherwise
+        // the very first paint after a login shows the previous farmer's queue.
+        currentSession()
+            .then(notifyChange)
+            .then(function (s) { if (s.total > 0) flush(); });
     }
 
     window.CropGuardQueue = {

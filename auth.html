@@ -296,8 +296,10 @@
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPass').value;
         const errorBox = document.getElementById('loginError');
-        
+
         errorBox.innerText = 'Authenticating...';
+        // See connectionMessage() below for why this no longer says
+        // "Server Error. Check console." to a farmer.
         
         try {
             const res = await fetch('api/auth/login.php', {
@@ -320,8 +322,22 @@
                 errorBox.innerText = data.message;
             }
         } catch(e) { 
-            errorBox.innerText = "Server Error. Check console.";
+            errorBox.innerText = connectionMessage(e);
         }
+    }
+
+    // A rejected fetch means the request never reached the server at all - no
+    // signal, wifi still negotiating, airplane mode. Every catch here used to
+    // say "Server Error. Check console." for that, which blames the wrong thing
+    // and is meaningless to a farmer who has never opened a console. It also
+    // sent people hunting for a refresh button they should not need: the form
+    // still works, and tapping the button again once the signal is back is
+    // enough. Any resolved response, including a 500, lands in the other branch.
+    function connectionMessage(err) {
+        if (err instanceof TypeError) {
+            return "No internet connection. Check your signal, then tap the button again.";
+        }
+        return "Something went wrong. Please try again.";
     }
 
     function validatePasswordStrength(password) {
@@ -414,7 +430,7 @@
             }
         } catch(e) { 
             msgBox.className = 'msg-box error';
-            msgBox.innerText = "Server Error. Check console.";
+            msgBox.innerText = connectionMessage(e);
         }
     }
 
@@ -537,7 +553,7 @@
             if (data.status === 'success') startCountdown();
         } catch(e) {
             msgBox.className = 'msg-box error';
-            msgBox.innerText = "Server Error. Check console.";
+            msgBox.innerText = connectionMessage(e);
         }
 
         // 30-second cooldown so the link can't be spammed
@@ -582,7 +598,7 @@
             }
         } catch(e) {
             msgBox.className = 'msg-box error';
-            msgBox.innerText = "Server Error. Check console.";
+            msgBox.innerText = connectionMessage(e);
         }
     }
 </script>
