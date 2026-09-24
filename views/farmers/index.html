@@ -17,7 +17,17 @@
 
     <script>
         // bfcache restores are handled by session_guard.js.
-        CropGuardSession.protect({ roles: ['farmer'] });
+        // onReady carries the signed-in user, which is stashed so a queued
+        // offline report can remember WHO saved it - the server files a report
+        // against whoever is signed in when it finally arrives, so on a shared
+        // phone that has to be checked before sending.
+        var currentFarmerId = null;
+        CropGuardSession.protect({
+            roles: ['farmer'],
+            onReady: function (data) {
+                currentFarmerId = (data && data.user) ? data.user.id : null;
+            }
+        });
     </script>
 
     <style>
@@ -790,6 +800,7 @@
                 off_banner_many: "{n} reports waiting to be sent",
                 off_banner_sub: "They will send by themselves once you have internet. You don't need to do anything.",
                 off_banner_sub_auth: "Your session ended. Log in again and your saved report will be sent.",
+                off_banner_sub_user: "This saved report belongs to a different account. Log in as that farmer to send it.",
                 off_banner_sub_stuck: "We couldn't send this after several tries. Tap Send now to try again.",
                 off_send_now: "Send now", off_login_now: "Log in",
                 off_saved_title: "Saved on this phone",
@@ -888,6 +899,7 @@
                 off_banner_many: "{n} ulat ang naghihintay maipadala",
                 off_banner_sub: "Awtomatiko itong maipapadala kapag may internet ka na. Wala ka nang kailangang gawin.",
                 off_banner_sub_auth: "Natapos ang iyong session. Mag-log in ulit at ipapadala ang naka-save mong ulat.",
+                off_banner_sub_user: "Ang naka-save na ulat na ito ay pag-aari ng ibang account. Mag-log in bilang siya para maipadala ito.",
                 off_banner_sub_stuck: "Hindi namin ito naipadala matapos ang ilang subok. Pindutin ang Ipadala na para subukan ulit.",
                 off_send_now: "Ipadala na", off_login_now: "Mag-log in",
                 off_saved_title: "Naka-save sa telepono",
@@ -982,6 +994,7 @@
                 off_banner_many: "{n} ka report ang naghulat ipadala",
                 off_banner_sub: "Awtomatikong ipadala ni kung naa nay internet. Wala na kay buhaton.",
                 off_banner_sub_auth: "Natapos ang imong session. Pag-log in balik ug ipadala ang imong na-save nga report.",
+                off_banner_sub_user: "Kini nga na-save nga report iya sa laing account. Pag-log in isip kana nga mag-uuma aron ipadala.",
                 off_banner_sub_stuck: "Wala namo ni mapadala human sa pipila ka sulay. Pindota ang Ipadala karon aron sulayan balik.",
                 off_send_now: "Ipadala karon", off_login_now: "Pag-log in",
                 off_saved_title: "Na-save sa telepono",
@@ -2070,12 +2083,15 @@
 
             document.getElementById('offlineQueueTitle').innerText = title;
             document.getElementById('offlineQueueSub').innerText =
-                state.blockedAuth    ? t('off_banner_sub_auth')
+                state.blockedUser    ? t('off_banner_sub_user')
+              : state.blockedAuth    ? t('off_banner_sub_auth')
               : state.needsAttention ? t('off_banner_sub_stuck')
               : t('off_banner_sub');
 
-            document.getElementById('offlineQueueLoginBtn').classList.toggle('hidden', !state.blockedAuth);
-            document.getElementById('offlineQueueSendBtn').classList.toggle('hidden', state.blockedAuth);
+            // Both blocked states need a different login, not another send attempt.
+            const needsLogin = state.blockedAuth || state.blockedUser;
+            document.getElementById('offlineQueueLoginBtn').classList.toggle('hidden', !needsLogin);
+            document.getElementById('offlineQueueSendBtn').classList.toggle('hidden', needsLogin);
             banner.classList.remove('hidden');
         }
 
@@ -2110,7 +2126,7 @@
                     return;
                 }
                 try {
-                    await CropGuardQueue.enqueue(fields, selectedFiles, photoGeo, null);
+                    await CropGuardQueue.enqueue(fields, selectedFiles, photoGeo, currentFarmerId);
                     Swal.fire({
                         icon: 'success',
                         title: t('off_saved_title'),
