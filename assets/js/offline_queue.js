@@ -28,6 +28,7 @@
         : '../../';
 
     var URL_SUBMIT = ROOT + 'api/dashboard/submit_report.php';
+    var URL_CHECK  = ROOT + 'api/auth/session_check.php';
 
     var RETRY_MS    = 60 * 1000;  // safety net for when the 'online' event never fires
     var MAX_ATTEMPTS = 6;
@@ -195,6 +196,27 @@
         });
     }
 
+    // Who is signed in on this device right now. Asked once per flush, before
+    // anything is uploaded: submit_report.php takes the farmer's identity from
+    // $_SESSION alone and never looks at who actually queued the report, so on a
+    // shared phone a report saved by one farmer would be filed under whoever
+    // happened to log in next. Resolves to null when we cannot ask (offline), in
+    // which case the upload itself decides, exactly as before.
+    function currentSession() {
+        return fetch(URL_CHECK, { cache: 'no-store', credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .catch(function () { return null; });
+    }
+
+    // Only blocks when we positively know it is someone else. An item queued
+    // before this check existed has no user_id, and an unanswerable session
+    // check proves nothing - neither is treated as a mismatch.
+    function belongsToSomeoneElse(item, session) {
+        if (!session || session.status !== 'active' || !session.user) return false;
+        if (item.user_id === null || item.user_id === undefined || item.user_id === '') return false;
+        return String(session.user.id) !== String(item.user_id);
+    }
+
     function flushOne(item) {
         // Persisted before the POST so a second tab (or a reload mid-send)
         // does not start the same upload again.
@@ -234,7 +256,10 @@
         if (definitelyOffline()) return Promise.resolve();
         flushing = true;
 
-        return allItems().then(function (items) {
+        return Promise.all([allItems(), currentSession()]).then(function (results) {
+            var items   = results[0];
+            var session = results[1];
+
             var queue = (items || [])
                 .filter(function (i) { return i.status !== 'needs_attention'; })
                 .sort(function (a, b) { return a.created_at - b.created_at; });
@@ -243,6 +268,22 @@
             return queue.reduce(function (chain, item) {
                 return chain.then(function (stop) {
                     if (stop) return stop;
+
+                    // Wrong farmer signed in on this phone. Hold the report -
+                    // sending it now would file it under them, because the
+                    // server reads the farmer from $_SESSION and nothing else.
+                    if (belongsToSomeoneElse(item, session)) {
+                        item.status = 'blocked_user';
+                        return putItem(item).then(function () { return false; });
+                    }
+
+                    // Signed out. Don't spend the farmer's data on an upload
+                    // that is certain to come back 401.
+                    if (session && session.status !== 'active') {
+                        item.status = 'blocked_auth';
+                        return putItem(item).then(function () { return 'auth'; });
+                    }
+
                     return flushOne(item).then(function (outcome) {
                         if (outcome === 'sent' && typeof opts.onFlushed === 'function') {
                             try { opts.onFlushed(); } catch (e) { console.error(e); }
@@ -267,10 +308,11 @@
             return {
                 total:          items.length,
                 blockedAuth:    items.some(function (i) { return i.status === 'blocked_auth'; }),
+                blockedUser:    items.some(function (i) { return i.status === 'blocked_user'; }),
                 needsAttention: items.some(function (i) { return i.status === 'needs_attention'; })
             };
         }).catch(function () {
-            return { total: 0, blockedAuth: false, needsAttention: false };
+            return { total: 0, blockedAuth: false, blockedUser: false, needsAttention: false };
         });
     }
 
