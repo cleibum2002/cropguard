@@ -38,6 +38,8 @@
     var flushing    = false;
     var timer       = null;
     var knownUserId = null;   // who is signed in on this device right now
+    var storageMode = null;   // 'idb' once proven, 'memory' once it has failed
+    var memStore    = [];     // fallback queue when IndexedDB cannot be used
 
     // ── Translation, defensively ────────────────────────────────────────────
     // `translations` is page-local and this file is shared, so t() may not
@@ -56,8 +58,12 @@
     function openDb() {
         if (dbPromise) return dbPromise;
         dbPromise = new Promise(function (resolve, reject) {
-            if (!window.indexedDB) { reject(new Error('IndexedDB unavailable')); return; }
-            var req = window.indexedDB.open(DB_NAME, DB_VERSION);
+            var idb;
+            // Touching window.indexedDB itself throws in some privacy modes.
+            try { idb = window.indexedDB; } catch (e) { idb = null; }
+            if (!idb) { reject(new Error('IndexedDB unavailable')); return; }
+
+            var req = idb.open(DB_NAME, DB_VERSION);
             req.onupgradeneeded = function () {
                 var db = req.result;
                 if (!db.objectStoreNames.contains(STORE)) {
@@ -65,9 +71,42 @@
                 }
             };
             req.onsuccess = function () { resolve(req.result); };
-            req.onerror   = function () { reject(req.error); };
+            req.onerror   = function () { reject(req.error || new Error('IndexedDB open failed')); };
+            // Another tab mid-upgrade leaves open() hanging forever otherwise,
+            // and a promise that never settles looks identical to a freeze.
+            req.onblocked = function () { reject(new Error('IndexedDB blocked by another tab')); };
         });
         return dbPromise;
+    }
+
+    // ── Storage, with a floor under it ──────────────────────────────────────
+    // "This phone can't save the report" must never be something a farmer can
+    // reach. IndexedDB is the good tier - it survives a reload, a crash, days.
+    // When it is unavailable or dies mid-write (private mode, blocked storage,
+    // full disk) the report drops to memory instead of being refused: that
+    // still covers the real case, which is filling a form in a field and
+    // walking somewhere with signal while the page stays open. The farmer is
+    // told which of the two they got, because "keep this page open" is a real
+    // condition they need to know about - but they are never simply turned away.
+    function useMemoryFrom(err) {
+        if (storageMode !== 'memory') {
+            console.warn('offline queue falling back to memory storage:', err);
+            storageMode = 'memory';
+        }
+        return 'memory';
+    }
+
+    function ensureStorage() {
+        if (storageMode) return Promise.resolve(storageMode);
+        return openDb()
+            .then(function () { storageMode = 'idb'; return storageMode; })
+            .catch(useMemoryFrom);
+    }
+
+    function memPut(item) {
+        memStore = memStore.filter(function (i) { return i.id !== item.id; });
+        memStore.push(item);
+        return item;
     }
 
     function tx(mode, fn) {
@@ -86,9 +125,39 @@
         });
     }
 
-    function putItem(item)  { return tx('readwrite', function (s) { return s.put(item); }); }
-    function deleteItem(id) { return tx('readwrite', function (s) { return s.delete(id); }); }
-    function allItems()     { return tx('readonly',  function (s) { return s.getAll(); }); }
+    // Every operation degrades on its own, not just at open time - IndexedDB
+    // can also fail mid-write when the disk fills or storage is cleared under
+    // us, and losing the report at that point would be the worst moment of all.
+    function putItem(item) {
+        return ensureStorage().then(function (mode) {
+            if (mode === 'memory') return memPut(item);
+            return tx('readwrite', function (s) { return s.put(item); })
+                .catch(function (err) { useMemoryFrom(err); return memPut(item); });
+        });
+    }
+
+    function deleteItem(id) {
+        return ensureStorage().then(function (mode) {
+            if (mode === 'memory') {
+                memStore = memStore.filter(function (i) { return i.id !== id; });
+                return true;
+            }
+            return tx('readwrite', function (s) { return s.delete(id); })
+                .catch(function (err) {
+                    useMemoryFrom(err);
+                    memStore = memStore.filter(function (i) { return i.id !== id; });
+                    return true;
+                });
+        });
+    }
+
+    function allItems() {
+        return ensureStorage().then(function (mode) {
+            if (mode === 'memory') return memStore.slice();
+            return tx('readonly', function (s) { return s.getAll(); })
+                .catch(function (err) { useMemoryFrom(err); return memStore.slice(); });
+        });
+    }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
     function newId() {
@@ -383,19 +452,21 @@
             .then(notifyChange);
     }
 
-    // Merely touching window.indexedDB throws a SecurityError in some privacy
-    // modes rather than returning undefined, so this has to be guarded.
+    // Always true now: there is a memory tier under IndexedDB, so the queue can
+    // always accept a report. Kept so callers that check it keep working.
     function isAvailable() {
-        try { return !!window.indexedDB; }
-        catch (e) { return false; }
+        return true;
+    }
+
+    // False means the report is held in memory only and will not survive the
+    // page being closed - the farmer needs telling, because "keep this open"
+    // is something they can actually act on.
+    function isPersistent() {
+        return storageMode !== 'memory';
     }
 
     function init(options) {
         opts = options || {};
-        if (!isAvailable()) {
-            console.warn('offline queue unavailable: no IndexedDB');
-            return;
-        }
         window.addEventListener('online', function () { flush(); });
         document.addEventListener('visibilitychange', function () {
             if (document.visibilityState === 'visible') flush();
@@ -413,6 +484,7 @@
         flush: flush,
         summary: summary,
         isAvailable: isAvailable,
+        isPersistent: isPersistent,
         isNetworkError: isNetworkError,
         definitelyOffline: definitelyOffline,
         translate: translate
