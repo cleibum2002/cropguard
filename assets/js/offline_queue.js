@@ -158,9 +158,24 @@
     // the input gave us. A File is a live reference to a path on disk, and on
     // Android the camera's temp file can be gone by the time we replay - which
     // would fail long after the farmer was told the report was saved.
+    // Blob.arrayBuffer() only exists from Chrome 76 / Android WebView 76. A
+    // farmer's phone can easily be older than that, and without this the queue
+    // fails on exactly the handsets that need it most.
+    function readAsArrayBuffer(file) {
+        if (typeof file.arrayBuffer === 'function') {
+            return file.arrayBuffer();
+        }
+        return new Promise(function (resolve, reject) {
+            var reader = new FileReader();
+            reader.onload  = function () { resolve(reader.result); };
+            reader.onerror = function () { reject(reader.error || new Error('Could not read the photo.')); };
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
     function buildItem(fields, files, geoList, userId) {
         var reads = files.map(function (file, i) {
-            return file.arrayBuffer().then(function (buf) {
+            return readAsArrayBuffer(file).then(function (buf) {
                 return {
                     name: file.name,
                     type: file.type,
@@ -368,8 +383,11 @@
             .then(notifyChange);
     }
 
+    // Merely touching window.indexedDB throws a SecurityError in some privacy
+    // modes rather than returning undefined, so this has to be guarded.
     function isAvailable() {
-        return !!window.indexedDB;
+        try { return !!window.indexedDB; }
+        catch (e) { return false; }
     }
 
     function init(options) {
