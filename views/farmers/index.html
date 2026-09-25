@@ -2117,12 +2117,32 @@
                 description:   document.getElementById('description').value
             };
 
+            // The farmer gets the plain sentence; the technical reason goes in
+            // the footer. Without it a failure on someone else's phone is
+            // undiagnosable - all we ever saw was "can't save", which says
+            // nothing about whether storage is blocked, full, or unsupported.
+            const queueFailed = (reason) => {
+                Swal.fire({
+                    icon: 'error',
+                    title: t('sw_generic_error_title'),
+                    text: t('off_cannot_save'),
+                    footer: reason ? ('Details: ' + reason) : undefined,
+                    confirmButtonColor: '#11542e'
+                });
+            };
+
+            const describeError = (err) => {
+                if (!err) return 'unknown';
+                const name = err.name ? err.name + ': ' : '';
+                return name + (err.message || String(err));
+            };
+
             const queueThis = async () => {
                 if (!CropGuardQueue.isAvailable()) {
                     // No IndexedDB (private window, blocked storage). Say so
                     // plainly and leave the modal open rather than claiming a
                     // save that did not happen.
-                    Swal.fire(t('sw_generic_error_title'), t('off_cannot_save'), 'error');
+                    queueFailed('offline storage unavailable on this browser');
                     return;
                 }
                 try {
@@ -2136,7 +2156,7 @@
                     closeModalForce();
                 } catch (err) {
                     console.error('could not queue report', err);
-                    Swal.fire(t('sw_generic_error_title'), t('off_cannot_save'), 'error');
+                    queueFailed(describeError(err));
                 }
             };
 
