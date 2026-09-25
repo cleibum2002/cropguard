@@ -805,7 +805,9 @@
                 off_send_now: "Send now", off_login_now: "Log in",
                 off_saved_title: "Saved on this phone",
                 off_saved_text: "No internet right now. Your report and photos are saved on this phone and will be sent by themselves once you have a signal. Please don't clear your browser data.",
-                off_cannot_save: "This phone can't save the report offline. Please try again when you have a signal.",
+                off_cannot_save: "Something went wrong saving the report. Please try again.",
+                off_saved_temp_title: "Saved — keep this page open",
+                off_saved_temp_text: "No internet right now. Your report is held here and will send by itself once you have a signal. Please keep this page open until then — this phone can't store it in the background.",
                 off_edit_title: "No internet", off_edit_text: "You need a connection to edit a report. Your changes are still here - try again once you have a signal.",
                 sw_bad_format_title: "Unsupported Photo Format", sw_bad_format_text_one: "That file was skipped - only JPG, JPEG, and PNG photos are allowed.",
                 sw_bad_format_text_many: "{n} files were skipped - only JPG, JPEG, and PNG photos are allowed.",
@@ -904,7 +906,9 @@
                 off_send_now: "Ipadala na", off_login_now: "Mag-log in",
                 off_saved_title: "Naka-save sa telepono",
                 off_saved_text: "Walang internet ngayon. Naka-save sa teleponong ito ang iyong ulat at mga larawan, at awtomatikong ipapadala kapag may signal ka na. Huwag pong i-clear ang browser data.",
-                off_cannot_save: "Hindi kayang i-save ng teleponong ito ang ulat offline. Subukan ulit kapag may signal.",
+                off_cannot_save: "May naging problema sa pag-save ng ulat. Pakisubukan ulit.",
+                off_saved_temp_title: "Naka-save — huwag isara ang pahinang ito",
+                off_saved_temp_text: "Walang internet ngayon. Nakatago dito ang iyong ulat at awtomatikong ipapadala kapag may signal na. Huwag pong isara ang pahinang ito hanggang doon.",
                 off_edit_title: "Walang internet", off_edit_text: "Kailangan mo ng koneksyon para mag-edit ng ulat. Nandiyan pa ang mga binago mo - subukan ulit kapag may signal.",
                 sw_bad_format_title: "Hindi Suportadong Format", sw_bad_format_text_one: "Nalaktawan ang file na iyon - JPG, JPEG, at PNG lang ang pinapayagan.",
                 sw_bad_format_text_many: "{n} na file ang nalaktawan - JPG, JPEG, at PNG lang ang pinapayagan.",
@@ -999,7 +1003,9 @@
                 off_send_now: "Ipadala karon", off_login_now: "Pag-log in",
                 off_saved_title: "Na-save sa telepono",
                 off_saved_text: "Walay internet karon. Na-save sa telepono ang imong report ug mga litrato, ug awtomatikong ipadala kung naa nay signal. Ayaw i-clear ang browser data.",
-                off_cannot_save: "Dili makasave ang telepono sa report offline. Sulayi balik kung naa nay signal.",
+                off_cannot_save: "Naay problema sa pag-save sa report. Palihug sulayi balik.",
+                off_saved_temp_title: "Na-save — ayaw isira ni nga page",
+                off_saved_temp_text: "Walay internet karon. Gitipigan dinhi ang imong report ug awtomatikong ipadala kung naa nay signal. Palihug ayaw isira ni nga page hangtod ana.",
                 off_edit_title: "Walay internet", off_edit_text: "Kinahanglan og koneksyon aron mag-edit og report. Naa pa ang imong gibag-o - sulayi balik kung naa nay signal.",
                 sw_bad_format_title: "Dili Suportado nga Format", sw_bad_format_text_one: "Gilaktawan ang maong file - JPG, JPEG, ug PNG ra ang gitugotan.",
                 sw_bad_format_text_many: "{n} ka file ang gilaktawan - JPG, JPEG, ug PNG ra ang gitugotan.",
@@ -2138,19 +2144,17 @@
             };
 
             const queueThis = async () => {
-                if (!CropGuardQueue.isAvailable()) {
-                    // No IndexedDB (private window, blocked storage). Say so
-                    // plainly and leave the modal open rather than claiming a
-                    // save that did not happen.
-                    queueFailed('offline storage unavailable on this browser');
-                    return;
-                }
                 try {
                     await CropGuardQueue.enqueue(fields, selectedFiles, photoGeo, currentFarmerId);
+                    // Persistent storage survives closing the app. The memory
+                    // fallback does not, and that is a condition the farmer can
+                    // actually act on, so it gets said plainly instead of being
+                    // hidden behind the same cheerful message.
+                    const persistent = CropGuardQueue.isPersistent();
                     Swal.fire({
                         icon: 'success',
-                        title: t('off_saved_title'),
-                        text:  t('off_saved_text'),
+                        title: persistent ? t('off_saved_title')  : t('off_saved_temp_title'),
+                        text:  persistent ? t('off_saved_text')   : t('off_saved_temp_text'),
                         confirmButtonColor: '#11542e'
                     });
                     closeModalForce();
