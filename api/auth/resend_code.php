@@ -1,27 +1,58 @@
 <?php
 // File Location: api/auth/resend_code.php
-// Resends the email verification code for an account that hasn't verified yet.
+// Resends the verification code for an account that has not confirmed itself
+// through EITHER channel yet. Accepts a phone number or an email address,
+// because auth.html calls this automatically whenever a blocked login is
+// detected - and a farmer who registered by SMS must not be sent an email.
 session_start();
 header('Content-Type: application/json');
 require_once '../config/db_connection.php';
 require_once '../config/mailer.php';
+require_once '../config/sms.php';
 
 $input = json_decode(file_get_contents("php://input"), true);
-$email = trim($input['email'] ?? '');
+// Key is still "email" on the wire; it now carries either.
+$identifier = trim($input['email'] ?? '');
 
-if (!$email) {
-    echo json_encode(['status' => 'error', 'message' => 'Email is required.']);
+if (!$identifier) {
+    echo json_encode(['status' => 'error', 'message' => 'Email or phone number is required.']);
     exit;
 }
 
-$stmt = $conn->prepare("SELECT User_ID, Fullname, Contact_Number, Email_Verified FROM users WHERE Email = ? AND Email_Verified = 0");
-$stmt->bind_param("s", $email);
+// Unverified means unverified by BOTH channels - the same test login.php now
+// applies. An account that confirmed either one is fully usable and has no
+// code to resend.
+$COLUMNS  = "User_ID, Fullname, Email, Contact_Number, Email_Verified, Phone_Verified";
+$UNVERIFIED = "Email_Verified = 0 AND Phone_Verified = 0";
+$byPhone  = strpos($identifier, '@') === false;
+
+if ($byPhone) {
+    $variants = phMobileVariants($identifier);
+    if (empty($variants)) {
+        echo json_encode(['status' => 'error', 'message' => 'No unverified account found with that phone number.']);
+        exit;
+    }
+    $stmt = $conn->prepare("SELECT $COLUMNS FROM users WHERE Contact_Number IN (?, ?, ?) AND $UNVERIFIED");
+    $stmt->bind_param("sss", $variants[0], $variants[1], $variants[2]);
+} else {
+    $stmt = $conn->prepare("SELECT $COLUMNS FROM users WHERE Email = ? AND $UNVERIFIED");
+    $stmt->bind_param("s", $identifier);
+}
+
 $stmt->execute();
-$user = $stmt->get_result()->fetch_assoc();
+$rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
+// Same reasoning as login: Contact_Number is not unique, and resending to a
+// number shared by several accounts would be ambiguous about whose code it is.
+if (count($rows) > 1) {
+    echo json_encode(['status' => 'error', 'message' => 'This phone number is linked to more than one account. Please use your email address instead.']);
+    exit;
+}
+
+$user = $rows[0] ?? null;
 if (!$user) {
-    echo json_encode(['status' => 'error', 'message' => 'No unverified account found with that email.']);
+    echo json_encode(['status' => 'error', 'message' => 'No unverified account found with those details.']);
     exit;
 }
 
@@ -33,6 +64,22 @@ $update->bind_param("ssi", $new_code, $token_expires, $user['User_ID']);
 $update->execute();
 $update->close();
 
-sendVerificationEmail($email, $user['Fullname'], $new_code); // best-effort
-echo json_encode(['status' => 'success', 'channel' => 'email', 'message' => 'A new code has been sent to your email.']);
+// Both channels are attempted, exactly as registration does, so whichever one
+// the person actually has reaches them. Both are best-effort and neither
+// result is checked - a failed send must not look like a failed resend.
+$sms_sent = false;
+if (!empty($user['Contact_Number'])) {
+    $sms_sent = sendVerificationSms($user['Contact_Number'], $new_code);
+}
+if (!empty($user['Email'])) {
+    sendVerificationEmail($user['Email'], $user['Fullname'], $new_code);
+}
+
+echo json_encode([
+    'status'  => 'success',
+    'channel' => $sms_sent ? 'sms' : 'email',
+    'message' => $sms_sent
+        ? 'A new code has been sent to your phone.'
+        : 'A new code has been sent to your email.'
+]);
 ?>
