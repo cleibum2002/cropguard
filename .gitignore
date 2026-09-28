@@ -8,3 +8,8 @@ vendor/
 # this only stops new ones being picked up by a broad `git add`.
 uploads/evidence/
 uploads/reports/
+
+# Local-only API keys for XAMPP. Railway reads these from its own Variables
+# tab instead. Listed here BEFORE the file was created, so a real key can
+# never reach a commit - Semaphore bans accounts whose key turns up in a repo.
+api/config/local_secrets.php
