@@ -64,6 +64,25 @@ function normalizePhMobile($raw) {
 }
 
 /**
+ * The same number written the three ways it appears in the database, so a
+ * lookup finds the row whichever way it was stored.
+ *
+ * Contact_Number has never had a single format: registration writes
+ * 09XXXXXXXXX, the profile page writes +639XXXXXXXXX, and older rows hold
+ * either. SQL cannot normalize on the fly, so the caller matches on all three
+ * instead. Returns an empty array when the input is not a PH mobile number,
+ * which callers should treat as "no match" rather than searching for nothing.
+ */
+function phMobileVariants($raw) {
+    $local = normalizePhMobile($raw);      // 09XXXXXXXXX
+    if ($local === null) {
+        return [];
+    }
+    $national = '63' . substr($local, 1);  // 639XXXXXXXXX
+    return [$local, '+' . $national, $national];
+}
+
+/**
  * Best-effort, exactly like sendVerificationEmail(): returns false and logs on
  * failure, never throws. Registration must never fail because a text could not
  * be delivered - the account is still created and the email still goes out.
