@@ -152,7 +152,10 @@
             <div class="msg-box error" id="loginError"></div>
             
             <div class="input-group">
-                <input type="email" id="loginEmail" placeholder="Email Address" required>
+                <!-- type="text", not "email": farmers verify by SMS and log in
+                     with the mobile number they registered, which type="email"
+                     would refuse before the form ever submitted. -->
+                <input type="text" id="loginEmail" placeholder="Email or Phone Number" autocomplete="username" required>
             </div>
 
             <div class="input-group">
@@ -204,17 +207,23 @@
         </form>
 
         <form id="verifyForm" class="hidden" onsubmit="event.preventDefault(); handleVerifyCode();">
-            <h1 id="verifyTitle">Verify Your Email</h1>
+            <h1 id="verifyTitle">Verify Your Account</h1>
             <div class="msg-box" id="verifyMsg"></div>
 
-            <p id="verifyInstructions" style="font-size:0.85rem; color:#555; text-align:center; margin-bottom:18px;">We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.</p>
+            <!-- Wording is set by setVerifyChannel() to match where the code
+                 actually went - a farmer who registered gets it by SMS and must
+                 not be told to check an inbox. -->
+            <p id="verifyInstructions" style="font-size:0.85rem; color:#555; text-align:center; margin-bottom:18px;">We've sent a 6-digit verification code. Please enter it below.</p>
 
             <div id="verifyCodeDisplay" style="display:none;">
                 <p id="verifyCodeText"></p>
             </div>
 
             <div class="input-group">
-                <input type="email" id="verifyEmail" placeholder="Email Address" required>
+                <!-- Holds whichever identifier the code was sent to - a phone
+                     number after registering, an email when confirming one
+                     from the profile page. -->
+                <input type="text" id="verifyEmail" placeholder="Email or Phone Number" required>
             </div>
             <input type="hidden" id="verifyCodeInput" required>
             <div id="codeBoxContainer" style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
@@ -315,7 +324,10 @@
                 window.location.replace(data.redirect);
             } else if (data.message && data.message.toLowerCase().includes('verify')) {
                 switchForm('verify');
+                // Whatever they typed at login - phone or email - is what the
+                // resend below will send to, so the screen follows it.
                 document.getElementById('verifyEmail').value = email;
+                setVerifyChannel(email);
                 handleResendCode();
                 startCountdown(); // fire off a fresh code right away - don't make them notice and click it themselves
             } else {
@@ -338,6 +350,19 @@
             return "No internet connection. Check your signal, then tap the button again.";
         }
         return "Something went wrong. Please try again.";
+    }
+
+    // Points the verify screen at wherever the code was actually sent. An '@'
+    // is the only thing separating the two identifiers, same rule the server
+    // uses in login.php, verify_code.php and resend_code.php.
+    function setVerifyChannel(identifier) {
+        const isPhone = identifier && identifier.indexOf('@') === -1;
+        document.getElementById('verifyTitle').innerText = isPhone
+            ? 'Verify Your Phone Number'
+            : 'Verify Your Email';
+        document.getElementById('verifyInstructions').innerText = isPhone
+            ? "We've sent a 6-digit code by text message to " + identifier + ". Please enter it below."
+            : "We've sent a 6-digit code to your email. Please check your inbox (and spam folder) and enter it below.";
     }
 
     function validatePasswordStrength(password) {
@@ -419,7 +444,11 @@
             
             if(data.status === 'success') {
                 switchForm('verify');
-                document.getElementById('verifyEmail').value = email;
+                // The phone, not the email: registration now verifies the number
+                // the code was actually texted to. switchForm() resets the form,
+                // so this has to come after it.
+                document.getElementById('verifyEmail').value = contact;
+                setVerifyChannel(contact);
                 document.getElementById('verifyCodeText').innerText = data.verification_code || '';
                 document.getElementById('registerForm').reset();
                 document.querySelector('.code-digit').focus();
@@ -532,7 +561,7 @@
 
         if (!email) {
             msgBox.className = 'msg-box error';
-            msgBox.innerText = 'Please enter your email above first.';
+            msgBox.innerText = 'Please enter your email or phone number above first.';
             return;
         }
 
