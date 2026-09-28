@@ -21,8 +21,13 @@ $input   = json_decode(file_get_contents('php://input'), true);
 $fullname = strip_tags(trim($input['fullname'] ?? ''));
 $email    = trim($input['email']    ?? '');
 $contact  = trim($input['contact']  ?? '');
-$rsba     = trim($input['rsba']     ?? '');
-$rsba     = $rsba === '' ? null : $rsba; // UNIQUE constraint on RSBA_No treats '' as a real duplicate value across every unassigned farmer - NULL is the correct "not set" value instead
+// RSBA_No is deliberately NOT read from the request any more. This endpoint
+// accepted it and wrote it with no role check and no format validation, so a
+// farmer could POST their own RSBSA and walk straight past the Admin
+// verification that gates damage reporting - the disabled input on the profile
+// page was the only thing stopping them, and a disabled input stops nobody.
+// It is assigned by an Admin through api/masterfile/farmers/update_rsbsa.php,
+// which does check the role, the format and uniqueness.
 $area     = trim($input['area']     ?? '');
 $password = $input['password']      ?? '';
 
@@ -34,6 +39,21 @@ if (!$fullname || !$email) {
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['status' => 'error', 'message' => 'Invalid email format.']);
     exit;
+}
+
+// Never validated before, which was harmless while this column was only
+// displayed. It is now the channel a verification code travels down, so a typo
+// here silently cuts the farmer off from ever receiving one. Stored in the same
+// normalized 09XXXXXXXXX form registration uses, so the two paths stop writing
+// two different shapes into one column.
+require_once '../config/sms.php';
+if ($contact !== '') {
+    $normalized_contact = normalizePhMobile($contact);
+    if ($normalized_contact === null) {
+        echo json_encode(['status' => 'error', 'message' => 'Please enter a valid Philippine mobile number, for example 09171234567.']);
+        exit;
+    }
+    $contact = $normalized_contact;
 }
 
 // Same 8-character + special-symbol rule enforced at registration and by
@@ -86,32 +106,32 @@ try {
         if ($password) {
             $hashed = hashUserPassword($password);
             $stmt   = $conn->prepare(
-                "UPDATE users SET Fullname = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ?,
+                "UPDATE users SET Fullname = ?, Contact_Number = ?, Assigned_Area = ?, Password = ?,
                  Pending_Email = ?, Verification_Token = ?, Verification_Token_Expires = ?
                  WHERE User_ID = ?"
             );
-            $stmt->bind_param("ssssssssi", $fullname, $contact, $rsba, $area, $hashed, $email, $new_code, $token_expires, $user_id);
+            $stmt->bind_param("sssssssi", $fullname, $contact, $area, $hashed, $email, $new_code, $token_expires, $user_id);
         } else {
             $stmt = $conn->prepare(
-                "UPDATE users SET Fullname = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?,
+                "UPDATE users SET Fullname = ?, Contact_Number = ?, Assigned_Area = ?,
                  Pending_Email = ?, Verification_Token = ?, Verification_Token_Expires = ?
                  WHERE User_ID = ?"
             );
-            $stmt->bind_param("sssssssi", $fullname, $contact, $rsba, $area, $email, $new_code, $token_expires, $user_id);
+            $stmt->bind_param("ssssssi", $fullname, $contact, $area, $email, $new_code, $token_expires, $user_id);
         }
     } else if ($password) {
         $hashed = hashUserPassword($password);
         $stmt   = $conn->prepare(
-            "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ?, Password = ? 
+            "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, Assigned_Area = ?, Password = ? 
              WHERE User_ID = ?"
         );
-        $stmt->bind_param("ssssssi", $fullname, $email, $contact, $rsba, $area, $hashed, $user_id);
+        $stmt->bind_param("sssssi", $fullname, $email, $contact, $area, $hashed, $user_id);
     } else {
         $stmt = $conn->prepare(
-            "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, RSBA_No = ?, Assigned_Area = ? 
+            "UPDATE users SET Fullname = ?, Email = ?, Contact_Number = ?, Assigned_Area = ? 
              WHERE User_ID = ?"
         );
-        $stmt->bind_param("sssssi", $fullname, $email, $contact, $rsba, $area, $user_id);
+        $stmt->bind_param("ssssi", $fullname, $email, $contact, $area, $user_id);
     }
 
     if (!$stmt->execute()) throw new Exception($stmt->error);
