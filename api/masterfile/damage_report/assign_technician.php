@@ -30,11 +30,43 @@ try {
         exit;
     }
 
-    $query = "UPDATE damage_report 
-              SET Technician_ID = ?, 
+    // The chosen user must actually be a Technician - the dropdown only lists
+    // them, but the request could name any User_ID.
+    $techCheck = $conn->prepare("SELECT User_ID FROM users WHERE User_ID = ? AND Role = 'Technician' AND STATUS = 'Active'");
+    $techCheck->bind_param("i", $techId);
+    $techCheck->execute();
+    if (!$techCheck->get_result()->fetch_assoc()) {
+        $techCheck->close();
+        echo json_encode(["status" => "error", "message" => "Please choose a valid, active technician."]);
+        exit;
+    }
+    $techCheck->close();
+
+    // Only a validated report can be assigned a technician. Checked with a
+    // SELECT rather than an affected-rows count, so re-assigning the same
+    // technician and date (which changes no columns) isn't mistaken for a
+    // failure. Stops an already-inspected/approved/rejected/archived report
+    // being dragged back to 'Validated'.
+    $statusStmt = $conn->prepare("SELECT Status FROM damage_report WHERE Damage_Report_ID = ?");
+    $statusStmt->bind_param("i", $reportId);
+    $statusStmt->execute();
+    $statusRow = $statusStmt->get_result()->fetch_assoc();
+    $statusStmt->close();
+
+    if (!$statusRow) {
+        echo json_encode(["status" => "error", "message" => "Report not found."]);
+        exit;
+    }
+    if ($statusRow['Status'] !== 'Validated') {
+        echo json_encode(["status" => "error", "message" => "This report can't be assigned right now - it must be validated first, and not already inspected or finalised. Please refresh."]);
+        exit;
+    }
+
+    $query = "UPDATE damage_report
+              SET Technician_ID = ?,
                   Visit_Date    = ?,
-                  Status        = 'Validated' 
-              WHERE Damage_Report_ID = ?";
+                  Status        = 'Validated'
+              WHERE Damage_Report_ID = ? AND Status = 'Validated'";
 
     $stmt = $conn->prepare($query);
     if (!$stmt) throw new Exception($conn->error);
@@ -46,6 +78,7 @@ try {
     } else {
         throw new Exception($stmt->error);
     }
+    $stmt->close();
 
 } catch (Throwable $e) {
     echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
