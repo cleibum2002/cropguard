@@ -3,7 +3,6 @@
 session_start();
 header('Content-Type: application/json');
 require_once '../config/db_connection.php';
-require_once '../config/sms.php';   // phMobileVariants() for logging in by phone
 
 // Same 8-character + special-symbol rule enforced at registration and by Admin/MAO's
 // user management (api/auth/register.php, api/masterfile/users/create.php|update.php).
@@ -21,46 +20,18 @@ if (isset($input['email'], $input['password'])) {
     $email = trim($input['email']);
     $password = $input['password'];
 
-    // Farmers verify by SMS and many of them do not use email at all, so this
-    // one field accepts either. An '@' is the only thing that distinguishes
-    // them - no phone number contains one, and every address does.
+    // Email only. Logging in by phone number was removed along with SMS
+    // verification - Contact_Number has no unique key, so it was never a safe
+    // login identifier anyway.
     $COLUMNS = "User_ID, Role, Fullname, Password, STATUS, Email_Verified, Phone_Verified, Failed_Login_Attempts, Lockout_Until";
-    $user = null;
 
-    if (strpos($email, '@') !== false) {
-        // BINARY kept: this is how the column has always been matched here.
-        $stmt = $conn->prepare("SELECT $COLUMNS FROM users WHERE BINARY Email = ?");
-        $stmt->bind_param("s", $email);
-        $stmt->execute();
-        $user = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        $stmt = null;   // the isset() guard further down must not re-close it
-    } else {
-        // Contact_Number is stored in three different shapes across existing
-        // rows, so match all of them rather than trusting one.
-        $variants = phMobileVariants($email);
-        if (!empty($variants)) {
-            $stmt = $conn->prepare("SELECT $COLUMNS FROM users WHERE Contact_Number IN (?, ?, ?)");
-            $stmt->bind_param("sss", $variants[0], $variants[1], $variants[2]);
-            $stmt->execute();
-            $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-            $stmt->close();
-            $stmt = null;
-
-            // Contact_Number has no unique key and seeded accounts genuinely
-            // share a number. Logging someone into whichever row came back
-            // first could sign a farmer into the Admin account, so refuse and
-            // send them to the identifier that is guaranteed unique.
-            if (count($rows) > 1) {
-                echo json_encode([
-                    'status'  => 'error',
-                    'message' => 'This phone number is linked to more than one account. Please log in with your email address instead.'
-                ]);
-                exit;
-            }
-            $user = $rows[0] ?? null;
-        }
-    }
+    // BINARY kept: this is how the column has always been matched here.
+    $stmt = $conn->prepare("SELECT $COLUMNS FROM users WHERE BINARY Email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $user = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    $stmt = null;   // the isset() guard further down must not re-close it
 
     if ($user) {
         $is_valid = false;
@@ -117,13 +88,12 @@ if (isset($input['email'], $input['password'])) {
                     $redirect_url = 'index.html'; // Fallback
             }
 
-            // An account must be confirmed through at least ONE channel, not a
-            // specific one. Farmers now prove their phone by SMS at
-            // registration and may never verify their email; staff created by
-            // an Admin still prove their email and may have no usable number.
-            // Requiring a particular column would have locked out every
-            // existing account on the system - they all carry Email_Verified=1
-            // and Phone_Verified=0.
+            // New accounts verify by email only. Phone_Verified still counts
+            // here for one reason: farmers who registered while SMS
+            // verification was live confirmed their phone and may never have
+            // verified their email. Dropping this check would lock them out of
+            // accounts they legitimately own. Nothing sets Phone_Verified any
+            // more, so no new account can take this path.
             $emailOk = (int)($user['Email_Verified'] ?? 0) === 1;
             $phoneOk = (int)($user['Phone_Verified'] ?? 0) === 1;
 
@@ -131,7 +101,7 @@ if (isset($input['email'], $input['password'])) {
                 // auth.html decides whether to show the code screen by looking
                 // for the word "verify" in this message - there is no status
                 // code. Reword with care.
-                echo json_encode(['status' => 'error', 'message' => 'Please verify your account before logging in. Check your phone for the verification code we sent.']);
+                echo json_encode(['status' => 'error', 'message' => 'Please verify your email before logging in. Check your inbox for the verification code.']);
                 exit;
             }
 

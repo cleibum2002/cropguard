@@ -13,10 +13,10 @@ $user_id = $_SESSION['User_ID'];
 
 try {
     $stmt = $conn->prepare(
-        // Email_Verified and Phone_Verified are selected so the page can show
-        // which of the two an account has actually confirmed. A farmer now
-        // registers by verifying their PHONE, so they arrive here with an
-        // unverified email and need somewhere to finish that off.
+        // Email_Verified drives the profile page's "Not verified / Verify now"
+        // notice. Farmers who registered while SMS verification was live
+        // confirmed their phone instead, so their email may still be
+        // unverified and this is where they finish it off.
         "SELECT User_ID, Role, Fullname, Email, Pending_Email, Contact_Number, RSBA_No, Assigned_Area, STATUS,
                 Email_Verified, Phone_Verified
          FROM users WHERE User_ID = ?"

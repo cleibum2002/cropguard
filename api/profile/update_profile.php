@@ -41,12 +41,10 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// Never validated before, which was harmless while this column was only
-// displayed. It is now the channel a verification code travels down, so a typo
-// here silently cuts the farmer off from ever receiving one. Stored in the same
-// normalized 09XXXXXXXXX form registration uses, so the two paths stop writing
-// two different shapes into one column.
-require_once '../config/sms.php';
+// The farmer's contact number - MAO and Admin rely on it to reach them. Stored
+// in the same normalized 09XXXXXXXXX form registration uses, so the two paths
+// don't write two different shapes into one column.
+require_once '../config/phone.php';
 if ($contact !== '') {
     $normalized_contact = normalizePhMobile($contact);
     if ($normalized_contact === null) {

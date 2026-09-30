@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 require_once '../config/db_connection.php'; // Adjust this path if your config is located elsewhere
 require_once '../config/mailer.php';
-require_once '../config/sms.php';
+require_once '../config/phone.php';
 
 function validatePasswordStrength($password) {
     if (strlen($password) < 8) {
@@ -57,10 +57,9 @@ try {
         exit;
     }
 
-    // Nothing has ever validated this column, which was harmless while it was
-    // only stored and displayed. It is now the channel the verification code
-    // travels down, so a typo here means the farmer simply never receives it.
-    // Caught at registration, where they can still fix it.
+    // The farmer's contact number. Not used for verification (that is email
+    // only), but MAO and Admin rely on it to reach the farmer, so a malformed
+    // number is caught here while the farmer can still fix it.
     $normalized_contact = normalizePhMobile($data->contact_number);
     if ($normalized_contact === null) {
         echo json_encode([
@@ -76,8 +75,8 @@ try {
     // so an unauthenticated registration was a route to stored XSS in staff
     // browsers. Names never legitimately contain markup.
     $name = $conn->real_escape_string(strip_tags(trim($data->full_name)));
-    // Stored in the normalized 09XXXXXXXXX form, so every later SMS to this
-    // farmer works regardless of how they originally typed it.
+    // Stored in the normalized 09XXXXXXXXX form so the column stays consistent
+    // regardless of how the farmer originally typed it.
     $contact = $conn->real_escape_string($normalized_contact);
     $email = $conn->real_escape_string($data->email);
     // Hash the password securely!
@@ -110,12 +109,7 @@ try {
     $insert_stmt->bind_param("sssssss", $role, $name, $contact, $email, $hashed_pass, $verification_code, $token_expires);
 
     if ($insert_stmt->execute()) {
-        // SMS is the channel that actually reaches a farmer; email stays as a
-        // second attempt so a failed send, an empty credit balance or a sender
-        // name still awaiting carrier approval can never block a registration.
-        // Both are best-effort and both results are deliberately ignored.
-        sendVerificationSms($normalized_contact, $verification_code);
-        sendVerificationEmail($email, $name, $verification_code);
+        sendVerificationEmail($email, $name, $verification_code); // best-effort, result intentionally ignored
         // The code is deliberately NOT returned in this response. Handing it to
         // whoever submitted the form defeats the entire point of verifying that
         // they control the email address - and it was plainly visible in the
