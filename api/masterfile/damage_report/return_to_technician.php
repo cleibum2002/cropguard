@@ -23,12 +23,20 @@ $reason = trim($data->reason ?? '');
 $reasonNote = $reason !== '' ? $reason : 'Please review and re-submit your field findings.';
 
 try {
-    // Reset status back to 'Validated' so it reappears in the technician's Pending Inspection
-    // queue, and append the reason to Description so the technician can see why it was returned.
-    $stmt = $conn->prepare("UPDATE damage_report SET Status = 'Validated', Description = CONCAT(IFNULL(Description, ''), '\n\n--- RETURNED FOR REVISION ---\n', ?) WHERE Damage_Report_ID = ?");
+    // Reset status back to 'Validated' so it reappears in the technician's Pending
+    // Inspection queue, and append the reason to Description so the technician can
+    // see why it was returned. Only a report that is currently 'Inspected' can be
+    // returned - not one that was already approved, rejected or archived.
+    $stmt = $conn->prepare("UPDATE damage_report SET Status = 'Validated', Description = CONCAT(IFNULL(Description, ''), '\n\n--- RETURNED FOR REVISION ---\n', ?) WHERE Damage_Report_ID = ? AND Status = 'Inspected'");
     $stmt->bind_param("si", $reasonNote, $report_id);
     $stmt->execute();
+    $affected = $stmt->affected_rows;
     $stmt->close();
+
+    if ($affected === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'This report can only be returned while it is awaiting review after inspection. Please refresh.']);
+        exit;
+    }
 
     echo json_encode(['status' => 'success', 'message' => 'Report returned to technician for re-inspection.']);
 } catch (Exception $e) {

@@ -75,10 +75,18 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
         $crop_name = $info['Crop_Name'] ?? "Crop";
         $stmtInfo->close();
 
-        // STEP 2: Update Damage Report Status to 'Approved'
-        $stmt1 = $conn->prepare("UPDATE damage_report SET Status = 'Approved', Approved_By = ? WHERE Damage_Report_ID = ?");
+        // STEP 2: Update Damage Report Status to 'Approved'.
+        // Only a report that hasn't been finalised yet can be approved. The
+        // status condition makes this atomic and idempotent: if the report is
+        // already Approved/Rejected/Archived (e.g. a second click, or a second
+        // tab), this UPDATE matches 0 rows and we abort the whole transaction -
+        // so the stock deducted above is rolled back and never double-counted.
+        $stmt1 = $conn->prepare("UPDATE damage_report SET Status = 'Approved', Approved_By = ? WHERE Damage_Report_ID = ? AND Status IN ('Pending','Validated','Inspected')");
         $stmt1->bind_param("ii", $admin_id, $report_id);
         $stmt1->execute();
+        if ($stmt1->affected_rows === 0) {
+            throw new Exception("This report can no longer be approved - it may already be approved, rejected or archived. Please refresh and check.");
+        }
 
         // STEP 3: Create the Aid Distribution record 
         // Added Farmer_ID to the insert to match your DB schema

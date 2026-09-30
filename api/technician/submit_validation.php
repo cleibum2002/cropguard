@@ -20,26 +20,48 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         exit;
     }
 
+    // Severity must be one of the technician's confirmed values - same list
+    // api/technician/update_inspection.php enforces. Without this, the legacy
+    // 'Low'/'High' values (still in the column's enum) or any other string
+    // could be written.
+    $allowed_severities = ['Minimal', 'Light', 'Moderate', 'Severe', 'Total Loss'];
+    if (!in_array($final_severity, $allowed_severities, true)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please choose a valid severity level.']);
+        exit;
+    }
+
     $conn->begin_transaction();
 
     try {
-        // 1. UPDATE THE DAMAGE REPORT
-        $query = "UPDATE damage_report 
-                  SET Description = CONCAT(IFNULL(Description, ''), '\n\n--- TECH FINDINGS ---\n', ?), 
-                      Damage_Severity = ?, 
+        // 1. UPDATE THE DAMAGE REPORT. The Status = 'Validated' condition means a
+        //    technician can only inspect a report that is currently assigned and
+        //    awaiting inspection - not re-open one that has already been approved,
+        //    rejected or inspected. (Corrections before approval go through
+        //    update_inspection.php instead.)
+        $query = "UPDATE damage_report
+                  SET Description = CONCAT(IFNULL(Description, ''), '\n\n--- TECH FINDINGS ---\n', ?),
+                      Damage_Severity = ?,
                       Status = 'Inspected',
                       Is_Inspected = 1
-                  WHERE Damage_Report_ID = ? AND Technician_ID = ?";
-                
+                  WHERE Damage_Report_ID = ? AND Technician_ID = ? AND Status = 'Validated'";
+
         $stmt = $conn->prepare($query);
         $stmt->bind_param("ssii", $findings, $final_severity, $report_id, $tech_id);
         $stmt->execute();
 
         if ($stmt->affected_rows === 0) {
-            $check = $conn->query("SELECT * FROM damage_report WHERE Damage_Report_ID = $report_id AND Technician_ID = $tech_id");
-            if($check->num_rows === 0) {
+            // Distinguish "not yours" from "not in an inspectable state" so the
+            // technician gets a message that actually explains it.
+            $stmt->close();
+            $check = $conn->prepare("SELECT Status FROM damage_report WHERE Damage_Report_ID = ? AND Technician_ID = ?");
+            $check->bind_param("ii", $report_id, $tech_id);
+            $check->execute();
+            $row = $check->get_result()->fetch_assoc();
+            $check->close();
+            if (!$row) {
                 throw new Exception("Report not found or not assigned to you.");
             }
+            throw new Exception("This report is no longer awaiting your inspection (its status is now {$row['Status']}). Please refresh.");
         }
         $stmt->close();
 
