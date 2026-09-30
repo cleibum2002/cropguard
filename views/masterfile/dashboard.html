@@ -792,7 +792,7 @@
                         try {
                             const res  = await fetch("../../api/masterfile/damage_report/approve_with_aid.php", {
                                 method: "POST", headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ report_id: reportId, category: selectedItem.item_name, quantity: qty, unit: selectedItem.unit })
+                                body: JSON.stringify({ report_id: reportId, item_id: itemId, category: selectedItem.item_name, quantity: qty, unit: selectedItem.unit })
                             });
                             const data = await res.json();
                             if (data.status === 'success') { Swal.fire('Approved!', 'Report has been approved and aid allocated.', 'success'); closeReviewModal(); loadData(); loadMasterfileItems(); }

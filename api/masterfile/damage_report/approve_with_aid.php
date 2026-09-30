@@ -22,15 +22,29 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
     $cat = $input['category'];
     $qty = (float)$input['quantity'];
     $unit = $input['unit'];
-    // Optional for backward compatibility - older/other callers may not send this yet.
+    // Required. This used to be optional "for backward compatibility", and the
+    // Dashboard's approval call left it out - so the server skipped the whole
+    // stock block below and approved the aid without ever deducting inventory.
+    // Every approval must name the inventory item it draws from, or stock and
+    // the aid ledger silently drift apart. Both callers (this dashboard and
+    // damage_reports.html) send it; there are no others.
     $item_id = !empty($input['item_id']) ? (int)$input['item_id'] : null;
 
+    if (!$item_id) {
+        echo json_encode(['status' => 'error', 'message' => 'Please select the relief item this aid is drawn from.']);
+        exit;
+    }
+    if ($qty <= 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Aid quantity must be greater than zero.']);
+        exit;
+    }
+
     $conn->begin_transaction();
-    
+
     try {
-        // If a real inventory item was selected, re-verify stock server-side
-        // (never trust the frontend's own stock check alone) and reserve it now.
-        if ($item_id) {
+        // Re-verify stock server-side (never trust the frontend's own check) and
+        // reserve it now.
+        {
             $stmtStock = $conn->prepare("SELECT current_stock FROM masterfile_items WHERE id = ? FOR UPDATE");
             $stmtStock->bind_param("i", $item_id);
             $stmtStock->execute();

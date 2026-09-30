@@ -45,7 +45,7 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
         // Need the CURRENT email on file to know whether Admin is actually
         // changing it - only then does verification apply. Every other edit
         // (name, role, status, contact, password) never needs it.
-        $checkStmt = $conn->prepare("SELECT Email, Email_Verified FROM users WHERE User_ID = ?");
+        $checkStmt = $conn->prepare("SELECT Email, Email_Verified, Role, STATUS FROM users WHERE User_ID = ?");
         $checkStmt->bind_param("i", $data->id);
         $checkStmt->execute();
         $currentUser = $checkStmt->get_result()->fetch_assoc();
@@ -54,6 +54,19 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
         if (!$currentUser) {
             echo json_encode(['status' => 'error', 'message' => 'User not found.']);
             exit;
+        }
+
+        // An Admin editing their OWN account may change their name, email,
+        // contact and password, but never their own Role or Status - that is
+        // the self-lockout path (demote yourself to MAO, or deactivate
+        // yourself, and you can't get back in). The value is forced back to
+        // what is stored rather than erroring, so a legitimate self-edit of the
+        // other fields still goes through. The frontend also disables these two
+        // controls, but this is the guard that actually holds against a crafted
+        // request.
+        if ((int)$data->id === (int)$_SESSION['User_ID']) {
+            $data->role   = $currentUser['Role'];
+            $data->status = $currentUser['STATUS'];
         }
 
         // If the account was never actually verified in the first place (e.g. a
