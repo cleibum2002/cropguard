@@ -12,6 +12,14 @@ require_once '../../config/db_connection.php';
 
 $data = json_decode(file_get_contents("php://input"));
 
+// An Admin cannot deactivate the account they are logged in with - that locks
+// them straight out. Enforced here, not just by hiding the button. Ask another
+// Admin to do it if it's genuinely needed.
+if (!empty($data->id) && (int)$data->id === (int)$_SESSION['User_ID']) {
+    echo json_encode(['status' => 'error', 'message' => "You can't deactivate your own account."]);
+    exit;
+}
+
 if (!empty($data->id)) {
     try {
         // We do a 'soft delete' by changing the status to Inactive, preventing them from logging in.

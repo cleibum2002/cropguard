@@ -24,6 +24,10 @@
                 const sidebarNameEl = document.getElementById('adminNameSidebar');
                 if (nameEl) nameEl.innerText = data.user.fullname;
                 if (sidebarNameEl) sidebarNameEl.innerText = data.user.fullname;
+                CURRENT_USER_ID = data.user.id;
+                // The table may have already rendered before this resolved -
+                // redraw so the "(YOU)" row and its locked actions appear.
+                if (typeof renderTable === 'function' && allData.length) renderTable();
             }
         });
     </script>
@@ -221,6 +225,9 @@
                         </select>
                     </div>
                 </div>
+                <p id="selfEditNotice" class="hidden text-[11px] text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 flex items-center gap-2" data-i18n="self_edit_notice">
+                    <i class="fa-solid fa-circle-info"></i> This is your own account — you can't change your own role or status.
+                </p>
             </div>
             <div class="p-5 sm:p-7 pt-3 sm:pt-4 border-t border-gray-50 flex gap-3 flex-shrink-0">
                 <button onclick="closeModal()" class="flex-1 py-3 sm:py-3.5 text-gray-400 font-bold hover:bg-gray-50 rounded-xl transition-all text-sm" data-i18n="btn_cancel">Cancel</button>
@@ -237,6 +244,8 @@
                 search_placeholder: "Search name or email...",
                 filter_all_roles: "All Roles", filter_all_statuses: "All Statuses", opt_role_admin: "Admin", opt_role_mao: "MAO",
                 opt_role_technician: "Technician", opt_role_farmer: "Farmer", opt_select_role: "Select Role...",
+                label_you: "You", self_edit_notice: "This is your own account — you can't change your own role or status.",
+                sw_self_role_blocked: "You can't change your own role or status. Ask another administrator.",
                 offline_ready: "Offline Mode Ready",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 page_title: "System Users", page_sub: "DA Region X — Manage access and credentials for all roles.",
@@ -271,6 +280,8 @@
                 search_placeholder: "Maghanap ng pangalan o email...",
                 filter_all_roles: "Lahat ng Tungkulin", filter_all_statuses: "Lahat ng Katayuan", opt_role_admin: "Admin", opt_role_mao: "MAO",
                 opt_role_technician: "Technician", opt_role_farmer: "Magsasaka", opt_select_role: "Pumili ng Tungkulin...",
+                label_you: "Ikaw", self_edit_notice: "Ito ang sarili mong account — hindi mo mababago ang sarili mong tungkulin o katayuan.",
+                sw_self_role_blocked: "Hindi mo mababago ang sarili mong tungkulin o katayuan. Magpatulong sa ibang administrator.",
                 offline_ready: "Handa ang Offline Mode",
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
                 page_title: "Mga User ng Sistema", page_sub: "DA Region X — Pamahalaan ang access at kredensyal para sa lahat ng tungkulin.",
@@ -318,6 +329,11 @@
 
         const API_URL = "../../api/masterfile/users/";
         let allData = [], filteredData = [], currentPage = 1, rowsPerPage = 10;
+        // The id of the Admin viewing this page, from the session. Used to mark
+        // their own row "(YOU)" and to stop them demoting, deactivating or
+        // deleting the account they are logged in with. The server enforces the
+        // same rules - this is only the visible half.
+        let CURRENT_USER_ID = null;
 
         document.addEventListener("DOMContentLoaded", loadTable);
         document.addEventListener("DOMContentLoaded", loadAdminNotifications);
@@ -413,6 +429,7 @@
                 : `<tr><td colspan="5" class="px-6 py-10 text-center text-gray-400 italic text-sm">${t('no_users_found')}</td></tr>`;
 
             items.forEach(item => {
+                const isSelf = CURRENT_USER_ID !== null && String(item.id) === String(CURRENT_USER_ID);
                 const statusColor = item.status === 'Active'
                     ? 'bg-green-100 text-green-700'
                     : 'bg-red-100 text-red-700';
@@ -427,7 +444,7 @@
                     <tr class="hover:bg-gray-50/60 transition-all">
                         <td class="px-6 py-4 font-bold text-gray-300 text-center text-sm">#${item.id}</td>
                         <td class="px-6 py-4">
-                            <p class="text-sm font-black text-gray-800">${item.fullname}</p>
+                            <p class="text-sm font-black text-gray-800">${item.fullname}${isSelf ? ` <span class="ml-1 px-1.5 py-0.5 bg-[#11542e] text-white rounded text-[9px] font-black uppercase tracking-wide align-middle">${t('label_you')}</span>` : ''}</p>
                             <p class="text-[10px] text-gray-400">${item.email || t('label_no_email')} ${item.contact_number ? '• ' + item.contact_number : ''}</p>
                         </td>
                         <td class="px-6 py-4">
@@ -443,13 +460,13 @@
                                 <button onclick="editItem(${item.id})" class="w-9 h-9 bg-blue-50 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all flex items-center justify-center">
                                     <i class="fa-solid fa-pen-to-square text-xs"></i>
                                 </button>
-                                ${item.status === 'Active' ? `
+                                ${isSelf ? '' : (item.status === 'Active' ? `
                                 <button onclick="deleteItem(${item.id})" class="w-9 h-9 bg-red-50 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all flex items-center justify-center" title="${t('title_deactivate')}">
                                     <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>` : `
                                 <button onclick="activateItem(${item.id})" class="w-9 h-9 bg-green-50 text-green-500 rounded-xl hover:bg-green-500 hover:text-white transition-all flex items-center justify-center" title="${t('title_activate')}">
                                     <i class="fa-solid fa-rotate-left text-xs"></i>
-                                </button>`}
+                                </button>`)}
                             </div>
                         </td>
                     </tr>`;
@@ -530,6 +547,10 @@
             // created a new Admin account.
             document.getElementById("userRole").value = "";
             document.getElementById("userStatus").value = "Active";
+            // Clear any self-edit lock left over from a previous edit.
+            document.getElementById("userRole").disabled = false;
+            document.getElementById("userStatus").disabled = false;
+            document.getElementById("selfEditNotice").classList.add("hidden");
             document.getElementById("modal").classList.remove("hidden");
         }
 
@@ -545,6 +566,15 @@
             document.getElementById("userPassword").placeholder = t('placeholder_password_hint');
             document.getElementById("userRole").value = i.role;
             document.getElementById("userStatus").value = i.status;
+
+            // Editing your own account: you can change your name, email, contact
+            // and password, but not your own Role or Status - that is how an
+            // Admin locks themselves out. The server refuses it too.
+            const editingSelf = CURRENT_USER_ID !== null && String(i.id) === String(CURRENT_USER_ID);
+            document.getElementById("userRole").disabled = editingSelf;
+            document.getElementById("userStatus").disabled = editingSelf;
+            document.getElementById("selfEditNotice").classList.toggle("hidden", !editingSelf);
+
             document.getElementById("modal").classList.remove("hidden");
         }
 
