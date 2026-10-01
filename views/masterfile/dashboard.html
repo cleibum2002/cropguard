@@ -320,7 +320,7 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase">Quantity</label>
-                            <input type="number" id="adminAidQty" min="1" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500" placeholder="e.g. 2">
+                            <input type="text" inputmode="numeric" id="adminAidQty" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500" placeholder="e.g. 2" oninput="this.value = this.value.replace(/\D/g, '')">
                         </div>
                     </div>
                     <div class="mt-4 flex flex-wrap gap-4 text-xs bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
@@ -782,6 +782,7 @@
             const qty      = document.getElementById('adminAidQty').value;
             if (!itemId) return Swal.fire("Required", "Please select a relief item from the Masterfile.", "warning");
             if (!qty || parseFloat(qty) <= 0) return Swal.fire("Required", "Please enter a valid quantity.", "warning");
+            if (!Number.isInteger(parseFloat(qty))) return Swal.fire("Required", "Aid quantity must be a whole number (no decimals).", "warning");
             const selectedItem = aidInventory.find(i => i.id == itemId);
             if (parseFloat(qty) > parseFloat(selectedItem.current_stock)) {
                 return Swal.fire({ icon: 'error', title: 'Not Enough Stock', text: `You are trying to give ${qty} ${selectedItem.unit}, but there are only ${selectedItem.current_stock} available.` });
