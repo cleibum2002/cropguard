@@ -15,8 +15,8 @@ try {
     if (!$report_id) throw new Exception('Report ID is required.');
 
     // Join damage_report and crop tables so we can get all the details for the form
-    $sql = "SELECT d.Damage_Report_ID, d.Location_ID, d.Crop_ID, d.Damage_Type, d.Damage_Severity, d.Description, 
-                   c.Type_ID, c.Planting_Date, c.Area_Hectares 
+    $sql = "SELECT d.Damage_Report_ID, d.Location_ID, d.Crop_ID, d.Damage_Type, d.Damage_Severity, d.Description,
+                   c.Type_ID, c.Planting_Date, COALESCE(d.Affected_Area, c.Area_Hectares) AS Area_Hectares
             FROM damage_report d
             LEFT JOIN crop c ON d.Crop_ID = c.Crop_ID
             WHERE d.Damage_Report_ID = ? AND d.Farmer_ID = ?";

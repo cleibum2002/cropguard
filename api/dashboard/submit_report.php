@@ -198,11 +198,14 @@ try {
 
     // 4. INSERT OR UPDATE (FIXED: Added Type_ID to INSERT)
     if ($report_id) {
-        $sql_report = "UPDATE damage_report 
-                       SET Location_ID = ?, Crop_ID = ?, Damage_Type = ?, Damage_Severity = ?, Description = ? 
+        // Affected_Area is stored on the report itself, not read from the shared
+        // crop row - so each report keeps the area it was filed with and a later
+        // report (or a farm edit) can never rewrite an earlier report's loss.
+        $sql_report = "UPDATE damage_report
+                       SET Location_ID = ?, Crop_ID = ?, Affected_Area = ?, Damage_Type = ?, Damage_Severity = ?, Description = ?
                        WHERE Damage_Report_ID = ? AND Farmer_ID = ?";
         $stmt_report = $conn->prepare($sql_report);
-        $stmt_report->bind_param("iisssii", $location_id, $crop_id, $damage_type, $severity, $description, $report_id, $farmer_id);
+        $stmt_report->bind_param("iidsssii", $location_id, $crop_id, $area, $damage_type, $severity, $description, $report_id, $farmer_id);
         $stmt_report->execute();
         $success_message = 'Report successfully updated!';
 
@@ -232,13 +235,14 @@ try {
         }
     } else {
         // FIXED: Included Type_ID here so it isn't empty
-        $sql_report = "INSERT INTO damage_report (Farmer_ID, Location_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Client_Token, Status)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending')";
+        $sql_report = "INSERT INTO damage_report (Farmer_ID, Location_ID, Crop_ID, Affected_Area, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Client_Token, Status)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending')";
         $stmt_report = $conn->prepare($sql_report);
+        // Affected_Area is stored per-report (see the UPDATE branch above for why).
         // Farmer_Reported_Severity is a permanent snapshot of what the farmer originally
         // reported. Damage_Severity gets overwritten once a technician inspects the farm,
         // so without this the farmer's original number would be lost forever.
-        $stmt_report->bind_param("iiisssss", $farmer_id, $location_id, $crop_id, $damage_type, $severity, $severity, $description, $client_token);
+        $stmt_report->bind_param("iiidsssss", $farmer_id, $location_id, $crop_id, $area, $damage_type, $severity, $severity, $description, $client_token);
 
         if (!$stmt_report->execute()) {
             // Backstop for the genuine race the SELECT above cannot catch: two
