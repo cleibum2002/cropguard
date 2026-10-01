@@ -96,14 +96,72 @@ try {
     // unlink their evidence photos from disk, and upload photos onto their
     // report. Verify ownership once, here, before anything uses this id.
     if ($report_id) {
-        $ownCheck = $conn->prepare("SELECT 1 FROM damage_report WHERE Damage_Report_ID = ? AND Farmer_ID = ?");
+        $ownCheck = $conn->prepare("SELECT Status FROM damage_report WHERE Damage_Report_ID = ? AND Farmer_ID = ?");
         $ownCheck->bind_param("ii", $report_id, $farmer_id);
         $ownCheck->execute();
-        $ownsReport = $ownCheck->get_result()->fetch_row() !== null;
+        $ownRow = $ownCheck->get_result()->fetch_assoc();
         $ownCheck->close();
 
-        if (!$ownsReport) {
+        if (!$ownRow) {
             throw new Exception('Report not found.');
+        }
+        // A farmer may only edit a report while it is still Pending - before the
+        // MAO office has validated it. After that the report, and in particular
+        // the technician's severity assessment, must not be editable from the
+        // farmer side. The form only shows Edit on Pending rows; this is the
+        // guard that actually holds against a stale tab or a crafted request.
+        if ($ownRow['Status'] !== 'Pending') {
+            $conn->rollback();
+            if (ob_get_length()) ob_clean();
+            echo json_encode(['status' => 'error', 'message' => 'This report has already been reviewed and can no longer be edited.']);
+            exit;
+        }
+    }
+
+    // The selected farm must belong to this farmer and still be active, and the
+    // affected area can't be larger than the farm's own size. The form enforces
+    // all of this, but a crafted request could send any location_id or area.
+    if ($location_id) {
+        $farmStmt = $conn->prepare("SELECT Area_Size, Is_Archived FROM farm_location WHERE Location_ID = ? AND Farmer_ID = ?");
+        $farmStmt->bind_param("ii", $location_id, $farmer_id);
+        $farmStmt->execute();
+        $farm = $farmStmt->get_result()->fetch_assoc();
+        $farmStmt->close();
+
+        if (!$farm) {
+            $conn->rollback();
+            if (ob_get_length()) ob_clean();
+            echo json_encode(['status' => 'error', 'message' => 'The selected farm was not found for your account.']);
+            exit;
+        }
+        if ((int)($farm['Is_Archived'] ?? 0) === 1) {
+            $conn->rollback();
+            if (ob_get_length()) ob_clean();
+            echo json_encode(['status' => 'error', 'message' => 'That farm has been archived and can no longer be used for a report.']);
+            exit;
+        }
+        if ($farm['Area_Size'] !== null && $area > (float)$farm['Area_Size']) {
+            $conn->rollback();
+            if (ob_get_length()) ob_clean();
+            echo json_encode(['status' => 'error', 'message' => 'The affected area cannot be larger than the farm size (' . (float)$farm['Area_Size'] . ' ha).']);
+            exit;
+        }
+    }
+
+    // RSBSA gate for NEW reports: the farmer must have a valid RSBSA on file,
+    // same rule as api/farmer/check_rsbsa.php. The form checks this first, but
+    // the server must never accept a report from a farmer who has none.
+    if (!$report_id) {
+        $rsbaStmt = $conn->prepare("SELECT RSBA_No FROM users WHERE User_ID = ?");
+        $rsbaStmt->bind_param("i", $farmer_id);
+        $rsbaStmt->execute();
+        $rsba = $rsbaStmt->get_result()->fetch_assoc()['RSBA_No'] ?? '';
+        $rsbaStmt->close();
+        if (empty($rsba) || !preg_match('/^\d{3}-\d{4}-\d{5}$/', $rsba)) {
+            $conn->rollback();
+            if (ob_get_length()) ob_clean();
+            echo json_encode(['status' => 'error', 'message' => 'A valid RSBSA number is required in your profile before you can submit a damage report.']);
+            exit;
         }
     }
 
