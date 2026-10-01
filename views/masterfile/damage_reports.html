@@ -272,7 +272,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase" data-i18n="label_quantity">Quantity</label>
-                                    <input type="number" class="adminAidQty w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500" min="1" placeholder="e.g. 2">
+                                    <input type="text" inputmode="numeric" class="adminAidQty w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500" placeholder="e.g. 2" oninput="this.value = this.value.replace(/\D/g, '')">
                                 </div>
                                 <div>
                                     <p class="text-[10px] font-bold text-gray-400 mb-1 uppercase" data-i18n="label_unit">Unit</p>
@@ -475,6 +475,7 @@
                 sw_return_confirm: "Yes, Return It", sw_returned_title: "Returned!", sw_error_title: "Error", sw_server_failed: "Server connection failed.",
                 sw_not_enough_stock_title: "Not Enough Stock", sw_not_enough_stock_text: '"{item}": You want {qty} {unit}, but only {stock} available.',
                 sw_required_title: "Required", sw_required_relief_item: "Please add at least one relief item with a valid quantity.",
+                sw_whole_qty: "Aid quantity must be a whole number (no decimals).",
                 sw_direct_approve_title: "Direct Approve & Allocate Aid?", sw_direct_approve_html: "You are about to approve this report and allocate:",
                 sw_direct_approve_confirm: "Yes, Direct Approve", sw_approved_title: "Approved!", sw_approved_text: "Report approved and all aid items allocated.",
                 sw_required_technician: "Please select a technician.", sw_required_visit_date: "Please set a scheduled visit date.",
@@ -555,6 +556,7 @@
                 sw_return_confirm: "Oo, Ibalik Ito", sw_returned_title: "Naibalik na!", sw_error_title: "Error", sw_server_failed: "Nabigo ang koneksyon sa server.",
                 sw_not_enough_stock_title: "Kulang ang Stock", sw_not_enough_stock_text: '"{item}": Gusto mong bigyan ng {qty} {unit}, pero {stock} lang ang available.',
                 sw_required_title: "Kailangan", sw_required_relief_item: "Magdagdag ng kahit isang item ng tulong na may wastong dami.",
+                sw_whole_qty: "Ang dami ng tulong ay dapat buong numero (walang decimal).",
                 sw_direct_approve_title: "Direktang Aprubahan at Maglaan ng Tulong?", sw_direct_approve_html: "Aaprubahan mo ang ulat na ito at ilalaan ang:",
                 sw_direct_approve_confirm: "Oo, Direktang Aprubahan", sw_approved_title: "Naaprubahan!", sw_approved_text: "Naaprubahan ang ulat at na-allocate na ang lahat ng item ng tulong.",
                 sw_required_technician: "Pumili ng technician.", sw_required_visit_date: "Magtakda ng iskedyul ng pagbisita.",
@@ -1025,7 +1027,16 @@
                 if (itemId && qty && parseFloat(qty) > 0) {
                     const selectedItem = aidInventory.find(i => i.id == itemId);
                     if (!selectedItem) return;
-                    
+
+                    // Aid is handed out in whole units (bags, sacks, whole pesos),
+                    // and stock is a whole number - a fractional quantity would
+                    // leave stock fractional too. Server enforces this as well.
+                    if (!Number.isInteger(parseFloat(qty))) {
+                        hasError = true;
+                        Swal.fire({ icon: 'warning', title: t('sw_required_title'), text: t('sw_whole_qty') });
+                        return;
+                    }
+
                     if (parseFloat(qty) > parseFloat(selectedItem.current_stock)) {
                         hasError = true;
                         Swal.fire({ icon: 'error', title: t('sw_not_enough_stock_title'), 

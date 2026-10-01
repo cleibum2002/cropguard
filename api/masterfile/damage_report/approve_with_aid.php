@@ -34,8 +34,8 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
         echo json_encode(['status' => 'error', 'message' => 'Please select the relief item this aid is drawn from.']);
         exit;
     }
-    if ($qty <= 0) {
-        echo json_encode(['status' => 'error', 'message' => 'Aid quantity must be greater than zero.']);
+    if ($qty <= 0 || floor($qty) != $qty) {
+        echo json_encode(['status' => 'error', 'message' => 'Aid quantity must be a whole number greater than zero.']);
         exit;
     }
 
