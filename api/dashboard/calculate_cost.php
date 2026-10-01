@@ -46,7 +46,7 @@ try {
                 dr.Damage_Severity,
                 dr.Damage_Type,
                 c.Crop_Name,
-                c.Area_Hectares,
+                COALESCE(dr.Affected_Area, c.Area_Hectares) AS Area_Hectares,
                 ct.Commodity_Type,
                 ct.Standard_Production_Cost,
                 ct.Growth_Duration,

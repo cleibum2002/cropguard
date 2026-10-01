@@ -43,13 +43,14 @@ try {
         // farmer-submitted report would need) - the staff member entering it is
         // effectively the one validating it, so they're recorded as such.
         $validated_by = $_SESSION['User_ID'];
-        $queryReport = "INSERT INTO damage_report (Farmer_ID, Crop_ID, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status, Validated_By) VALUES (?, ?, ?, ?, ?, ?, 'Validated', ?)";
+        $queryReport = "INSERT INTO damage_report (Farmer_ID, Crop_ID, Affected_Area, Damage_Type, Damage_Severity, Farmer_Reported_Severity, Description, Status, Validated_By) VALUES (?, ?, ?, ?, ?, ?, ?, 'Validated', ?)";
         $stmtReport = $conn->prepare($queryReport);
         if (!$stmtReport) throw new Exception("Report Insert Error: " . $conn->error);
 
+        // Affected_Area is stored on the report itself (see submit_report.php).
         // Farmer_Reported_Severity permanently snapshots the original value — Damage_Severity
         // gets overwritten later once a technician inspects the farm.
-        $stmtReport->bind_param("iissssi", $farmer_id, $crop_id, $data->damage_type, $data->severity, $data->severity, $data->description, $validated_by);
+        $stmtReport->bind_param("iidssssi", $farmer_id, $crop_id, $area, $data->damage_type, $data->severity, $data->severity, $data->description, $validated_by);
         
         if ($stmtReport->execute()) {
             echo json_encode(["status" => "success", "message" => "Damage Report successfully submitted."]);
