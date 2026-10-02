@@ -160,7 +160,7 @@
                 <!-- Message Input -->
                 <div class="bg-white border-t border-gray-100 p-4 flex-shrink-0">
                     <div class="flex items-center gap-3">
-                        <input type="text" id="messageInput" placeholder="Type a message..."
+                        <input type="text" id="messageInput" placeholder="Type a message..." maxlength="2000"
                             onkeydown="if(event.key==='Enter') sendMessage()"
                             class="flex-1 bg-gray-50 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e] border border-gray-100" data-i18n-placeholder="message_placeholder">
                         <button onclick="sendMessage()" class="w-11 h-11 bg-[#11542e] text-white rounded-full flex items-center justify-center hover:bg-green-800 transition-all shadow-md">
@@ -356,17 +356,24 @@
             const message = input.value.trim();
             if (!message || !selectedUserId) return;
 
-            input.value = '';
-
             try {
-                await fetch('../../api/messages/send_message.php', {
+                const res  = await fetch('../../api/messages/send_message.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ receiver_id: selectedUserId, message })
                 });
+                const data = await res.json();
+                if (data.status !== 'success') {
+                    // Keep what they typed so a rejected send isn't silently lost.
+                    Swal.fire('Message not sent', data.message || 'Please try again.', 'warning');
+                    return;
+                }
+                input.value = '';   // only clear once it actually sent
                 loadMessages();
                 loadUsers(); // move this conversation to the top of the list right away
-            } catch(e) { console.error('Failed to send message', e); }
+            } catch(e) {
+                Swal.fire('Message not sent', 'No connection. Check your signal and try again.', 'warning');
+            }
         }
 
         function goBack() {
