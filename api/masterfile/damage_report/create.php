@@ -55,6 +55,25 @@ try {
         $planting_date = !empty($data->planting_date) ? $data->planting_date : null;
         $farmer_id = (int)$data->farmer_id;
 
+        // The walk-in dropdown lists farmers, but the request could name any id,
+        // so verify server-side that this is a real, active registered farmer -
+        // not an Admin/MAO/Technician, a deactivated account, or a ghost id.
+        // And a walk-in must meet the same RSBSA requirement as a self-filed
+        // report, so the identity check isn't bypassed by filing in person.
+        $fStmt = $conn->prepare("SELECT STATUS, RSBA_No FROM users WHERE User_ID = ? AND Role = 'Farmer'");
+        $fStmt->bind_param("i", $farmer_id);
+        $fStmt->execute();
+        $f = $fStmt->get_result()->fetch_assoc();
+        $fStmt->close();
+        if (!$f || $f['STATUS'] !== 'Active') {
+            echo json_encode(["status" => "error", "message" => "Please choose a valid, active registered farmer."]);
+            exit;
+        }
+        if (empty($f['RSBA_No']) || !preg_match('/^\d{3}-\d{4}-\d{5}$/', $f['RSBA_No'])) {
+            echo json_encode(["status" => "error", "message" => "This farmer has no valid RSBSA number on file. Please set it in Farmer Management before filing a report for them."]);
+            exit;
+        }
+
         // Type_ID set so the crop links to crop_type - this is what makes the
         // estimated relief computable for a walk-in report.
         $queryCrop = "INSERT INTO crop (Crop_Name, Type_ID, Planting_Date, Area_Hectares, Farmer_ID) VALUES (?, ?, ?, ?, ?)";

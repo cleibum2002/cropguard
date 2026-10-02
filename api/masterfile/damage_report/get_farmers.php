@@ -11,7 +11,9 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['MAO', 'Admin'
 try {
     include_once '../../config/db_connection.php'; 
 
-    $query = "SELECT User_ID as id, Fullname as name FROM users WHERE Role = 'Farmer' ORDER BY Fullname ASC";
+    // Active farmers only - a deactivated account must not be selectable for a
+    // new walk-in report.
+    $query = "SELECT User_ID as id, Fullname as name FROM users WHERE Role = 'Farmer' AND STATUS = 'Active' ORDER BY Fullname ASC";
     $result = $conn->query($query);
 
     if (!$result) throw new Exception($conn->error);
