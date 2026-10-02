@@ -356,11 +356,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_crop_name">Crop Name</label>
-                        <input type="text" id="walkinCropName" placeholder="e.g. RC-222" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
+                        <input type="text" id="walkinCropName" maxlength="30" placeholder="e.g. RC-222" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
                     </div>
                     <div>
                         <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="th_crop_details_short">Crop Type</label>
-                        <input type="text" id="walkinCropType" placeholder="e.g. Rice" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
+                        <input type="text" id="walkinCropType" maxlength="15" placeholder="e.g. Rice" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none text-sm font-semibold text-gray-700">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1247,6 +1247,9 @@
 
             if (!farmer_id || !crop_name || !damage_type || !severity) {
                 return Swal.fire(t('sw_missing_fields_title'), t('sw_missing_fields_text'), 'warning');
+            }
+            if (!area || parseFloat(area) <= 0) {
+                return Swal.fire(t('sw_missing_fields_title'), 'Affected area must be greater than 0.', 'warning');
             }
 
             try {
