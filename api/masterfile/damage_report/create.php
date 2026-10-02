@@ -25,8 +25,24 @@ try {
         if (!empty($data->crop_type)) {
             $full_crop_name .= " (" . trim($data->crop_type) . ")";
         }
+        // crop.Crop_Name is varchar(50) - reject an over-long combination with a
+        // clear message instead of a generic DB error or a silent truncation.
+        if (mb_strlen($full_crop_name) > 50) {
+            echo json_encode(["status" => "error", "message" => "The crop name and type are too long together (maximum 50 characters). Please shorten them."]);
+            exit;
+        }
 
         $area = !empty($data->area) ? (float)$data->area : 0.00;
+        // A walk-in report isn't tied to a registered farm, so there's no farm
+        // size to compare against - just require a sensible positive number.
+        if ($area <= 0) {
+            echo json_encode(["status" => "error", "message" => "Affected area must be greater than 0."]);
+            exit;
+        }
+        if ($area > 100000) {
+            echo json_encode(["status" => "error", "message" => "Affected area looks too large - please check the value."]);
+            exit;
+        }
         $planting_date = !empty($data->planting_date) ? $data->planting_date : null;
         $farmer_id = (int)$data->farmer_id;
 
