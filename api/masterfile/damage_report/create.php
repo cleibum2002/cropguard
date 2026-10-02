@@ -19,18 +19,27 @@ try {
         exit; 
     }
 
-    if (!empty($data->farmer_id) && !empty($data->crop_name) && !empty($data->damage_type)) {
-        
-        $full_crop_name = trim($data->crop_name);
-        if (!empty($data->crop_type)) {
-            $full_crop_name .= " (" . trim($data->crop_type) . ")";
-        }
-        // crop.Crop_Name is varchar(50) - reject an over-long combination with a
-        // clear message instead of a generic DB error or a silent truncation.
-        if (mb_strlen($full_crop_name) > 50) {
-            echo json_encode(["status" => "error", "message" => "The crop name and type are too long together (maximum 50 characters). Please shorten them."]);
+    if (!empty($data->farmer_id) && !empty($data->type_id) && !empty($data->damage_type)) {
+
+        $type_id = (int)$data->type_id;
+
+        // The walk-in now picks a registered crop, so the report links to a real
+        // Standard_Production_Cost and its estimated relief can be computed -
+        // free-typed crops had no Type_ID, so calculate_cost.php's join found
+        // nothing and the estimate was always blank. Resolve the crop here and
+        // fail clearly if it isn't a valid, active registered crop.
+        $ctStmt = $conn->prepare("SELECT Crop_Name FROM crop_type WHERE Type_ID = ? AND Status = 'Active'");
+        $ctStmt->bind_param("i", $type_id);
+        $ctStmt->execute();
+        $ct = $ctStmt->get_result()->fetch_assoc();
+        $ctStmt->close();
+        if (!$ct) {
+            echo json_encode(["status" => "error", "message" => "Please choose a valid registered crop."]);
             exit;
         }
+        // crop.Crop_Name is varchar(50) but crop_type.Crop_Name is varchar(100);
+        // trim to fit the column it's being copied into.
+        $full_crop_name = mb_substr($ct['Crop_Name'], 0, 50);
 
         $area = !empty($data->area) ? (float)$data->area : 0.00;
         // A walk-in report isn't tied to a registered farm, so there's no farm
@@ -46,11 +55,13 @@ try {
         $planting_date = !empty($data->planting_date) ? $data->planting_date : null;
         $farmer_id = (int)$data->farmer_id;
 
-        $queryCrop = "INSERT INTO crop (Crop_Name, Planting_Date, Area_Hectares, Farmer_ID) VALUES (?, ?, ?, ?)";
+        // Type_ID set so the crop links to crop_type - this is what makes the
+        // estimated relief computable for a walk-in report.
+        $queryCrop = "INSERT INTO crop (Crop_Name, Type_ID, Planting_Date, Area_Hectares, Farmer_ID) VALUES (?, ?, ?, ?, ?)";
         $stmtCrop = $conn->prepare($queryCrop);
         if (!$stmtCrop) throw new Exception("Crop Insert Error: " . $conn->error);
-        
-        $stmtCrop->bind_param("ssdi", $full_crop_name, $planting_date, $area, $farmer_id);
+
+        $stmtCrop->bind_param("sisdi", $full_crop_name, $type_id, $planting_date, $area, $farmer_id);
         $stmtCrop->execute();
         $crop_id = $conn->insert_id;
         $stmtCrop->close();
@@ -75,7 +86,7 @@ try {
         }
         $stmtReport->close();
     } else {
-        echo json_encode(["status" => "error", "message" => "Incomplete data. Farmer, Crop name, and damage type required."]);
+        echo json_encode(["status" => "error", "message" => "Incomplete data. Farmer, crop, and damage type are required."]);
     }
 } catch (Throwable $e) { 
     echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
