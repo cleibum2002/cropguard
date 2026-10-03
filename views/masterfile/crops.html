@@ -17,7 +17,6 @@
         CropGuardSession.protect({
             roles: ['admin'],
             onReady: (data) => {
-                document.getElementById('adminName').innerText = data.user.fullname;
                 document.getElementById('adminNameSidebar').innerText = data.user.fullname;
             }
         });
@@ -63,13 +62,6 @@
                 <div id="notifList" class="divide-y divide-gray-50">
                     <p class="text-xs text-gray-400 italic text-center py-8" data-i18n="notif_loading">Loading...</p>
                 </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <div class="hidden sm:block text-right">
-                    <p id="adminName" class="text-xs font-black text-gray-800">Loading...</p>
-                    <p class="text-[10px] text-amber-600 font-bold uppercase" data-i18n="role_admin">Admin</p>
-                </div>
-                <div class="w-9 h-9 bg-[#11542e] text-white rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0">AD</div>
             </div>
         </div>
         <div class="order-3 sm:order-2 w-full sm:w-auto relative">
