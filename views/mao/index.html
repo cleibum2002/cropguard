@@ -418,42 +418,16 @@ const cropGuardMarkerIcon = L.divIcon({
             return out;
         }
 
-        // TEMPORARY: see the ?demo note in initMap(). Builds N fake reports grouped
-        // into a few random hotspots around Balingasag (so you get big merged,
-        // irregular blobs like real damage clusters), feeds them through the same
-        // makeBlobPoints() + heat layer as real data, and drops a pin per report.
-        // No database involved. Delete this whole function when done.
-        function renderDemoHeat(count) {
-            map.invalidateSize(); // make sure the container size is current before fitBounds
-            const CENTER = [8.7435, 124.7772]; // Balingasag town proper
-            const hotspots = [];
-            for (let h = 0; h < 5; h++) {
-                hotspots.push([
-                    CENTER[0] + (Math.random() - 0.5) * 0.10,
-                    CENTER[1] + (Math.random() - 0.5) * 0.10
-                ]);
-            }
-            const base = [];
-            for (let i = 0; i < count; i++) {
-                const hs = hotspots[Math.floor(Math.random() * hotspots.length)];
-                base.push([
-                    hs[0] + (Math.random() - 0.5) * 0.03, // tight cluster, ~±1.6 km
-                    hs[1] + (Math.random() - 0.5) * 0.03,
-                    0.2 + Math.random() * 0.8             // random severity
-                ]);
-            }
-            L.heatLayer(makeBlobPoints(base), {
-                radius: 50, blur: 35, max: 1.0, minOpacity: 0.6,
-                gradient: {0.3: '#00aaff', 0.5: '#00ff00', 0.7: '#ffff00', 1.0: '#ff0000'}
-            }).addTo(pinLayerGroup);
-
-            const group = L.featureGroup(base.map(p => L.marker([p[0], p[1]], { icon: cropGuardMarkerIcon })));
-            group.addTo(pinLayerGroup);
-            map.fitBounds(group.getBounds().pad(0.2));
-        }
-
         function initMap() {
-            map = L.map('damageMap').setView([8.7405, 124.7758], 7);
+            // maxBounds + maxBoundsViscosity pen the map inside the Philippines so
+            // it can't be dragged off to the rest of the world, and minZoom stops
+            // it zooming out past the country. Shared map, so this covers both the
+            // Pin View and the Region View.
+            map = L.map('damageMap', {
+                maxBounds: [[4.0, 116.0], [21.5, 127.5]], // SW, NE corners of PH
+                maxBoundsViscosity: 1.0,
+                minZoom: 6
+            }).setView([8.7405, 124.7758], 7);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
             pinLayerGroup.addTo(map);
 
@@ -466,20 +440,6 @@ const cropGuardMarkerIcon = L.divIcon({
             setTimeout(fixMapSize, 300);
             window.addEventListener('resize', fixMapSize);
             window.addEventListener('pageshow', fixMapSize);
-
-            // TEMPORARY visual demo: add ?demo=50 (any count) to the dashboard URL
-            // to sprinkle fake clustered reports around Balingasag, just to eyeball
-            // the heatmap with lots of data. Touches nothing in the database.
-            // Remove this block and renderDemoHeat() once the look is settled.
-            const demoParam = new URLSearchParams(location.search).get('demo');
-            if (demoParam !== null) {
-                // Deferred so the card has its real size before fitBounds runs -
-                // otherwise Leaflet fits the bounds into a near-zero box and zooms
-                // all the way out to a world view. (The real-data path is naturally
-                // deferred by the fetch, so it doesn't hit this.)
-                setTimeout(() => renderDemoHeat(parseInt(demoParam, 10) || 50), 350);
-                return;
-            }
 
             // Fetch real heatmap data from the database (unchanged from the original Pin View)
             fetch('../../api/dashboard/heatmap_data.php')
