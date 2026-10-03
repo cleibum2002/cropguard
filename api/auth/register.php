@@ -69,16 +69,28 @@ try {
         exit;
     }
 
-    // 3. Clean inputs to prevent SQL injection
-    // strip_tags on the name as well: it's stored raw and later spliced into
-    // admin notification text that the Admin dashboard renders with innerHTML,
-    // so an unauthenticated registration was a route to stored XSS in staff
-    // browsers. Names never legitimately contain markup.
-    $name = $conn->real_escape_string(strip_tags(trim($data->full_name)));
+    // 3. Clean inputs
+    // No real_escape_string here: every query below uses a prepared statement,
+    // which already makes the values SQL-safe. Escaping by hand as well stored a
+    // literal backslash - "D'Cruz" became "D\'Cruz", and an apostrophe email like
+    // o'person7@example.com was saved as o\'person7@example.com, so that farmer could never
+    // log in (login.php compares against what they actually type).
+    // strip_tags on the name: it's later spliced into admin notification text
+    // that the Admin dashboard renders with innerHTML, so an unauthenticated
+    // registration was a route to stored XSS in staff browsers. Names never
+    // legitimately contain markup.
+    $name = trim(strip_tags(trim($data->full_name)));
+    // The empty() check above passes a name of only spaces or only tags ("   ",
+    // "<b></b>"), which is blank once cleaned - that farmer would show up as a
+    // nameless row in every list and report.
+    if ($name === '') {
+        echo json_encode(['status' => 'error', 'message' => 'Please enter your full name.']);
+        exit;
+    }
     // Stored in the normalized 09XXXXXXXXX form so the column stays consistent
     // regardless of how the farmer originally typed it.
-    $contact = $conn->real_escape_string($normalized_contact);
-    $email = $conn->real_escape_string($data->email);
+    $contact = $normalized_contact;
+    $email = $data->email;
     // Hash the password securely!
     $hashed_pass = hashUserPassword($data->password);
     $role = 'Farmer';
