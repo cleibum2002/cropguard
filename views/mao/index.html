@@ -398,6 +398,16 @@ const cropGuardMarkerIcon = L.divIcon({
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
             pinLayerGroup.addTo(map);
 
+            // initMap() runs on DOMContentLoaded, before this flex/grid card has
+            // its final size, so Leaflet caches a wrong viewport and paints tiles
+            // into only a corner (the rest stays gray). Recompute the real size
+            // once layout settles, and again on resize or a bfcache restore.
+            const fixMapSize = () => map.invalidateSize();
+            requestAnimationFrame(fixMapSize);
+            setTimeout(fixMapSize, 300);
+            window.addEventListener('resize', fixMapSize);
+            window.addEventListener('pageshow', fixMapSize);
+
             // Fetch real heatmap data from the database (unchanged from the original Pin View)
             fetch('../../api/dashboard/heatmap_data.php')
                 .then(res => res.json())
