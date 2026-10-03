@@ -155,22 +155,19 @@ try {
         }
     }
 
-    // 3. Notify the MAO that the seed request was approved for distribution
+    // 3. Notify the MAO that the seed request was approved for distribution.
+    // Staff alerts live in admin_notification (the MAO bell reads
+    // Target_Role = 'MAO' there). This used to go into the farmer-only
+    // `notification` table, which no MAO page ever reads, so the alert was lost.
+    // Same pattern as the MAO alert in damage_report/approve_with_aid.php.
     if ($normalized_status === 'Approved by Admin') {
-        $stmtMao = $conn->prepare("SELECT User_ID FROM users WHERE Role = 'MAO'");
-        if (!$stmtMao) throw new Exception("Prepare failed (mao users): " . $conn->error);
-        $stmtMao->execute();
-        $resultMao = $stmtMao->get_result();
-
-        $maoMessage = "Admin has approved Seed Request #$request_id. Please prepare for distribution.";
-        while ($mao = $resultMao->fetch_assoc()) {
-            $stmtNotifMao = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Is_Read) VALUES (?, ?, 0)");
-            if (!$stmtNotifMao) throw new Exception("Prepare failed (mao notif): " . $conn->error);
-            $stmtNotifMao->bind_param("is", $mao['User_ID'], $maoMessage);
-            if (!$stmtNotifMao->execute()) throw new Exception("Execute failed (mao notif): " . $stmtNotifMao->error);
-            $stmtNotifMao->close();
-        }
-        $stmtMao->close();
+        $maoMessage  = "Admin has approved Seed Request #$request_id. Please prepare for distribution.";
+        $maoRedirect = 'index.html';
+        $stmtNotifMao = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Redirect_URL) VALUES ('MAO', ?, ?)");
+        if (!$stmtNotifMao) throw new Exception("Prepare failed (mao notif): " . $conn->error);
+        $stmtNotifMao->bind_param("ss", $maoMessage, $maoRedirect);
+        if (!$stmtNotifMao->execute()) throw new Exception("Execute failed (mao notif): " . $stmtNotifMao->error);
+        $stmtNotifMao->close();
     }
 
     // 4. Send notification to farmer
