@@ -55,16 +55,16 @@
 
     <div class="flex-1 flex flex-col h-screen overflow-hidden">
                 <header class="min-h-[4rem] flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3 bg-white border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-2 sm:gap-4">
+            <div class="order-1 flex items-center gap-2 sm:gap-4">
                 <span class="text-xs sm:text-base font-black text-gray-800" data-i18n="header_title">Farmer Management</span>
                 <span class="hidden sm:inline-block bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide" data-i18n="badge_rsbsa_registry">RSBSA Registry</span>
             </div>
-            <div class="ml-auto sm:ml-0 flex items-center gap-1.5 text-xs font-bold text-gray-400">
+            <div class="order-2 sm:order-3 ml-auto sm:ml-0 flex items-center gap-1.5 text-xs font-bold text-gray-400 sm:pl-4 sm:border-l border-gray-100">
                 <span class="lang-link" data-lang="en" onclick="setLanguage('en')">ENG</span>
                 <span>|</span>
                 <span class="lang-link" data-lang="tl" onclick="setLanguage('tl')">FIL</span>
             </div>
-            <div class="w-full sm:w-auto flex flex-wrap items-center gap-3">
+            <div class="order-3 sm:order-2 w-full sm:w-auto flex flex-wrap items-center gap-3">
                 <div class="relative flex-1 sm:flex-none min-w-0">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                     <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or RSBSA..." data-i18n-placeholder="search_placeholder"
