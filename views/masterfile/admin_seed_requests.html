@@ -225,8 +225,17 @@
                                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">
                                         <span data-i18n="label_growth_duration">Growth Duration</span> <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="text" id="newGrowthPeriod" placeholder="e.g. 115 Days"
-                                           class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
+                                    <!-- Same number + Days/Months picker as the Crops Masterlist,
+                                         so both ways into crop_type store e.g. "115 Days". -->
+                                    <div class="flex gap-2">
+                                        <input type="number" id="newGrowthValue" placeholder="115" min="1" step="1"
+                                               class="flex-1 min-w-0 px-3 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm">
+                                        <select id="newGrowthUnit"
+                                                class="flex-shrink-0 px-2 py-2 bg-white border border-gray-300 rounded-md outline-none focus:ring-1 focus:ring-[#11542e] text-sm cursor-pointer">
+                                            <option value="Days" data-i18n="unit_days">Days</option>
+                                            <option value="Months" data-i18n="unit_months">Months</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -288,6 +297,8 @@
                 crop_type_rice: "Rice", crop_type_corn: "Corn", crop_type_banana: "Banana",
                 crop_type_vegetables: "Vegetables", crop_type_eggplant: "Eggplant", crop_type_other: "Other",
                 label_growth_duration: "Growth Duration", label_prod_cost_php: "Std. Production Cost (₱)",
+                unit_days: "Days", unit_months: "Months",
+                sw_invalid_period_text: "Growth duration must be a whole number greater than zero - no decimals.",
                 label_description: "Description", placeholder_variety_description: "Short description of this variety...",
                 btn_cancel: "Cancel", btn_submit_decision: "Submit Decision",
                 no_seed_requests_found: "No seed requests found.",
@@ -336,6 +347,8 @@
                 crop_type_rice: "Palay", crop_type_corn: "Mais", crop_type_banana: "Saging",
                 crop_type_vegetables: "Gulay", crop_type_eggplant: "Talong", crop_type_other: "Iba Pa",
                 label_growth_duration: "Tagal ng Paglago", label_prod_cost_php: "Karaniwang Gastos sa Produksyon (₱)",
+                unit_days: "Araw", unit_months: "Buwan",
+                sw_invalid_period_text: "Ang tagal ng paglago ay dapat buong numero na mas mataas sa zero - walang decimal.",
                 label_description: "Deskripsyon", placeholder_variety_description: "Maikling deskripsyon ng baraytong ito...",
                 btn_cancel: "Kanselahin", btn_submit_decision: "Isumite ang Desisyon",
                 no_seed_requests_found: "Walang nahanap na kahilingan sa binhi.",
@@ -647,16 +660,25 @@
             } else {
                 // Step 2 — new crop form is visible, collect and submit
                 const cropType     = document.getElementById('newCropType').value;
-                const growthPeriod = document.getElementById('newGrowthPeriod').value.trim();
+                const growthRaw    = document.getElementById('newGrowthValue').value.trim();
                 const description  = document.getElementById('newDescription').value.trim();
                 const prodCost     = parseFloat(document.getElementById('newProdCost').value) || 0;
 
                 // prodCost must be > 0: a zero cost silently makes every damage
                 // report estimate for this crop compute to P0.00.
-                if (!cropType || !growthPeriod || !(prodCost > 0)) {
+                if (!cropType || !growthRaw || !(prodCost > 0)) {
                     Swal.fire(t('sw_required_title'), t('sw_required_crop_fields'), 'warning');
                     return;
                 }
+
+                // Same rule as the Crops Masterlist: a whole number above zero.
+                const growthNum = parseFloat(growthRaw);
+                if (isNaN(growthNum) || growthNum <= 0 || !Number.isInteger(growthNum)) {
+                    Swal.fire(t('sw_required_title'), t('sw_invalid_period_text'), 'warning');
+                    return;
+                }
+                // Rejoined into the single string the column stores, e.g. "115 Days".
+                const growthPeriod = growthNum + ' ' + document.getElementById('newGrowthUnit').value;
 
                 await finalSubmit({
                     request_id:     reqId,
