@@ -424,6 +424,7 @@ const cropGuardMarkerIcon = L.divIcon({
         // makeBlobPoints() + heat layer as real data, and drops a pin per report.
         // No database involved. Delete this whole function when done.
         function renderDemoHeat(count) {
+            map.invalidateSize(); // make sure the container size is current before fitBounds
             const CENTER = [8.7435, 124.7772]; // Balingasag town proper
             const hotspots = [];
             for (let h = 0; h < 5; h++) {
@@ -472,7 +473,11 @@ const cropGuardMarkerIcon = L.divIcon({
             // Remove this block and renderDemoHeat() once the look is settled.
             const demoParam = new URLSearchParams(location.search).get('demo');
             if (demoParam !== null) {
-                renderDemoHeat(parseInt(demoParam, 10) || 50);
+                // Deferred so the card has its real size before fitBounds runs -
+                // otherwise Leaflet fits the bounds into a near-zero box and zooms
+                // all the way out to a world view. (The real-data path is naturally
+                // deferred by the fetch, so it doesn't hit this.)
+                setTimeout(() => renderDemoHeat(parseInt(demoParam, 10) || 50), 350);
                 return;
             }
 
