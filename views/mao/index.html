@@ -393,6 +393,31 @@ const cropGuardMarkerIcon = L.divIcon({
         let regionDataLoaded = false;          // prevents re-fetching every time the user toggles
         let currentMapMode = 'pin';
 
+        // leaflet.heat renders every point as a smooth radial disc, so an
+        // isolated report always looks like a perfect circle. Scatter a handful
+        // of lower-intensity satellite points around each real location so the
+        // overlapping kernels blend into an organic, irregular blob instead.
+        // Visual only: the real point keeps its true coordinates and full
+        // intensity (and the map pins/auto-zoom still use the real data), while
+        // the randomized satellites just rough up the outline.
+        function makeBlobPoints(points) {
+            const out = [];
+            points.forEach(([lat, lng, intensity]) => {
+                out.push([lat, lng, intensity]);                 // real point, unchanged
+                const satellites = 8 + Math.floor(Math.random() * 5); // 8-12 per blob
+                const latScale = Math.cos(lat * Math.PI / 180) || 1; // keep offsets even E-W
+                for (let i = 0; i < satellites; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const dist  = 0.0006 + Math.random() * 0.0016; // ~65-250 m out
+                    const jLat  = lat + Math.sin(angle) * dist;
+                    const jLng  = lng + (Math.cos(angle) * dist) / latScale;
+                    const jInt  = intensity * (0.35 + Math.random() * 0.45); // 35-80%
+                    out.push([jLat, jLng, jInt]);
+                }
+            });
+            return out;
+        }
+
         function initMap() {
             map = L.map('damageMap').setView([8.7405, 124.7758], 7);
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
@@ -413,7 +438,7 @@ const cropGuardMarkerIcon = L.divIcon({
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === 'success' && data.data.length > 0) {
-                        const heatPoints = data.data.map(p => [p[0], p[1], p[2]]);
+                        const heatPoints = makeBlobPoints(data.data.map(p => [p[0], p[1], p[2]]));
                         L.heatLayer(heatPoints, {
                             radius: 50, blur: 35, max: 1.0, minOpacity: 0.6,
                             gradient: {0.3: '#00aaff', 0.5: '#00ff00', 0.7: '#ffff00', 1.0: '#ff0000'}
