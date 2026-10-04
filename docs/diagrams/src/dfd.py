@@ -95,7 +95,7 @@ def level0():
     b.append(stack(694, 140, ['New-report alerts', 'Validation queue', 'Aid awaiting pickup', 'Distribution reports, map', 'Messages'], 'start', up=False))
     # Admin
     b.append(arrow(620, 790, 620, PY + PH))
-    b.append(stack(606, 606, ['User accounts & roles', 'Crop & relief masterlists', 'Assignments, approvals', 'Seed request decisions', 'Messages'], 'end', up=False))
+    b.append(stack(606, 606, ['User accounts, RSBSA', 'Crop & relief masterlists', 'Walk-in reports, decisions', 'Assignments, approvals', 'Seed decisions, messages'], 'end', up=False))
     b.append(arrow(680, PY + PH, 680, 790))
     b.append(stack(694, 606, ['Loss estimates & relief', 'Analytics & damage map', 'System reports / Excel', 'Audit logs & alerts', 'Messages'], 'start', up=False))
     # Email service
@@ -113,7 +113,7 @@ S = {'D1': 'Users', 'D2': 'Farms & Crops', 'D3': 'Crop Masterlist', 'D4': 'Damag
 ROWS = [
     ('1.0', ['Authenticate &', 'Manage Accounts'],
      [(FARMER, [('in', 'Registration & login details'), ('out', 'Login & verification result')]),
-      (ADMIN, [('in', 'User accounts & roles'), ('out', 'User list')]),
+      (ADMIN, [('in', 'User accounts, roles & RSBSA'), ('out', 'User list')]),
       (EMAIL, [('out', 'Verification code email')])],
      [('D1', 'rw', 'Account records'), ('D9', 'w', 'Login & account logs')]),
     ('2.0', ['Maintain Crop &', 'Relief Masterlists'],
@@ -123,16 +123,18 @@ ROWS = [
      [(FARMER, [('in', 'Farm details + GPS location'), ('out', 'Registered farms')])],
      [('D2', 'rw', 'Farm & crop records'), ('D3', 'r', 'Crop types')]),
     ('4.0', ['Submit Damage', 'Report (online or', 'queued offline)'],
-     [(FARMER, [('in', 'Damage report + geotagged photos'), ('out', 'Submission confirmation')])],
-     [('D1', 'r', 'RSBSA number'), ('D2', 'r', 'Farm size & crop'), ('D4', 'w', 'New report (Pending)'),
+     [(FARMER, [('in', 'Damage report + geotagged photos'), ('out', 'Submission confirmation')]),
+      (ADMIN, [('in', 'Walk-in report for a farmer')])],
+     [('D1', 'r', 'RSBSA number'), ('D2', 'rw', 'Farm & crop details'), ('D4', 'w', 'New damage report'),
       ('D5', 'w', 'Photos + GPS'), ('D8', 'w', 'New-report alerts')]),
     ('5.0', ['Validate Report &', 'Assign Inspection'],
      [(MAO, [('in', 'Validate / reject, assign technician'), ('out', 'Validation queue')]),
-      (ADMIN, [('in', 'Technician & visit date')])],
+      (ADMIN, [('in', 'Validate, reject, archive, assign')])],
      [('D1', 'r', 'Active technicians'), ('D4', 'rw', 'Status & assignment'), ('D8', 'w', 'Status notices'),
       ('D9', 'w', 'Decision logs')]),
     ('6.0', ['Conduct Field', 'Inspection'],
-     [(TECH, [('in', 'Findings, severity, evidence photos'), ('out', 'Assigned inspections & visit dates')])],
+     [(TECH, [('in', 'Findings, severity, evidence photos'), ('out', 'Assigned inspections & visit dates')]),
+      (ADMIN, [('in', 'Return for re-inspection')])],
      [('D4', 'rw', 'Inspection result'), ('D5', 'w', 'Evidence photos + GPS'), ('D8', 'w', 'Inspection notices'),
       ('D9', 'w', 'Inspection logs')]),
     ('7.0', ['Estimate Loss &', 'Distribute Aid'],
