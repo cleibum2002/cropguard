@@ -66,6 +66,9 @@
                     <option value="Reports" data-i18n="module_reports">Reports</option>
                     <option value="Damage Reports" data-i18n="module_damage_reports">Damage Reports</option>
                     <option value="Aid Distribution" data-i18n="module_aid_distribution">Aid Distribution</option>
+                    <option value="User Management" data-i18n="module_user_management">User Management</option>
+                    <option value="Crops Masterlist" data-i18n="module_crops_masterlist">Crops Masterlist</option>
+                    <option value="Inventory" data-i18n="module_inventory">Inventory</option>
                 </select>
                 <select id="roleFilter" onchange="loadLogs(1)" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                     <option value="" data-i18n="filter_all_roles">All Roles</option>
@@ -180,6 +183,12 @@
                 notif_title: "Notifications", notif_loading: "Loading...",
                 filter_all_modules: "All Modules", module_authentication: "Authentication", module_reports: "Reports",
                 module_damage_reports: "Damage Reports", module_aid_distribution: "Aid Distribution",
+                module_user_management: "User Management", module_crops_masterlist: "Crops Masterlist", module_inventory: "Inventory",
+                action_logout: "Logout", action_failed_login: "Failed Login",
+                action_create_user: "Create User", action_update_user: "Update User", action_deactivate_user: "Deactivate User",
+                action_reject_report: "Reject Report", action_archive_report: "Archive Report", action_assign_technician: "Assign Technician",
+                action_add_crop: "Add Crop", action_update_crop: "Update Crop", action_remove_crop: "Remove Crop",
+                action_add_item: "Add Item", action_update_item: "Update Item", action_deactivate_item: "Deactivate Item",
                 btn_refresh: "Refresh",
                 stat_total_actions: "Total Actions", stat_logins_today: "Logins Today",
                 stat_reports_submitted: "Reports Submitted", stat_aid_actions: "Aid Actions",
@@ -199,6 +208,12 @@
                 notif_title: "Mga Abiso", notif_loading: "Naglo-load...",
                 filter_all_modules: "Lahat ng Module", module_authentication: "Authentication", module_reports: "Mga Ulat",
                 module_damage_reports: "Mga Ulat ng Pinsala", module_aid_distribution: "Pamamahagi ng Tulong",
+                module_user_management: "Pamamahala ng User", module_crops_masterlist: "Masterlist ng Pananim", module_inventory: "Imbentaryo",
+                action_logout: "Logout", action_failed_login: "Bigong Pag-login",
+                action_create_user: "Gumawa ng User", action_update_user: "I-update ang User", action_deactivate_user: "I-deactivate ang User",
+                action_reject_report: "Tanggihan ang Ulat", action_archive_report: "I-archive ang Ulat", action_assign_technician: "Magtalaga ng Technician",
+                action_add_crop: "Magdagdag ng Pananim", action_update_crop: "I-update ang Pananim", action_remove_crop: "Alisin ang Pananim",
+                action_add_item: "Magdagdag ng Item", action_update_item: "I-update ang Item", action_deactivate_item: "I-deactivate ang Item",
                 btn_refresh: "I-refresh",
                 stat_total_actions: "Kabuuang Aksyon", stat_logins_today: "Login Ngayong Araw",
                 stat_reports_submitted: "Naisumiteng Ulat", stat_aid_actions: "Aksyon sa Tulong",
@@ -221,7 +236,12 @@
             const map = {
                 'Login': 'action_login', 'Submit Report': 'action_submit_report', 'Edit Report': 'action_edit_report',
                 'Validate Report': 'action_validate_report', 'Approve Report': 'action_approve_report', 'Mark as Claimed': 'action_mark_claimed',
-                'Submit Inspection': 'action_submit_inspection'
+                'Submit Inspection': 'action_submit_inspection',
+                'Logout': 'action_logout', 'Failed Login': 'action_failed_login',
+                'Create User': 'action_create_user', 'Update User': 'action_update_user', 'Deactivate User': 'action_deactivate_user',
+                'Reject Report': 'action_reject_report', 'Archive Report': 'action_archive_report', 'Assign Technician': 'action_assign_technician',
+                'Add Crop': 'action_add_crop', 'Update Crop': 'action_update_crop', 'Remove Crop': 'action_remove_crop',
+                'Add Item': 'action_add_item', 'Update Item': 'action_update_item', 'Deactivate Item': 'action_deactivate_item'
             };
             return map[action] ? t(map[action]) : action;
         }
@@ -339,24 +359,32 @@
                 'Validate Report': 'bg-purple-100 text-purple-700',
                 'Approve Report':  'bg-green-100 text-green-700',
                 'Mark as Claimed': 'bg-indigo-100 text-indigo-700',
+                'Failed Login':    'bg-red-100 text-red-700',
+                'Reject Report':   'bg-red-100 text-red-700',
+                'Deactivate User': 'bg-red-100 text-red-700',
+                'Assign Technician': 'bg-teal-100 text-teal-700',
+                'Update Item':     'bg-amber-100 text-amber-700',
+                'Update Crop':     'bg-amber-100 text-amber-700',
             };
 
+            // Every value is escaped: descriptions carry names typed by users and
+            // admins (people, crops, relief items), so they must never be parsed as HTML.
             tbody.innerHTML = data.map(log => {
                 const badge = actionColors[log.Action] || 'bg-gray-100 text-gray-600';
                 const date  = new Date(log.Created_At).toLocaleString();
                 return `
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-3 md:px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
-                    <td class="px-3 md:px-6 py-3 text-xs font-bold text-gray-800">${log.user_name || t('label_system')}</td>
+                    <td class="px-3 md:px-6 py-3 text-xs font-bold text-gray-800">${escapeHtml(log.user_name || t('label_system'))}</td>
                     <td class="hidden md:table-cell px-6 py-3">
-                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase">${log.user_role}</span>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase">${escapeHtml(log.user_role)}</span>
                     </td>
                     <td class="px-3 md:px-6 py-3">
-                        <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${auditActionLabel(log.Action)}</span>
+                        <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${escapeHtml(auditActionLabel(log.Action))}</span>
                     </td>
-                    <td class="px-3 md:px-6 py-3 text-xs text-gray-600 max-w-[140px] md:max-w-xs truncate">${log.Description}</td>
-                    <td class="hidden md:table-cell px-6 py-3 text-xs text-gray-500">${log.Module}</td>
-                    <td class="hidden md:table-cell px-6 py-3 text-xs font-mono text-gray-400">${log.IP_Address}</td>
+                    <td class="px-3 md:px-6 py-3 text-xs text-gray-600 max-w-[140px] md:max-w-xs truncate" title="${escapeHtml(log.Description)}">${escapeHtml(log.Description)}</td>
+                    <td class="hidden md:table-cell px-6 py-3 text-xs text-gray-500">${escapeHtml(log.Module)}</td>
+                    <td class="hidden md:table-cell px-6 py-3 text-xs font-mono text-gray-400">${escapeHtml(log.IP_Address)}</td>
                 </tr>`;
             }).join('');
         }

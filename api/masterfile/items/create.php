@@ -62,6 +62,13 @@ if (isset($input['item_name'])) {
         $stmt->bind_param("sssddss", $name, $cat, $unit, $price, $stock, $desc, $stat);
 
         if ($stmt->execute()) {
+            $newId = $conn->insert_id;
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Add Item',
+                "Added relief item #{$newId} {$name} ({$cat}) with stock {$stock} {$unit}",
+                'Inventory'
+            );
             if (ob_get_length()) ob_clean();
             echo json_encode(["status" => "success", "message" => "Item added successfully!"]);
         } else {

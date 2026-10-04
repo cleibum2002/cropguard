@@ -21,6 +21,17 @@ if (isset($input['id'])) {
         $stmt->bind_param("i", $id);
 
         if ($stmt->execute()) {
+            $item = $conn->prepare("SELECT item_name, current_stock, unit FROM masterfile_items WHERE id = ?");
+            $item->bind_param("i", $id);
+            $item->execute();
+            $row = $item->get_result()->fetch_assoc();
+            $item->close();
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Deactivate Item',
+                "Deactivated relief item #{$id}" . ($row ? " {$row['item_name']} (stock left: " . (float)$row['current_stock'] . " {$row['unit']})" : ''),
+                'Inventory'
+            );
             if (ob_get_length()) ob_clean();
             echo json_encode(["status" => "success", "message" => "Item deactivated successfully."]);
         } else {

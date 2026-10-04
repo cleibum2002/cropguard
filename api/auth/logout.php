@@ -5,6 +5,11 @@ header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 header('Expires: 0');
 
+// Who is leaving - captured before the session is wiped, for the audit log.
+$loggedOutId   = $_SESSION['User_ID'] ?? null;
+$loggedOutRole = $_SESSION['Role'] ?? null;
+$loggedOutName = $_SESSION['Fullname'] ?? '';
+
 // 1. Unset all session values
 $_SESSION = array();
 
@@ -20,6 +25,19 @@ if (ini_get("session.use_cookies")) {
 // 3. Destroy the actual session
 session_destroy();
 
-// 4. Return success
+// 4. Audit log - written only AFTER the session is gone, so a database
+// problem can never stop someone from logging out (the page leaves
+// regardless of this response; see CropGuardSession.logout()).
+if ($loggedOutId) {
+    try {
+        require_once '../config/db_connection.php';
+        require_once '../audit/log_action.php';
+        logAction($conn, $loggedOutId, $loggedOutRole, 'Logout', "{$loggedOutName} logged out", 'Authentication');
+    } catch (Throwable $e) {
+        // Logging is best-effort here; the logout itself already succeeded.
+    }
+}
+
+// 5. Return success
 echo json_encode(['status' => 'success']);
 ?>

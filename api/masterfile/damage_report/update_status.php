@@ -86,6 +86,15 @@ try {
         $notif->close();
 
         $conn->commit();
+
+        $actionNames = ['Validated' => 'Validate Report', 'Rejected' => 'Reject Report', 'Archived' => 'Archive Report'];
+        require_once '../../audit/log_action.php';
+        logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+            $actionNames[$data->status],
+            "Report #{$data->id} marked as {$data->status}",
+            'Damage Reports'
+        );
+
         echo json_encode(["status" => "success", "message" => "Report status updated and farmer notified."]);
         
     } else {
