@@ -1,0 +1,119 @@
+admin_notification	Notification_ID	int(11)	NO	PRI
+admin_notification	Target_Role	varchar(20)	NO	
+admin_notification	Message	text	NO	
+admin_notification	Related_Report_ID	int(11)	YES	MUL
+admin_notification	Redirect_URL	varchar(255)	YES	
+admin_notification	Is_Read	tinyint(1)	YES	
+admin_notification	Created_At	timestamp	NO	
+aid_distribution	Distribution_ID	int(11)	NO	PRI
+aid_distribution	Damage_Report_ID	int(11)	NO	MUL
+aid_distribution	Farmer_ID	int(11)	NO	
+aid_distribution	Category	varchar(100)	NO	
+aid_distribution	Item_ID	int(11)	YES	MUL
+aid_distribution	Quantity	decimal(10,2)	NO	
+aid_distribution	Unit	varchar(50)	NO	
+aid_distribution	Remarks	text	YES	
+aid_distribution	Status	enum('Pending Distribution','Claimed')	YES	
+aid_distribution	Distributed_By	int(11)	NO	
+aid_distribution	Date_Distributed	timestamp	NO	
+crop	Crop_ID	int(11)	NO	PRI
+crop	Crop_Name	varchar(50)	YES	
+crop	Type_ID	int(11)	YES	MUL
+crop	Planting_Date	date	YES	
+crop	Expected_Harvest	date	YES	
+crop	Area_Hectares	decimal(10,2)	YES	
+crop	Farmer_ID	int(11)	YES	MUL
+crop	Location_ID	int(11)	YES	
+crop_type	Type_ID	int(11)	NO	PRI
+crop_type	Crop_Name	varchar(100)	YES	
+crop_type	Commodity_Type	varchar(50)	YES	
+crop_type	Growth_Duration	varchar(50)	YES	
+crop_type	Standard_Production_Cost	decimal(12,2)	YES	
+crop_type	Description	text	YES	
+crop_type	Status	enum('Active','Inactive')	YES	
+damage_report	Damage_Report_ID	int(11)	NO	PRI
+damage_report	Client_Token	varchar(40)	YES	UNI
+damage_report	Farmer_ID	int(11)	YES	MUL
+damage_report	Location_ID	int(11)	YES	MUL
+damage_report	Crop_ID	int(11)	YES	
+damage_report	Affected_Area	decimal(10,2)	YES	
+damage_report	Report_Date	datetime	YES	
+damage_report	Last_Updated	datetime	NO	
+damage_report	Damage_Type	varchar(50)	YES	
+damage_report	Damage_Severity	enum('Minimal','Light','Moderate','Severe','Total Loss','Low','High')	YES	
+damage_report	Farmer_Reported_Severity	enum('Minimal','Light','Moderate','Severe','Total Loss','Low','High')	YES	
+damage_report	Status	enum('Pending','Validated','Inspected','Approved','Rejected','Archived')	YES	
+damage_report	Validated_By	int(11)	YES	
+damage_report	Approved_By	int(11)	YES	
+damage_report	Technician_ID	int(11)	YES	MUL
+damage_report	Visit_Date	date	YES	
+damage_report	Description	text	YES	
+damage_report	Is_Inspected	tinyint(1)	NO	
+damage_report_images	Image_ID	int(11)	NO	PRI
+damage_report_images	Damage_Report_ID	int(11)	NO	MUL
+damage_report_images	Uploaded_By_Role	enum('Farmer','Technician')	NO	
+damage_report_images	Image_Path	varchar(255)	NO	
+damage_report_images	Uploaded_At	timestamp	NO	
+damage_report_images	Geo_Lat	decimal(10,8)	YES	
+damage_report_images	Geo_Lng	decimal(11,8)	YES	
+farm_location	Location_ID	int(11)	NO	PRI
+farm_location	Farmer_ID	int(11)	YES	MUL
+farm_location	Type_ID	int(11)	YES	MUL
+farm_location	Barangay	text	YES	
+farm_location	Area_Size	decimal(10,2)	YES	
+farm_location	Latitude	decimal(10,8)	YES	
+farm_location	Longitude	decimal(11,8)	YES	
+farm_location	Land_Type	varchar(50)	YES	
+farm_location	Cropping_Period	varchar(50)	YES	
+farm_location	Is_Archived	tinyint(1)	NO	
+masterfile_items	id	int(11)	NO	PRI
+masterfile_items	item_name	varchar(100)	NO	
+masterfile_items	category	varchar(50)	YES	
+masterfile_items	current_stock	decimal(10,2)	NO	
+masterfile_items	unit	varchar(50)	YES	
+masterfile_items	price	decimal(10,2)	NO	
+masterfile_items	description	text	YES	
+masterfile_items	status	enum('Active','Inactive')	YES	
+masterfile_items	created_at	timestamp	NO	
+messages	Message_ID	int(11)	NO	PRI
+messages	Sender_ID	int(11)	NO	MUL
+messages	Receiver_ID	int(11)	NO	MUL
+messages	Message	text	NO	
+messages	Is_Read	tinyint(4)	YES	
+messages	Created_At	datetime	YES	
+notification	Notification_ID	int(11)	NO	PRI
+notification	Farmer_ID	int(11)	NO	MUL
+notification	Message	text	NO	
+notification	Redirect_URL	varchar(255)	YES	
+notification	Is_Read	tinyint(1)	YES	
+notification	Created_At	timestamp	NO	
+seed_requests	Request_ID	int(11)	NO	PRI
+seed_requests	Farmer_ID	int(11)	NO	MUL
+seed_requests	Requested_Seed	varchar(100)	NO	
+seed_requests	Description	text	YES	
+seed_requests	Status	enum('Pending','Approved by Admin','Ready for Pickup','Claimed','Rejected')	YES	
+seed_requests	Request_Date	datetime	YES	
+system_logs	Log_ID	int(11)	NO	PRI
+system_logs	User_ID	int(11)	YES	MUL
+system_logs	User_Role	varchar(50)	YES	
+system_logs	Action	varchar(100)	YES	
+system_logs	Description	text	YES	
+system_logs	Module	varchar(50)	YES	
+system_logs	IP_Address	varchar(45)	YES	
+system_logs	Created_At	datetime	YES	
+users	User_ID	int(11)	NO	PRI
+users	Role	enum('Admin','MAO','Technician','Farmer')	NO	
+users	Fullname	varchar(100)	NO	
+users	Email	varchar(100)	NO	UNI
+users	Password	varchar(255)	NO	
+users	Contact_Number	varchar(20)	YES	
+users	RSBA_No	varchar(50)	YES	UNI
+users	Assigned_Area	varchar(100)	YES	
+users	STATUS	enum('Active','Inactive')	YES	
+users	Email_Verified	tinyint(1)	NO	
+users	Verification_Token	varchar(64)	YES	
+users	Verification_Token_Expires	datetime	YES	
+users	Pending_Email	varchar(255)	YES	
+users	Phone_Verified	tinyint(1)	NO	
+users	Failed_Login_Attempts	int(11)	NO	
+users	Lockout_Until	datetime	YES	
