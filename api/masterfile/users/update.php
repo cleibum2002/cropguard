@@ -149,6 +149,21 @@ if (!empty($data->id) && !empty($data->fullname) && !empty($data->email)) {
         }
         
         if ($stmt->execute()) {
+            // Record what actually changed - a role or status change is exactly
+            // what an auditor needs to be able to trace back to a person.
+            $changes = [];
+            if ($currentUser['Role'] !== $data->role)     $changes[] = "role {$currentUser['Role']} -> {$data->role}";
+            if ($currentUser['STATUS'] !== $data->status) $changes[] = "status {$currentUser['STATUS']} -> {$data->status}";
+            if ($emailChanged)                            $changes[] = "email -> {$data->email}";
+            if ($hashed_password)                         $changes[] = "password reset";
+            $detail = $changes ? implode(', ', $changes) : 'details edited';
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Update User',
+                "Updated user #{$data->id} ({$data->fullname}): {$detail}",
+                'User Management'
+            );
+
             if ($emailChanged && $wasAlreadyVerified) {
                 sendVerificationEmail($data->email, $data->fullname, $new_code); // best-effort
                 echo json_encode(['status' => 'success', 'message' => "User updated. Their new email must be verified before they can log in with it."]);

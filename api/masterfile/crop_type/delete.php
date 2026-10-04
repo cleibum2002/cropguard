@@ -25,6 +25,17 @@ try {
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
+        $crop = $conn->prepare("SELECT Crop_Name FROM crop_type WHERE Type_ID = ?");
+        $crop->bind_param("i", $id);
+        $crop->execute();
+        $cropName = $crop->get_result()->fetch_assoc()['Crop_Name'] ?? '';
+        $crop->close();
+        require_once '../../audit/log_action.php';
+        logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+            'Remove Crop',
+            "Removed crop #{$id} {$cropName} from the masterlist",
+            'Crops Masterlist'
+        );
         echo json_encode(["status" => "success", "message" => "Crop removed from masterlist."]);
     } else {
         echo json_encode(["status" => "error", "message" => "Delete failed: " . $stmt->error]);

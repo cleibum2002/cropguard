@@ -74,6 +74,17 @@ try {
     $stmt->bind_param("isi", $techId, $visitDate, $reportId);
 
     if ($stmt->execute()) {
+        $techName = $conn->prepare("SELECT Fullname FROM users WHERE User_ID = ?");
+        $techName->bind_param("i", $techId);
+        $techName->execute();
+        $tech = $techName->get_result()->fetch_assoc();
+        $techName->close();
+        require_once '../../audit/log_action.php';
+        logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+            'Assign Technician',
+            "Report #{$reportId} assigned to " . ($tech['Fullname'] ?? "technician #{$techId}") . " for a field visit on {$visitDate}",
+            'Damage Reports'
+        );
         echo json_encode(["status" => "success", "message" => "Technician assigned successfully."]);
     } else {
         throw new Exception($stmt->error);

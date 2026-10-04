@@ -113,7 +113,9 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
 
          // Log the action
         require_once '../../audit/log_action.php';
-        logAction($conn, $admin_id, 'Admin',
+        // Real role from the session - both Admin and MAO may approve here, and
+        // this used to record every approval as 'Admin'.
+        logAction($conn, $admin_id, $_SESSION['Role'],
             'Approve Report',
             "Report #$report_id approved. Aid: $qty $unit of $cat allocated to farmer #$farmer_id",
             'Damage Reports'

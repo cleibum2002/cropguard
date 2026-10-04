@@ -61,7 +61,9 @@ try {
     // Log the action
     require_once '../audit/log_action.php';
     $farmer_id = $row['Farmer_ID'] ?? 0;
-    logAction($conn, $mao_id, 'MAO',
+    // Real role from the session - both MAO and Admin may mark aid as claimed,
+    // and this used to record every claim as 'MAO'.
+    logAction($conn, $mao_id, $_SESSION['Role'],
         'Mark as Claimed',
         "Aid #AID-$dist_id marked as claimed for farmer #$farmer_id",
         'Aid Distribution'

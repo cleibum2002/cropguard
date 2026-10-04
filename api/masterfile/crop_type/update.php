@@ -83,10 +83,28 @@ try {
         exit;
     }
 
+    // The old cost is read first: Standard_Production_Cost rewrites the peso
+    // estimate on every damage report for this crop, so a change to it is the
+    // one thing an auditor most needs to see.
+    $old = $conn->prepare("SELECT Standard_Production_Cost FROM crop_type WHERE Type_ID = ?");
+    $old->bind_param("i", $id);
+    $old->execute();
+    $oldCost = (float)($old->get_result()->fetch_assoc()['Standard_Production_Cost'] ?? 0);
+    $old->close();
+
     $stmt = $conn->prepare("UPDATE crop_type SET Crop_Name = ?, Commodity_Type = ?, Growth_Duration = ?, Standard_Production_Cost = ?, Description = ? WHERE Type_ID = ?");
     $stmt->bind_param("sssdsi", $name, $type, $period, $prod_cost, $description, $id);
 
     if ($stmt->execute()) {
+        $costNote = abs($oldCost - $prod_cost) > 0.001
+            ? "cost P" . number_format($oldCost, 2) . " -> P" . number_format($prod_cost, 2) . "/ha"
+            : "cost unchanged at P" . number_format($prod_cost, 2) . "/ha";
+        require_once '../../audit/log_action.php';
+        logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+            'Update Crop',
+            "Updated crop #{$id} {$name}: {$costNote}",
+            'Crops Masterlist'
+        );
         echo json_encode(["status" => "success", "message" => "Crop updated successfully."]);
     } else {
         echo json_encode(["status" => "error", "message" => "Update failed: " . $stmt->error]);

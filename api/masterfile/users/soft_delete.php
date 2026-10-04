@@ -28,6 +28,17 @@ if (!empty($data->id)) {
         $stmt->bind_param("i", $data->id);
         
         if ($stmt->execute()) {
+            $who = $conn->prepare("SELECT Fullname, Role FROM users WHERE User_ID = ?");
+            $who->bind_param("i", $data->id);
+            $who->execute();
+            $target = $who->get_result()->fetch_assoc();
+            $who->close();
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Deactivate User',
+                "Deactivated user #{$data->id}" . ($target ? " ({$target['Fullname']}, {$target['Role']})" : ''),
+                'User Management'
+            );
             echo json_encode(['status' => 'success', 'message' => 'User access revoked.']);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'Failed to deactivate user.']);

@@ -95,7 +95,14 @@ try {
     $stmt->bind_param("sssds", $name, $type, $period, $prod_cost, $description);
 
     if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Crop registered successfully.", "id" => $conn->insert_id]);
+        $newId = $conn->insert_id;
+        require_once '../../audit/log_action.php';
+        logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+            'Add Crop',
+            "Registered crop #{$newId} {$name} at P" . number_format($prod_cost, 2) . "/ha",
+            'Crops Masterlist'
+        );
+        echo json_encode(["status" => "success", "message" => "Crop registered successfully.", "id" => $newId]);
     } else {
         echo json_encode(["status" => "error", "message" => "Insert failed: " . $stmt->error]);
     }

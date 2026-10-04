@@ -53,10 +53,28 @@ if (isset($input['id'], $input['item_name'])) {
         }
         $dupe->close();
 
+        // Old stock read first: a manual stock edit outside the aid workflow is
+        // the change an auditor most needs to see (e.g. 70 bags edited to 700).
+        $old = $conn->prepare("SELECT current_stock, status FROM masterfile_items WHERE id = ?");
+        $old->bind_param("i", $id);
+        $old->execute();
+        $before = $old->get_result()->fetch_assoc();
+        $old->close();
+
         $stmt = $conn->prepare("UPDATE masterfile_items SET item_name=?, category=?, unit=?, price=?, current_stock=?, description=?, status=? WHERE id=?");
         $stmt->bind_param("sssddssi", $name, $cat, $unit, $price, $stock, $desc, $stat, $id);
 
         if ($stmt->execute()) {
+            $changes = [];
+            if ($before && (float)$before['current_stock'] !== $stock) $changes[] = "stock " . (float)$before['current_stock'] . " -> {$stock} {$unit}";
+            if ($before && $before['status'] !== $stat)                $changes[] = "status {$before['status']} -> {$stat}";
+            $detail = $changes ? implode(', ', $changes) : 'details edited';
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Update Item',
+                "Updated relief item #{$id} {$name}: {$detail}",
+                'Inventory'
+            );
             if (ob_get_length()) ob_clean();
             echo json_encode(["status" => "success", "message" => "Item updated successfully!"]);
         } else {

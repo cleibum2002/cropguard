@@ -168,6 +168,15 @@ if (isset($input['email'], $input['password'])) {
         }
         $failStmt->execute();
         $failStmt->close();
+
+        // Real accounts only, same as the counter above - logging guesses at
+        // made-up emails would just let anyone flood the audit log.
+        require_once '../audit/log_action.php';
+        logAction($conn, $user['User_ID'], $user['Role'],
+            'Failed Login',
+            "Wrong password for {$user['Fullname']} (attempt {$newCount} of 5)" . ($newCount >= 5 ? ' - account locked for 15 minutes' : ''),
+            'Authentication'
+        );
     }
 
     // If user not found or password incorrect

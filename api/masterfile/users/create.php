@@ -81,6 +81,13 @@ if (!empty($data->fullname) && !empty($data->email) && !empty($data->password)) 
         }
         
         if ($stmt->execute()) {
+            $newUserId = $conn->insert_id;
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Create User',
+                "Created {$data->role} account #{$newUserId} for {$data->fullname} ({$data->email})",
+                'User Management'
+            );
             if ($needsVerification) {
                 sendVerificationEmail($data->email, $data->fullname, $verification_code); // best-effort
                 echo json_encode(['status' => 'success', 'message' => 'New user added. They must verify their email before they can log in.']);
