@@ -90,7 +90,7 @@ def level0():
     b.append(stack(940, 486, ['Assigned inspections', 'Visit dates & farm details', 'Messages'], 'middle', up=False))
     # MAO
     b.append(arrow(620, 100, 620, PY))
-    b.append(stack(606, 140, ['Validate / reject reports', 'Technician assignments', 'Aid claimed confirmations', 'Seed request updates', 'Messages'], 'end', up=False))
+    b.append(stack(606, 140, ['Validate / reject reports', 'Aid claimed confirmations', 'Seed request updates', 'Messages'], 'end', up=False))
     b.append(arrow(680, PY, 680, 100))
     b.append(stack(694, 140, ['New-report alerts', 'Validation queue', 'Aid awaiting pickup', 'Distribution reports, map', 'Messages'], 'start', up=False))
     # Admin
@@ -128,7 +128,7 @@ ROWS = [
      [('D1', 'r', 'RSBSA number'), ('D2', 'rw', 'Farm & crop details'), ('D4', 'w', 'New damage report'),
       ('D5', 'w', 'Photos + GPS'), ('D8', 'w', 'New-report alerts')]),
     ('5.0', ['Validate Report &', 'Assign Inspection'],
-     [(MAO, [('in', 'Validate / reject, assign technician'), ('out', 'Validation queue')]),
+     [(MAO, [('in', 'Validate / reject report'), ('out', 'Validation queue')]),
       (ADMIN, [('in', 'Validate, reject, archive, assign')])],
      [('D1', 'r', 'Active technicians'), ('D4', 'rw', 'Status & assignment'), ('D8', 'w', 'Status notices'),
       ('D9', 'w', 'Decision logs')]),
