@@ -115,6 +115,17 @@ final class Client
         return $this->send();
     }
 
+    // HTTP status of a POST, for checking that an endpoint no longer exists.
+    public function postStatus(string $path, array $json): int
+    {
+        curl_setopt($this->ch, CURLOPT_URL, CG_BASE . '/' . $path);
+        curl_setopt($this->ch, CURLOPT_POST, true);
+        curl_setopt($this->ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($this->ch, CURLOPT_POSTFIELDS, json_encode($json));
+        curl_exec($this->ch);
+        return (int)curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
+    }
+
     public function cookie(string $name): ?string
     {
         foreach (curl_getinfo($this->ch, CURLINFO_COOKIELIST) as $line) {

@@ -39,9 +39,10 @@ function queueIds(Client $tech): array
     return array_map('intval', array_column($tech->get('api/technician/get_dashboard.php')['assignments'], 'id'));
 }
 
-test('pa101 technician list shows the field technicians', function () use ($admin, $techA, $techB) {
+test('pa101 technician list shows only active field technicians', function () use ($admin, $techA, $techB, $inactive) {
     $ids = array_map('intval', array_column($admin->get('api/masterfile/damage_report/get_technicians.php')['data'], 'id'));
-    assertTrue(in_array($techA, $ids, true) && in_array($techB, $ids, true), 'both technicians listed');
+    assertTrue(in_array($techA, $ids, true) && in_array($techB, $ids, true), 'active technicians listed');
+    assertFalse(in_array($inactive, $ids, true), 'deactivated technician hidden');
 });
 
 test('pa102 admin can assign an active technician', function () use ($admin, $report, $techA, $visit) {

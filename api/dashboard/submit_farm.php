@@ -60,6 +60,11 @@ try {
     if (!$stmt->execute()) {
         throw new Exception("Failed to save farm location: " . $stmt->error);
     }
+    // Read the new farm's ID immediately. It used to be read after the
+    // crop_type SELECT below, and insert_id reflects the LAST query on the
+    // connection - the SELECT reset it to 0, so every farm's crop row was
+    // saved under Location_ID 0 instead of its own farm.
+    $new_location_id = $conn->insert_id;
 
     // Also create a matching entry in the `crop` table, so this crop immediately
     // shows up in the "Which crop was damaged?" picker when filing a report.
@@ -71,8 +76,6 @@ try {
     $cropTypeResult = $cropNameStmt->get_result()->fetch_assoc();
     $crop_name = $cropTypeResult['Crop_Name'] ?? 'Registered Crop';
     $cropNameStmt->close();
-
-    $new_location_id = $conn->insert_id;
 
     $insertCrop = $conn->prepare("INSERT INTO crop (Crop_Name, Type_ID, Area_Hectares, Farmer_ID, Location_ID) VALUES (?, ?, ?, ?, ?)");
     $insertCrop->bind_param("sidii", $crop_name, $type_id, $area, $farmer_id, $new_location_id);
