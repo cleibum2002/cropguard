@@ -117,4 +117,13 @@ test("rb113 technician cannot inspect a report assigned to someone else", functi
     assertSame('Validated', reportRow($othersReport)['Status'], 'report unchanged');
 });
 
+test('rb114 MAO cannot approve a report directly, skipping aid and stock', function () use ($mao, $validatedReport) {
+    // The old api/dashboard/mao_update_report.php allowed exactly this; it was removed.
+    $code = $mao->postStatus('api/dashboard/mao_update_report.php', ['id' => $validatedReport, 'status' => 'Approved']);
+    assertSame(404, $code, 'old endpoint is gone');
+    $res = $mao->post('api/masterfile/damage_report/update_status.php', ['id' => $validatedReport, 'status' => 'Approved']);
+    assertSame('Invalid status value.', $res['message'], 'the current endpoint refuses Approved');
+    assertSame('Validated', reportRow($validatedReport)['Status'], 'report unchanged');
+});
+
 TestRun::run('Tests\Feature\RoleBasedAccessTest');

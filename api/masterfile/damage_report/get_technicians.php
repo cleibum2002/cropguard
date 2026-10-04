@@ -10,10 +10,12 @@ if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'
     exit;
 }
 
-// We filter by Role = 'Technician' to get the correct list for the Admin dropdown
-$query = "SELECT User_ID as id, Fullname as name, Assigned_Area as area 
-          FROM users 
-          WHERE Role = 'Technician' 
+// We filter by Role = 'Technician' to get the correct list for the Admin dropdown.
+// Active only: assign_technician.php refuses a deactivated technician, so
+// listing them just offered a choice that always fails.
+$query = "SELECT User_ID as id, Fullname as name, Assigned_Area as area
+          FROM users
+          WHERE Role = 'Technician' AND STATUS = 'Active'
           ORDER BY Fullname ASC";
 
 $result = $conn->query($query);
