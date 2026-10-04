@@ -72,7 +72,7 @@ final class TestRun
         foreach ($results as [$name, $ok, $msg, $secs]) {
             $mark = $ok ? "\033[32m✓\033[0m" : "\033[31m✗\033[0m";
             $time = sprintf('%.2fs', $secs);
-            echo '  ' . $mark . ' ' . str_pad($name, 66) . "\033[90m" . str_pad($time, 7, ' ', STR_PAD_LEFT) . "\033[0m\n";
+            echo '  ' . $mark . ' ' . str_pad($name, 72) . "\033[90m" . str_pad($time, 7, ' ', STR_PAD_LEFT) . "\033[0m\n";
             if (!$ok) {
                 echo "      \033[31m→ $msg\033[0m\n";
             }
