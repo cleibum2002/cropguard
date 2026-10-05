@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/js/i18n.js?v=1"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
-    <script src="../../assets/js/offline_queue.js?v=1"></script>
+    <script src="../../assets/js/offline_queue.js?v=2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -300,9 +300,9 @@
                             <p id="offlineQueueTitle" class="text-base sm:text-lg font-black leading-tight"></p>
                             <p id="offlineQueueSub" class="text-xs sm:text-sm font-semibold mt-1 opacity-90"></p>
                             <div class="flex flex-wrap gap-2 mt-3">
-                                <button type="button" id="offlineQueueSendBtn" onclick="CropGuardQueue.flush()"
-                                        class="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-amber-700 transition-all">
-                                    <i class="fa-solid fa-paper-plane mr-1"></i> <span data-i18n="off_send_now">Send now</span>
+                                <button type="button" id="offlineQueueSendBtn" onclick="sendQueuedNow()"
+                                        class="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-amber-700 transition-all disabled:opacity-60 disabled:cursor-wait">
+                                    <i id="offlineQueueSendIcon" class="fa-solid fa-paper-plane mr-1"></i> <span id="offlineQueueSendLabel" data-i18n="off_send_now">Send now</span>
                                 </button>
                                 <a id="offlineQueueLoginBtn" href="../../auth.html"
                                    class="hidden px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-700 transition-all">
@@ -802,6 +802,11 @@
                 off_banner_sub_auth: "Your session ended. Log in again and your saved report will be sent.",
                 off_banner_sub_user: "This saved report belongs to a different account. Log in as that farmer to send it.",
                 off_banner_sub_stuck: "We couldn't send this after several tries. Tap Send now to try again.",
+                off_banner_sub_sending: "Sending your report now... please keep this page open.",
+                off_sending: "Sending...",
+                off_sent_toast: "Your report was sent!",
+                off_still_offline_toast: "No internet yet. We'll send it by itself once you're connected.",
+                off_not_sent_toast: "Couldn't send yet. We'll keep trying by ourselves.",
                 off_send_now: "Send now", off_login_now: "Log in",
                 off_saved_title: "Saved on this phone",
                 off_saved_text: "No internet right now. Your report and photos are saved on this phone and will be sent by themselves once you have a signal. Please don't clear your browser data.",
@@ -903,6 +908,11 @@
                 off_banner_sub_auth: "Natapos ang iyong session. Mag-log in ulit at ipapadala ang naka-save mong ulat.",
                 off_banner_sub_user: "Ang naka-save na ulat na ito ay pag-aari ng ibang account. Mag-log in bilang siya para maipadala ito.",
                 off_banner_sub_stuck: "Hindi namin ito naipadala matapos ang ilang subok. Pindutin ang Ipadala na para subukan ulit.",
+                off_banner_sub_sending: "Ipinapadala na ang iyong ulat... huwag munang isara ang pahinang ito.",
+                off_sending: "Ipinapadala...",
+                off_sent_toast: "Naipadala na ang iyong ulat!",
+                off_still_offline_toast: "Wala pang internet. Kusa namin itong ipapadala kapag may koneksyon ka na.",
+                off_not_sent_toast: "Hindi pa naipadala. Patuloy naming susubukan.",
                 off_send_now: "Ipadala na", off_login_now: "Mag-log in",
                 off_saved_title: "Naka-save sa telepono",
                 off_saved_text: "Walang internet ngayon. Naka-save sa teleponong ito ang iyong ulat at mga larawan, at awtomatikong ipapadala kapag may signal ka na. Huwag pong i-clear ang browser data.",
@@ -1000,6 +1010,11 @@
                 off_banner_sub_auth: "Natapos ang imong session. Pag-log in balik ug ipadala ang imong na-save nga report.",
                 off_banner_sub_user: "Kini nga na-save nga report iya sa laing account. Pag-log in isip kana nga mag-uuma aron ipadala.",
                 off_banner_sub_stuck: "Wala namo ni mapadala human sa pipila ka sulay. Pindota ang Ipadala karon aron sulayan balik.",
+                off_banner_sub_sending: "Gipadala na ang imong report... ayaw sa usa isira kini nga pahina.",
+                off_sending: "Gipadala...",
+                off_sent_toast: "Napadala na ang imong report!",
+                off_still_offline_toast: "Wala pay internet. Kami na mismo ang mopadala kung naa nay koneksyon.",
+                off_not_sent_toast: "Wala pa mapadala. Padayon namo nga sulayan.",
                 off_send_now: "Ipadala karon", off_login_now: "Pag-log in",
                 off_saved_title: "Na-save sa telepono",
                 off_saved_text: "Walay internet karon. Na-save sa telepono ang imong report ug mga litrato, ug awtomatikong ipadala kung naa nay signal. Ayaw i-clear ang browser data.",
@@ -2089,7 +2104,8 @@
 
             document.getElementById('offlineQueueTitle').innerText = title;
             document.getElementById('offlineQueueSub').innerText =
-                state.blockedUser    ? t('off_banner_sub_user')
+                state.sending        ? t('off_banner_sub_sending')
+              : state.blockedUser    ? t('off_banner_sub_user')
               : state.blockedAuth    ? t('off_banner_sub_auth')
               : state.needsAttention ? t('off_banner_sub_stuck')
               : t('off_banner_sub');
@@ -2097,8 +2113,33 @@
             // Both blocked states need a different login, not another send attempt.
             const needsLogin = state.blockedAuth || state.blockedUser;
             document.getElementById('offlineQueueLoginBtn').classList.toggle('hidden', !needsLogin);
-            document.getElementById('offlineQueueSendBtn').classList.toggle('hidden', needsLogin);
+            const sendBtn = document.getElementById('offlineQueueSendBtn');
+            sendBtn.classList.toggle('hidden', needsLogin);
+            // While a send is running the button visibly says so, instead of
+            // looking tappable and then doing nothing.
+            sendBtn.disabled = !!state.sending;
+            document.getElementById('offlineQueueSendIcon').className =
+                state.sending ? 'fa-solid fa-spinner fa-spin mr-1' : 'fa-solid fa-paper-plane mr-1';
+            document.getElementById('offlineQueueSendLabel').innerText =
+                state.sending ? t('off_sending') : t('off_send_now');
             banner.classList.remove('hidden');
+        }
+
+        // "Send now": tries straight away and always tells the farmer what
+        // happened. It used to call the queue directly and stay silent, which -
+        // when a send was stuck or the phone still reported no connection -
+        // looked exactly like a button that couldn't be pressed.
+        async function sendQueuedNow() {
+            const result = await CropGuardQueue.flush();
+            if (!result) return;
+            // A login problem is already explained by the banner and its Log in button.
+            if (result.blockedAuth || result.blockedUser) return;
+
+            let icon, title;
+            if (result.total === 0)  { icon = 'success'; title = t('off_sent_toast'); }
+            else if (result.offline) { icon = 'info';    title = t('off_still_offline_toast'); }
+            else                     { icon = 'warning'; title = t('off_not_sent_toast'); }
+            Swal.fire({ toast: true, position: 'top', icon, title, showConfirmButton: false, timer: 4000, timerProgressBar: true });
         }
 
         async function submitReport(e) {
