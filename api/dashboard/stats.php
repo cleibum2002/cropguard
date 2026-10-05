@@ -33,10 +33,25 @@ try {
         "SELECT COUNT(*) FROM users WHERE Role = 'Technician'"
     )->fetch_row()[0] ?? 0;
 
-    // 4. Avg response time in days
+    // 1b. Reports filed this calendar month and last month, for the
+    // "from last month" trend on the Total Reports card (was a hardcoded "12%").
+    $res['this_month'] = $conn->query(
+        "SELECT COUNT(*) FROM damage_report
+         WHERE Report_Date >= DATE_FORMAT(CURDATE(), '%Y-%m-01')"
+    )->fetch_row()[0] ?? 0;
+    $res['last_month'] = $conn->query(
+        "SELECT COUNT(*) FROM damage_report
+         WHERE Report_Date >= DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH, '%Y-%m-01')
+           AND Report_Date <  DATE_FORMAT(CURDATE(), '%Y-%m-01')"
+    )->fetch_row()[0] ?? 0;
+
+    // 4. Avg response time in days: from filing until the report's latest
+    // workflow step (inspection or approval). Last_Updated is bumped by MySQL
+    // on every change to the row. This used to be NOW() - Report_Date, which
+    // measured how old a report is and kept growing every day.
     $avgResult = $conn->query(
-        "SELECT ROUND(AVG(DATEDIFF(NOW(), Report_Date)), 1) as avg_days 
-         FROM damage_report 
+        "SELECT ROUND(AVG(TIMESTAMPDIFF(HOUR, Report_Date, Last_Updated)) / 24, 1) as avg_days
+         FROM damage_report
          WHERE Status IN ('Inspected','Approved')"
     )->fetch_row()[0];
     $res['avg_response'] = $avgResult ?? null;

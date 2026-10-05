@@ -11,13 +11,15 @@ if (!isset($_SESSION['User_ID']) || $_SESSION['Role'] !== 'Admin') {
 
 $period = $_GET['period'] ?? 'daily';
 
+// Average days from filing until the report's latest workflow step
+// (inspection or approval), the same measure as the dashboard card in stats.php.
 try {
     if ($period === 'daily') {
         $sql = "SELECT 
                     DATE(Report_Date) as label,
                     ROUND(AVG(
-                        DATEDIFF(NOW(), Report_Date)
-                    ), 1) as avg_days
+                        TIMESTAMPDIFF(HOUR, Report_Date, Last_Updated)
+                    ) / 24, 1) as avg_days
                 FROM damage_report
                 WHERE Status IN ('Inspected','Approved')
                 AND Report_Date >= DATE_SUB(NOW(), INTERVAL 7 DAY)
@@ -28,8 +30,8 @@ try {
         $sql = "SELECT 
                     DATE_FORMAT(Report_Date, '%b %Y') as label,
                     ROUND(AVG(
-                        DATEDIFF(NOW(), Report_Date)
-                    ), 1) as avg_days
+                        TIMESTAMPDIFF(HOUR, Report_Date, Last_Updated)
+                    ) / 24, 1) as avg_days
                 FROM damage_report
                 WHERE Status IN ('Inspected','Approved')
                 AND Report_Date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
@@ -40,8 +42,8 @@ try {
         $sql = "SELECT 
                     YEAR(Report_Date) as label,
                     ROUND(AVG(
-                        DATEDIFF(NOW(), Report_Date)
-                    ), 1) as avg_days
+                        TIMESTAMPDIFF(HOUR, Report_Date, Last_Updated)
+                    ) / 24, 1) as avg_days
                 FROM damage_report
                 WHERE Status IN ('Inspected','Approved')
                 GROUP BY YEAR(Report_Date)

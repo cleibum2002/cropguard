@@ -1829,10 +1829,9 @@
             const crop   = farmerCropsData.find(c => String(c.Crop_ID) === String(cropId));
             document.getElementById('cropName').value = cropId;
             document.getElementById('cropType').value = crop ? (crop.Type_ID || '') : '';
-            if (crop && crop.Type_ID) {
-                hint.textContent = t('crop_type_auto').replace('{id}', crop.Type_ID);
-                hint.classList.remove('hidden');
-            } else { hint.classList.add('hidden'); }
+            // The crop type is still filled in behind the scenes; the old "Type ID n
+            // auto-selected" hint showed farmers an internal database number.
+            hint.classList.add('hidden');
             applyPlantingDateLock(crop && crop.Planting_Date);
         }
 
@@ -2026,10 +2025,13 @@
 
             const tooBig   = currentMaxArea > 0 && val > currentMaxArea;
             const tooSmall = isNaN(val) || val <= 0;
+            // An untouched, empty box still blocks Submit, but isn't shown in red:
+            // the warning appeared the moment the form opened, before any typing.
+            const typed    = input.value.trim() !== '';
 
             warning.classList.toggle("hidden", !tooBig);
-            negWarning.classList.toggle("hidden", !tooSmall);
-            input.classList.toggle("border-red-500", tooBig || tooSmall);
+            negWarning.classList.toggle("hidden", !(tooSmall && typed));
+            input.classList.toggle("border-red-500", tooBig || (tooSmall && typed));
 
             if (tooBig || tooSmall) {
                 submitBtn.disabled = true; submitBtn.classList.add("opacity-50", "cursor-not-allowed");
@@ -2297,9 +2299,7 @@
                     document.getElementById('cropType').value = r.Type_ID || '';
                     updateMaxArea().then(() => {
                         document.getElementById('cropPicker').value = r.Type_ID || '';
-                        const hint = document.getElementById('cropPickerHint');
-                        if (r.Type_ID) { hint.textContent = 'Type ID ' + r.Type_ID + ' auto-selected'; hint.classList.remove('hidden'); }
-                        else { hint.classList.add('hidden'); }
+                        document.getElementById('cropPickerHint').classList.add('hidden');
                     });
                     // Editing an existing report is the same crop cycle by definition,
                     // so it defaults to locked too - see applyPlantingDateLock().

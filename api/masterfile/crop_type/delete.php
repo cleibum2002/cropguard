@@ -38,7 +38,7 @@ try {
         );
         echo json_encode(["status" => "success", "message" => "Crop removed from masterlist."]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Delete failed: " . $stmt->error]);
+        echo json_encode(["status" => "error", "message" => safeErrorMessage(new Exception("Delete failed: " . $stmt->error))]);
     }
     $stmt->close();
 } catch (Throwable $e) {

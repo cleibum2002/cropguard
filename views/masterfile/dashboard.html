@@ -115,10 +115,8 @@
                             </div>
                         </div>
                         <h3 id="statItems" class="text-2xl md:text-3xl font-black text-gray-800 mb-1">--</h3>
-                        <p class="text-[11px] text-green-500 font-bold flex flex-wrap md:flex-nowrap items-center gap-1">
-                            <i class="fa-solid fa-arrow-up text-[9px]"></i> <span>12%</span>
-                            <span class="text-gray-400 font-normal ml-1" data-i18n="stat_caption_last_month">from last month</span>
-                        </p>
+                        <!-- Filled by renderMonthTrend() from this month's vs last month's filings (was a hardcoded "12%") -->
+                        <p id="statTotalTrend" class="text-[11px] text-gray-400 font-normal flex flex-wrap md:flex-nowrap items-center gap-1">&nbsp;</p>
                     </div>
                     <div class="stat-card bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100">
                         <div class="flex justify-between items-start mb-2 md:mb-3">
@@ -138,10 +136,7 @@
                             </div>
                         </div>
                         <h3 id="statFarmers" class="text-2xl md:text-3xl font-black text-gray-800 mb-1">--</h3>
-                        <p class="text-[11px] text-red-400 font-bold flex flex-wrap md:flex-nowrap items-center gap-1">
-                            <i class="fa-solid fa-arrow-down text-[9px]"></i> <span>0.5%</span>
-                            <span class="text-gray-400 font-normal ml-1" data-i18n="stat_caption_last_month">from last month</span>
-                        </p>
+                        <p class="text-[11px] text-gray-400 font-normal" data-i18n="stat_response_caption">Filing to inspection or approval</p>
                     </div>
                     <div class="stat-card bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100">
                         <div class="flex justify-between items-start mb-2 md:mb-3">
@@ -345,6 +340,7 @@
                 stat_total: "Total Reports", stat_caption_last_month: "from last month",
                 stat_pending: "Pending Validation", stat_pending_caption: "Awaiting review",
                 stat_response: "Avg Response Time", stat_techs: "Active Technicians", stat_techs_caption: "Field technicians",
+                stat_response_caption: "Filing to inspection or approval", stat_caption_this_month: "{n} filed this month",
                 queue_title: "Validation Queue", sort_oldest: "Oldest to Recent", sort_recent: "Recent to Oldest", view_all: "View All",
                 loading_generic: "Loading queue...", loading_generic_short: "Loading...",
                 cert_title: "Recent Certifications",
@@ -363,6 +359,7 @@
                 stat_total: "Kabuuang Ulat", stat_caption_last_month: "mula noong nakaraang buwan",
                 stat_pending: "Naghihintay ng Pagpapatunay", stat_pending_caption: "Naghihintay ng Review",
                 stat_response: "Karaniwang Oras ng Tugon", stat_techs: "Aktibong mga Technician", stat_techs_caption: "Technician sa Field",
+                stat_response_caption: "Mula paghahain hanggang inspeksyon o pag-apruba", stat_caption_this_month: "{n} naihain ngayong buwan",
                 queue_title: "Pila ng Pagpapatunay", sort_oldest: "Pinakaluma hanggang Pinakabago", sort_recent: "Pinakabago hanggang Pinakaluma", view_all: "Tingnan Lahat",
                 loading_generic: "Nilo-load ang pila...", loading_generic_short: "Nilo-load...",
                 cert_title: "Kamakailang mga Sertipikasyon",
@@ -543,6 +540,22 @@
             });
         }
 
+        // "Total Reports" trend: this month's filings compared with last month's.
+        // With no filings last month a percentage means nothing, so show the count.
+        function renderMonthTrend(thisMonth, lastMonth) {
+            const el = document.getElementById('statTotalTrend');
+            if (lastMonth === 0) {
+                el.className = 'text-[11px] text-gray-400 font-normal flex flex-wrap md:flex-nowrap items-center gap-1';
+                el.textContent = t('stat_caption_this_month').replace('{n}', thisMonth);
+                return;
+            }
+            const pct  = Math.round(((thisMonth - lastMonth) / lastMonth) * 100);
+            const up   = pct >= 0;
+            el.className = 'text-[11px] font-bold flex flex-wrap md:flex-nowrap items-center gap-1 ' + (up ? 'text-green-500' : 'text-red-400');
+            el.innerHTML = `<i class="fa-solid fa-arrow-${up ? 'up' : 'down'} text-[9px]"></i> <span>${Math.abs(pct)}%</span>`
+                         + `<span class="text-gray-400 font-normal ml-1">${t('stat_caption_last_month')}</span>`;
+        }
+
         // ─── DASHBOARD DATA LOAD ──────────────────────────────────────────────
         async function loadData() {
             try {
@@ -551,6 +564,7 @@
                 const data = await res.json();
 
                 document.getElementById('statItems').innerText   = data.total_items ?? '--';
+                renderMonthTrend(Number(data.this_month ?? 0), Number(data.last_month ?? 0));
                 document.getElementById('statFarmers').innerText = (data.avg_response ?? '--') + (data.avg_response ? ' days' : '');
                 document.getElementById('statPending').innerText = data.total_pending ?? '--';
                 document.getElementById('statTechs').innerText   = (data.total_techs ?? '--') + (data.total_techs_all ? '/' + data.total_techs_all : '');
