@@ -4,7 +4,8 @@ ini_set('display_errors', 0);
 session_start();
 header("Content-Type: application/json");
 
-if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'])) {
+// Admin only: technicians are assigned by the DA Region X Admin, not the MAO.
+if (!isset($_SESSION['User_ID']) || ($_SESSION['Role'] ?? '') !== 'Admin') {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
     exit;
 }

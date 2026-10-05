@@ -3,7 +3,8 @@ ini_set('display_errors', 0);
 session_start();
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['User_ID']) || !in_array($_SESSION['Role'], ['Admin', 'MAO'])) {
+// Admin only: walk-in reports are filed by the Admin on a farmer's behalf.
+if (!isset($_SESSION['User_ID']) || ($_SESSION['Role'] ?? '') !== 'Admin') {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
     exit;
 }

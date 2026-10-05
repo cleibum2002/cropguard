@@ -99,11 +99,13 @@ test('al108 assigning a technician is logged with the visit date', function () u
     assertContains($date, $log['Description'], 'visit date recorded');
 });
 
-test("al109 an aid approval is logged with the approver's real role", function () use ($mao, $maoId, $inspectedReport, $aidItem) {
-    $mao->post('api/masterfile/damage_report/approve_with_aid.php', [
-        'report_id' => $inspectedReport, 'category' => 'Seeds', 'quantity' => 5, 'unit' => 'bags', 'item_id' => $aidItem,
-    ]);
-    assertSame('MAO', mustHaveLog($maoId, 'Approve Report')['User_Role'], 'recorded as MAO, not Admin');
+test("al109 an aid approval is logged with the approver's real role", function () use ($admin, $adminId, $mao, $maoId, $inspectedReport, $aidItem) {
+    $body = ['report_id' => $inspectedReport, 'category' => 'Seeds', 'quantity' => 5, 'unit' => 'bags', 'item_id' => $aidItem];
+    // Approving aid is Admin only: the MAO is refused and nothing is logged for it.
+    assertSame('Unauthorized access.', $mao->post('api/masterfile/damage_report/approve_with_aid.php', $body)['message'], 'MAO refused');
+    assertNull(latestLog($maoId, 'Approve Report'), 'no approval logged for the MAO');
+    $admin->post('api/masterfile/damage_report/approve_with_aid.php', $body);
+    assertSame('Admin', mustHaveLog($adminId, 'Approve Report')['User_Role'], 'recorded as Admin');
 });
 
 test('al110 a crop cost change is logged with old and new cost', function () use ($admin, $adminId, $typeId) {

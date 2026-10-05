@@ -86,14 +86,14 @@ test('pa109 only the assigned technician can submit the inspection', function ()
     assertSame('Inspected', reportRow($report)['Status'], 'now Inspected');
 });
 
-test('pa110 MAO can also assign technicians', function () use ($mao, $maoReport, $techA, $visit) {
-    assertSame('success', assign($mao, $maoReport, $techA, $visit)['status'], 'status');
-    assertSame($techA, (int)reportRow($maoReport)['Technician_ID'], 'assigned');
+test('pa110 MAO cannot assign technicians (Admin only)', function () use ($mao, $maoReport, $techA, $visit) {
+    assertSame('Unauthorized.', assign($mao, $maoReport, $techA, $visit)['message'], 'refused');
+    assertNull(reportRow($maoReport)['Technician_ID'], 'no technician assigned');
 });
 
-test('pa111 a farmer cannot assign technicians', function () use ($farmer, $maoReport, $techB, $techA, $visit) {
+test('pa111 a farmer cannot assign technicians', function () use ($farmer, $maoReport, $techB, $visit) {
     assertSame('Unauthorized.', assign($farmer, $maoReport, $techB, $visit)['message'], 'refused');
-    assertSame($techA, (int)reportRow($maoReport)['Technician_ID'], 'assignment unchanged');
+    assertNull(reportRow($maoReport)['Technician_ID'], 'still no technician assigned');
 });
 
 TestRun::run('Tests\Feature\PersonnelAssignmentTest');

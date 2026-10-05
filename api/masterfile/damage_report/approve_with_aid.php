@@ -10,7 +10,9 @@ require_once '../../config/db_connection.php';
 // allocate aid to themselves and deduct real inventory stock, with the audit
 // entry below hardcoded to say "Admin".
 $admin_id = $_SESSION['User_ID'] ?? null;
-if (!$admin_id || !in_array($_SESSION['Role'] ?? '', ['Admin', 'MAO'])) {
+// Admin only: approving aid belongs to the DA Region X Admin. The MAO validates
+// reports and releases approved aid, but never approves it.
+if (!$admin_id || ($_SESSION['Role'] ?? '') !== 'Admin') {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized access.']);
     exit;
 }
