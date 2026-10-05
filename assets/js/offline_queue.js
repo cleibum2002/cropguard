@@ -33,9 +33,20 @@
     var RETRY_MS    = 60 * 1000;  // safety net for when the 'online' event never fires
     var MAX_ATTEMPTS = 6;
 
+    // Time limits. Right after a phone reconnects, the first request can hang
+    // on a half-ready connection for minutes. With no limit, that one hung
+    // request kept `flushing` true, so the 60s retry AND every tap on "Send
+    // now" were silently ignored until the page was closed (reproduced in
+    // Chrome by holding the upload open). These turn a hang into an ordinary
+    // retryable network failure.
+    var SESSION_TIMEOUT_MS = 10 * 1000;
+    var UPLOAD_BASE_MS     = 45 * 1000;   // plus the per-MB allowance below,
+    var UPLOAD_PER_MB_MS   = 30 * 1000;   // so a slow-but-moving upload still finishes
+
     var opts        = {};
     var dbPromise   = null;
     var flushing    = false;
+    var currentFlush = null;  // the running flush, so a tap during one can wait for its result
     var timer       = null;
     var knownUserId = null;   // who is signed in on this device right now
     var storageMode = null;   // 'idb' once proven, 'memory' once it has failed
@@ -184,6 +195,22 @@
         return navigator.onLine === false;
     }
 
+    // fetch() with a time limit. A timeout aborts the request, which rejects
+    // with an AbortError - isNetworkError() already treats that as "offline",
+    // so the report is kept and retried, never dropped. Very old browsers
+    // without AbortController simply get no limit, i.e. the old behaviour.
+    function fetchWithTimeout(url, options, ms) {
+        if (typeof AbortController === 'undefined') return fetch(url, options);
+        var controller = new AbortController();
+        var timer = setTimeout(function () { controller.abort(); }, ms);
+        options = options || {};
+        options.signal = controller.signal;
+        return fetch(url, options).then(
+            function (res) { clearTimeout(timer); return res; },
+            function (err) { clearTimeout(timer); throw err; }
+        );
+    }
+
     // submit_report.php identifies an upload by its FILENAME EXTENSION
     // (pathinfo(...PATHINFO_EXTENSION)). Appending a stored Blob without a
     // filename makes the browser send it as "blob", the extension check fails,
@@ -270,15 +297,19 @@
     }
 
     // ── Sending ─────────────────────────────────────────────────────────────
-    // Deliberately NO timeout on the upload. Aborting a slow but progressing
-    // upload on a weak connection is how you manufacture the exact lost-response
-    // duplicate the client_token exists to prevent.
+    // The upload has a time limit, sized to the photos so a slow-but-moving
+    // upload on a weak connection still has room to finish. A timeout can't
+    // create a duplicate report: if the server did receive it and only the
+    // reply was lost, the retry carries the same client_token and
+    // submit_report.php answers "already submitted" instead of filing it twice.
     function send(item) {
-        return fetch(URL_SUBMIT, {
+        var bytes = item.files.reduce(function (sum, f) { return sum + (f.size || 0); }, 0);
+        var limit = UPLOAD_BASE_MS + Math.ceil(bytes / (1024 * 1024)) * UPLOAD_PER_MB_MS;
+        return fetchWithTimeout(URL_SUBMIT, {
             method: 'POST',
             body: buildFormData(item),
             credentials: 'same-origin'
-        });
+        }, limit);
     }
 
     // Who is signed in on this device right now. Asked once per flush, before
@@ -288,7 +319,7 @@
     // happened to log in next. Resolves to null when we cannot ask (offline), in
     // which case the upload itself decides, exactly as before.
     function currentSession() {
-        return fetch(URL_CHECK, { cache: 'no-store', credentials: 'same-origin' })
+        return fetchWithTimeout(URL_CHECK, { cache: 'no-store', credentials: 'same-origin' }, SESSION_TIMEOUT_MS)
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data && data.status === 'active' && data.user) {
@@ -356,12 +387,21 @@
             });
     }
 
+    // Resolves to the queue summary plus { sent, offline } so a "Send now" tap
+    // can tell the farmer what actually happened. A call made while a flush is
+    // already running gets THAT flush's result - it used to resolve instantly
+    // and do nothing, which made the button look dead.
     function flush() {
-        if (flushing) return Promise.resolve();
-        if (definitelyOffline()) return Promise.resolve();
+        if (flushing && currentFlush) return currentFlush;
+        if (definitelyOffline()) {
+            return summary().then(function (s) { s.sent = 0; s.offline = true; return s; });
+        }
         flushing = true;
+        var sentCount = 0;
+        var stoppedBy = false;
+        notifyChange();  // banner switches to "Sending..." straight away
 
-        return Promise.all([allItems(), currentSession()]).then(function (results) {
+        currentFlush = Promise.all([allItems(), currentSession()]).then(function (results) {
             var items   = results[0];
             var session = results[1];
 
@@ -390,20 +430,29 @@
                     }
 
                     return flushOne(item).then(function (outcome) {
-                        if (outcome === 'sent' && typeof opts.onFlushed === 'function') {
-                            try { opts.onFlushed(); } catch (e) { console.error(e); }
+                        if (outcome === 'sent') {
+                            sentCount++;
+                            if (typeof opts.onFlushed === 'function') {
+                                try { opts.onFlushed(); } catch (e) { console.error(e); }
+                            }
                         }
                         // Offline or logged out - no point trying the rest now.
                         return (outcome === 'offline' || outcome === 'auth') ? outcome : false;
                     });
                 });
-            }, Promise.resolve(false));
+            }, Promise.resolve(false)).then(function (stop) { stoppedBy = stop; });
         }).catch(function (err) {
             console.error('offline queue flush failed', err);
         }).then(function () {
             flushing = false;
-            return notifyChange();
+            currentFlush = null;
+            return notifyChange().then(function (s) {
+                s.sent = sentCount;
+                s.offline = stoppedBy === 'offline';
+                return s;
+            });
         });
+        return currentFlush;
     }
 
     // ── State for the page's banner ─────────────────────────────────────────
@@ -414,12 +463,13 @@
             items = (items || []).filter(ownedByCurrentUser);
             return {
                 total:          items.length,
+                sending:        flushing,
                 blockedAuth:    items.some(function (i) { return i.status === 'blocked_auth'; }),
                 blockedUser:    items.some(function (i) { return i.status === 'blocked_user'; }),
                 needsAttention: items.some(function (i) { return i.status === 'needs_attention'; })
             };
         }).catch(function () {
-            return { total: 0, blockedAuth: false, blockedUser: false, needsAttention: false };
+            return { total: 0, sending: false, blockedAuth: false, blockedUser: false, needsAttention: false };
         });
     }
 
