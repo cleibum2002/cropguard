@@ -104,7 +104,7 @@ try {
         );
         echo json_encode(["status" => "success", "message" => "Crop registered successfully.", "id" => $newId]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Insert failed: " . $stmt->error]);
+        echo json_encode(["status" => "error", "message" => safeErrorMessage(new Exception("Insert failed: " . $stmt->error))]);
     }
     $stmt->close();
 } catch (Throwable $e) {

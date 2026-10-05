@@ -17,7 +17,14 @@
 
     <script>
         // Check session
-        CropGuardSession.protect({ roles: ['mao'] });
+        CropGuardSession.protect({
+            roles: ['mao'],
+            // Same as the other MAO pages: without this the sidebar name stayed "Loading...".
+            onReady: (data) => {
+                const el = document.getElementById('maoNameSidebar');
+                if (el) el.innerText = data.user.fullname;
+            }
+        });
     </script>
 
     <style>

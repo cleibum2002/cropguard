@@ -149,6 +149,7 @@
         const translations = {
             en: {
                 header_title: "Analytics & Data Trends", role_admin: "Admin", loading: "Loading...",
+                notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 stat_total_area: "Total Area Damaged", stat_top_crop: "Most Affected Crop", stat_top_cause: "Primary Threat",
                 chart_title_cause: "Incidents by Damage Type", chart_title_crop: "Hectares Lost per Crop", chart_title_trend: "Monthly Damage Trend (2026)",
                 label_hectares_damaged: "Hectares Damaged", label_reported_incidents: "Reported Incidents", label_na: "N/A",
@@ -158,6 +159,7 @@
             },
             tl: {
                 header_title: "Analytics at Uso ng Datos", role_admin: "Admin", loading: "Nilo-load...",
+                notif_title: "Mga Abiso", notif_loading: "Naglo-load...", notif_none: "Wala pang abiso.",
                 stat_total_area: "Kabuuang Apektadong Sukat", stat_top_crop: "Pinakaapektadong Pananim", stat_top_cause: "Pangunahing Banta",
                 chart_title_cause: "Insidente ayon sa Uri ng Pinsala", chart_title_crop: "Ektaryang Nawala kada Pananim", chart_title_trend: "Buwanang Uso ng Pinsala (2026)",
                 label_hectares_damaged: "Nawalang Ektarya", label_reported_incidents: "Naiulat na Insidente", label_na: "N/A",
@@ -326,6 +328,73 @@ function confirmLogout() {
             loadAdminNavbar('analytics'); 
             initI18n();
             loadAdminNotifications();
+        });
+
+        // ─── NOTIFICATIONS ─────────────────────────────────────────────────
+        async function loadAdminNotifications() {
+            try {
+                const res = await fetch('../../api/dashboard/admin_notifications.php?action=fetch');
+                const result = await res.json();
+                if (result.status === 'success') {
+                    renderNotificationList(result.data);
+                    const badge = document.getElementById('notifBadge');
+                    if (result.unread > 0) {
+                        badge.textContent = result.unread > 9 ? '9+' : result.unread;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load notifications:', e);
+            }
+        }
+
+        // Notification text embeds user-supplied names, and this list is built
+        // with innerHTML - so the message must be rendered as literal text, never
+        // parsed as markup. Registration is public, which made this a route to
+        // stored XSS in staff browsers.
+        function escapeHtml(s) {
+            return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+
+        function renderNotificationList(items) {
+            const list = document.getElementById('notifList');
+            if (!items || items.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-8">${t('notif_none')}</p>`;
+                return;
+            }
+            list.innerHTML = items.map(n => `
+                <div class="px-4 py-3 ${n.Is_Read == 0 ? 'bg-green-50/40' : ''} hover:bg-gray-50 transition-colors ${n.Redirect_URL ? 'cursor-pointer flex items-center justify-between gap-3' : ''}" ${n.Redirect_URL ? `onclick="window.location.href='${n.Redirect_URL}'"` : ''}>
+                    <div class="min-w-0">
+                        <p class="text-xs text-gray-700 leading-relaxed">${escapeHtml(n.Message)}</p>
+                        <p class="text-[10px] text-gray-400 font-bold mt-1">${n.DateStr}</p>
+                    </div>
+                    ${n.Redirect_URL ? '<span class="flex-shrink-0 text-[9px] font-black text-white bg-[#11542e] px-2.5 py-1.5 rounded-full uppercase tracking-wide whitespace-nowrap flex items-center gap-1">View <i class="fa-solid fa-arrow-right"></i></span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function toggleNotificationPanel() {
+            const panel = document.getElementById('notifPanel');
+            const isHidden = panel.classList.contains('hidden');
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                fetch('../../api/dashboard/admin_notifications.php?action=read')
+                    .then(() => { document.getElementById('notifBadge').classList.add('hidden'); });
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('notifPanel');
+            const btn = document.getElementById('notifBellBtn');
+            if (panel && !panel.classList.contains('hidden') && !panel.contains(e.target) && !btn.contains(e.target)) {
+                panel.classList.add('hidden');
+            }
         });
     </script>
 

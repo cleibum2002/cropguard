@@ -115,8 +115,7 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
 
          // Log the action
         require_once '../../audit/log_action.php';
-        // Real role from the session - both Admin and MAO may approve here, and
-        // this used to record every approval as 'Admin'.
+        // Real role from the session (only Admin can reach this point now).
         logAction($conn, $admin_id, $_SESSION['Role'],
             'Approve Report',
             "Report #$report_id approved. Aid: $qty $unit of $cat allocated to farmer #$farmer_id",
@@ -129,7 +128,16 @@ if (isset($input['report_id'], $input['category'], $input['quantity'], $input['u
         
     } catch (Exception $e) {
         $conn->rollback();
-        echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+        // The reasons thrown above are written for the Admin and are safe to show;
+        // anything else (a database error) still goes through safeErrorMessage().
+        $userMessages = [
+            'Selected inventory item no longer exists.',
+            'Not enough stock remaining for this item.',
+            'Damage report not found.',
+            'This report can no longer be approved - it may already be approved, rejected or archived. Please refresh and check.',
+        ];
+        $message = in_array($e->getMessage(), $userMessages, true) ? $e->getMessage() : safeErrorMessage($e);
+        echo json_encode(['status' => 'error', 'message' => $message]);
     }
     
 } else {

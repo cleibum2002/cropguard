@@ -107,7 +107,7 @@ try {
         );
         echo json_encode(["status" => "success", "message" => "Crop updated successfully."]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Update failed: " . $stmt->error]);
+        echo json_encode(["status" => "error", "message" => safeErrorMessage(new Exception("Update failed: " . $stmt->error))]);
     }
     $stmt->close();
 } catch (Throwable $e) {
