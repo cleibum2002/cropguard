@@ -178,7 +178,7 @@
                 <span style="display:flex; align-items:center; gap:4px; padding:0 12px; background:#eef2ef; border:1px solid #ccc; border-radius:8px; font-weight:bold; color:#333; flex-shrink:0;">
                     🇵🇭 +63
                 </span>
-                <input type="tel" id="regContact" placeholder="9xxxxxxxxx" maxlength="10" inputmode="numeric" required
+                <input type="tel" id="regContact" placeholder="9xxxxxxxxx" inputmode="numeric" required
                        oninput="this.value = phLocalMobile(this.value);" style="flex:1;">
             </div>
 
@@ -339,6 +339,9 @@
     // last digit while keeping the 0, producing +630917123456: a number that
     // failed validation for a reason nobody could see on screen. A pasted +63 or
     // 63 prefix is stripped for the same reason.
+    // The ten-digit cap lives here and NOT in a maxlength attribute:
+    // maxlength truncates a pasted value before oninput runs, so pasting
+    // 09170000000 lost its last digit before the leading 0 was removed.
     function phLocalMobile(value) {
         var digits = String(value).replace(/\D/g, '');
         if (digits.indexOf('63') === 0) digits = digits.slice(2);
