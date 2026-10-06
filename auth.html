@@ -179,7 +179,7 @@
                     🇵🇭 +63
                 </span>
                 <input type="tel" id="regContact" placeholder="9xxxxxxxxx" maxlength="10" inputmode="numeric" required
-                       oninput="this.value = this.value.replace(/\D/g, '').slice(0, 10);" style="flex:1;">
+                       oninput="this.value = phLocalMobile(this.value);" style="flex:1;">
             </div>
 
             <div class="input-group">
@@ -333,6 +333,19 @@
     // sent people hunting for a refresh button they should not need: the form
     // still works, and tapping the button again once the signal is back is
     // enough. Any resolved response, including a 500, lands in the other branch.
+    // The field already shows a fixed +63, so a leading 0 is dropped as it is
+    // typed - the same thing GCash does. Most people enter their number the way
+    // they say it out loud (09171234567), and maxlength="10" used to swallow the
+    // last digit while keeping the 0, producing +630917123456: a number that
+    // failed validation for a reason nobody could see on screen. A pasted +63 or
+    // 63 prefix is stripped for the same reason.
+    function phLocalMobile(value) {
+        var digits = String(value).replace(/\D/g, '');
+        if (digits.indexOf('63') === 0) digits = digits.slice(2);
+        if (digits.indexOf('0')  === 0) digits = digits.slice(1);
+        return digits.slice(0, 10);
+    }
+
     function connectionMessage(err) {
         if (err instanceof TypeError) {
             return "No internet connection. Check your signal, then tap the button again.";
