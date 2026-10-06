@@ -613,23 +613,15 @@
                     <p class="mt-1 text-[8px] font-black text-center leading-tight ${proof.cls}">${proof.text}</p>
                 </div>`; }).join('');
 
-            let galleryHTML = '';
-            if (farmerImgs.length > 0) {
-                galleryHTML = `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
-                    <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">${thumbs(farmerImgs)}</div>`;
-            } else {
-                galleryHTML = `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
-                    <div class="bg-gray-50 border border-gray-100 p-3 sm:p-4 rounded-xl mb-3 sm:mb-8">
+            const gallery = (titleKey, borderCls, list) => `
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 ${borderCls} pl-2">${t(titleKey)}</h4>
+                    ${list.length > 0
+                        ? `<div class="flex flex-wrap gap-3 sm:gap-4">${thumbs(list)}</div>`
+                        : `<div class="bg-gray-50 border border-gray-100 p-3 sm:p-4 rounded-xl">
                         <p class="text-xs text-gray-400 italic">${t('no_evidence')}</p>
-                    </div>`;
-            }
-            if (techImgs.length > 0) {
-                galleryHTML += `
-                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-green-500 pl-2">${t('tech_evidence')}</h4>
-                    <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">${thumbs(techImgs)}</div>`;
-            }
+                    </div>`}`;
+            const farmerGallery = gallery('initial_evidence', 'border-amber-500', farmerImgs);
+            const techGallery   = gallery('tech_evidence', 'border-green-500', techImgs);
 
             // Split the Description into the Farmer's Original Report vs the Technician's
             // Field Findings. Same marker convention already used on the Admin side
@@ -650,23 +642,30 @@
             farmerNotes = escapeHtml(farmerNotes);
             techNotes = escapeHtml(techNotes);
 
-            const remarksHTML = hasTechFindings ? `
-                <div class="mb-3 sm:mb-6">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        <div>
-                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
-                            <div class="bg-blue-50/30 border border-blue-100 p-3 sm:p-5 rounded-2xl h-full">
-                                <p class="text-sm text-gray-600 leading-relaxed italic whitespace-pre-line">${farmerNotes || t('no_remarks')}</p>
-                            </div>
+            // Once a Technician is involved: farmer on the left, technician on the
+            // right, photos above remarks. On desktop the grid fills row by row so
+            // the two photo boxes line up and the two text boxes line up; on a phone
+            // the order classes stack it farmer photos -> farmer remarks -> technician
+            // photos -> technician findings.
+            const hasTechSide = hasTechFindings || techImgs.length > 0;
+            const remarksHTML = hasTechSide ? `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-x-4 sm:gap-y-6 mb-3 sm:mb-6">
+                    <div class="order-1 sm:order-none">${farmerGallery}</div>
+                    <div class="order-3 sm:order-none">${techGallery}</div>
+                    <div class="order-2 sm:order-none flex flex-col">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
+                        <div class="bg-blue-50/30 border border-blue-100 p-3 sm:p-5 rounded-2xl flex-1">
+                            <p class="text-sm text-gray-600 leading-relaxed italic whitespace-pre-line">${farmerNotes || t('no_remarks')}</p>
                         </div>
-                        <div>
-                            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-green-500 pl-2">${t('tech_findings_title')}</h4>
-                            <div class="bg-green-50/30 border border-green-100 p-3 sm:p-5 rounded-2xl h-full">
-                                <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">${techNotes || t('no_tech_findings')}</p>
-                            </div>
+                    </div>
+                    <div class="order-4 sm:order-none flex flex-col">
+                        <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-green-500 pl-2">${t('tech_findings_title')}</h4>
+                        <div class="bg-green-50/30 border border-green-100 p-3 sm:p-5 rounded-2xl flex-1">
+                            <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">${techNotes || t('no_tech_findings')}</p>
                         </div>
                     </div>
                 </div>` : `
+                <div class="mb-3 sm:mb-8">${farmerGallery}</div>
                 <div class="mb-3 sm:mb-6">
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-blue-500 pl-2">${t('farmer_remarks_title')}</h4>
                     <div class="bg-blue-50/30 border border-blue-100 p-3 sm:p-5 rounded-2xl">
@@ -744,9 +743,7 @@
                         </div>
                     </div>
 
-                    ${galleryHTML}
-
-                    <!-- Farmer's Original Report vs Technician's Field Findings -->
+                    <!-- Evidence photos + Farmer's Original Report vs Technician's Field Findings -->
                     ${remarksHTML}
 
                     ${decisionPanel}
