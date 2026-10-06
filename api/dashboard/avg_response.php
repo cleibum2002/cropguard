@@ -35,8 +35,11 @@ try {
                 FROM damage_report
                 WHERE Status IN ('Inspected','Approved')
                 AND Report_Date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-                GROUP BY DATE_FORMAT(Report_Date, '%Y-%m')
+                GROUP BY DATE_FORMAT(Report_Date, '%Y-%m'), DATE_FORMAT(Report_Date, '%b %Y')
                 ORDER BY MIN(Report_Date) ASC";
+        // Both formats are grouped on purpose: Railway's MySQL runs with
+        // ONLY_FULL_GROUP_BY and rejected a label that wasn't in the GROUP BY,
+        // so the Monthly tab always failed there (XAMPP's MariaDB allowed it).
 
     } else {
         $sql = "SELECT 
