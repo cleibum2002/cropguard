@@ -24,6 +24,10 @@ const TEST_PREFIX   = 'TEST-CG ';
 const TEST_LAT = 8.7435;
 const TEST_LNG = 124.7772;
 
+// Same clock as the site (api/config/db_connection.php). XAMPP's PHP defaults
+// to Europe/Berlin, which made test verification codes look already expired.
+date_default_timezone_set('Asia/Manila');
+
 function db(): mysqli
 {
     static $db = null;

@@ -19,50 +19,50 @@ function loadAdminNavbar(currentPage) {
 
         <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
             <a href="../profile/profile.html" class="sidebar-link ${currentPage === 'profile' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm transition-all">
-                <i class="fa-solid fa-user-circle mr-3 w-4"></i> My Profile
+                <i class="fa-solid fa-user-circle mr-3 w-4"></i> <span data-i18n="sb_profile">My Profile</span>
             </a>
             <a href="dashboard.html" class="sidebar-link ${currentPage === 'dashboard' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-table-columns mr-3 w-4"></i> Dashboard
+                <i class="fa-solid fa-table-columns mr-3 w-4"></i> <span data-i18n="sb_dashboard">Dashboard</span>
             </a>
 
-            <div class="pt-4 pb-1"><p class="px-4 text-[10px] font-black text-white/40 uppercase tracking-widest">Reports & Analytics</p></div>
+            <div class="pt-4 pb-1"><p class="px-4 text-[10px] font-black text-white/40 uppercase tracking-widest" data-i18n="sb_group_reports">Reports & Analytics</p></div>
             <a href="damage_reports.html" class="sidebar-link ${currentPage === 'reports' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-triangle-exclamation mr-3 w-4"></i> Damage Reports
+                <i class="fa-solid fa-triangle-exclamation mr-3 w-4"></i> <span data-i18n="sb_damage_reports">Damage Reports</span>
             </a>
             <a href="system_reports.html" class="sidebar-link ${currentPage === 'sys_reports' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-chart-line mr-3 w-4"></i> System Reports
+                <i class="fa-solid fa-chart-line mr-3 w-4"></i> <span data-i18n="sb_system_reports">System Reports</span>
             </a>
             <a href="analytics.html" class="sidebar-link ${currentPage === 'analytics' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-chart-bar mr-3 w-4"></i> Analytics & Trends
+                <i class="fa-solid fa-chart-bar mr-3 w-4"></i> <span data-i18n="sb_analytics">Analytics & Trends</span>
             </a>
 
-            <div class="pt-4 pb-1"><p class="px-4 text-[10px] font-black text-white/40 uppercase tracking-widest">Operations</p></div>
+            <div class="pt-4 pb-1"><p class="px-4 text-[10px] font-black text-white/40 uppercase tracking-widest" data-i18n="sb_group_operations">Operations</p></div>
             <a href="item_management.html" class="sidebar-link ${currentPage === 'items' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-database mr-3 w-4"></i> Item Management
+                <i class="fa-solid fa-database mr-3 w-4"></i> <span data-i18n="sb_items">Item Management</span>
             </a>
             <a href="crops.html" class="sidebar-link ${currentPage === 'crops' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-seedling mr-3 w-4"></i> Crops Masterlist
+                <i class="fa-solid fa-seedling mr-3 w-4"></i> <span data-i18n="sb_crops">Crops Masterlist</span>
             </a>
             <a href="../communication/index.html" class="sidebar-link ${currentPage === 'comm' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-message mr-3 w-4"></i> Communication
+                <i class="fa-solid fa-message mr-3 w-4"></i> <span data-i18n="sb_comm">Communication</span>
                 <span id="commRedDot" class="hidden ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
             </a>
             <a href="../communication/index.html?to=mao" class="sidebar-link flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-headset mr-3 w-4"></i> Message MAO
+                <i class="fa-solid fa-headset mr-3 w-4"></i> <span data-i18n="sb_message_mao">Message MAO</span>
             </a>
             <a href="admin_seed_requests.html" class="sidebar-link ${currentPage === 'seed_requests' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-leaf mr-3 w-4"></i> Seed Requests
+                <i class="fa-solid fa-leaf mr-3 w-4"></i> <span data-i18n="sb_seed_requests">Seed Requests</span>
             </a>
 
-            <div class="pt-4 pb-1"><p class="px-4 text-[10px] font-black text-white/40 uppercase tracking-widest">Master File Records</p></div>
+            <div class="pt-4 pb-1"><p class="px-4 text-[10px] font-black text-white/40 uppercase tracking-widest" data-i18n="sb_group_masterfile">Master File Records</p></div>
             <a href="farmer_management.html" class="sidebar-link ${currentPage === 'farmers' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-person mr-3 w-4"></i> Farmer Management
+                <i class="fa-solid fa-person mr-3 w-4"></i> <span data-i18n="sb_farmers">Farmer Management</span>
             </a>
             <a href="audit_logs.html" class="sidebar-link ${currentPage === 'logs' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-shield-halved mr-3 w-4"></i> Audit Logs
+                <i class="fa-solid fa-shield-halved mr-3 w-4"></i> <span data-i18n="sb_audit_logs">Audit Logs</span>
             </a>
             <a href="user_management.html" class="sidebar-link ${currentPage === 'staff' ? 'active' : ''} flex items-center px-4 py-3 text-white/60 hover:text-white rounded-xl text-sm">
-                <i class="fa-solid fa-users-gear mr-3 w-4"></i> User Management
+                <i class="fa-solid fa-users-gear mr-3 w-4"></i> <span data-i18n="sb_users">User Management</span>
             </a>
         </nav>
 
@@ -81,6 +81,7 @@ function loadAdminNavbar(currentPage) {
     </aside>`;
     
     document.getElementById('sidebar-container').innerHTML = sidebarHTML;
+    translateAdminSidebar();
     fetch('../../api/messages/get_unread.php')
         .then(res => res.json())
         .then(data => {
@@ -90,6 +91,45 @@ function loadAdminNavbar(currentPage) {
         .catch(() => {});
 
     initCropGuardMobileShell();
+}
+
+// Sidebar words for the ENG / FIL switch. They are added to the page's own
+// `translations` (a page's existing key always wins), so i18n.js's
+// setLanguage() flips the sidebar together with the rest of the page.
+const ADMIN_SIDEBAR_TEXT = {
+    en: {
+        sb_profile: 'My Profile', sb_dashboard: 'Dashboard', sb_group_reports: 'Reports & Analytics',
+        sb_damage_reports: 'Damage Reports', sb_system_reports: 'System Reports', sb_analytics: 'Analytics & Trends',
+        sb_group_operations: 'Operations', sb_items: 'Item Management', sb_crops: 'Crops Masterlist',
+        sb_comm: 'Communication', sb_message_mao: 'Message MAO', sb_seed_requests: 'Seed Requests',
+        sb_group_masterfile: 'Master File Records', sb_farmers: 'Farmer Management', sb_audit_logs: 'Audit Logs',
+        sb_users: 'User Management'
+    },
+    tl: {
+        sb_profile: 'Aking Profile', sb_dashboard: 'Dashboard', sb_group_reports: 'Mga Ulat at Analytics',
+        sb_damage_reports: 'Mga Ulat ng Pinsala', sb_system_reports: 'Mga Ulat ng Sistema', sb_analytics: 'Analytics at Trend',
+        sb_group_operations: 'Operasyon', sb_items: 'Pamamahala ng Item', sb_crops: 'Masterlist ng Pananim',
+        sb_comm: 'Komunikasyon', sb_message_mao: 'Mensahe sa MAO', sb_seed_requests: 'Mga Kahilingan sa Binhi',
+        sb_group_masterfile: 'Mga Rekord ng Master File', sb_farmers: 'Pamamahala ng Magsasaka', sb_audit_logs: 'Mga Audit Log',
+        sb_users: 'Pamamahala ng User'
+    }
+};
+
+function translateAdminSidebar() {
+    if (typeof translations === 'undefined') return;
+    for (const lang in ADMIN_SIDEBAR_TEXT) {
+        if (!translations[lang]) continue;
+        for (const key in ADMIN_SIDEBAR_TEXT[lang]) {
+            if (!(key in translations[lang])) translations[lang][key] = ADMIN_SIDEBAR_TEXT[lang][key];
+        }
+    }
+    let lang = 'en';
+    try { lang = localStorage.getItem('cropguard_lang') || 'en'; } catch (e) {}
+    const dict = translations[lang] || translations.en || {};
+    document.querySelectorAll('#sidebar-container [data-i18n]').forEach(el => {
+        const text = dict[el.getAttribute('data-i18n')];
+        if (text) el.textContent = text;
+    });
 }
 
 /* ============================================================

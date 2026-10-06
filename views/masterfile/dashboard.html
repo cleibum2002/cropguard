@@ -215,9 +215,9 @@
                                 <h3 class="font-black text-gray-800 text-sm" data-i18n="stat_response">Avg Response Time</h3>
                                 <div class="flex gap-1 bg-gray-100 p-1 rounded-xl">
                                     <button onclick="loadResponseChart('daily')" id="btnDaily"
-                                        class="response-tab bg-white text-[#11542e] shadow-sm px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all" data-i18n="btn_daily">Daily</button>
+                                        class="response-tab px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all text-gray-400" data-i18n="btn_daily">Daily</button>
                                     <button onclick="loadResponseChart('monthly')" id="btnMonthly"
-                                        class="response-tab px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all text-gray-400" data-i18n="btn_monthly">Monthly</button>
+                                        class="response-tab bg-white text-[#11542e] shadow-sm px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all" data-i18n="btn_monthly">Monthly</button>
                                     <button onclick="loadResponseChart('yearly')" id="btnYearly"
                                         class="response-tab px-3 py-1 rounded-lg text-[10px] font-black uppercase transition-all text-gray-400" data-i18n="btn_yearly">Yearly</button>
                                 </div>
@@ -346,7 +346,7 @@
                 cert_title: "Recent Certifications",
                 th_report_id: "Report ID", th_farmer: "Farmer", th_crop: "Crop", th_date: "Date", th_status: "Status",
                 tech_status_title: "Technician Status", loading_techs: "Loading Techs...",
-                btn_daily: "Daily", btn_monthly: "Monthly", btn_yearly: "Yearly", no_chart_data: "No data available.",
+                btn_daily: "Daily", btn_monthly: "Monthly", btn_yearly: "Yearly", no_chart_data: "No data available.", unit_days: "days",
                 status_pending: "Pending", status_approved: "Approved", status_active: "Active",
                 btn_view_details: "View Details", btn_validate: "Validate",
                 queue_empty: "Queue is currently empty.", no_recent_approvals: "No recent approvals.",
@@ -365,7 +365,7 @@
                 cert_title: "Kamakailang mga Sertipikasyon",
                 th_report_id: "ID ng Ulat", th_farmer: "Magsasaka", th_crop: "Pananim", th_date: "Petsa", th_status: "Katayuan",
                 tech_status_title: "Katayuan ng Technician", loading_techs: "Nilo-load ang mga Technician...",
-                btn_daily: "Araw-araw", btn_monthly: "Buwan-buwan", btn_yearly: "Taon-taon", no_chart_data: "Walang available na datos.",
+                btn_daily: "Araw-araw", btn_monthly: "Buwan-buwan", btn_yearly: "Taon-taon", no_chart_data: "Walang available na datos.", unit_days: "araw",
                 status_pending: "Naghihintay", status_approved: "Naaprubahan", status_active: "Aktibo",
                 btn_view_details: "Tingnan ang Detalye", btn_validate: "Patunayan",
                 queue_empty: "Kasalukuyang walang laman ang pila.", no_recent_approvals: "Walang kamakailang inaprubahan.",
@@ -565,7 +565,7 @@
 
                 document.getElementById('statItems').innerText   = data.total_items ?? '--';
                 renderMonthTrend(Number(data.this_month ?? 0), Number(data.last_month ?? 0));
-                document.getElementById('statFarmers').innerText = (data.avg_response ?? '--') + (data.avg_response ? ' days' : '');
+                document.getElementById('statFarmers').innerText = (data.avg_response ?? '--') + (data.avg_response ? ' ' + t('unit_days') : '');
                 document.getElementById('statPending').innerText = data.total_pending ?? '--';
                 document.getElementById('statTechs').innerText   = (data.total_techs ?? '--') + (data.total_techs_all ? '/' + data.total_techs_all : '');
 
@@ -866,10 +866,11 @@
             } catch (e) { console.error('Chart load failed', e); }
         }
 
-        loadResponseChart('daily');
+        // Opens on Monthly: Daily only covers the last 7 days and is often empty.
+        loadResponseChart('monthly');
     </script>
 
-<script src="../../assets/js/navbar_admin.js?v=4"></script>
+<script src="../../assets/js/navbar_admin.js?v=5"></script>
 <script src="/assets/js/weak_password_alert.js?v=1"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('dashboard'); initI18n(); });

@@ -127,7 +127,9 @@
                 if (data.role === 'Farmer') {
                     document.getElementById('langSwitcher').classList.remove('hidden');
                 } else {
-                    localStorage.removeItem('cropguard_lang');
+                    // Render this page in English without touching the saved choice -
+                    // removing cropguard_lang here reset Admin/MAO/Technician pages to
+                    // English everywhere (same fix as communication/index.html).
                     applyTranslations('en');
                 }
             }
