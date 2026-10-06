@@ -36,6 +36,9 @@
             sw_updated_title: "Profile Updated!", sw_updated_text: "Your changes have been saved.",
             sw_error_title: "Error", sw_update_failed: "Update failed.", sw_server_error: "Server connection failed.",
             badge_email_unverified: "Not verified", btn_verify_email_now: "Verify now",
+            sw_confirm_identity_title: "Confirm it's you", sw_confirm_identity_text: "For your security, please enter your current password to save this change.",
+            sw_confirm_identity_required: "Please enter your current password.", ph_current_password: "Current password",
+            btn_confirm: "Confirm", btn_cancel: "Cancel",
             sw_invalid_email_title: "Email needed", sw_invalid_email_text: "Please enter your email address first.",
             sw_sending_code: "Sending code...", sw_server_failed: "Server connection failed.",
             sw_signout_title: "Sign Out?", sw_signout_text: "Return to login screen.", sw_signout_confirm: "Logout",
@@ -65,6 +68,9 @@
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang iyong mga pagbabago.",
             sw_error_title: "Error", sw_update_failed: "Nabigo ang pag-update.", sw_server_error: "Nabigo ang koneksyon sa server.",
             badge_email_unverified: "Hindi pa verified", btn_verify_email_now: "I-verify na",
+            sw_confirm_identity_title: "Kumpirmahin na ikaw ito", sw_confirm_identity_text: "Para sa iyong seguridad, ilagay ang kasalukuyang password mo para ma-save ang pagbabagong ito.",
+            sw_confirm_identity_required: "Pakilagay ang kasalukuyang password.", ph_current_password: "Kasalukuyang password",
+            btn_confirm: "Kumpirmahin", btn_cancel: "Kanselahin",
             sw_invalid_email_title: "Kailangan ng email", sw_invalid_email_text: "Pakilagay muna ang iyong email address.",
             sw_sending_code: "Ipinapadala ang code...", sw_server_failed: "Nabigo ang koneksyon sa server.",
             sw_signout_title: "Mag-sign Out?", sw_signout_text: "Babalik sa login screen.", sw_signout_confirm: "Mag-logout",
@@ -94,6 +100,9 @@
             sw_updated_title: "Na-update ang Profile!", sw_updated_text: "Na-save na ang imong mga kausaban.",
             sw_error_title: "Error", sw_update_failed: "Napakyas ang pag-update.", sw_server_error: "Napakyas ang koneksyon sa server.",
             badge_email_unverified: "Wala pa na-verify", btn_verify_email_now: "I-verify karon",
+            sw_confirm_identity_title: "Kumpirmaha nga ikaw ni", sw_confirm_identity_text: "Para sa imong seguridad, isulod ang imong kasamtangang password aron ma-save kini nga kausaban.",
+            sw_confirm_identity_required: "Palihug isulod ang kasamtangang password.", ph_current_password: "Kasamtangang password",
+            btn_confirm: "Kumpirmaha", btn_cancel: "Kanselahon",
             sw_invalid_email_title: "Kinahanglan og email", sw_invalid_email_text: "Palihug isulod una ang imong email address.",
             sw_sending_code: "Gipadala ang code...", sw_server_failed: "Napakyas ang koneksyon sa server.",
             sw_signout_title: "Mo-sign Out?", sw_signout_text: "Mobalik sa login screen.", sw_signout_confirm: "Mag-logout",
@@ -365,6 +374,10 @@
                     // strip whatever prefix is there and keep just the last 10 digits for the new input box.
                     const rawContact = (u.Contact_Number ?? '').replace(/\D/g, '');
                     document.getElementById('inputContact').value = rawContact.slice(-10);
+                    // Remembered so saveProfile() can tell whether the number was
+                    // actually edited. Compared as the last 10 digits, because
+                    // stored rows are a mix of 09XXXXXXXXX and +639XXXXXXXXX.
+                    originalContactDigits = rawContact.slice(-10);
                     document.getElementById('inputRole').value     = u.Role           ?? '';
                     document.getElementById('inputRSBA').value     = u.RSBA_No        ?? '';
                     document.getElementById('inputArea').value     = u.Assigned_Area  ?? '';
@@ -416,11 +429,19 @@
                 return;
             }
 
+            // Mirrors the server's rule exactly, so the dialog never appears for
+            // a change the server would have let through anyway.
+            let current_password = '';
+            if (password || contactDigits !== originalContactDigits) {
+                current_password = await askCurrentPassword();
+                if (current_password === null) return;   // cancelled - nothing saved
+            }
+
             try {
                 const res  = await fetch('../../api/profile/update_profile.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fullname, email, contact, rsba, area, password })
+                    body: JSON.stringify({ fullname, email, contact, rsba, area, password, current_password })
                 });
                 const data = await res.json();
                 if (data.status === 'success' && data.email_changed) {
@@ -439,6 +460,31 @@
         // Sends a fresh code to the address already on the account, then reuses
         // the same six-box dialog as the email-change flow. verify_code.php's
         // Email_Verified = 0 branch does exactly the right thing on the way back.
+        // Set when the profile loads; lets saveProfile() detect a real change
+        // rather than asking for a password every time anything is saved.
+        let originalContactDigits = '';
+
+        // Asked for only when a change could cost someone their account: a new
+        // password (there is no self-service reset, so the real owner would be
+        // locked out), or a new contact number. Holding a logged-in session is
+        // not proof of ownership - a borrowed or unlocked phone is enough.
+        // Returns the password, or null if they cancelled.
+        async function askCurrentPassword() {
+            const result = await Swal.fire({
+                title: t('sw_confirm_identity_title'),
+                text:  t('sw_confirm_identity_text'),
+                input: 'password',
+                inputPlaceholder: t('ph_current_password'),
+                inputAttributes: { autocomplete: 'current-password' },
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                confirmButtonText: t('btn_confirm'),
+                cancelButtonText: t('btn_cancel'),
+                inputValidator: (value) => !value && t('sw_confirm_identity_required')
+            });
+            return result.isConfirmed ? result.value : null;
+        }
+
         async function startEmailVerification() {
             const email = document.getElementById('inputEmail').value.trim();
             if (!email) {

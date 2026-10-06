@@ -30,6 +30,11 @@ $contact  = trim($input['contact']  ?? '');
 // which does check the role, the format and uniqueness.
 $area     = trim($input['area']     ?? '');
 $password = $input['password']      ?? '';
+// Re-authentication for the changes that could cost someone their account.
+// Holding a logged-in session is not the same as being the account owner - a
+// phone left unlocked, or borrowed for a minute, is enough. GitHub, Google and
+// Facebook all ask for the password again at this point for the same reason.
+$current_password = $input['current_password'] ?? '';
 
 if (!$fullname || !$email) {
     echo json_encode(['status' => 'error', 'message' => 'Full name and email are required.']);
@@ -69,11 +74,41 @@ require_once '../config/mailer.php';
 
 try {
     // Check if email is taken by another user
-    $checkStmt = $conn->prepare("SELECT User_ID, Email, Role FROM users WHERE User_ID = ?");
+    // Password and Contact_Number are selected so the sensitive-change check
+    // below can verify the one and detect a change in the other.
+    $checkStmt = $conn->prepare("SELECT User_ID, Email, Role, Password, Contact_Number FROM users WHERE User_ID = ?");
     $checkStmt->bind_param("i", $user_id);
     $checkStmt->execute();
     $currentUser = $checkStmt->get_result()->fetch_assoc();
     $checkStmt->close();
+
+    // Gate the two changes that matter. A new password is an outright account
+    // takeover if someone else makes it - there is no self-service reset, so
+    // the real owner would have to go to an Admin to get back in. The phone
+    // number is gated with it because it is the contact of record and the one
+    // the farmer would be reached on.
+    //
+    // Name, email and assigned area are deliberately NOT gated: a typo fix
+    // should not need a password, and a changed email already has to be
+    // confirmed by a code sent to the new address.
+    $changingPassword = $password !== '';
+    // Both sides normalized before comparing. Rows written before the profile
+    // page started normalizing still hold +639XXXXXXXXX, so comparing that
+    // against the 09XXXXXXXXX form would read as a change every time and
+    // demand a password from people who had not touched the field.
+    $storedContact   = normalizePhMobile($currentUser['Contact_Number'] ?? '');
+    $changingContact = $contact !== '' && $contact !== $storedContact;
+
+    if ($changingPassword || $changingContact) {
+        if ($current_password === '' || !password_verify($current_password, $currentUser['Password'])) {
+            echo json_encode([
+                'status'  => 'error',
+                'code'    => 'reauth_failed',
+                'message' => 'Your current password is incorrect. Please re-enter it to save this change.'
+            ]);
+            exit;
+        }
+    }
 
     $checkDupeStmt = $conn->prepare("SELECT User_ID FROM users WHERE Email = ? AND User_ID != ?");
     $checkDupeStmt->bind_param("si", $email, $user_id);
