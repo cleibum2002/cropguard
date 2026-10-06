@@ -158,6 +158,7 @@
             no_matching_records: "No matching records", crop_report_fallback: "Crop Report",
             area_label: "Area", na_fallback: "N/A",
             initial_evidence: "Initial Evidence", no_evidence: "No photographic evidence was attached to this report.",
+            tech_evidence: "Technician's Field Evidence",
             geo_no_gps_recorded: "No GPS recorded", geo_farm_not_registered: "Farm location not registered",
             geo_at_farm: "✓ At farm ({d})", geo_away_from_farm: "⚠ {d} from farm",
             mao_verification_title: "MAO Identity Verification",
@@ -201,6 +202,7 @@
             no_matching_records: "Walang tumugmang record", crop_report_fallback: "Ulat ng Pananim",
             area_label: "Sukat", na_fallback: "N/A",
             initial_evidence: "Paunang Ebidensya", no_evidence: "Walang larawang ebidensya na kalakip sa ulat na ito.",
+            tech_evidence: "Ebidensya ng Technician sa Field",
             geo_no_gps_recorded: "Walang naitalang GPS", geo_farm_not_registered: "Hindi nakarehistro ang lokasyon ng bukid",
             geo_at_farm: "✓ Nasa bukid ({d})", geo_away_from_farm: "⚠ {d} mula sa bukid",
             mao_verification_title: "Pagpapatunay ng Pagkakakilanlan ng MAO",
@@ -595,27 +597,38 @@
             const reportDate    = baseReport?.date || detail.Report_Date;
             const reportArea    = baseReport?.area || detail.Affected_Area || '0.00';
             
+            // The farmer's photos and the technician's inspection photos come back in
+            // one list. They used to be shown together under "Initial Evidence", so
+            // the technician's photos looked like extra farmer photos. Split them the
+            // same way the Admin's report review does.
+            const farmerImgs = images.filter(img => (img.uploaded_by || 'Farmer') === 'Farmer');
+            const techImgs   = images.filter(img => img.uploaded_by === 'Technician');
+            const thumbs = list => list.map(img => {
+                const proof = geoProofLabel(img, detail.Farm_Lat, detail.Farm_Lng);
+                return `
+                <div class="w-20 sm:w-24">
+                    <a href="${img.path || img}" target="_blank" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
+                        <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
+                    </a>
+                    <p class="mt-1 text-[8px] font-black text-center leading-tight ${proof.cls}">${proof.text}</p>
+                </div>`; }).join('');
+
             let galleryHTML = '';
-            if (images.length > 0) {
+            if (farmerImgs.length > 0) {
                 galleryHTML = `
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
-                    <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">
-                        ${images.map(img => {
-                            const proof = geoProofLabel(img, detail.Farm_Lat, detail.Farm_Lng);
-                            return `
-                            <div class="w-20 sm:w-24">
-                                <a href="${img.path || img}" target="_blank" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
-                                    <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
-                                </a>
-                                <p class="mt-1 text-[8px] font-black text-center leading-tight ${proof.cls}">${proof.text}</p>
-                            </div>`; }).join('')}
-                    </div>`;
+                    <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">${thumbs(farmerImgs)}</div>`;
             } else {
                 galleryHTML = `
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-amber-500 pl-2">${t('initial_evidence')}</h4>
                     <div class="bg-gray-50 border border-gray-100 p-3 sm:p-4 rounded-xl mb-3 sm:mb-8">
                         <p class="text-xs text-gray-400 italic">${t('no_evidence')}</p>
                     </div>`;
+            }
+            if (techImgs.length > 0) {
+                galleryHTML += `
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 border-green-500 pl-2">${t('tech_evidence')}</h4>
+                    <div class="flex flex-wrap gap-3 sm:gap-4 mb-3 sm:mb-8">${thumbs(techImgs)}</div>`;
             }
 
             // Split the Description into the Farmer's Original Report vs the Technician's
