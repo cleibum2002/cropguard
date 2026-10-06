@@ -214,6 +214,24 @@ function initCropGuardMobileShell() {
             padding-left: 1rem;
             padding-right: 1rem;
         }
+
+        /* 6. Compact logo block in the drawer, so more of the menu fits on a
+              short budget-phone screen before it has to scroll */
+        body #sidebar-container > aside > div:first-child {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+        body #sidebar-container > aside > div:first-child > div:first-child {
+            width: 3rem;
+            height: 3rem;
+        }
+        body #sidebar-container > aside > div:first-child > div:first-child i {
+            font-size: 1.25rem;
+        }
+        body #sidebar-container nav {
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+        }
     }
 
     /* Never let the drawer button appear on printed reports */

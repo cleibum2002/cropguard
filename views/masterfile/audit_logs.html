@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -143,7 +143,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
-                            <thead class="bg-gray-50 border-b border-gray-100">
+                            <thead class="hidden md:table-header-group bg-gray-50 border-b border-gray-100">
                                 <tr>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_time">Time</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user">User</th>
@@ -374,15 +374,23 @@
                 const date  = new Date(log.Created_At).toLocaleString();
                 return `
                 <tr class="hover:bg-gray-50/50 transition-colors">
-                    <td class="px-3 md:px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
-                    <td class="px-3 md:px-6 py-3 text-xs font-bold text-gray-800">${escapeHtml(log.user_name || t('label_system'))}</td>
+                    <td class="md:hidden px-4 py-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <p class="text-xs font-bold text-gray-800">${escapeHtml(log.user_name || t('label_system'))} <span class="font-semibold text-gray-400">· ${escapeHtml(log.user_role)}</span></p>
+                            <span class="flex-shrink-0 px-2 py-1 rounded-full text-[10px] font-black uppercase whitespace-nowrap ${badge}">${escapeHtml(auditActionLabel(log.Action))}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-600 break-words">${escapeHtml(log.Description)}</p>
+                        <p class="mt-1 text-[10px] text-gray-400">${date}</p>
+                    </td>
+                    <td class="hidden md:table-cell px-3 md:px-6 py-3 text-xs text-gray-500 whitespace-nowrap">${date}</td>
+                    <td class="hidden md:table-cell px-3 md:px-6 py-3 text-xs font-bold text-gray-800">${escapeHtml(log.user_name || t('label_system'))}</td>
                     <td class="hidden md:table-cell px-6 py-3">
                         <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-[9px] font-black uppercase">${escapeHtml(log.user_role)}</span>
                     </td>
-                    <td class="px-3 md:px-6 py-3">
+                    <td class="hidden md:table-cell px-3 md:px-6 py-3">
                         <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${badge}">${escapeHtml(auditActionLabel(log.Action))}</span>
                     </td>
-                    <td class="px-3 md:px-6 py-3 text-xs text-gray-600 max-w-[140px] md:max-w-xs truncate" title="${escapeHtml(log.Description)}">${escapeHtml(log.Description)}</td>
+                    <td class="hidden md:table-cell px-3 md:px-6 py-3 text-xs text-gray-600 max-w-[140px] md:max-w-xs truncate" title="${escapeHtml(log.Description)}">${escapeHtml(log.Description)}</td>
                     <td class="hidden md:table-cell px-6 py-3 text-xs text-gray-500">${escapeHtml(log.Module)}</td>
                     <td class="hidden md:table-cell px-6 py-3 text-xs font-mono text-gray-400">${escapeHtml(log.IP_Address)}</td>
                 </tr>`;
@@ -461,7 +469,7 @@
 
 
     </script>
-<script src="../../assets/js/navbar_admin.js?v=5"></script>
+<script src="../../assets/js/navbar_admin.js?v=6"></script>
 <script>
     // This is the cleanest way to initialize
     document.addEventListener('DOMContentLoaded', () => {

@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -136,7 +136,7 @@
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_id">ID</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_commodity_details">Commodity Details</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_category">Category</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_current_stock">Current Stock</th>
+                                    <th class="px-2 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-wide md:tracking-widest text-right" data-i18n="th_current_stock">Current Stock</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_status">Status</th>
                                     <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
@@ -433,14 +433,14 @@
                     <tr class="hover:bg-gray-50/60 transition-all">
                         <td class="hidden md:table-cell px-6 py-4 font-bold text-gray-300 text-center text-sm">#${item.id}</td>
                         <td class="px-3 md:px-6 py-4">
-                            <p class="text-sm font-black text-gray-800 truncate max-w-[140px] md:max-w-none">${item.item_name}</p>
-                            <p class="text-[10px] text-gray-400 truncate max-w-[140px] md:max-w-xs">${item.description || t('no_description_provided')}</p>
+                            <p class="text-sm font-black text-gray-800 line-clamp-2 md:line-clamp-none md:whitespace-nowrap max-w-[110px] sm:max-w-[150px] md:max-w-none">${item.item_name}</p>
+                            <p class="text-[10px] text-gray-400 truncate max-w-[110px] sm:max-w-[150px] md:max-w-xs">${item.description || t('no_description_provided')}</p>
                         </td>
                         <td class="hidden md:table-cell px-6 py-4 text-center">
                             <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold">${categoryLabel(item.category)}</span>
                         </td>
-                        <td class="px-3 md:px-6 py-4 text-right">
-                            <span class="font-black text-lg ${stockColor}">${displayStock}</span> <span class="text-[10px] font-bold text-gray-400 uppercase">${displayUnit}</span>
+                        <td class="px-2 md:px-6 py-4 text-right">
+                            <span class="block md:inline font-black text-base md:text-lg whitespace-nowrap ${stockColor}">${displayStock}</span> <span class="block md:inline text-[10px] font-bold text-gray-400 uppercase whitespace-nowrap">${displayUnit}</span>
                         </td>
                         <td class="hidden md:table-cell px-6 py-4 text-center">
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusColor}">
@@ -645,7 +645,7 @@
         // The idle timeout lives in session_guard.js now.
     </script>
 
-    <script src="../../assets/js/navbar_admin.js?v=5"></script>
+    <script src="../../assets/js/navbar_admin.js?v=6"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('items'); 

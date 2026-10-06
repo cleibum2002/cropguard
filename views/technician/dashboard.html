@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -141,25 +141,25 @@
                 <h2 class="text-xl sm:text-3xl font-black text-gray-800 mb-2" data-i18n="page_title">Technician Dashboard</h2>
                 <p class="text-gray-400 text-xs sm:text-sm mb-6 sm:mb-10" data-i18n="page_sub">Manage your assigned field validations and inspection logs.</p>
 
-                <div class="flex gap-6 sm:gap-10 border-b border-gray-100 mb-6 sm:mb-10 overflow-x-auto">
-                    <button onclick="switchTab('assignments')" id="btnAssignments" class="tab-btn active pb-4 text-[11px] sm:text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap" data-i18n="tab_my_assignments">My Assignments</button>
-                    <button onclick="switchTab('validation')"  id="btnValidation"  class="tab-btn pb-4 text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400 transition-all whitespace-nowrap" data-i18n="tab_field_validation">Field Validation</button>
-                    <button onclick="switchTab('completed')"   id="btnCompleted"   class="tab-btn pb-4 text-[11px] sm:text-xs font-black uppercase tracking-widest text-gray-400 transition-all whitespace-nowrap" data-i18n="tab_completed">Completed</button>
+                <div class="flex gap-4 sm:gap-10 border-b border-gray-100 mb-6 sm:mb-10 overflow-x-auto">
+                    <button onclick="switchTab('assignments')" id="btnAssignments" class="tab-btn active pb-4 text-[11px] sm:text-xs font-black uppercase tracking-wide sm:tracking-widest transition-all whitespace-nowrap" data-i18n="tab_my_assignments">My Assignments</button>
+                    <button onclick="switchTab('validation')"  id="btnValidation"  class="tab-btn pb-4 text-[11px] sm:text-xs font-black uppercase tracking-wide sm:tracking-widest text-gray-400 transition-all whitespace-nowrap" data-i18n="tab_field_validation">Field Validation</button>
+                    <button onclick="switchTab('completed')"   id="btnCompleted"   class="tab-btn pb-4 text-[11px] sm:text-xs font-black uppercase tracking-wide sm:tracking-widest text-gray-400 transition-all whitespace-nowrap" data-i18n="tab_completed">Completed</button>
                 </div>
 
                 <!-- ── ASSIGNMENTS TAB ── -->
                 <div id="sectionAssignments">
                     <div class="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-10">
                         <div class="bg-blue-50/50 p-3 sm:p-6 rounded-xl sm:rounded-3xl border border-blue-100">
-                            <p class="text-[8px] sm:text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_assigned_reports">Assigned Reports</p>
+                            <p class="text-[10px] font-black text-blue-400 uppercase tracking-wide sm:tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_assigned_reports">Assigned Reports</p>
                             <h3 id="statAssigned" class="text-lg sm:text-4xl font-black text-blue-600">0</h3>
                         </div>
                         <div class="bg-amber-50/50 p-3 sm:p-6 rounded-xl sm:rounded-3xl border border-amber-100">
-                            <p class="text-[8px] sm:text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_urgent_tasks">Urgent Tasks</p>
+                            <p class="text-[10px] font-black text-amber-400 uppercase tracking-wide sm:tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_urgent_tasks">Urgent Tasks</p>
                             <h3 id="statUrgent" class="text-lg sm:text-4xl font-black text-amber-600">0</h3>
                         </div>
                         <div class="bg-green-50/50 p-3 sm:p-6 rounded-xl sm:rounded-3xl border border-green-100">
-                            <p class="text-[8px] sm:text-[10px] font-black text-green-400 uppercase tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_inspections_done">Inspections Done</p>
+                            <p class="text-[10px] font-black text-green-400 uppercase tracking-wide sm:tracking-widest mb-1 sm:mb-2 leading-tight" data-i18n="stat_inspections_done">Inspections Done</p>
                             <h3 id="statDone" class="text-lg sm:text-4xl font-black text-green-600">0</h3>
                         </div>
                     </div>
@@ -169,9 +169,9 @@
                         <div class="relative flex-1 min-w-[160px]">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                             <input type="text" id="assignSearchInput" onkeyup="filterAssignments()" placeholder="Search farmer or crop..." data-i18n-placeholder="search_placeholder"
-                                   class="bg-gray-50 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
+                                   class="bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
                         </div>
-                        <select id="assignBarangayFilter" onchange="filterAssignments()" class="bg-gray-50 border-none rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                        <select id="assignBarangayFilter" onchange="filterAssignments()" class="w-full sm:w-auto bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
                             <option value="ALL" data-i18n="filter_all_barangays">All Barangays</option>
                         </select>
                     </div>
@@ -637,12 +637,12 @@
                                     </p>
                                     <div>${visitDateBadge(a.visit_date)}</div>
                                 </div>
-                                <div class="flex flex-row sm:flex-col gap-2 min-w-0 sm:flex-shrink-0">
-                                    <button onclick="viewReportDetails(${a.id})" class="flex-1 sm:flex-none bg-blue-50 text-blue-600 border border-blue-200 px-4 sm:px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
+                                <div class="flex flex-row flex-wrap sm:flex-nowrap sm:flex-col gap-2 min-w-0 sm:flex-shrink-0">
+                                    <button onclick="viewReportDetails(${a.id})" class="flex-1 min-w-[8.5rem] sm:min-w-0 sm:flex-none whitespace-nowrap bg-blue-50 text-blue-600 border border-blue-200 px-3 sm:px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-wide sm:tracking-widest hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-eye"></i> ${t('btn_view_details')}
                                     </button>
                                     <button onclick="openValidation(${a.id}, '${a.crop_name || t('na_fallback')}', '${a.barangay || t('na_fallback')}', '${a.visit_date || ''}')"
-                                        class="flex-1 sm:flex-none bg-[#11542e] text-white px-4 sm:px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-[#0c3d22] transition-all shadow-md shadow-green-900/10 flex items-center justify-center gap-2">
+                                        class="flex-1 min-w-[8.5rem] sm:min-w-0 sm:flex-none whitespace-nowrap bg-[#11542e] text-white px-3 sm:px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-wide sm:tracking-widest hover:bg-[#0c3d22] transition-all shadow-md shadow-green-900/10 flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-magnifying-glass-location"></i> ${t('btn_inspect_area')}
                                     </button>
                                 </div>
@@ -820,7 +820,7 @@
                         <div class="col-span-2"><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_farm_location')}</p><p class="font-bold text-gray-800">${locationStr}</p></div>
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_report_date')}</p><p class="font-bold text-gray-800">${r.Report_Date}</p></div>
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_damage_cause')}</p><p class="font-bold text-red-600">${r.Damage_Type || t('label_na')}</p></div>
-                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_est_area')}</p><p class="font-bold text-gray-800">${r.Area_Hectares || r.Area_Size || '0.00'} Ha</p></div>
+                        <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_est_area')}</p><p class="font-bold text-gray-800">${r.Affected_Area || r.Area_Hectares || r.Area_Size || '0.00'} Ha</p></div>
                     </div>
 
                     ${remarksHTML}

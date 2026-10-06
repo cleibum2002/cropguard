@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -190,21 +190,21 @@
                             <input type="text" id="searchInput" onkeyup="renderLedger()" placeholder="Search farmer name..." data-i18n-placeholder="placeholder_search_farmer"
                                 class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                         </div>
-                        <div>
+                        <div class="w-[calc(50%-0.375rem)] sm:w-auto">
                             <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="th_current_status">Status</label>
-                            <select id="filterStatus" onchange="renderLedger()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                            <select id="filterStatus" onchange="renderLedger()" class="w-full sm:w-auto bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[160px]">
                                 <option value="">All Statuses</option>
                             </select>
                         </div>
-                        <div>
+                        <div class="w-[calc(50%-0.375rem)] sm:w-auto">
                             <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="th_crop_name">Damage Type</label>
-                            <select id="filterDamageType" onchange="renderLedger()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[140px]">
+                            <select id="filterDamageType" onchange="renderLedger()" class="w-full sm:w-auto bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[140px]">
                                 <option value="">All Types</option>
                             </select>
                         </div>
-                        <div>
+                        <div class="w-full sm:w-auto min-w-0">
                             <label class="block text-[9px] font-black text-gray-400 uppercase mb-1" data-i18n="label_barangay">Barangay</label>
-                            <select id="filterBarangay" onchange="renderLedger()" class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] min-w-[160px]">
+                            <select id="filterBarangay" onchange="renderLedger()" class="w-full sm:w-auto max-w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[160px]">
                                 <option value="">All Barangays</option>
                             </select>
                         </div>
@@ -217,15 +217,15 @@
                 <div id="reportPreviewCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-10 min-h-[600px]">
                     <div class="grid grid-cols-3 gap-2 sm:gap-6 mb-6 sm:mb-10 pb-6 sm:pb-10 border-b border-gray-100">
                         <div class="text-center sm:border-r">
-                            <p class="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight" data-i18n="stat_active_assignments">Active Assignments</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-tight" data-i18n="stat_active_assignments">Active Assignments</p>
                             <p id="repAssigned" class="text-lg sm:text-4xl font-black text-gray-800 mt-1 sm:mt-2">0</p>
                         </div>
                         <div class="text-center sm:border-r">
-                            <p class="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight" data-i18n="stat_inspections_completed">Inspections Completed</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-tight" data-i18n="stat_inspections_completed">Inspections Completed</p>
                             <p id="repInspected" class="text-lg sm:text-4xl font-black text-green-600 mt-1 sm:mt-2">0</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-widest leading-tight" data-i18n="stat_urgent_severity">Urgent/High Severity</p>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest leading-tight" data-i18n="stat_urgent_severity">Urgent/High Severity</p>
                             <p id="repSevere" class="text-lg sm:text-4xl font-black text-red-600 mt-1 sm:mt-2">0</p>
                         </div>
                     </div>

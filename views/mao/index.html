@@ -9,7 +9,7 @@
     <title>MAO Dashboard | CropGuard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
     <script src="../../assets/js/mao_notifications.js?v=1"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -64,7 +64,7 @@
                     <p class="text-gray-500 text-sm mt-1" data-i18n="page_sub">Real-time overview of incoming reports and validation progress.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-8">
                     <!-- Total Reports -->
                     <div class="stat-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
                         <div class="flex justify-between items-start mb-2 sm:mb-4">
@@ -115,7 +115,7 @@
                                 <tr>
                                     <th class="hidden md:table-cell px-3 py-3" data-i18n="th_request">Request</th>
                                     <th class="px-3 py-3" data-i18n="th_farmer">Farmer</th>
-                                    <th class="px-3 py-3" data-i18n="th_seed">Seed</th>
+                                    <th class="hidden md:table-cell px-3 py-3" data-i18n="th_seed">Seed</th>
                                     <th class="hidden md:table-cell px-3 py-3" data-i18n="th_status">Status</th>
                                     <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 py-3 text-right" data-i18n="th_action">Action</th>
                                 </tr>
@@ -323,12 +323,12 @@
                     return `
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="hidden md:table-cell px-3 py-3 text-xs font-black text-gray-700">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
-                            <td class="px-3 py-3 text-xs text-gray-600">${item.Farmer_Name || t('farmer_fallback')}</td>
-                            <td class="px-3 py-3 text-xs text-gray-600">${item.Requested_Seed}</td>
+                            <td class="px-3 py-3 text-xs text-gray-600">${item.Farmer_Name || t('farmer_fallback')}<p class="md:hidden mt-0.5 text-[11px] font-bold text-[#11542e]">${item.Requested_Seed}</p></td>
+                            <td class="hidden md:table-cell px-3 py-3 text-xs text-gray-600">${item.Requested_Seed}</td>
                             <td class="hidden md:table-cell px-3 py-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide ${statusBadge}">${item.Status}</span></td>
                             <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 py-3 text-right">
                                 <button onclick="handleSeedRequestAction(${item.Request_ID}, ${item.Farmer_ID}, '${item.Status === 'Ready for Pickup' ? 'mark_claimed' : 'notify_farmer'}')"
-                                    class="px-3 py-2 ${actionClass} text-white rounded-lg text-[10px] font-black uppercase tracking-wide transition-all">
+                                    class="min-w-[7.5rem] md:min-w-0 px-3 py-2 ${actionClass} text-white rounded-lg text-[10px] font-black uppercase tracking-wide leading-snug transition-all">
                                     ${actionText}
                                 </button>
                             </td>
@@ -598,7 +598,7 @@ const cropGuardMarkerIcon = L.divIcon({
         }
     </script>
 
-    <script src="../../assets/js/navbar_mao.js?v=5"></script>
+    <script src="../../assets/js/navbar_mao.js?v=6"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadMaoNavbar('dashboard');
