@@ -35,6 +35,13 @@ if ($conn->connect_error) {
 
 $conn->set_charset("utf8mb4");
 
+// Philippine time for both PHP and MySQL. Railway runs on UTC by default, so
+// every new report, log and message was stamped 8 hours behind. A fixed
+// +08:00 offset is used for MySQL because Railway's MySQL has no named
+// timezone tables loaded (the Philippines has no daylight saving time).
+date_default_timezone_set('Asia/Manila');
+$conn->query("SET time_zone = '+08:00'");
+
 function safeErrorMessage($e) {
     error_log('[' . date('Y-m-d H:i:s') . '] ' . $e->getMessage());
     return 'A server error occurred. Please try again or contact the administrator.';

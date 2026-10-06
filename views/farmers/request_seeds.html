@@ -222,6 +222,7 @@
                 loading_requests: "Loading requests...", no_requests: "You have not submitted any seed requests yet.",
                 connect_failed: "Failed to connect to server.",
                 status_pending: "Pending", status_approved: "Approved", status_rejected: "Rejected",
+                status_approved_admin: "Approved by Admin", status_ready: "Ready for Pickup", status_claimed: "Claimed",
                 modal_title: "Request Seed", label_seed_name: "Seed / Crop Name Required",
                 seed_placeholder: "e.g. Heirloom Tomato, Special Corn Variety", seed_hint: "Specify the exact name or variety you want to plant.",
                 label_reason: "Why do you need this? / Additional Details",
@@ -241,6 +242,7 @@
                 loading_requests: "Nilo-load ang mga kahilingan...", no_requests: "Wala ka pang naisusumiteng kahilingan sa binhi.",
                 connect_failed: "Hindi makakonekta sa server.",
                 status_pending: "Naghihintay", status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+                status_approved_admin: "Inaprubahan ng Admin", status_ready: "Handa nang Kunin", status_claimed: "Nakuha na",
                 modal_title: "Humiling ng Binhi", label_seed_name: "Kinakailangan ang Pangalan ng Binhi / Pananim",
                 seed_placeholder: "hal. Heirloom Tomato, Special Corn Variety", seed_hint: "Tukuyin ang eksaktong pangalan o uri na gusto mong itanim.",
                 label_reason: "Bakit mo ito kailangan? / Karagdagang Detalye",
@@ -260,6 +262,7 @@
                 loading_requests: "Ginaload ang mga pangayo...", no_requests: "Wala ka pay na-submit nga pangayo og binhi.",
                 connect_failed: "Dili maka-connect sa server.",
                 status_pending: "Naghulat", status_approved: "Na-aprubahan", status_rejected: "Gibalibaran",
+                status_approved_admin: "Gi-aprubahan sa Admin", status_ready: "Andam na Kuhaon", status_claimed: "Nakuha na",
                 modal_title: "Pangayo og Binhi", label_seed_name: "Gikinahanglan ang Ngalan sa Binhi / Tanom",
                 seed_placeholder: "pananglitan: Heirloom Tomato, Special Corn Variety", seed_hint: "Isulti ang eksaktong ngalan o klase nga gusto nimong itanom.",
                 label_reason: "Ngano nimo ni kinahanglan? / Dugang nga Detalye",
@@ -272,7 +275,8 @@
         };
 
         function statusLabel(val) {
-            const map = { 'Pending': 'status_pending', 'Approved': 'status_approved', 'Rejected': 'status_rejected' };
+            const map = { 'Pending': 'status_pending', 'Approved': 'status_approved', 'Rejected': 'status_rejected',
+                          'Approved by Admin': 'status_approved_admin', 'Ready for Pickup': 'status_ready', 'Claimed': 'status_claimed' };
             return map[val] ? t(map[val]) : (val || t('status_pending'));
         }
 
@@ -336,8 +340,13 @@
             cardsList.innerHTML = '';
             pageItems.forEach(req => {
                 let statusBadge = '';
+                // Only Rejected is red. The seed workflow's real statuses are
+                // Approved by Admin -> Ready for Pickup -> Claimed; they used to
+                // fall through to red because only 'Approved' was listed.
                 if(req.Status === 'Pending') statusBadge = 'bg-amber-100 text-amber-700';
-                else if(req.Status === 'Approved') statusBadge = 'bg-green-100 text-green-700';
+                else if(req.Status === 'Approved' || req.Status === 'Approved by Admin') statusBadge = 'bg-blue-100 text-blue-700';
+                else if(req.Status === 'Ready for Pickup') statusBadge = 'bg-purple-100 text-purple-700';
+                else if(req.Status === 'Claimed') statusBadge = 'bg-green-100 text-green-700';
                 else statusBadge = 'bg-red-100 text-red-700';
 
                 const reqIdLabel = '#REQ-' + String(req.Request_ID).padStart(3, '0');

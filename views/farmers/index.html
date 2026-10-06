@@ -1183,7 +1183,9 @@
                 let iconHtml = `<i class="fa-solid ${step.icon}"></i>`;
                 if (cls.includes('completed')) iconHtml = `<i class="fa-solid fa-check"></i>`;
 
-                const dateStr = req.DateStr ? `<span class="text-xs text-gray-400 ml-1">(${req.DateStr})</span>` : '';
+                // DateStr is the day the request was filed - the only date stored -
+                // so it belongs on the first step only, not on steps not reached yet.
+                const dateStr = (i === 0 && req.DateStr) ? `<span class="text-xs text-gray-400 ml-1">(${req.DateStr})</span>` : '';
 
                 html += `<div class="${cls}">
                     <div class="step-circle">${iconHtml}</div>
