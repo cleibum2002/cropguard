@@ -25,6 +25,12 @@ try {
             exit;
         }
 
+        // The MAO validates and rejects; archiving is Admin only.
+        if ($data->status === 'Archived' && ($_SESSION['Role'] ?? '') !== 'Admin') {
+            echo json_encode(['status' => 'error', 'message' => 'Unauthorized.']);
+            exit;
+        }
+
         $conn->begin_transaction();
 
         // 1. Find the farmer
