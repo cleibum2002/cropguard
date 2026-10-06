@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -94,11 +94,11 @@
                         <h2 id="pageTitle" class="text-2xl font-black text-gray-800 tracking-tight" data-i18n="page_title">Damage Reports Processing</h2>
                         <p id="pageSubtitle" class="text-gray-400 text-sm" data-i18n="page_sub">Review incoming reports and assign technicians for field inspection.</p>
                     </div>
-                    <div class="flex items-center gap-2 w-full md:w-auto">
-                        <button id="archiveToggleBtn" onclick="toggleArchiveView()" class="flex-1 md:flex-none justify-center md:justify-start bg-white border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 text-sm">
+                    <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                        <button id="archiveToggleBtn" onclick="toggleArchiveView()" class="flex-1 md:flex-none justify-center md:justify-start bg-white border border-gray-200 text-gray-700 px-5 py-3 rounded-xl font-bold shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 text-sm whitespace-nowrap">
                             <i class="fa-solid fa-box-archive"></i> <span data-i18n="btn_view_archive">View Archive</span>
                         </button>
-                        <button onclick="openModal()" class="flex-1 md:flex-none justify-center md:justify-start bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm">
+                        <button onclick="openModal()" class="flex-1 md:flex-none justify-center md:justify-start bg-[#11542e] text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-green-900/20 hover:bg-[#0c3d22] transition-all flex items-center gap-2 text-sm whitespace-nowrap">
                             <i class="fa-solid fa-plus"></i> <span data-i18n="btn_submit_walkin">Submit Report (Walk-in)</span>
                         </button>
                     </div>
@@ -156,11 +156,11 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_report_id">Report ID</th>
+                                    <th class="hidden md:table-cell px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_report_id">Report ID</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_info">Farmer Info</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_crop_details">Crop Details</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_damage_type">Damage Type</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="hidden md:table-cell px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
                                     <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
@@ -293,7 +293,7 @@
             </div>
             
             <input type="hidden" id="reviewReportId">
-            <div id="reviewModalFooter" class="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100 flex flex-wrap justify-end gap-2 sm:gap-3 flex-shrink-0"></div>
+            <div id="reviewModalFooter" class="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100 grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-end gap-2 sm:gap-3 flex-shrink-0"></div>
         </div>
     </div>
 
@@ -798,19 +798,22 @@
                     </div>`;
 
                 const visitDateDisplay = item.visit_date ? `<p class="text-[9px] mt-1 font-bold text-blue-400"><i class="fa-solid fa-calendar-check mr-1"></i>${t('label_visit')}: ${item.visit_date}</p>` : '';
+                const statusHTML = `
+                            <span class="inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">${reportStatusLabel(item.status)}</span>
+                            ${item.validated_by_name ? `<p class="text-[10px] md:text-[9px] mt-1 font-bold text-blue-500"><i class="fa-solid fa-clipboard-check mr-1"></i>${item.validated_by_name}</p>` : ''}
+                            ${item.technician_name ? `<p class="text-[10px] md:text-[9px] mt-1 font-bold text-purple-500"><i class="fa-solid fa-user-check mr-1"></i>${item.technician_name}</p>` : ''}
+                            ${item.approved_by_name ? `<p class="text-[10px] md:text-[9px] mt-1 font-bold text-green-500"><i class="fa-solid fa-circle-check mr-1"></i>${item.approved_by_name}</p>` : ''}
+                            ${visitDateDisplay}`;
 
+                // Phones: the Report ID and Status columns are folded into the farmer
+                // cell, otherwise the pinned Actions column covers the status badge.
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/60 transition-all border-b border-gray-50">
-                        <td class="px-3 md:px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-${item.id}</td>
-                        <td class="px-3 md:px-6 py-4"><p class="text-sm font-black text-gray-800">${item.farmer || t('label_unknown')}</p><p class="text-[10px] text-gray-400">${t('label_submitted')}: ${item.date || 'N/A'}</p></td>
+                        <td class="hidden md:table-cell px-3 md:px-6 py-4 font-bold text-gray-400 text-center text-sm whitespace-nowrap">#REP-${item.id}</td>
+                        <td class="px-3 md:px-6 py-4"><p class="md:hidden text-[11px] font-bold text-gray-400 mb-0.5">#REP-${item.id}</p><p class="text-sm font-black text-gray-800">${item.farmer || t('label_unknown')}</p><p class="text-[10px] text-gray-400">${t('label_submitted')}: ${item.date || 'N/A'}</p><div class="md:hidden mt-2">${statusHTML}</div></td>
                         <td class="hidden md:table-cell px-6 py-4"><p class="text-sm font-bold text-gray-700">${item.crop_name || 'N/A'}</p><p class="text-[10px] text-gray-500">${t('label_area')}: ${item.area || '0.00'} Ha</p></td>
                         <td class="hidden md:table-cell px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">${item.damage_type || 'N/A'}</span></td>
-                        <td class="px-3 md:px-6 py-4">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusBadge}">${reportStatusLabel(item.status)}</span>
-                            ${item.validated_by_name ? `<p class="text-[9px] mt-1 font-bold text-blue-500"><i class="fa-solid fa-clipboard-check mr-1"></i>${item.validated_by_name}</p>` : ''}
-                            ${item.technician_name ? `<p class="text-[9px] mt-1 font-bold text-purple-500"><i class="fa-solid fa-user-check mr-1"></i>${item.technician_name}</p>` : ''}
-                            ${item.approved_by_name ? `<p class="text-[9px] mt-1 font-bold text-green-500"><i class="fa-solid fa-circle-check mr-1"></i>${item.approved_by_name}</p>` : ''}
-                            ${visitDateDisplay}
+                        <td class="hidden md:table-cell px-3 md:px-6 py-4">${statusHTML}
                         </td>
                         <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-right"><div class="flex flex-wrap items-center justify-end gap-2">${actionButtons}</div></td>
                     </tr>`;
@@ -896,22 +899,25 @@
                 aidSection.classList.remove('hidden');
                 const btnText = status === 'INSPECTED' ? t('btn_approve_allocate') : t('btn_direct_approve_allocate');
                 const btnIcon = status === 'INSPECTED' ? 'fa-check' : 'fa-bolt';
+                // Phones: a two-row footer - Approve full width on top, Reject /
+                // Return side by side below - and no Close button (the X in the
+                // header closes it), so the report itself keeps most of the screen.
                 const returnBtn = status === 'INSPECTED' ? `
-                    <button onclick="returnToTechnician(${id})" class="flex-1 sm:flex-none px-6 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 text-sm font-bold rounded-xl shadow-sm hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center sm:justify-start gap-2">
+                    <button onclick="returnToTechnician(${id})" class="sm:flex-none px-3 sm:px-6 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 text-xs sm:text-sm font-bold leading-tight rounded-xl shadow-sm hover:bg-amber-500 hover:text-white transition-all flex items-center justify-center sm:justify-start gap-2">
                         <i class="fa-solid fa-rotate-left"></i> ${t('btn_return_to_technician')}
                     </button>` : '';
                 footer.innerHTML = `
-                    <button onclick="closeReviewModal()" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">${t('btn_close')}</button>
+                    <button onclick="closeReviewModal()" class="hidden sm:block sm:flex-none px-6 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-200 rounded-xl transition-colors">${t('btn_close')}</button>
                     ${returnBtn}
-                    <button onclick="updateStatus(${id}, 'Rejected')" class="flex-1 sm:flex-none px-6 py-2.5 bg-red-50 text-red-600 border border-red-200 text-sm font-bold rounded-xl shadow-sm hover:bg-red-500 hover:text-white transition-all flex items-center justify-center sm:justify-start gap-2">
+                    <button onclick="updateStatus(${id}, 'Rejected')" class="${returnBtn ? '' : 'col-span-2 sm:col-span-1 '}sm:flex-none px-3 sm:px-6 py-2.5 bg-red-50 text-red-600 border border-red-200 text-xs sm:text-sm font-bold leading-tight rounded-xl shadow-sm hover:bg-red-500 hover:text-white transition-all flex items-center justify-center sm:justify-start gap-2">
                         <i class="fa-solid fa-xmark"></i> ${t('btn_reject_claim')}
                     </button>
-                    <button onclick="approveWithAid()" class="flex-1 sm:flex-none px-6 py-2.5 bg-green-600 text-white text-sm font-black rounded-xl shadow-lg shadow-green-900/20 hover:bg-green-700 transition-all flex items-center justify-center sm:justify-start gap-2">
+                    <button onclick="approveWithAid()" class="col-span-2 order-first sm:order-none sm:col-span-1 sm:flex-none px-6 py-3 sm:py-2.5 bg-green-600 text-white text-sm font-black rounded-xl shadow-lg shadow-green-900/20 hover:bg-green-700 transition-all flex items-center justify-center sm:justify-start gap-2">
                         <i class="fa-solid ${btnIcon}"></i> ${btnText}
                     </button>`;
             } else {
                 aidSection.classList.add('hidden');
-                footer.innerHTML = `<button onclick="closeReviewModal()" class="flex-1 sm:flex-none px-6 py-2.5 bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 rounded-xl transition-colors">${t('btn_close_viewer')}</button>`;
+                footer.innerHTML = `<button onclick="closeReviewModal()" class="col-span-2 sm:col-span-1 sm:flex-none px-6 py-2.5 bg-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-300 rounded-xl transition-colors">${t('btn_close_viewer')}</button>`;
             }
 
             document.getElementById('reviewModal').classList.remove('hidden');
@@ -1354,7 +1360,7 @@
         // The idle timeout lives in session_guard.js now.
     </script>
 
-    <script src="../../assets/js/navbar_admin.js?v=5"></script>
+    <script src="../../assets/js/navbar_admin.js?v=6"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => { loadAdminNavbar('reports'); initI18n(); loadAdminNotifications(); });
     </script>

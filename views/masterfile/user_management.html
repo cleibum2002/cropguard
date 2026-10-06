@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -125,11 +125,11 @@
                         <table class="w-full text-left">
                             <thead class="bg-gray-50/60">
                                 <tr>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_id">ID</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user_details">User Details</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_role">Role</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
-                                    <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_id">ID</th>
+                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_user_details">User Details</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_role">Role</th>
+                                    <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
+                                    <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody" class="divide-y divide-gray-50"></tbody>
@@ -446,20 +446,25 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50/60 transition-all">
-                        <td class="px-6 py-4 font-bold text-gray-300 text-center text-sm">#${item.id}</td>
-                        <td class="px-6 py-4">
+                        <td class="hidden md:table-cell px-6 py-4 font-bold text-gray-300 text-center text-sm">#${item.id}</td>
+                        <td class="px-3 md:px-6 py-4">
+                            <p class="md:hidden text-[11px] font-bold text-gray-300 mb-0.5">#${item.id}</p>
                             <p class="text-sm font-black text-gray-800">${item.fullname}${isSelf ? ` <span class="ml-1 px-1.5 py-0.5 bg-[#11542e] text-white rounded text-[9px] font-black uppercase tracking-wide align-middle">${t('label_you')}</span>` : ''}</p>
-                            <p class="text-[10px] text-gray-400">${item.email || t('label_no_email')} ${item.contact_number ? '• ' + item.contact_number : ''}</p>
+                            <p class="text-[10px] text-gray-400"><span class="break-all md:break-normal">${item.email || t('label_no_email')}</span> ${item.contact_number ? `<span class="block md:inline whitespace-nowrap"><span class="hidden md:inline">• </span>${item.contact_number}</span>` : ''}</p>
+                            <div class="md:hidden mt-2 flex flex-wrap gap-2">
+                                <span class="px-3 py-1 rounded-full text-[10px] font-bold ${roleColor}">${roleLabel(item.role)}</span>
+                                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusColor}">${item.status === 'Active' ? t('status_active') : t('status_inactive')}</span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="hidden md:table-cell px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-[10px] font-bold ${roleColor}">${roleLabel(item.role)}</span>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="hidden md:table-cell px-6 py-4">
                             <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ${statusColor}">
                                 ${item.status === 'Active' ? t('status_active') : t('status_inactive')}
                             </span>
                         </td>
-                        <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-6 py-4 text-right">
+                        <td class="sticky right-0 z-10 bg-white shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-right">
                             <div class="flex justify-end gap-2">
                                 <button onclick="editItem(${item.id})" class="w-9 h-9 bg-blue-50 text-blue-500 rounded-xl hover:bg-blue-500 hover:text-white transition-all flex items-center justify-center">
                                     <i class="fa-solid fa-pen-to-square text-xs"></i>
@@ -716,7 +721,7 @@
         // The idle timeout lives in session_guard.js now.
     </script>
 
-    <script src="../../assets/js/navbar_admin.js?v=5"></script>
+    <script src="../../assets/js/navbar_admin.js?v=6"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('staff'); 

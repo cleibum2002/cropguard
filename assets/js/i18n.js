@@ -50,3 +50,12 @@ function initI18n() {
 }
 
 document.addEventListener('DOMContentLoaded', initI18n);
+
+// Phones: the EN / TL / CEB links are ~16px tall - too small for a thumb.
+// Padding enlarges the tap area and the equal negative margin cancels it,
+// so nothing on screen moves.
+(function addLangTapArea() {
+    const style = document.createElement('style');
+    style.textContent = '@media (max-width: 767px) { .lang-link { display: inline-block; position: relative; padding: 12px 6px; margin: -12px -6px; } }';
+    document.head.appendChild(style);
+})();

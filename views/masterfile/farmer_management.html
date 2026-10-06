@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -79,18 +79,18 @@
                 </div>
             </div>
             <div class="order-3 sm:order-2 w-full sm:w-auto flex flex-wrap items-center gap-3">
-                <div class="relative flex-1 sm:flex-none min-w-0">
+                <div class="relative w-full sm:w-auto sm:flex-none min-w-0">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                     <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or RSBSA..." data-i18n-placeholder="search_placeholder"
                         class="bg-gray-50 border-none rounded-xl py-2 pl-10 pr-4 text-sm w-full sm:w-72 focus:ring-2 focus:ring-[#11542e] outline-none">
                 </div>
-                <select id="rsbsaFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                <select id="rsbsaFilter" onchange="filterTable()" class="flex-1 sm:flex-none min-w-0 bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
                     <option value="ALL" data-i18n="filter_all_rsbsa">All RSBSA</option>
                     <option value="Verified" data-i18n="badge_verified">Verified</option>
                     <option value="Missing" data-i18n="badge_missing">Missing</option>
                     <option value="Invalid" data-i18n="badge_invalid_format">Invalid Format</option>
                 </select>
-                <select id="statusFilter" onchange="filterTable()" class="bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                <select id="statusFilter" onchange="filterTable()" class="flex-1 sm:flex-none min-w-0 bg-gray-50 border-none rounded-xl py-2 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
                     <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
                     <option value="Active" data-i18n="status_active">Active</option>
                     <option value="Inactive" data-i18n="status_inactive">Inactive</option>
@@ -101,18 +101,18 @@
         <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
             <div class="max-w-7xl mx-auto">
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_total_farmers">Total Farmers</p>
-                        <p id="statTotal" class="text-3xl font-black text-gray-800">0</p>
+                        <p id="statTotal" class="text-2xl sm:text-3xl font-black text-gray-800">0</p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_with_rsbsa">With RSBSA</p>
-                        <p id="statWithRSBSA" class="text-3xl font-black text-green-600">0</p>
+                        <p id="statWithRSBSA" class="text-2xl sm:text-3xl font-black text-green-600">0</p>
                     </div>
-                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_missing_rsbsa">Missing RSBSA</p>
-                        <p id="statMissing" class="text-3xl font-black text-red-500">0</p>
+                        <p id="statMissing" class="text-2xl sm:text-3xl font-black text-red-500">0</p>
                     </div>
                 </div>
 
@@ -123,8 +123,8 @@
                                 <tr>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer">Farmer</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_contact">Contact</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_rsbsa_number">RSBSA Number</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_rsbsa_status">RSBSA Status</th>
+                                    <th class="hidden md:table-cell px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_rsbsa_number">RSBSA Number</th>
+                                    <th class="hidden md:table-cell px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_rsbsa_status">RSBSA Status</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_account">Account</th>
                                     <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_action">Action</th>
                                 </tr>
@@ -282,12 +282,13 @@
                 <tr class="hover:bg-gray-50/50 transition-colors">
                     <td class="px-3 md:px-6 py-4">
                         <p class="text-sm font-black text-gray-800">${f.fullname}</p>
-                        <p class="text-[10px] text-gray-400">${f.email}</p>
+                        <p class="text-[10px] text-gray-400 break-all md:break-normal">${f.email}</p>
                         <p class="md:hidden text-[10px] text-gray-400">${f.contact || '—'}</p>
+                        <div class="md:hidden mt-2 flex flex-wrap items-center gap-2"><span class="font-mono text-xs text-gray-700 whitespace-nowrap">${f.rsbsa_no || '—'}</span>${rsbsaBadge}</div>
                     </td>
                     <td class="hidden md:table-cell px-6 py-4 text-xs text-gray-600">${f.contact || '—'}</td>
-                    <td class="px-3 md:px-6 py-4 font-mono text-xs text-gray-700">${f.rsbsa_no || '—'}</td>
-                    <td class="px-3 md:px-6 py-4 text-center">${rsbsaBadge}</td>
+                    <td class="hidden md:table-cell px-3 md:px-6 py-4 font-mono text-xs text-gray-700 whitespace-nowrap">${f.rsbsa_no || '—'}</td>
+                    <td class="hidden md:table-cell px-3 md:px-6 py-4 text-center">${rsbsaBadge}</td>
                     <td class="hidden md:table-cell px-6 py-4 text-center">
                         <span class="px-2 py-1 rounded-full text-[9px] font-black uppercase ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}">
                             ${isActive ? t('status_active') : t('status_inactive')}
@@ -384,7 +385,7 @@
 
     </script>
 
-<script src="../../assets/js/navbar_admin.js?v=5"></script>
+<script src="../../assets/js/navbar_admin.js?v=6"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // PASS THE CORRECT PAGE KEY HERE

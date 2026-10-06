@@ -11,7 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="../../assets/js/i18n.js?v=1"></script>
+    <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=7"></script>
 
     <script>
@@ -97,8 +97,8 @@
                                 <tr>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center" data-i18n="th_req_id">Req ID</th>
                                     <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_farmer_info">Farmer Info</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_requested_seed">Requested Seed</th>
-                                    <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
+                                    <th class="px-2 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_requested_seed">Requested Seed</th>
+                                    <th class="hidden md:table-cell px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="label_description">Description</th>
                                     <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
                                     <th class="sticky right-0 z-10 bg-gray-50 shadow-[-4px_0_6px_-4px_rgba(0,0,0,0.08)] px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
@@ -453,13 +453,14 @@
                     <tr class="hover:bg-gray-50/60 transition-all border-b border-gray-50">
                         <td class="hidden md:table-cell px-6 py-4 font-bold text-gray-400 text-center text-sm">#REQ-${String(item.Request_ID).padStart(3, '0')}</td>
                         <td class="px-3 md:px-6 py-4">
+                            <p class="md:hidden text-[11px] font-bold text-gray-400 mb-0.5">#REQ-${String(item.Request_ID).padStart(3, '0')}</p>
                             <p class="text-sm font-black text-gray-800">${item.Farmer_Name}</p>
                             <p class="text-[10px] text-gray-400">${t('label_date')}: ${item.DateStr}</p>
                         </td>
-                        <td class="px-3 md:px-6 py-4">
+                        <td class="px-2 md:px-6 py-4">
                             <p class="text-sm font-bold text-[#11542e]">${item.Requested_Seed}</p>
                         </td>
-                        <td class="px-3 md:px-6 py-4">
+                        <td class="hidden md:table-cell px-3 md:px-6 py-4">
                             <p class="text-[11px] text-gray-500 max-w-[100px] md:max-w-[200px] truncate">${item.Description}</p>
                         </td>
                         <td class="hidden md:table-cell px-6 py-4">
@@ -765,7 +766,7 @@
         // The idle timeout lives in session_guard.js now.
     </script>
 
-<script src="../../assets/js/navbar_admin.js?v=5"></script>
+<script src="../../assets/js/navbar_admin.js?v=6"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadAdminNavbar('seed_requests');
