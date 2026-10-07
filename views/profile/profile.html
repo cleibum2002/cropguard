@@ -153,6 +153,11 @@
         .input-field:focus { border-color: #11542e; box-shadow: 0 0 0 3px rgba(17,84,46,0.08); }
         .input-field:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
         .lang-link { cursor: pointer; }
+        /* Phones: 100vh is measured as if the browser's address bar were hidden,
+           so while it shows, the bottom of the page sat behind it and the bottom
+           nav. 100dvh follows the address bar; browsers without dvh keep 100vh.
+           Body/wrapper selectors outrank Tailwind's own .h-screen rule. */
+        body.h-screen, body .h-screen { height: 100vh; height: 100dvh; }
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
         #codeBoxContainer input.code-digit {
             width: 46px !important; height: 56px;

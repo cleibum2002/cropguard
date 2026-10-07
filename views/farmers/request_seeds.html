@@ -25,6 +25,11 @@
         .sidebar-link.active { background: rgba(255,255,255,0.12); border-left-color: #f1c40f; }
         .sidebar-link:not(.active):hover { background: rgba(255,255,255,0.06); }
         .lang-link { cursor: pointer; }
+        /* Phones: 100vh is measured as if the browser's address bar were hidden,
+           so while it shows, the bottom of the page sat behind it and the bottom
+           nav. 100dvh follows the address bar; browsers without dvh keep 100vh.
+           Body/wrapper selectors outrank Tailwind's own .h-screen rule. */
+        body.h-screen, body .h-screen { height: 100vh; height: 100dvh; }
         .lang-link.lang-active { color: #11542e; text-decoration: underline; }
     </style>
 </head>
