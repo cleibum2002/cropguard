@@ -492,7 +492,7 @@
     let countdownTick     = null;
     let countdownWatching = false;
 
-    function startCountdown() {
+    function startCountdown(seconds = 5 * 60) {
         clearInterval(countdownInterval);
         const display = document.getElementById('verifyCountdown');
 
@@ -503,7 +503,7 @@
         // (Verification_Token_Expires, 5 minutes) had already expired. Reading
         // the clock each tick means being throttled costs accuracy of the
         // display, never the deadline itself.
-        const deadline = Date.now() + 5 * 60 * 1000;
+        const deadline = Date.now() + seconds * 1000;
 
         countdownTick = function () {
             const remaining = Math.max(0, Math.round((deadline - Date.now()) / 1000));
@@ -557,6 +557,7 @@
         link.style.opacity = '0.5';
         msgBox.className = 'msg-box';
         msgBox.innerText = 'Sending...';
+        let seconds = 60; // matches the server's one-code-per-minute limit
 
         try {
             const res = await fetch('api/auth/resend_code.php', {
@@ -565,16 +566,24 @@
                 body: JSON.stringify({ email })
             });
             const data = await res.json();
-            msgBox.className = data.status === 'success' ? 'msg-box success' : 'msg-box error';
-            msgBox.innerText = data.message;
-            if (data.status === 'success') startCountdown();
+            if (data.status === 'wait') {
+                // A code went out under a minute ago and still works - a note,
+                // not an error. The countdown shows that code's real time left.
+                msgBox.className = 'msg-box';
+                msgBox.innerText = data.message;
+                if (data.expires_in > 0) startCountdown(data.expires_in);
+                if (data.retry_after > 0) seconds = data.retry_after;
+            } else {
+                msgBox.className = data.status === 'success' ? 'msg-box success' : 'msg-box error';
+                msgBox.innerText = data.message;
+                if (data.status === 'success') startCountdown();
+            }
         } catch(e) {
             msgBox.className = 'msg-box error';
             msgBox.innerText = connectionMessage(e);
         }
 
-        // 30-second cooldown so the link can't be spammed
-        let seconds = 30;
+        // Cooldown on the link too, so it can't be spammed
         link.innerText = `Resend Code (${seconds}s)`;
         const cooldown = setInterval(() => {
             seconds--;
