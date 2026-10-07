@@ -518,7 +518,9 @@
                 });
                 const data = await res.json();
                 Swal.close();
-                if (data.status !== 'success') {
+                // 'wait' = a code was sent under a minute ago and still works,
+                // so go straight to entering it.
+                if (data.status !== 'success' && data.status !== 'wait') {
                     Swal.fire(t('sw_error_title'), data.message, 'error');
                     return;
                 }
