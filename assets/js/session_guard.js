@@ -40,7 +40,9 @@
     var URL_CHECK     = ROOT + 'api/auth/session_check.php';
     var URL_LOGOUT    = ROOT + 'api/auth/logout.php';
     var URL_HEARTBEAT = ROOT + 'api/auth/heartbeat.php';
-    var URL_AUTH      = ROOT + 'auth.html';
+    // The bare address: index.php shows the login page there, so the address
+    // bar reads ".../" instead of ".../auth.html".
+    var URL_AUTH      = ROOT;
 
     // Where each role belongs. Must stay in step with the same mapping in
     // api/auth/login.php and the one in auth.html.
