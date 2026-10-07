@@ -69,131 +69,275 @@
                 .catch(function () { /* offline or server down - just show the login form */ });
         })();
     </script>
-    <title>Department of Agriculture - Authentication</title>
+    <title>CropGuard - Department of Agriculture</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary-green: #1b4d3e; --light-green: #d5e8d4; --button-hover: #143a2f; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body {
-            background-image: url('https://images.unsplash.com/photo-1625246333195-58f21a408358?q=80&w=1920&auto=format&fit=crop');
-            background-size: cover; background-position: center; min-height: 100vh;
-            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(3px);
-            padding: 16px;
+        /* Same green and yellow as the dashboards (sidebar #11542e, accent #f1c40f). */
+        :root {
+            --green: #11542e;
+            --green-dark: #0b3d21;
+            --green-soft: rgba(17, 84, 46, 0.12);
+            --yellow: #f1c40f;
+            --ink: #14231a;
+            --muted: #6b7a70;
+            --line: #dfe6e0;
+            --field: #f8faf7;
+            --page: #f2f5ef;
         }
-        .container { display: flex; width: 100%; max-width: 900px; min-height: 600px; background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 25px rgba(0,0,0,0.5); transition: all 0.3s ease; }
-        .left-panel { flex: 1; background: white; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; text-align: center; }
-        .logo-img { width: 150px; height: 150px; background: url('assets/images/DA.png') no-repeat center; background-size: contain; margin-bottom: 20px; }
-        .left-panel h2 { color: #333; font-size: 1.5rem; font-weight: 700; margin-bottom: 5px; }
-        
-        .right-panel { flex: 1; background: var(--light-green); padding: 40px; display: flex; flex-direction: column; justify-content: center; position: relative; }
-        h1 { text-align: center; color: var(--primary-green); margin-bottom: 20px; }
-        
-        .input-group { position: relative; margin-bottom: 15px; }
-        input { width: 100%; padding: 12px 40px 12px 15px; border: 1px solid #ccc; border-radius: 8px; outline: none; }
-        input:focus { border-color: var(--primary-green); }
-        
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #666; }
-        .toggle-password:hover { color: var(--primary-green); }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 24px 16px;
+            background-color: var(--page);
+            /* Faint rice-terrace lines over two soft glows. Drawn in CSS, so no
+               photo to download (the old Unsplash background was a large file on
+               every visit - slow on budget phones and mobile data). */
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='36' viewBox='0 0 120 36'%3E%3Cpath d='M0 18 C30 8 30 8 60 18 S90 28 120 18' fill='none' stroke='%2311542e' stroke-opacity='0.07' stroke-width='1.2'/%3E%3C/svg%3E"),
+                radial-gradient(circle at 12% 10%, rgba(17, 84, 46, 0.10), transparent 45%),
+                radial-gradient(circle at 90% 95%, rgba(241, 196, 15, 0.12), transparent 40%);
+        }
 
-        .btn-submit { width: 100%; padding: 12px; background: var(--primary-green); color: white; border: none; border-radius: 25px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: background 0.3s; }
-        .btn-submit:hover { background: var(--button-hover); }
+        .container {
+            display: flex; width: 100%; max-width: 940px; min-height: 580px;
+            background: #fff; border-radius: 24px; overflow: hidden;
+            box-shadow: 0 1px 2px rgba(20, 35, 26, 0.04), 0 24px 60px -24px rgba(17, 84, 46, 0.35);
+            animation: rise 0.45s ease-out both;
+        }
+        @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .container { animation: none; } }
+
+        /* ── Brand panel ── */
+        .left-panel {
+            flex: 0 0 42%; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 44px 40px; color: #fff;
+            background-color: var(--green);
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='1.2'%3E%3Cpath d='M16 40c0-10 6-18 14-20c0 10-6 18-14 20z'/%3E%3Cpath d='M16 40l14-20'/%3E%3Cpath d='M44 58c0-8 5-14 11-16c0 8-5 14-11 16z'/%3E%3Cpath d='M44 58l11-16'/%3E%3C/g%3E%3C/svg%3E"),
+                linear-gradient(160deg, #15663a 0%, var(--green) 45%, var(--green-dark) 100%);
+        }
+        .left-panel::after {
+            content: ''; position: absolute; width: 320px; height: 320px; right: -120px; top: -120px;
+            border-radius: 50%; background: radial-gradient(circle, rgba(241, 196, 15, 0.18), transparent 65%);
+            pointer-events: none;
+        }
+        .brand { position: relative; z-index: 1; }
+        .logo-ring {
+            width: 92px; height: 92px; border-radius: 50%; background: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.12); margin-bottom: 28px;
+        }
+        .logo-img { width: 72px; height: 72px; background: url('assets/images/DA.png') no-repeat center; background-size: contain; }
+        .brand-eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--yellow); margin-bottom: 8px; }
+        .brand-name { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
+        .brand-tagline { margin-top: 8px; font-size: 0.98rem; color: rgba(255, 255, 255, 0.78); }
+        .brand-points { list-style: none; margin-top: 36px; display: grid; gap: 14px; }
+        .brand-points li { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: rgba(255, 255, 255, 0.85); }
+        .brand-points i {
+            width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.1); color: var(--yellow); font-size: 0.8rem;
+        }
+        .brand-foot { position: relative; z-index: 1; font-size: 0.75rem; color: rgba(255, 255, 255, 0.55); }
+
+        /* ── Form panel ── */
+        .right-panel { flex: 1; padding: 48px 52px; display: flex; flex-direction: column; justify-content: center; }
+        .right-panel form { width: 100%; max-width: 380px; margin: 0 auto; }
+        .form-head { margin-bottom: 24px; }
+        h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); }
+        .form-sub { margin-top: 6px; font-size: 0.92rem; color: var(--muted); }
+
+        .field-label { display: block; font-size: 0.8rem; font-weight: 600; color: #3d4b42; margin-bottom: 6px; }
+        .input-group { position: relative; margin-bottom: 16px; }
+        .field-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #9aa79f; font-size: 0.9rem; pointer-events: none; }
+        .input-group input {
+            width: 100%; height: 48px; padding: 0 44px 0 42px;
+            font: inherit; font-size: 0.95rem; color: var(--ink);
+            background: var(--field); border: 1px solid var(--line); border-radius: 12px;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+        .input-group input::placeholder { color: #a5b0a9; }
+        .input-group input:focus { border-color: var(--green); background: #fff; box-shadow: 0 0 0 4px var(--green-soft); }
+        .input-group:focus-within .field-icon { color: var(--green); }
+        .toggle-password {
+            position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+            width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: #8a978f; border-radius: 10px;
+        }
+        .toggle-password:hover { color: var(--green); }
+        .field-hint { font-size: 0.75rem; color: var(--muted); margin: -8px 0 16px; }
+
+        .phone-row { display: flex; gap: 8px; }
+        .phone-prefix {
+            display: flex; align-items: center; gap: 6px; padding: 0 14px; flex-shrink: 0;
+            height: 48px; border-radius: 12px; background: #eef3ee; border: 1px solid var(--line);
+            font-weight: 600; font-size: 0.9rem; color: #2f3d34;
+        }
+        .phone-row input { padding-left: 16px; }
+
+        .btn-submit {
+            width: 100%; height: 50px; margin-top: 6px;
+            font: inherit; font-size: 0.98rem; font-weight: 700; letter-spacing: 0.01em;
+            color: #fff; background: var(--green); border: none; border-radius: 12px; cursor: pointer;
+            box-shadow: 0 10px 22px -10px rgba(17, 84, 46, 0.7);
+            transition: background 0.15s, transform 0.1s;
+        }
+        .btn-submit:hover { background: #0c3d22; }
+        .btn-submit:active { transform: translateY(1px); }
+        .btn-submit:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--green-soft); }
+
+        .toggle-link { text-align: center; margin-top: 18px; font-size: 0.88rem; color: var(--muted); }
+        .toggle-link a { color: var(--green); font-weight: 700; text-decoration: none; cursor: pointer; }
+        .toggle-link a:hover { text-decoration: underline; }
+        .toggle-link + .toggle-link { margin-top: 10px; }
+
+        .hidden { display: none !important; }
+        .msg-box { font-size: 0.85rem; font-weight: 600; text-align: center; margin-bottom: 16px; padding: 10px 12px; border-radius: 10px; background: #f1f4f1; color: #3d4b42; }
+        .msg-box:empty { display: none; }
+        .error { background: #fef2f2; color: #b42318; }
+        .success { background: #ecfdf3; color: #157f3c; }
+
+        /* Verify screen */
+        .verify-icon {
+            width: 56px; height: 56px; border-radius: 16px; margin-bottom: 18px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--green-soft); color: var(--green); font-size: 1.4rem;
+        }
+        .verify-text { font-size: 0.88rem; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+        #codeBoxContainer { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
         #codeBoxContainer input.code-digit {
-            width: 46px !important; height: 56px;
-            text-align: center; font-size: 1.5rem; font-weight: bold;
-            border: 2px solid #d1d5db; border-radius: 10px;
-            outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-            background: #f8fafc !important; color: #1e293b !important;
+            flex: 1 1 0; min-width: 0; max-width: 52px; width: auto !important; height: 56px;
+            text-align: center; font: inherit; font-size: 1.45rem; font-weight: 700;
+            border: 1.5px solid var(--line); border-radius: 12px;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+            background: var(--field) !important; color: var(--ink) !important;
             padding: 0 !important;
         }
-        #codeBoxContainer input.code-digit:focus { border-color: var(--primary-green); box-shadow: 0 0 0 3px rgba(17,84,46,0.12); background: white !important; }
-        #codeBoxContainer input.code-digit.filled { border-color: var(--primary-green); background: white !important; }
+        #codeBoxContainer input.code-digit:focus { border-color: var(--green); box-shadow: 0 0 0 4px var(--green-soft); background: #fff !important; }
+        #codeBoxContainer input.code-digit.filled { border-color: var(--green); background: #fff !important; }
         /* Chrome sometimes auto-styles single-digit code inputs (thinks they're an
            OTP autofill field) and can force the text invisible - this overrides that. */
         #codeBoxContainer input.code-digit:-webkit-autofill {
-            -webkit-text-fill-color: #1e293b !important;
-            -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+            -webkit-text-fill-color: var(--ink) !important;
+            -webkit-box-shadow: 0 0 0px 1000px var(--field) inset !important;
         }
-        
-        .toggle-link { text-align: center; margin-top: 15px; font-size: 0.9rem; color: #555; }
-        .toggle-link a { color: var(--primary-green); font-weight: bold; text-decoration: none; cursor: pointer; transition: color 0.2s; }
-        .toggle-link a:hover { text-decoration: underline; }
-        
-        .hidden { display: none !important; }
-        .msg-box { font-size: 0.85rem; text-align: center; margin-bottom: 15px; font-weight: bold; }
-        .error { color: red; }
-        .success { color: green; }
+        .countdown-line { text-align: center; margin-top: 16px; font-size: 0.85rem; color: var(--muted); }
+        #verifyCountdown { font-size: 0.95rem; font-weight: 700; color: var(--green); font-variant-numeric: tabular-nums; }
 
-        /* ── Mobile layout: stack panels instead of side-by-side, shrink oversized branding ── */
-        @media (max-width: 700px) {
-            body { padding: 0; align-items: flex-start; }
-            .container { flex-direction: column; width: 100%; min-height: 100vh; border-radius: 0; box-shadow: none; background: var(--light-green); }
-            .left-panel { background: var(--light-green); padding: 36px 20px 4px; }
-            .logo-img { width: 90px; height: 90px; margin-bottom: 10px; }
-            .left-panel h2 { color: var(--primary-green); font-size: 1.15rem; }
-            .left-panel p { font-size: 0.85rem; color: #3a5c4c; }
-            .right-panel { background: transparent; padding: 0 24px 36px; justify-content: flex-start; }
-            h1 { font-size: 1.3rem; margin-bottom: 16px; }
+        /* ── Phones: brand on top, form in a white card below ── */
+        @media (max-width: 760px) {
+            body { align-items: flex-start; padding: 28px 16px 32px; }
+            .container { flex-direction: column; background: transparent; box-shadow: none; border-radius: 0; min-height: 0; overflow: visible; }
+            .left-panel { flex: none; padding: 0 0 22px; color: var(--ink); background: none; align-items: center; text-align: center; }
+            .left-panel::after, .brand-points, .brand-foot { display: none; }
+            .brand { display: flex; flex-direction: column; align-items: center; }
+            .logo-ring { width: 72px; height: 72px; margin-bottom: 14px; box-shadow: 0 6px 18px -6px rgba(17, 84, 46, 0.35); }
+            .logo-img { width: 56px; height: 56px; }
+            .brand-eyebrow { color: var(--green); margin-bottom: 4px; font-size: 0.66rem; }
+            .brand-name { font-size: 1.6rem; color: var(--green); }
+            .brand-tagline { margin-top: 4px; font-size: 0.88rem; color: var(--muted); }
+            .right-panel {
+                flex: none; padding: 26px 20px; background: #fff; border-radius: 20px;
+                box-shadow: 0 1px 2px rgba(20, 35, 26, 0.04), 0 18px 40px -22px rgba(17, 84, 46, 0.35);
+            }
+            h1 { font-size: 1.35rem; }
+            .form-head { margin-bottom: 20px; }
+            #codeBoxContainer { gap: 6px; }
+            #codeBoxContainer input.code-digit { height: 52px; font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="left-panel">
-        <div class="logo-img"></div>
-        <h2>Department of Agriculture</h2>
-        <p>Crop Damage Reporting System</p>
-    </div>
+    <aside class="left-panel">
+        <div class="brand">
+            <div class="logo-ring"><div class="logo-img" role="img" aria-label="Department of Agriculture logo"></div></div>
+            <p class="brand-eyebrow">Department of Agriculture</p>
+            <h2 class="brand-name">CropGuard</h2>
+            <p class="brand-tagline">Crop Damage Reporting System</p>
+            <ul class="brand-points">
+                <li><i class="fa-solid fa-camera"></i> Report crop damage with photos</li>
+                <li><i class="fa-solid fa-route"></i> Track validation and field inspection</li>
+                <li><i class="fa-solid fa-hand-holding-heart"></i> Receive relief aid faster</li>
+            </ul>
+        </div>
+        <p class="brand-foot">Region X Field Office &middot; Balingasag, Misamis Oriental</p>
+    </aside>
 
     <div class="right-panel">
-        
+
         <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
-            <h1>System Login</h1>
+            <div class="form-head">
+                <h1>Welcome back</h1>
+                <p class="form-sub">Log in to your CropGuard account.</p>
+            </div>
             <div class="msg-box error" id="loginError"></div>
-            
+
+            <label class="field-label" for="loginEmail">Email address</label>
             <div class="input-group">
-                <input type="email" id="loginEmail" placeholder="Email Address" autocomplete="username" required>
+                <i class="fa-regular fa-envelope field-icon"></i>
+                <input type="email" id="loginEmail" placeholder="name@example.com" autocomplete="username" required>
             </div>
 
+            <label class="field-label" for="loginPass">Password</label>
             <div class="input-group">
-                <input type="password" id="loginPass" placeholder="Password" required>
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input type="password" id="loginPass" placeholder="Enter your password" autocomplete="current-password" required>
                 <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('loginPass', this)"></i>
             </div>
 
-            <button type="submit" class="btn-submit">Login</button>
+            <button type="submit" class="btn-submit">Log in</button>
             <div class="toggle-link">
                 Don't have an account? <a onclick="switchForm('register')">Register here</a>
             </div>
         </form>
 
         <form id="registerForm" class="hidden" onsubmit="event.preventDefault(); handleRegister();">
-            <h1>Farmer Registration</h1>
-            <div class="msg-box" id="regMsg"></div>
-            
-            <div class="input-group">
-                <input type="text" id="regName" placeholder="Full Name" required>
+            <div class="form-head">
+                <h1>Farmer Registration</h1>
+                <p class="form-sub">Create your account to report crop damage.</p>
             </div>
-            
-            <div class="input-group" style="display:flex; gap:8px;">
-                <span style="display:flex; align-items:center; gap:4px; padding:0 12px; background:#eef2ef; border:1px solid #ccc; border-radius:8px; font-weight:bold; color:#333; flex-shrink:0;">
-                    🇵🇭 +63
-                </span>
+            <div class="msg-box" id="regMsg"></div>
+
+            <label class="field-label" for="regName">Full name</label>
+            <div class="input-group">
+                <i class="fa-regular fa-user field-icon"></i>
+                <input type="text" id="regName" placeholder="Juan Dela Cruz" autocomplete="name" required>
+            </div>
+
+            <label class="field-label" for="regContact">Mobile number</label>
+            <div class="input-group phone-row">
+                <span class="phone-prefix">🇵🇭 +63</span>
                 <input type="tel" id="regContact" placeholder="9xxxxxxxxx" inputmode="numeric" required
                        oninput="this.value = phLocalMobile(this.value);" style="flex:1;">
             </div>
 
+            <label class="field-label" for="regEmail">Email address</label>
             <div class="input-group">
-                <input type="email" id="regEmail" placeholder="Email Address" required>
+                <i class="fa-regular fa-envelope field-icon"></i>
+                <input type="email" id="regEmail" placeholder="name@example.com" autocomplete="email" required>
             </div>
 
+            <label class="field-label" for="regPass">Password</label>
             <div class="input-group">
-                <input type="password" id="regPass" placeholder="Password" required minlength="8">
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input type="password" id="regPass" placeholder="Create a password" autocomplete="new-password" required minlength="8">
                 <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('regPass', this)"></i>
             </div>
-            <p style="font-size: 0.75rem; color: #666; margin-top: -10px; margin-bottom: 15px;">Minimum 8 characters, must include at least 1 special character.</p>
-            
+            <p class="field-hint">Minimum 8 characters, must include at least 1 special character.</p>
+
+            <label class="field-label" for="regPassConfirm">Repeat password</label>
             <div class="input-group">
-                <input type="password" id="regPassConfirm" placeholder="Repeat Password" required>
+                <i class="fa-solid fa-lock field-icon"></i>
+                <input type="password" id="regPassConfirm" placeholder="Type it again" autocomplete="new-password" required>
                 <i class="fa-regular fa-eye toggle-password" onclick="toggleVisibility('regPassConfirm', this)"></i>
             </div>
 
@@ -204,33 +348,35 @@
         </form>
 
         <form id="verifyForm" class="hidden" onsubmit="event.preventDefault(); handleVerifyCode();">
-            <h1 id="verifyTitle">Verify Your Email</h1>
+            <div class="verify-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+            <div class="form-head" style="margin-bottom:12px;">
+                <h1 id="verifyTitle">Verify Your Email</h1>
+            </div>
             <div class="msg-box" id="verifyMsg"></div>
 
-            <p id="verifyInstructions" style="font-size:0.85rem; color:#555; text-align:center; margin-bottom:18px;">We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.</p>
+            <p id="verifyInstructions" class="verify-text">We've sent a 6-digit verification code to your email. Please check your inbox (and spam folder) and enter it below.</p>
 
             <div id="verifyCodeDisplay" style="display:none;">
                 <p id="verifyCodeText"></p>
             </div>
 
+            <label class="field-label" for="verifyEmail">Email address</label>
             <div class="input-group">
-                <input type="email" id="verifyEmail" placeholder="Email Address" required>
+                <i class="fa-regular fa-envelope field-icon"></i>
+                <input type="email" id="verifyEmail" placeholder="name@example.com" required>
             </div>
             <input type="hidden" id="verifyCodeInput" required>
-            <div id="codeBoxContainer" style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
-                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">
+            <div id="codeBoxContainer">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 1">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 2">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 3">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 4">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 5">
+                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" aria-label="Digit 6">
             </div>
 
             <button type="submit" class="btn-submit">Verify</button>
-            <div style="text-align:center; margin-bottom:10px;">
-                <span style="font-size:0.85rem; color:#555;">Code expires in </span>
-                <span id="verifyCountdown" style="font-size:0.95rem; font-weight:700; color:#11542e;">5:00</span>
-            </div>
+            <p class="countdown-line">Code expires in <span id="verifyCountdown">5:00</span></p>
             <div class="toggle-link">
                 <a onclick="handleResendCode()" id="resendLink">Resend Code</a>
             </div>
@@ -297,6 +443,7 @@
         const password = document.getElementById('loginPass').value;
         const errorBox = document.getElementById('loginError');
 
+        errorBox.className = 'msg-box'; // neutral while working, red only for a real error
         errorBox.innerText = 'Authenticating...';
         // See connectionMessage() below for why this no longer says
         // "Server Error. Check console." to a farmer.
@@ -319,9 +466,11 @@
                 handleResendCode();
                 startCountdown(); // fire off a fresh code right away - don't make them notice and click it themselves
             } else {
+                errorBox.className = 'msg-box error';
                 errorBox.innerText = data.message;
             }
-        } catch(e) { 
+        } catch(e) {
+            errorBox.className = 'msg-box error';
             errorBox.innerText = connectionMessage(e);
         }
     }
