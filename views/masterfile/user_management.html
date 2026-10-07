@@ -488,21 +488,29 @@
         }
 
         // ADDED: Modified filterTable to handle both text search and role dropdown
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "earl mao" finds MAO Earl Gian Lumansoc.
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
+        }
+        // Numbers are stored as +639XXXXXXXXX but typed as 09XX...; compare both as 09...
+        const localPhone = d => d.startsWith('63') ? '0' + d.slice(2) : d;
+
         function filterTable() {
             const searchQuery = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const roleFilter = document.getElementById("roleFilter").value;
             const statusFilter = document.getElementById("statusFilter").value;
+            const qDigits = searchQuery.replace(/\D/g, '');
+            const looksNumeric = /^[\d\s+\-()]+$/.test(searchQuery);
 
             filteredData = allData.filter(i => {
                 // 1. Does the text match name, email, contact number, role, status, or ID?
-                const matchesSearch = i.fullname.toLowerCase().includes(searchQuery) || 
-                                      (i.email && i.email.toLowerCase().includes(searchQuery)) ||
-                                      (i.contact_number && i.contact_number.toLowerCase().includes(searchQuery)) ||
-                                      roleLabel(i.role).toLowerCase().includes(searchQuery) ||
-                                      (i.role && i.role.toLowerCase().includes(searchQuery)) ||
-                                      (i.status === 'Active' ? t('status_active') : t('status_inactive')).toLowerCase().includes(searchQuery) ||
-                                      (i.status && i.status.toLowerCase().includes(searchQuery)) ||
-                                      String(i.id).includes(searchQuery);
+                const matchesSearch = matchesAllWords(searchQuery, [i.fullname, i.email, i.contact_number, roleLabel(i.role), i.role,
+                                          (i.status === 'Active' ? t('status_active') : t('status_inactive')), i.status, i.id]) ||
+                                      (looksNumeric && qDigits.length >= 3 && localPhone((i.contact_number || '').replace(/\D/g, '')).includes(localPhone(qDigits)));
                 
                 // 2. Does the role match the dropdown? (If 'ALL' is selected, it automatically matches)
                 const matchesRole = (roleFilter === "ALL") || (i.role === roleFilter);

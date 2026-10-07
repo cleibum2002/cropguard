@@ -2117,6 +2117,9 @@
             // selection would carry over into a freshly opened modal.
             applyPlantingDateLock('');
             reportFormDirty = false;
+            // A crop can't have been planted in the future (the server checks too).
+            const today = new Date();
+            document.getElementById('plantingDate').max = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
             const locationSelect = document.getElementById('farmLocation');
             if (locationSelect.options.length <= 1 && locationSelect.options[0] && locationSelect.options[0].disabled) {
@@ -2356,12 +2359,15 @@
                     document.getElementById('farmLocation').value = r.Location_ID || '';
                     // Set the hidden crop fields to their real values right away (used on submit
                     // regardless of dropdown timing) - but the VISIBLE dropdown can only be
-                    // correctly selected once its options actually finish loading, and it's
-                    // keyed by Type_ID (crop type), not Crop_ID (a specific crop record).
+                    // correctly selected once its options actually finish loading. Its
+                    // options are keyed by Crop_ID (see get_crop_options.php), so match on
+                    // that, falling back to the crop type for a farm with no crop row yet.
                     document.getElementById('cropName').value = r.Crop_ID || '';
                     document.getElementById('cropType').value = r.Type_ID || '';
                     updateMaxArea().then(() => {
-                        document.getElementById('cropPicker').value = r.Type_ID || '';
+                        const match = farmerCropsData.find(c => String(c.Crop_ID) === String(r.Crop_ID))
+                                   || farmerCropsData.find(c => String(c.Type_ID) === String(r.Type_ID));
+                        document.getElementById('cropPicker').value = match ? match.Crop_ID : '';
                         document.getElementById('cropPickerHint').classList.add('hidden');
                     });
                     // Editing an existing report is the same crop cycle by definition,

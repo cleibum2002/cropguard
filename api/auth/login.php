@@ -179,6 +179,16 @@ if (isset($input['email'], $input['password'])) {
         );
     }
 
+    // The attempt that triggers the lock says so right away, instead of the
+    // user only finding out on their next try. (The next try already reveals
+    // the lock, so this tells an attacker nothing new.)
+    if ($user && $newCount >= 5) {
+        echo json_encode(['status' => 'error', 'message' => 'Too many failed attempts. Try again in 15 minute(s).']);
+        if(isset($stmt)) $stmt->close();
+        $conn->close();
+        exit;
+    }
+
     // If user not found or password incorrect
     echo json_encode(['status' => 'error', 'message' => 'Invalid email or password']);
     if(isset($stmt)) $stmt->close();

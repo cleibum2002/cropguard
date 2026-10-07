@@ -39,6 +39,13 @@ try {
         exit;
     }
 
+    require_once '../../audit/log_action.php';
+    logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+        'Return to Technician',
+        "Report #{$report_id} returned to the technician for re-inspection: {$reasonNote}",
+        'Damage Reports'
+    );
+
     echo json_encode(['status' => 'success', 'message' => 'Report returned to technician for re-inspection.']);
 } catch (Exception $e) {
     echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);

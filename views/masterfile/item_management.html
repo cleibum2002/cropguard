@@ -237,7 +237,7 @@
                 label_showing: "SHOWING", label_to: "TO", label_of: "OF",
                 sw_error_title: "Error", sw_failed_connect_db: "Failed to connect to the database.",
                 sw_required_title: "Required", sw_required_commodity_name: "Please enter the commodity name.",
-                sw_negative_stock: "Stock cannot be a negative number.",
+                sw_negative_stock: "Stock cannot be a negative number.", sw_required_stock: "Please enter the stock quantity (0 or more).",
                 label_stock_hint: "Whole numbers only, up to 500,000.",
                 sw_whole_number_stock: "Stock must be a whole number - no decimals.",
                 sw_stock_limit: "Stock can't be higher than 500,000. Please check the amount.",
@@ -271,7 +271,7 @@
                 label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA",
                 sw_error_title: "Error", sw_failed_connect_db: "Nabigong kumonekta sa database.",
                 sw_required_title: "Kailangan", sw_required_commodity_name: "Pakilagay ang pangalan ng commodity.",
-                sw_negative_stock: "Hindi maaaring negatibo ang stock.",
+                sw_negative_stock: "Hindi maaaring negatibo ang stock.", sw_required_stock: "Ilagay ang dami ng stock (0 o higit pa).",
                 label_stock_hint: "Buong numero lamang, hanggang 500,000.",
                 sw_whole_number_stock: "Dapat buong numero ang stock - walang decimal.",
                 sw_stock_limit: "Hindi maaaring lumampas sa 500,000 ang stock. Pakisuri ang halaga.",
@@ -467,20 +467,23 @@
         }
 
         // UPDATED: Now filters by both Search Text AND Dropdown Category
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "rice seeds" finds "NSIC Rc 222 Certified Rice Seeds".
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
+        }
+
         function filterTable() {
             const q = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const cat = document.getElementById("categoryFilter").value;
             const statusFilter = document.getElementById("statusFilter").value;
-            
+
             filteredData = allData.filter(i => {
-                const matchText = i.item_name.toLowerCase().includes(q)
-                    || (i.description || '').toLowerCase().includes(q)
-                    || (i.unit || '').toLowerCase().includes(q)
-                    || categoryLabel(i.category).toLowerCase().includes(q)
-                    || (i.category || '').toLowerCase().includes(q)
-                    || itemStatusLabel(i.status).toLowerCase().includes(q)
-                    || (i.status || '').toLowerCase().includes(q)
-                    || String(i.id).includes(q);
+                const matchText = matchesAllWords(q, [i.item_name, i.description, i.unit, categoryLabel(i.category), i.category,
+                    itemStatusLabel(i.status), i.status, i.id]);
                 const matchCat = (cat === "ALL") || (i.category === cat);
                 const matchStatus = (statusFilter === "ALL") || (i.status === statusFilter);
                 return matchText && matchCat && matchStatus;
@@ -551,7 +554,10 @@
             const id = document.getElementById("editId").value;
             const stockRaw = document.getElementById("itemStock").value.trim();
             const stockVal = parseFloat(stockRaw);
-            if (stockRaw === '' || isNaN(stockVal) || stockVal < 0) {
+            if (stockRaw === '') {
+                return Swal.fire(t('sw_required_title'), t('sw_required_stock'), 'warning');
+            }
+            if (isNaN(stockVal) || stockVal < 0) {
                 return Swal.fire(t('sw_required_title'), t('sw_negative_stock'), 'warning');
             }
             if (!Number.isInteger(stockVal)) {

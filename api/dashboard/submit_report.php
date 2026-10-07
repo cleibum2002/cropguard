@@ -52,6 +52,19 @@ try {
         echo json_encode(["status" => "error", "message" => "Affected area must be greater than 0."]);
         exit;
     }
+    // A crop can't have been planted in the future. The date picker stops at
+    // today; this is the guard that holds if that is bypassed.
+    if ($planting_date !== null) {
+        $pd = DateTime::createFromFormat('Y-m-d', $planting_date);
+        if (!$pd || $pd->format('Y-m-d') !== $planting_date) {
+            echo json_encode(["status" => "error", "message" => "Please enter a valid planting date."]);
+            exit;
+        }
+        if ($planting_date > date('Y-m-d')) {
+            echo json_encode(["status" => "error", "message" => "The planting date cannot be in the future."]);
+            exit;
+        }
+    }
     $damage_type   = sanitizeHtmlInput($_POST['damage_type']);
     $severity      = sanitizeHtmlInput($_POST['severity']);
     $description   = sanitizeHtmlInput($_POST['description'] ?? '');
@@ -197,6 +210,7 @@ try {
     }
 
     // 4. INSERT OR UPDATE (FIXED: Added Type_ID to INSERT)
+    $is_edit = (bool)$report_id;
     if ($report_id) {
         // Affected_Area is stored on the report itself, not read from the shared
         // crop row - so each report keeps the area it was filed with and a later
@@ -324,6 +338,15 @@ try {
         }
     }
 
+    // Audit trail - this was never logged, so the Audit Logs "Reports Submitted"
+    // card always read 0. Inside the transaction: rolled back with the report.
+    require_once '../audit/log_action.php';
+    logAction($conn, $farmer_id, $_SESSION['Role'] ?? 'Farmer',
+        $is_edit ? 'Edit Report' : 'Submit Report',
+        ($is_edit ? "Edited damage report #{$report_id}" : "Submitted damage report #{$report_id}") . " ({$damage_type}, {$severity}, {$area} ha)",
+        'Damage Reports'
+    );
+
     $conn->commit();
     if ($skipped_uploads > 0) {
         $success_message .= ' (' . $skipped_uploads . ' photo' . ($skipped_uploads > 1 ? 's' : '') . ' could not be uploaded and were skipped - please check file size and try again if needed.)';
@@ -333,6 +356,13 @@ try {
 } catch (Exception $e) {
     if (isset($conn)) $conn->rollback();
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'Report not found.',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>

@@ -180,6 +180,13 @@ try {
         $stmtNotif->close();
     }
 
+    require_once '../../audit/log_action.php';
+    logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+        $normalized_status === 'Approved by Admin' ? 'Approve Seed Request' : 'Reject Seed Request',
+        "Seed request #{$request_id} (\"{$requested_seed}\") marked as {$normalized_status}" . ($new_crop_id ? " - registered as a new crop" : ''),
+        'Seed Requests'
+    );
+
     $conn->commit();
 
     $response = ['status' => 'success', 'message' => 'Request processed successfully.'];
@@ -191,6 +198,13 @@ try {
 
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'Commodity Type and Growth Duration are required to register a new crop.',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>

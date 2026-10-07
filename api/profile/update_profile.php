@@ -41,6 +41,12 @@ if (!$fullname || !$email) {
     exit;
 }
 
+// Same name rule as registration (api/auth/register.php).
+if (!preg_match("/^[\p{L}][\p{L} .'\-]*$/u", $fullname) || preg_match_all('/\p{L}/u', $fullname) < 2 || mb_strlen($fullname) > 100) {
+    echo json_encode(['status' => 'error', 'message' => "Please enter a valid full name using letters only (spaces, periods, hyphens and apostrophes are allowed)."]);
+    exit;
+}
+
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['status' => 'error', 'message' => 'Invalid email format.']);
     exit;
@@ -188,6 +194,13 @@ try {
     }
 
 } catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'Email is already in use by another account.',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>

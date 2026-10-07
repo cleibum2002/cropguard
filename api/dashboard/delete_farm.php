@@ -38,6 +38,13 @@ try {
         exit;
     }
 
+    require_once '../audit/log_action.php';
+    logAction($conn, $farmer_id, $_SESSION['Role'] ?? 'Farmer',
+        'Archive Farm',
+        "Archived farm #{$location_id}",
+        'Farm Management'
+    );
+
     if (ob_get_length()) ob_clean();
     echo json_encode(['status' => 'success', 'message' => 'Farm archived successfully.']);
 

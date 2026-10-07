@@ -41,6 +41,12 @@ try {
 
     if ($stmt->execute()) {
         if ($stmt->affected_rows > 0) {
+            require_once '../../audit/log_action.php';
+            logAction($conn, $farmer_id, $_SESSION['Role'] ?? 'Farmer',
+                'Delete Report',
+                "Farmer deleted their pending damage report #{$id}",
+                'Damage Reports'
+            );
             echo json_encode(["status" => "success", "message" => "Report has been archived successfully."]);
         } else {
             echo json_encode(["status" => "error", "message" => "This report can't be deleted - it's either not yours or has already been reviewed."]);

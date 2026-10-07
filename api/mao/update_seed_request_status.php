@@ -59,6 +59,13 @@ try {
         if (!$notif->execute()) throw new Exception("Execute failed (notif): " . $notif->error);
         $notif->close();
 
+        require_once '../audit/log_action.php';
+        logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+            'Seeds Ready for Pickup',
+            "Seed request #{$request_id} marked ready for pickup; farmer notified",
+            'Seed Requests'
+        );
+
         $conn->commit();
         echo json_encode(['status' => 'success', 'message' => 'Farmer has been notified and the request is ready for pickup.']);
         exit();
@@ -86,10 +93,24 @@ try {
     if (!$update->execute()) throw new Exception("Execute failed: " . $update->error);
     $update->close();
 
+    require_once '../audit/log_action.php';
+    logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+        'Seeds Claimed',
+        "Seed request #{$request_id} marked as claimed by the farmer",
+        'Seed Requests'
+    );
+
     $conn->commit();
     echo json_encode(['status' => 'success', 'message' => 'The seed request has been marked as claimed.']);
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These explain a stale screen to the MAO; anything else stays generic.
+    $known = [
+        'Seed request not found.',
+        'Only requests approved by the admin can be marked ready for pickup.',
+        'Only requests marked ready for pickup can be claimed.',
+    ];
+    $msg = in_array($e->getMessage(), $known, true) ? $e->getMessage() . ' Please refresh the page.' : safeErrorMessage($e);
+    echo json_encode(['status' => 'error', 'message' => $msg]);
 }
 ?>

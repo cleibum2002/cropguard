@@ -262,9 +262,14 @@
             }).join('');
         }
 
+        // Every word typed must appear in the name or role, in any order, so
+        // "angel farmer" or "sumagang angel" both find Angel Cleo Adajar Sumagang.
         function filterUsers() {
-            const q = document.getElementById('searchUser').value.trim().toLowerCase();
-            renderUsers(allUsers.filter(u => u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)));
+            const words = document.getElementById('searchUser').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+            renderUsers(allUsers.filter(u => {
+                const hay = (u.name + ' | ' + u.role).toLowerCase();
+                return words.every(w => hay.includes(w));
+            }));
         }
 
         function selectUser(id, name, role) {

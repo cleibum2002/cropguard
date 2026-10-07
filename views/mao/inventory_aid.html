@@ -362,6 +362,15 @@
         }
 
         // 5. Search + Filters
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "angel sumagang" finds "Angel Cleo Adajar Sumagang" and "#AID-11" finds AID-11.
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
+        }
+
         function filterTable() {
             const q = document.getElementById("searchInput").value.trim().toLowerCase();
             const statusFilter     = document.getElementById('filterStatus').value;
@@ -388,16 +397,10 @@
             const filtered = aidData.filter(i => {
                 const idStr = (i.report_id || '').toString().toLowerCase();
                 const qtyUnitStr = `${i.quantity} ${i.unit}`.toLowerCase();
-                const matchesSearch = i.farmer_name.toLowerCase().includes(q)
-                    || `aid-${i.dist_id}`.toLowerCase().includes(q)
-                    || `rep-${idStr}`.includes(q)
-                    || idStr.includes(q)
-                    || (i.crop_name || '').toLowerCase().includes(q)
-                    || (i.category || '').toLowerCase().includes(q)
-                    || qtyUnitStr.includes(q)
-                    || (i.admin_name || '').toLowerCase().includes(q)
-                    || aidStatusLabel(i.status).toLowerCase().includes(q)
-                    || (i.status || '').toLowerCase().includes(q);
+                // Every word must appear somewhere; a leading # ("#AID-11") is ignored.
+                const matchesSearch = matchesAllWords(q, [i.farmer_name, `aid-${i.dist_id}`, `rep-${idStr}`, idStr,
+                    i.crop_name, i.category, qtyUnitStr, i.admin_name, aidStatusLabel(i.status), i.status,
+                    i.damage_type, i.barangay_raw]);
                 const matchesStatus      = !statusFilter || i.status === statusFilter;
                 const matchesDamageType  = !damageTypeFilter || i.damage_type === damageTypeFilter;
                 const matchesSeverity    = !severityFilter || i.damage_severity === severityFilter;

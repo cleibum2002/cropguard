@@ -654,7 +654,7 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, t('xl_sheet_name'));
 
-            const filename = `Aid_Distribution_Report_${new Date().toISOString().slice(0,10)}.xlsx`;
+            const filename = `Aid_Distribution_Report_${(d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'))(new Date())}.xlsx`;
             XLSX.writeFile(wb, filename);
         }
 

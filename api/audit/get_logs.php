@@ -38,10 +38,14 @@ try {
         $conditions[] = "DATE(sl.Created_At) <= '$dateTo'";
     }
 
-    // Free-text search — matches against user name, description, action, or IP address
+    // Free-text search — matches against user name, description, action, or IP address.
+    // Each word must match somewhere (in any order), so "angel login" finds Angel's logins.
     if (!empty($_GET['search'])) {
-        $search = $conn->real_escape_string($_GET['search']);
-        $conditions[] = "(u.Fullname LIKE '%$search%' OR sl.Description LIKE '%$search%' OR sl.Action LIKE '%$search%' OR sl.IP_Address LIKE '%$search%')";
+        foreach (preg_split('/\s+/', trim($_GET['search'])) as $word) {
+            if ($word === '') continue;
+            $w = $conn->real_escape_string($word);
+            $conditions[] = "(u.Fullname LIKE '%$w%' OR sl.Description LIKE '%$w%' OR sl.Action LIKE '%$w%' OR sl.IP_Address LIKE '%$w%' OR sl.User_Role LIKE '%$w%' OR sl.Module LIKE '%$w%')";
+        }
     }
 
     $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';

@@ -409,6 +409,15 @@
         let currentLedgerPage = 1;
         let currentFilteredLedger = [];
 
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "rodrigo rc-222" finds Rodrigo's RC-222 report.
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
+        }
+
         function renderLedger() {
             const query          = (document.getElementById('searchInput').value || '').trim().toLowerCase().replace(/^#/, '');
             const statusFilter   = document.getElementById('filterStatus').value;
@@ -416,12 +425,10 @@
             const barangayFilter = document.getElementById('filterBarangay').value;
 
             currentFilteredLedger = allLedgerRows.filter(r => {
-                const matchesSearch   = !query
-                    || (r.farmer_name && r.farmer_name.toLowerCase().includes(query))
-                    || (r.crop_name && r.crop_name.toLowerCase().includes(query))
-                    || (r.barangay && r.barangay.toLowerCase().includes(query))
-                    || `rep-${String(r.id).padStart(3, '0')}`.includes(query)
-                    || String(r.id).includes(query);
+                // Every word must appear somewhere. The ledger shows "#REP-31" unpadded,
+                // so both rep-31 and rep-031 are matched.
+                const matchesSearch   = matchesAllWords(query, [r.farmer_name, r.crop_name, r.barangay, r.status, r.damage_type,
+                    `rep-${r.id}`, `rep-${String(r.id).padStart(3, '0')}`, r.id]);
                 const matchesStatus   = !statusFilter || r.status === statusFilter;
                 const matchesType     = !typeFilter || r.damage_type === typeFilter;
                 const matchesBarangay = !barangayFilter || r.barangay === barangayFilter;

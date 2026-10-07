@@ -310,20 +310,30 @@
             document.getElementById('nextBtn').disabled = end >= filteredFarmers.length;
         }
 
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "angel sumagang" finds "Angel Cleo Adajar Sumagang".
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
+        }
+        // Numbers are stored as +639XXXXXXXXX but typed as 09XX...; compare both as 09...
+        const localPhone = d => d.startsWith('63') ? '0' + d.slice(2) : d;
+
         function filterTable() {
             const q            = document.getElementById('searchInput').value.trim().toLowerCase();
             const rsbsaFilter  = document.getElementById('rsbsaFilter').value;
             const statusFilter = document.getElementById('statusFilter').value;
 
             const qDigits = q.replace(/\D/g, '');
+            const looksNumeric = /^[\d\s+\-()]+$/.test(q);
 
             filteredFarmers = allFarmers.filter(f => {
                 const rsbsaDigits = (f.rsbsa_no || '').replace(/\D/g, '');
-                const matchesSearch = f.fullname.toLowerCase().includes(q) ||
-                    (f.rsbsa_no || '').toLowerCase().includes(q) ||
+                const matchesSearch = matchesAllWords(q, [f.fullname, f.rsbsa_no, f.email, f.contact]) ||
                     (qDigits && rsbsaDigits.includes(qDigits)) ||
-                    (f.email || '').toLowerCase().includes(q) ||
-                    (f.contact || '').toLowerCase().includes(q);
+                    (looksNumeric && qDigits.length >= 3 && localPhone((f.contact || '').replace(/\D/g, '')).includes(localPhone(qDigits)));
 
                 const hasRSBSA    = f.rsbsa_no && f.rsbsa_no.trim() !== '';
                 const validFormat = hasRSBSA && /^\d{3}-\d{4}-\d{5}$/.test(f.rsbsa_no);

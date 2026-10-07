@@ -82,11 +82,28 @@ try {
     $insertCrop->execute();
     $insertCrop->close();
 
+    require_once '../audit/log_action.php';
+    logAction($conn, $farmer_id, $_SESSION['Role'] ?? 'Farmer',
+        'Add Farm',
+        "Added farm #{$new_location_id} ({$crop_name}, {$area} ha)",
+        'Farm Management'
+    );
+
     if (ob_get_length()) ob_clean();
     echo json_encode(['status' => 'success', 'message' => 'Farm location successfully added!']);
 
 } catch (Exception $e) {
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'No data received from the form.',
+        'Session expired. Please login again.',
+        'GPS coordinates are required.',
+        'Invalid GPS coordinates received.',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>
