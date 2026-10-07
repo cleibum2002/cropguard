@@ -69,6 +69,8 @@
                     <option value="User Management" data-i18n="module_user_management">User Management</option>
                     <option value="Crops Masterlist" data-i18n="module_crops_masterlist">Crops Masterlist</option>
                     <option value="Inventory" data-i18n="module_inventory">Inventory</option>
+                    <option value="Seed Requests" data-i18n="module_seed_requests">Seed Requests</option>
+                    <option value="Farm Management" data-i18n="module_farm_management">Farm Management</option>
                 </select>
                 <select id="roleFilter" onchange="loadLogs(1)" class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                     <option value="" data-i18n="filter_all_roles">All Roles</option>
@@ -184,6 +186,11 @@
                 filter_all_modules: "All Modules", module_authentication: "Authentication", module_reports: "Reports",
                 module_damage_reports: "Damage Reports", module_aid_distribution: "Aid Distribution",
                 module_user_management: "User Management", module_crops_masterlist: "Crops Masterlist", module_inventory: "Inventory",
+                module_seed_requests: "Seed Requests", module_farm_management: "Farm Management",
+                action_delete_report: "Delete Report", action_return_tech: "Return to Technician", action_edit_inspection: "Edit Inspection",
+                action_request_seeds: "Request Seeds", action_approve_seed: "Approve Seed Request", action_reject_seed: "Reject Seed Request",
+                action_seeds_ready: "Seeds Ready for Pickup", action_seeds_claimed: "Seeds Claimed",
+                action_add_farm: "Add Farm", action_update_farm: "Update Farm", action_archive_farm: "Archive Farm",
                 action_logout: "Logout", action_failed_login: "Failed Login",
                 action_create_user: "Create User", action_update_user: "Update User", action_deactivate_user: "Deactivate User",
                 action_reject_report: "Reject Report", action_archive_report: "Archive Report", action_assign_technician: "Assign Technician",
@@ -209,6 +216,11 @@
                 filter_all_modules: "Lahat ng Module", module_authentication: "Authentication", module_reports: "Mga Ulat",
                 module_damage_reports: "Mga Ulat ng Pinsala", module_aid_distribution: "Pamamahagi ng Tulong",
                 module_user_management: "Pamamahala ng User", module_crops_masterlist: "Masterlist ng Pananim", module_inventory: "Imbentaryo",
+                module_seed_requests: "Mga Kahilingan sa Binhi", module_farm_management: "Pamamahala ng Sakahan",
+                action_delete_report: "Burahin ang Ulat", action_return_tech: "Ibalik sa Technician", action_edit_inspection: "I-edit ang Inspeksyon",
+                action_request_seeds: "Humiling ng Binhi", action_approve_seed: "Aprubahan ang Kahilingan", action_reject_seed: "Tanggihan ang Kahilingan",
+                action_seeds_ready: "Handa nang Kunin ang Binhi", action_seeds_claimed: "Nakuha na ang Binhi",
+                action_add_farm: "Magdagdag ng Sakahan", action_update_farm: "I-update ang Sakahan", action_archive_farm: "I-archive ang Sakahan",
                 action_logout: "Logout", action_failed_login: "Bigong Pag-login",
                 action_create_user: "Gumawa ng User", action_update_user: "I-update ang User", action_deactivate_user: "I-deactivate ang User",
                 action_reject_report: "Tanggihan ang Ulat", action_archive_report: "I-archive ang Ulat", action_assign_technician: "Magtalaga ng Technician",
@@ -241,7 +253,11 @@
                 'Create User': 'action_create_user', 'Update User': 'action_update_user', 'Deactivate User': 'action_deactivate_user',
                 'Reject Report': 'action_reject_report', 'Archive Report': 'action_archive_report', 'Assign Technician': 'action_assign_technician',
                 'Add Crop': 'action_add_crop', 'Update Crop': 'action_update_crop', 'Remove Crop': 'action_remove_crop',
-                'Add Item': 'action_add_item', 'Update Item': 'action_update_item', 'Deactivate Item': 'action_deactivate_item'
+                'Add Item': 'action_add_item', 'Update Item': 'action_update_item', 'Deactivate Item': 'action_deactivate_item',
+                'Delete Report': 'action_delete_report', 'Return to Technician': 'action_return_tech', 'Edit Inspection': 'action_edit_inspection',
+                'Request Seeds': 'action_request_seeds', 'Approve Seed Request': 'action_approve_seed', 'Reject Seed Request': 'action_reject_seed',
+                'Seeds Ready for Pickup': 'action_seeds_ready', 'Seeds Claimed': 'action_seeds_claimed',
+                'Add Farm': 'action_add_farm', 'Update Farm': 'action_update_farm', 'Archive Farm': 'action_archive_farm'
             };
             return map[action] ? t(map[action]) : action;
         }
@@ -365,6 +381,18 @@
                 'Assign Technician': 'bg-teal-100 text-teal-700',
                 'Update Item':     'bg-amber-100 text-amber-700',
                 'Update Crop':     'bg-amber-100 text-amber-700',
+                'Delete Report':   'bg-red-100 text-red-700',
+                'Archive Report':  'bg-gray-200 text-gray-700',
+                'Return to Technician': 'bg-amber-100 text-amber-700',
+                'Edit Inspection': 'bg-amber-100 text-amber-700',
+                'Request Seeds':   'bg-green-100 text-green-700',
+                'Approve Seed Request': 'bg-green-100 text-green-700',
+                'Reject Seed Request':  'bg-red-100 text-red-700',
+                'Seeds Ready for Pickup': 'bg-purple-100 text-purple-700',
+                'Seeds Claimed':   'bg-indigo-100 text-indigo-700',
+                'Add Farm':        'bg-green-100 text-green-700',
+                'Update Farm':     'bg-amber-100 text-amber-700',
+                'Archive Farm':    'bg-gray-200 text-gray-700',
             };
 
             // Every value is escaped: descriptions carry names typed by users and

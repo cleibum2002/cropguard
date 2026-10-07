@@ -487,16 +487,21 @@
             return 'Rejected';
         }
 
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "angel monggo" finds Angel's Monggo request.
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
+        }
+
         function filterTable() {
             const q = document.getElementById("searchInput").value.trim().toLowerCase().replace(/^#/, '');
             const statusFilter = document.getElementById("statusFilter").value;
             filteredData = allData.filter(i => {
-                const matchText = (i.Farmer_Name    && i.Farmer_Name.toLowerCase().includes(q))
-                    || (i.Requested_Seed && i.Requested_Seed.toLowerCase().includes(q))
-                    || (i.Description   && i.Description.toLowerCase().includes(q))
-                    || seedReqStatusLabel(i.Status).toLowerCase().includes(q)
-                    || `req-${String(i.Request_ID).padStart(3, '0')}`.includes(q)
-                    || String(i.Request_ID).includes(q);
+                const matchText = matchesAllWords(q, [i.Farmer_Name, i.Requested_Seed, i.Description, seedReqStatusLabel(i.Status), i.Status,
+                    `req-${String(i.Request_ID).padStart(3, '0')}`, `req-${i.Request_ID}`, i.Request_ID]);
                 const matchStatus = (statusFilter === "ALL") || (seedReqStatusBucket(i.Status) === statusFilter);
                 return matchText && matchStatus;
             });

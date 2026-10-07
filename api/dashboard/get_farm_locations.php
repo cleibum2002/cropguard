@@ -46,6 +46,13 @@ try {
 
 } catch (Exception $e) {
     if (ob_get_length()) ob_clean();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'Unauthorized. Please log in.',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>

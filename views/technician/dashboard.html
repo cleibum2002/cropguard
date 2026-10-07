@@ -598,15 +598,21 @@
         if (barangays.includes(current)) select.value = current;
     }
 
+    // Every word typed must appear somewhere in the record, in any order. Spaces
+    // and a leading # are ignored, so "#REP-206" and "ernesto pioneer" both work.
+    function matchesAllWords(query, fields) {
+        const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+        if (!words.length) return true;
+        const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+        return words.every(w => hay.includes(w));
+    }
+
     function filterAssignments() {
         const q = (document.getElementById('assignSearchInput').value || '').toLowerCase();
         const brgy = document.getElementById('assignBarangayFilter').value;
 
         const filtered = allAssignments.filter(a => {
-            const matchesSearch = !q ||
-                (a.farmer_name && a.farmer_name.toLowerCase().includes(q)) ||
-                (a.crop_name && a.crop_name.toLowerCase().includes(q)) ||
-                `rep-${a.id}`.includes(q) || String(a.id).includes(q);
+            const matchesSearch = matchesAllWords(q, [a.farmer_name, a.crop_name, a.barangay, a.damage_type, `rep-${a.id}`, a.id]);
             const matchesBarangay = brgy === 'ALL' || a.barangay === brgy;
             return matchesSearch && matchesBarangay;
         });
@@ -660,10 +666,7 @@
     function filterCompleted() {
         const q = (document.getElementById('completedSearchInput').value || '').toLowerCase();
         filteredCompletedData = completedData.filter(c =>
-            !q ||
-            (c.farmer_name && c.farmer_name.toLowerCase().includes(q)) ||
-            (c.crop_name && c.crop_name.toLowerCase().includes(q)) ||
-            `rep-${c.id}`.includes(q) || String(c.id).includes(q)
+            matchesAllWords(q, [c.farmer_name, c.crop_name, c.status, c.final_severity, `rep-${c.id}`, c.id])
         );
         completedPage = 1;
         renderCompletedPage();

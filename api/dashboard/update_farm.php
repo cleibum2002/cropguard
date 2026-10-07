@@ -82,6 +82,13 @@ try {
     $updateCrop->execute();
     $updateCrop->close();
 
+    require_once '../audit/log_action.php';
+    logAction($conn, $farmer_id, $_SESSION['Role'] ?? 'Farmer',
+        'Update Farm',
+        "Updated farm #{$location_id} ({$crop_name}, {$area} ha)",
+        'Farm Management'
+    );
+
     if (ob_get_length()) ob_clean();
     echo json_encode(['status' => 'success', 'message' => 'Farm updated successfully!']);
 

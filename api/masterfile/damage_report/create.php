@@ -54,6 +54,18 @@ try {
             exit;
         }
         $planting_date = !empty($data->planting_date) ? $data->planting_date : null;
+        // A crop can't have been planted in the future (same rule as submit_report.php).
+        if ($planting_date !== null) {
+            $pd = DateTime::createFromFormat('Y-m-d', $planting_date);
+            if (!$pd || $pd->format('Y-m-d') !== $planting_date) {
+                echo json_encode(["status" => "error", "message" => "Please enter a valid planting date."]);
+                exit;
+            }
+            if ($planting_date > date('Y-m-d')) {
+                echo json_encode(["status" => "error", "message" => "The planting date cannot be in the future."]);
+                exit;
+            }
+        }
         $farmer_id = (int)$data->farmer_id;
 
         // The walk-in dropdown lists farmers, but the request could name any id,
@@ -100,6 +112,13 @@ try {
         $stmtReport->bind_param("iidssssi", $farmer_id, $crop_id, $area, $data->damage_type, $data->severity, $data->severity, $data->description, $validated_by);
         
         if ($stmtReport->execute()) {
+            $new_report_id = $conn->insert_id;
+            require_once '../../audit/log_action.php';
+            logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
+                'Submit Report',
+                "Walk-in damage report #{$new_report_id} entered for farmer #{$farmer_id} ({$data->damage_type}, {$data->severity}, {$area} ha)",
+                'Damage Reports'
+            );
             echo json_encode(["status" => "success", "message" => "Damage Report successfully submitted."]);
         } else {
             echo json_encode(["status" => "error", "message" => "Failed to submit report."]);

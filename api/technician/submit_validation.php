@@ -148,7 +148,15 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
 
     } catch (Exception $e) {
         $conn->rollback();
-        echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+        // These reasons are written for the user and are safe to show;
+        // anything else (a database error) still stays generic.
+        $known = [
+            'Report not found or not assigned to you.',
+            'This report is no longer awaiting your inspection',
+        ];
+        $isKnown = false;
+        foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+        echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
     }
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Required fields missing.']);

@@ -73,6 +73,13 @@ try {
 
 } catch (Exception $e) {
     $conn->rollback();
-    echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'Record not found or already claimed.',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(['status' => 'error', 'message' => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>

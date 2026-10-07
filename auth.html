@@ -539,6 +539,13 @@
         
         const msgBox = document.getElementById('regMsg');
 
+        const cleanName = name.trim();
+        if (!/^\p{L}[\p{L} .'\-]*$/u.test(cleanName) || (cleanName.match(/\p{L}/gu) || []).length < 2 || cleanName.length > 100) {
+            msgBox.className = 'msg-box error';
+            msgBox.innerText = 'Please enter a valid full name using letters only (spaces, periods, hyphens and apostrophes are allowed).';
+            return;
+        }
+
         if (pass !== passConfirm) {
             msgBox.className = 'msg-box error';
             msgBox.innerText = "Passwords do not match!";

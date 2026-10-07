@@ -57,6 +57,13 @@ try {
         $stmt_admin_notif->execute();
         $stmt_admin_notif->close();
 
+        require_once '../audit/log_action.php';
+        logAction($conn, $farmer_id, $_SESSION['Role'] ?? 'Farmer',
+            'Request Seeds',
+            "Seed request #{$new_request_id} filed for \"{$requested_seed}\"",
+            'Seed Requests'
+        );
+
         echo json_encode(['status' => 'success', 'message' => 'Your request has been submitted to the DA.']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Failed to submit request.']);

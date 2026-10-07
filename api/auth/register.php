@@ -87,6 +87,12 @@ try {
         echo json_encode(['status' => 'error', 'message' => 'Please enter your full name.']);
         exit;
     }
+    // Letters (including ñ and accents), spaces, and . - ' only - so a typo'd
+    // phone number or random symbols can't become a farmer's name.
+    if (!preg_match("/^[\p{L}][\p{L} .'\-]*$/u", $name) || preg_match_all('/\p{L}/u', $name) < 2 || mb_strlen($name) > 100) {
+        echo json_encode(['status' => 'error', 'message' => "Please enter a valid full name using letters only (spaces, periods, hyphens and apostrophes are allowed)."]);
+        exit;
+    }
     // Stored in the normalized 09XXXXXXXXX form so the column stays consistent
     // regardless of how the farmer originally typed it.
     $contact = $normalized_contact;

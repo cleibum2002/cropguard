@@ -476,7 +476,8 @@
                 sw_are_you_sure: "Are you sure?", sw_status_confirm_text: "You are about to {action} this report.",
                 sw_action_reject: "reject", sw_action_validate: "validate", sw_yes: "Yes",
                 sw_success_title: "Success!", sw_status_updated_text: "Report updated to {status}", sw_update_failed: "Update failed",
-                sw_archive_title: "Archive?", sw_archive_text: "You can revert this in the Archive list.",
+                sw_archive_title: "Archive?", sw_archive_text: "The report moves to the Archive list (View Archive), where it can still be viewed. Archiving cannot be undone.",
+                sw_archived_done_text: "The report was moved to the Archive.",
                 placeholder_select_farmer: "-- Select Farmer --", no_farmers_found: "No farmers found", failed_load_farmers: "Failed to load farmers",
                 sw_missing_fields_title: "Missing Fields", sw_missing_fields_text: "Farmer, crop name, damage type, and severity are required.",
                 sw_invalid_date_title2: "Invalid Date Range", sw_invalid_date_text2: "The 'From' date can't be after the 'To' date. Filter cleared.",
@@ -558,7 +559,8 @@
                 sw_are_you_sure: "Sigurado ka ba?", sw_status_confirm_text: "Ikaw ay {action} ang ulat na ito.",
                 sw_action_reject: "tatanggihan", sw_action_validate: "pagpapatunayan", sw_yes: "Oo",
                 sw_success_title: "Tagumpay!", sw_status_updated_text: "Na-update ang ulat sa {status}", sw_update_failed: "Nabigo ang pag-update",
-                sw_archive_title: "I-archive?", sw_archive_text: "Maaari mo itong ibalik sa listahan ng Archive.",
+                sw_archive_title: "I-archive?", sw_archive_text: "Malilipat ang ulat sa listahan ng Archive (Tingnan ang Archive), kung saan makikita pa rin ito. Hindi na maibabalik ang pag-archive.",
+                sw_archived_done_text: "Nailipat na ang ulat sa Archive.",
                 placeholder_select_farmer: "-- Pumili ng Magsasaka --", no_farmers_found: "Walang nahanap na magsasaka", failed_load_farmers: "Nabigong i-load ang mga magsasaka",
                 sw_missing_fields_title: "Kulang na Detalye", sw_missing_fields_text: "Kinakailangan ang magsasaka, pangalan ng pananim, uri ng pinsala, at kalubhaan.",
                 sw_invalid_date_title2: "Maling Saklaw ng Petsa", sw_invalid_date_text2: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
@@ -1094,19 +1096,16 @@
             .then(async (result) => {
                 if (result.isConfirmed) {
                     try {
-                        let allSuccess = true;
-                        for (const alloc of allocations) {
-                            const res  = await fetch("../../api/masterfile/damage_report/approve_with_aid.php", {
-                                method: "POST", headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ report_id: reportId, item_id: alloc.item_id, category: alloc.category, quantity: alloc.quantity, unit: alloc.unit })
-                            });
-                            const data = await res.json();
-                            if (data.status !== 'success') {
-                                allSuccess = false;
-                                Swal.fire(t('sw_error_title'), `${alloc.category}: ${data.message}`, 'error');
-                                break;
-                            }
-                        }
+                        // All items in ONE request, saved together. Sending one request
+                        // per item approved the report on the first and refused every
+                        // later item ("can no longer be approved").
+                        const res  = await fetch("../../api/masterfile/damage_report/approve_with_aid.php", {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ report_id: reportId, allocations })
+                        });
+                        const data = await res.json();
+                        const allSuccess = data.status === 'success';
+                        if (!allSuccess) Swal.fire(t('sw_error_title'), data.message, 'error');
                         if (allSuccess) {
                             Swal.fire(t('sw_approved_title'), t('sw_approved_text'), 'success'); 
                             closeReviewModal(); 
@@ -1170,8 +1169,25 @@
         function deleteItem(id) {
             Swal.fire({ title: t('sw_archive_title'), text: t('sw_archive_text'), icon: 'warning', showCancelButton: true })
                 .then(r => {
-                    if (r.isConfirmed) fetch(API_URL + "update_status.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: 'Archived' }) }).then(() => { loadTable(); });
+                    if (r.isConfirmed) fetch(API_URL + "update_status.php", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: 'Archived' }) })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.status === 'success') Swal.fire({ title: t('sw_success_title'), text: t('sw_archived_done_text'), icon: 'success', timer: 1500, showConfirmButton: false });
+                            else Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
+                            loadTable();
+                        })
+                        .catch(() => Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'));
                 });
+        }
+
+        // Every word typed must appear somewhere in the record, in any order, so
+        // "angel sumagang" finds "Angel Cleo Adajar Sumagang" and "REP-38" / "#REP-38"
+        // / "38" all find report 38 (the label shows it unpadded, as #REP-38).
+        function matchesAllWords(query, fields) {
+            const words = String(query || '').toLowerCase().replace(/#/g, ' ').split(/\s+/).filter(Boolean);
+            if (!words.length) return true;
+            const hay = fields.filter(v => v !== null && v !== undefined && v !== '').map(v => String(v).toLowerCase()).join(' | ');
+            return words.every(w => hay.includes(w));
         }
 
         function filterTable() {
@@ -1197,7 +1213,8 @@
             }
 
             filteredData = allData.filter(i => {
-                const matchesSearch = !q || (i.farmer && i.farmer.toLowerCase().includes(q)) || (i.crop_name && i.crop_name.toLowerCase().includes(q)) || (i.status && i.status.toLowerCase().includes(q)) || `rep-${String(i.id).padStart(3, '0')}`.includes(q) || String(i.id).includes(q);
+                const matchesSearch = matchesAllWords(q, [i.farmer, i.crop_name, i.status, reportStatusLabel(i.status), i.damage_type, i.severity, i.barangay_raw,
+                    `rep-${i.id}`, `rep-${String(i.id).padStart(3, '0')}`, i.id]);
                 const matchesStatus = !statusFilter || i.status === statusFilter;
                 const matchesType   = !damageTypeFilter || i.damage_type === damageTypeFilter;
                 const matchesSev    = !severityFilter || i.severity === severityFilter;
@@ -1227,6 +1244,9 @@
             document.getElementById('walkinTypeId').value         = '';
             document.getElementById('walkinArea').value           = '';
             document.getElementById('walkinPlantingDate').value   = '';
+            // A crop can't have been planted in the future (the server checks too).
+            const today = new Date();
+            document.getElementById('walkinPlantingDate').max = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
             document.getElementById('walkinDamageType').value     = '';
             document.getElementById('walkinSeverity').value       = '';
             document.getElementById('walkinDescription').value    = '';

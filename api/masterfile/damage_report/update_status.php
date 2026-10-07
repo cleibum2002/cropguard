@@ -108,6 +108,14 @@ try {
     }
 } catch (Throwable $e) {
     if(isset($conn)) $conn->rollback();
-    echo json_encode(["status" => "error", "message" => safeErrorMessage($e)]);
+    // These reasons are written for the user and are safe to show;
+    // anything else (a database error) still stays generic.
+    $known = [
+        'Farmer not found for this report.',
+        'This report can no longer be changed to',
+    ];
+    $isKnown = false;
+    foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
+    echo json_encode(["status" => "error", "message" => $isKnown ? $e->getMessage() : safeErrorMessage($e)]);
 }
 ?>
