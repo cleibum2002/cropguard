@@ -140,7 +140,10 @@
 
                     <!-- Live Activity Feed -->
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col">
-                        <h4 class="text-sm font-black text-gray-800 mb-6" data-i18n="activity_title">Recent Reports</h4>
+                        <div class="flex items-center justify-between gap-3 mb-6">
+                            <h4 class="text-sm font-black text-gray-800" data-i18n="activity_title">Recent Reports</h4>
+                            <a href="report_management.html?tab=all" class="flex items-center gap-1 -my-2 py-2 text-xs font-bold text-[#11542e] hover:underline whitespace-nowrap"><span data-i18n="view_all">View all</span> <i class="fa-solid fa-arrow-right text-[10px]"></i></a>
+                        </div>
                         <div id="recentActivityList" class="flex-1 flex flex-col gap-4 overflow-y-auto">
                             <p class="text-xs text-gray-400 italic text-center py-10" data-i18n="loading_activity">Loading activity...</p>
                         </div>
@@ -169,7 +172,7 @@
                 action_mark_claimed: "Mark as Claimed", action_notify_farmer: "Notify Farmer for Pickup",
                 btn_pin_view: "Pin View", btn_region_view: "Region View",
                 map_mode_pin: "Damage Density Map", map_mode_region: "Barangay Severity Map (Balingasag)",
-                activity_title: "Recent Reports", loading_activity: "Loading activity...", no_reports_available: "No reports available.",
+                activity_title: "Recent Reports", view_all: "View all", loading_activity: "Loading activity...", no_reports_available: "No reports available.",
                 popup_damage_report: "Damage Report", popup_intensity: "Intensity",
                 popup_brgy: "Brgy.", popup_reports: "Reports", popup_avg_severity: "Avg. Severity", popup_no_reports: "No reports on file",
                 sw_continue_title: "Continue?", sw_label_mark_claimed: "mark as claimed", sw_label_notify_farmer: "notify the farmer",
@@ -194,7 +197,7 @@
                 action_mark_claimed: "Markahan bilang Na-claim", action_notify_farmer: "Abisuhan ang Magsasaka",
                 btn_pin_view: "Pin View", btn_region_view: "Region View",
                 map_mode_pin: "Mapa ng Density ng Pinsala", map_mode_region: "Mapa ng Kalubhaan ng Barangay (Balingasag)",
-                activity_title: "Mga Kamakailang Ulat", loading_activity: "Nilo-load ang aktibidad...", no_reports_available: "Walang available na ulat.",
+                activity_title: "Mga Kamakailang Ulat", view_all: "Tingnan lahat", loading_activity: "Nilo-load ang aktibidad...", no_reports_available: "Walang available na ulat.",
                 popup_damage_report: "Ulat ng Pinsala", popup_intensity: "Intensity",
                 popup_brgy: "Brgy.", popup_reports: "Mga Ulat", popup_avg_severity: "Avg. Kalubhaan", popup_no_reports: "Walang naitalang ulat",
                 sw_continue_title: "Magpatuloy?", sw_label_mark_claimed: "markahan bilang na-claim na", sw_label_notify_farmer: "abisuhan ang magsasaka",

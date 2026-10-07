@@ -263,6 +263,8 @@
         if (deepLinkId) {
             setTab('All'); // make sure the report is visible regardless of its current status
             viewReport(parseInt(deepLinkId, 10));
+        } else if (new URLSearchParams(window.location.search).get('tab') === 'all') {
+            setTab('All'); // the Dashboard's "View all" link under Recent Reports
         }
 
         // Attached here instead of relying solely on the inline oninput="filterReports()"
