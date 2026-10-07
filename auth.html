@@ -130,12 +130,12 @@
         }
         .brand { position: relative; z-index: 1; }
         .logo-ring {
-            width: 92px; height: 92px; margin-bottom: 28px;
+            width: 128px; height: 128px; margin-bottom: 24px;
             display: flex; align-items: center; justify-content: center;
         }
         /* The seal has its own white face and ring, so it stands on its own -
            no extra circle, glow or shadow behind it. */
-        .logo-img { width: 92px; height: 92px; background: url('assets/images/DA.svg?v=1') no-repeat center; background-size: contain; }
+        .logo-img { width: 128px; height: 128px; background: url('assets/images/DA.svg?v=1') no-repeat center; background-size: contain; }
         .brand-eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--yellow); margin-bottom: 8px; }
         .brand-name { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; }
         .brand-tagline { margin-top: 8px; font-size: 0.98rem; color: rgba(255, 255, 255, 0.78); }
@@ -195,7 +195,7 @@
         .btn-submit:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--green-soft); }
 
         .toggle-link { text-align: center; margin-top: 18px; font-size: 0.88rem; color: var(--muted); }
-        .toggle-link a { color: var(--green); font-weight: 700; text-decoration: none; cursor: pointer; }
+        .toggle-link a { color: var(--green); font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; }
         .toggle-link a:hover { text-decoration: underline; }
         .toggle-link + .toggle-link { margin-top: 10px; }
 
@@ -239,8 +239,8 @@
             .left-panel { flex: none; padding: 0 0 22px; color: var(--ink); background: none; align-items: center; text-align: center; }
             .left-panel::after, .brand-points, .brand-foot { display: none; }
             .brand { display: flex; flex-direction: column; align-items: center; }
-            .logo-ring { width: 76px; height: 76px; margin-bottom: 14px; }
-            .logo-img { width: 76px; height: 76px; }
+            .logo-ring { width: 96px; height: 96px; margin-bottom: 14px; }
+            .logo-img { width: 96px; height: 96px; }
             .brand-eyebrow { color: var(--green); margin-bottom: 4px; font-size: 0.66rem; }
             .brand-name { font-size: 1.6rem; color: var(--green); }
             .brand-tagline { margin-top: 4px; font-size: 0.88rem; color: var(--muted); }
