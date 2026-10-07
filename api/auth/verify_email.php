@@ -21,7 +21,7 @@ function showResultPage($success, $message) {
             <div class='icon'>$icon</div>
             <h2>" . ($success ? 'Email Verified!' : 'Verification Failed') . "</h2>
             <p>$message</p>
-            <a href='../../auth.html'>Go to Login</a>
+            <a href='../../'>Go to Login</a>
         </div>
     </body></html>";
     exit;
