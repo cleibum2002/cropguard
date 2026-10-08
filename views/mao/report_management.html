@@ -178,7 +178,7 @@
             sw_error_title: "Error", sw_invalid_id: "Invalid Report ID. Cannot update.",
             sw_confirm_validation_title: "Confirm Validation?", sw_reject_title: "Reject Report?",
             sw_validation_text: "The Admin will be notified to assign a technician.",
-            sw_reject_text: "This will permanently close the report.", sw_yes_confirm: "Yes, Confirm",
+            sw_reject_text: "This will permanently close the report.", sw_reject_reason_label: "Reason (optional) - the farmer will see this", sw_reject_reason_placeholder: "e.g. The photos do not show crop damage. Please visit the MAO office.", sw_yes_confirm: "Yes, Confirm",
             sw_updated_title: "Updated!", sw_updated_text: "Workflow updated successfully.",
             sw_update_failed: "Update failed", sw_server_error: "Server failed to respond",
             sw_invalid_date_title: "Invalid Date Range", sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
@@ -222,7 +222,7 @@
             sw_error_title: "Error", sw_invalid_id: "Hindi wastong Report ID. Hindi maaaring i-update.",
             sw_confirm_validation_title: "Kumpirmahin ang Pagpapatunay?", sw_reject_title: "Tanggihan ang Ulat?",
             sw_validation_text: "Aabisuhan ang Admin para mag-assign ng technician.",
-            sw_reject_text: "Permanenteng isasara nito ang ulat.", sw_yes_confirm: "Oo, Kumpirmahin",
+            sw_reject_text: "Permanenteng isasara nito ang ulat.", sw_reject_reason_label: "Dahilan (opsyonal) - makikita ito ng magsasaka", sw_reject_reason_placeholder: "hal. Walang makitang pinsala sa pananim sa mga larawan. Pumunta po sa opisina ng MAO.", sw_yes_confirm: "Oo, Kumpirmahin",
             sw_updated_title: "Na-update!", sw_updated_text: "Matagumpay na na-update ang workflow.",
             sw_update_failed: "Nabigo ang pag-update", sw_server_error: "Hindi tumugon ang server",
             sw_invalid_date_title: "Maling Saklaw ng Petsa", sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
@@ -785,6 +785,12 @@
             title: status === 'Validated' ? t('sw_confirm_validation_title') : t('sw_reject_title'),
             text: status === 'Validated' ? t('sw_validation_text') : t('sw_reject_text'),
             icon: 'question',
+            // Rejecting can carry an optional reason; it goes into the
+            // farmer's notification and the audit log (no schema change).
+            input: status === 'Rejected' ? 'textarea' : undefined,
+            inputLabel: status === 'Rejected' ? t('sw_reject_reason_label') : undefined,
+            inputPlaceholder: status === 'Rejected' ? t('sw_reject_reason_placeholder') : undefined,
+            inputAttributes: status === 'Rejected' ? { maxlength: 300 } : undefined,
             showCancelButton: true,
             confirmButtonColor: status === 'Rejected' ? '#d33' : '#11542e',
             confirmButtonText: t('sw_yes_confirm')
@@ -793,7 +799,7 @@
                 fetch('../../api/masterfile/damage_report/update_status.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, status: status })
+                    body: JSON.stringify({ id: id, status: status, reason: status === 'Rejected' ? (res.value || '') : '' })
                 })
                 .then(r => r.json())
                 .then(data => {
