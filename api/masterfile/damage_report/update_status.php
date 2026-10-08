@@ -34,10 +34,12 @@ try {
         $conn->begin_transaction();
 
         // 1. Find the farmer
-        $findFarmer = $conn->prepare("SELECT Farmer_ID FROM damage_report WHERE Damage_Report_ID = ?");
+        //    (and the current status, so an archive can record what it was -
+        //    restore.php reads that back to undo the archive)
+        $findFarmer = $conn->prepare("SELECT Farmer_ID, Status FROM damage_report WHERE Damage_Report_ID = ? FOR UPDATE");
         $findFarmer->bind_param("i", $data->id);
         $findFarmer->execute();
-        $findFarmer->bind_result($farmer_id);
+        $findFarmer->bind_result($farmer_id, $old_status);
         $findFarmer->fetch();
         $findFarmer->close();
 
@@ -72,14 +74,24 @@ try {
             throw new Exception("This report can no longer be changed to {$data->status} - its status has already moved on. Please refresh.");
         }
 
+        // Optional reason the MAO typed when rejecting. Plain text only, kept
+        // short; it goes to the farmer's notification and the audit log.
+        $reason = '';
+        if ($data->status === 'Rejected' && isset($data->reason)) {
+            $reason = trim(preg_replace('/\s+/', ' ', strip_tags((string)$data->reason)));
+            if (mb_strlen($reason) > 300) $reason = mb_substr($reason, 0, 300);
+        }
+
         // 3. SEND NOTIFICATION
         $msg = "Update: Your Damage Report #REP-{$data->id} is now marked as {$data->status}.";
-        
+
         // Custom message for specific statuses
         if ($data->status === 'Approved') {
             $msg = "Great news! Your Damage Report #REP-{$data->id} has been Approved. Check your assistance ledger for details.";
         } elseif ($data->status === 'Rejected') {
-            $msg = "Notice: Your Damage Report #REP-{$data->id} was not approved. Please contact the MAO office for clarification.";
+            $msg = $reason !== ''
+                ? "Notice: Your Damage Report #REP-{$data->id} was not approved. Reason: {$reason}"
+                : "Notice: Your Damage Report #REP-{$data->id} was not approved. Please contact the MAO office for clarification.";
         }
 
         // Redirect_URL points to the farmer dashboard, where "My Recent Reports"
@@ -97,7 +109,9 @@ try {
         require_once '../../audit/log_action.php';
         logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
             $actionNames[$data->status],
-            "Report #{$data->id} marked as {$data->status}",
+            "Report #{$data->id} marked as {$data->status}"
+                . ($data->status === 'Archived' && $old_status ? " (was {$old_status})" : '')
+                . ($reason !== '' ? ": {$reason}" : ''),
             'Damage Reports'
         );
 
