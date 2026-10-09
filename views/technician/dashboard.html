@@ -666,7 +666,9 @@
     function filterCompleted() {
         const q = (document.getElementById('completedSearchInput').value || '').toLowerCase();
         filteredCompletedData = completedData.filter(c =>
-            matchesAllWords(q, [c.farmer_name, c.crop_name, c.status, c.final_severity, `rep-${c.id}`, c.id])
+            // current_status / severity are the names get_dashboard.php actually sends
+            // (status / final_severity never existed, so those words never matched).
+            matchesAllWords(q, [c.farmer_name, c.crop_name, c.current_status, completedStatusBadge(c.current_status).label, c.severity, c.Damage_Type, c.barangay, `rep-${c.id}`, c.id])
         );
         completedPage = 1;
         renderCompletedPage();
