@@ -81,7 +81,10 @@ try {
               LEFT JOIN crop          c  ON dr.Crop_ID     = c.Crop_ID
               WHERE dr.Technician_ID = ?
                 AND dr.Status IN ('Inspected', 'Approved', 'Rejected')
-              ORDER BY dr.Report_Date DESC";
+              ORDER BY dr.Last_Updated DESC, dr.Damage_Report_ID DESC";
+    // Most recent activity first, same as the Admin's Damage Reports table: a
+    // months-old report the technician just inspected goes to the top instead
+    // of being buried under newer filings (it used to sort by Report_Date).
 
     $stmt = $conn->prepare($qComp);
     $stmt->bind_param("i", $tech_id);
