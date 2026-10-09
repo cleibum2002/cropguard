@@ -312,14 +312,8 @@ try {
 
         for ($i = 0; $i < count($_FILES['images']['name']); $i++) {
             if ($_FILES['images']['error'][$i] === UPLOAD_ERR_OK) {
-                // Decide by what the file really is, not by the end of its name: a JPEG
-                // saved as "photo.jpe" (or with no extension) was silently skipped while
-                // the offline queue, which renames files to .jpg, accepted the same photo.
-                // Anything that isn't a real JPEG/PNG is still refused, and the saved name
-                // always uses the real type.
-                $img_info = @getimagesize($_FILES['images']['tmp_name'][$i]);
-                $file_ext = $img_info ? ([IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png'][$img_info[2]] ?? null) : null;
-                $isValidImage = $file_ext !== null;
+                $file_ext = strtolower(pathinfo($_FILES['images']['name'][$i], PATHINFO_EXTENSION));
+                $isValidImage = in_array($file_ext, ['jpg', 'jpeg', 'png']) && (getimagesize($_FILES['images']['tmp_name'][$i]) !== false);
                 if ($isValidImage) {
                     $new_file_name = 'rep_' . $report_id . '_' . uniqid() . '.' . $file_ext;
                     if (move_uploaded_file($_FILES['images']['tmp_name'][$i], $upload_dir . $new_file_name)) {
