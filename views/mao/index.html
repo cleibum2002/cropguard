@@ -158,6 +158,7 @@
         // English and Tagalog - no Cebuano, unlike the Farmer side.
         const translations = {
             en: {
+                sw_signout_title: "Sign Out?", sw_signout_text: "You will be returned to the login screen.", sw_yes_signout: "Yes, sign out",
                 nav_profile: "My Profile", nav_dashboard: "MAO Dashboard", nav_reports: "Report Management",
                 nav_inventory: "Inventory & Aid", nav_analytics: "Distribution Reports", nav_comm: "Communication",
                 sidebar_role: "MAO Officer",
@@ -183,6 +184,7 @@
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet."
             },
             tl: {
+                sw_signout_title: "Mag-sign Out?", sw_signout_text: "Ibabalik ka sa login screen.", sw_yes_signout: "Oo, mag-sign out",
                 nav_profile: "Aking Profile", nav_dashboard: "Dashboard ng MAO", nav_reports: "Pamamahala ng Ulat",
                 nav_inventory: "Imbentaryo at Tulong", nav_analytics: "Ulat ng Pamamahagi", nav_comm: "Komunikasyon",
                 sidebar_role: "Opisyal ng MAO",
@@ -597,7 +599,16 @@ const cropGuardMarkerIcon = L.divIcon({
         // The idle timeout lives in session_guard.js now.
 
         function confirmLogout() {
-            CropGuardSession.logout();
+            Swal.fire({
+                title: t('sw_signout_title'),
+                text: t('sw_signout_text'),
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                confirmButtonText: t('sw_yes_signout')
+            }).then(r => {
+                if (r.isConfirmed) CropGuardSession.logout();
+            });
         }
     </script>
 
