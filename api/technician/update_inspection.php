@@ -88,9 +88,10 @@ try {
             $fileError = $_FILES['evidencePhotos']['error'][$i];
 
             if ($fileError === 0) {
-                $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                $allowedExtensions = ['jpg', 'jpeg', 'png'];
-                $isValidImage = in_array($fileExtension, $allowedExtensions) && (getimagesize($tmpName) !== false);
+                // By the file's real type, not its name (see submit_validation.php).
+                $imgInfo = @getimagesize($tmpName);
+                $fileExtension = $imgInfo ? ([IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png'][$imgInfo[2]] ?? null) : null;
+                $isValidImage = $fileExtension !== null;
 
                 if ($isValidImage) {
                     $newFileName = uniqid('evd_' . $report_id . '_') . '.' . $fileExtension;
