@@ -288,13 +288,16 @@
         function drawTrendChart(monthData) {
             const ctx = document.getElementById('trendChart').getContext('2d');
             if (trendChartInstance) trendChartInstance.destroy();
+            // Stop at the current month: months that haven't happened yet would
+            // plot as 0 and make the line look like damage is dropping.
+            const upTo = new Date().getMonth() + 1;
             trendChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: Object.keys(monthData),
+                    labels: Object.keys(monthData).slice(0, upTo),
                     datasets: [{
                         label: t('label_reported_incidents'),
-                        data: Object.values(monthData),
+                        data: Object.values(monthData).slice(0, upTo),
                         borderColor: '#f59e0b',
                         backgroundColor: 'rgba(245, 158, 11, 0.1)',
                         borderWidth: 3,
