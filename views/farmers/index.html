@@ -2374,6 +2374,11 @@
                     // so it defaults to locked too - see applyPlantingDateLock().
                     applyPlantingDateLock(r.Planting_Date);
                     document.getElementById('landArea').value     = r.Area_Hectares   || '';
+                    // updateMaxArea() above checked the area box BEFORE this report's
+                    // area was filled in (empty, or a number left from an earlier form),
+                    // which left Submit disabled or showed a false "Cannot exceed total
+                    // farm size!". Check again now that the real area is in the box.
+                    validateArea();
                     document.getElementById('damageType').value   = r.Damage_Type     || 'Flood';
                     document.getElementById('severity').value     = r.Damage_Severity || 'Low';
                     document.getElementById('description').value  = r.Description     || '';
