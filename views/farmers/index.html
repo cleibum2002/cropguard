@@ -2328,12 +2328,7 @@
                 const res  = await fetch('../../api/dashboard/submit_report.php', { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.status === 'success') {
-                    // A skipped photo used to flash past in a 1.5-second success toast;
-                    // keep that case on screen so the farmer actually reads it.
-                    const photosSkipped = /could not be uploaded/.test(data.message || '');
-                    Swal.fire(photosSkipped
-                        ? { icon: 'warning', title: t('sw_success_title'), text: data.message, confirmButtonColor: '#11542e' }
-                        : { icon: 'success', title: t('sw_success_title'), text: data.message, timer: 1500, showConfirmButton: false });
+                    Swal.fire({ icon: 'success', title: t('sw_success_title'), text: data.message, timer: 1500, showConfirmButton: false });
                     closeModalForce(); loadDashboardData();
                 } else {
                     Swal.fire(t('sw_generic_error_title'), data.message, 'error');
