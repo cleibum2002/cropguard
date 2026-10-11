@@ -209,6 +209,19 @@
             <div class="p-5 sm:p-6 space-y-5">
                 <div id="reviewDuplicates" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900"></div>
                 <dl id="reviewDetails" class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm"></dl>
+                <div class="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 space-y-2">
+                    <div class="flex flex-wrap gap-2">
+                        <a href="https://finder-rsbsa.da.gov.ph/" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs font-bold text-[#11542e] hover:bg-green-50">
+                            <i class="fa-solid fa-magnifying-glass"></i><span data-i18n="btn_rsbsa_finder">Check on RSBSA Finder</span><i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-gray-400"></i>
+                        </a>
+                        <button type="button" id="btnCopyRsbsa" onclick="copyRequestRsbsa()"
+                           class="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-100">
+                            <i class="fa-regular fa-copy"></i><span data-i18n="btn_copy_rsbsa">Copy RSBSA no.</span>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-gray-500" data-i18n="hint_rsbsa_finder">Opens the DA's official RSBSA Finder in a new tab, so you can confirm this farmer's record before approving.</p>
+                </div>
                 <div id="rejectSection" class="hidden space-y-3 border-t border-gray-100 pt-4">
                     <label for="rejectReason" class="block text-[10px] font-black text-gray-400 uppercase" data-i18n="label_reject_reason">Reason for rejecting</label>
                     <select id="rejectReason" onchange="document.getElementById('rejectOther').classList.toggle('hidden', this.value !== 'Other')"
@@ -311,6 +324,8 @@
                 dup_intro: "This applicant matches:", dup_farmer: "registered farmer", dup_request: "another waiting request",
                 dup_hint: "If it is the same person, reject with \u201cAlready has an account (duplicate)\u201d.",
                 dup_same_name_birth: "same name and date of birth", dup_same_name: "same name", dup_same_mobile: "same mobile number",
+                btn_rsbsa_finder: "Check on RSBSA Finder", btn_copy_rsbsa: "Copy RSBSA no.", copied: "Copied!",
+                hint_rsbsa_finder: "Opens the DA's official RSBSA Finder in a new tab, so you can confirm this farmer's record before approving.",
                 btn_view: "View", btn_close: "Close", modal_view_title: "Farmer Details",
                 note_old_account: "This farmer registered before the full registration form, so some personal details were not collected.",
                 v_farms: "Farms", v_reports: "Reports", v_approved: "Approved", v_account: "Account", v_full_name: "Full name"
@@ -356,6 +371,8 @@
                 dup_intro: "Tugma ang aplikanteng ito sa:", dup_farmer: "rehistradong magsasaka", dup_request: "isa pang naghihintay na kahilingan",
                 dup_hint: "Kung iisang tao, tanggihan gamit ang \u201cMay account na (doble)\u201d.",
                 dup_same_name_birth: "parehong pangalan at petsa ng kapanganakan", dup_same_name: "parehong pangalan", dup_same_mobile: "parehong mobile number",
+                btn_rsbsa_finder: "Suriin sa RSBSA Finder", btn_copy_rsbsa: "Kopyahin ang RSBSA no.", copied: "Nakopya na!",
+                hint_rsbsa_finder: "Bubuksan ang opisyal na RSBSA Finder ng DA sa bagong tab, para makumpirma ang record ng magsasaka bago aprubahan.",
                 btn_view: "Tingnan", btn_close: "Isara", modal_view_title: "Detalye ng Magsasaka",
                 note_old_account: "Nagparehistro ang magsasakang ito bago ang kumpletong form, kaya hindi nakuha ang ilang personal na detalye.",
                 v_farms: "Sakahan", v_reports: "Ulat", v_approved: "Naaprubahan", v_account: "Account", v_full_name: "Buong pangalan"
@@ -468,6 +485,20 @@
         }
 
         function closeReview() { currentRequest = null; document.getElementById('reviewModal').classList.add('hidden'); }
+
+        // Copies the applicant's RSBSA number to paste into the RSBSA Finder.
+        function copyRequestRsbsa() {
+            if (!currentRequest) return;
+            const btn = document.querySelector('#btnCopyRsbsa span');
+            const done = () => { btn.textContent = t('copied'); setTimeout(() => { btn.textContent = t('btn_copy_rsbsa'); }, 1500); };
+            const fallback = () => {
+                const ta = document.createElement('textarea');
+                ta.value = currentRequest.rsbsa_no; document.body.appendChild(ta); ta.select();
+                try { document.execCommand('copy'); done(); } catch (e) {} ta.remove();
+            };
+            if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(currentRequest.rsbsa_no).then(done, fallback);
+            else fallback();
+        }
 
         // ─── VIEW A REGISTERED FARMER ───────────────────────────────────────
         let viewedFarmerId = null;
