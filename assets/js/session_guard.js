@@ -10,7 +10,7 @@
 //      from memory WITHOUT re-running a single script, so the inline gate never
 //      fires - this is why Back after logout used to land back on the dashboard.
 //      The page is hidden until the session has been re-verified.
-//   3. The 5-minute idle timeout, destroying the server session the moment it
+//   3. The 30-minute idle timeout, destroying the server session the moment it
 //      expires instead of waiting for the user to click OK on the dialog
 //      (refreshing instead of clicking used to leave the session fully alive).
 //   4. An activity heartbeat, so the server-side timeout in session_check.php
@@ -53,7 +53,7 @@
         mao:        'views/mao/index.html'
     };
 
-    var IDLE_MS      = 5 * 60 * 1000; // keep in step with CG_IDLE_LIMIT_SECONDS
+    var IDLE_MS      = 30 * 60 * 1000; // keep in step with CG_IDLE_LIMIT_SECONDS
     var HEARTBEAT_MS = 60 * 1000;
 
     var allowedRoles = [];
@@ -202,7 +202,7 @@
                     icon: 'warning',
                     title: translate('sw_session_expired_title', 'Session Expired'),
                     text: translate('sw_session_expired_text',
-                        'You have been logged out due to 5 minutes of inactivity.'),
+                        'You have been logged out due to 30 minutes of inactivity.'),
                     showConfirmButton: false,
                     timer: 3000,
                     timerProgressBar: true,
