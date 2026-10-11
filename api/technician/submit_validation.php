@@ -20,13 +20,16 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         exit;
     }
 
-    // Severity must be one of the technician's confirmed values - same list
-    // api/technician/update_inspection.php enforces. Without this, the legacy
-    // 'Low'/'High' values (still in the column's enum) or any other string
-    // could be written.
-    $allowed_severities = ['Minimal', 'Light', 'Moderate', 'Severe', 'Total Loss'];
-    if (!in_array($final_severity, $allowed_severities, true)) {
-        echo json_encode(['status' => 'error', 'message' => 'Please choose a valid severity level.']);
+    // Severity: the same four levels the farmer uses, and the damaged area the
+    // technician measured - rules shared with update_inspection.php.
+    require_once __DIR__ . '/inspection_rules.php';
+    if (!in_array($final_severity, TECH_SEVERITIES, true)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please choose a valid severity level (Low, Moderate, High or Total Loss).']);
+        exit;
+    }
+    [$damaged_area, $area_error] = checkDamagedArea($conn, $report_id, $_POST['damaged_area'] ?? '');
+    if ($area_error) {
+        echo json_encode(['status' => 'error', 'message' => $area_error]);
         exit;
     }
 
@@ -41,12 +44,13 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         $query = "UPDATE damage_report
                   SET Description = CONCAT(IFNULL(Description, ''), '\n\n--- TECH FINDINGS ---\n', ?),
                       Damage_Severity = ?,
+                      Inspected_Area = ?,
                       Status = 'Inspected',
                       Is_Inspected = 1
                   WHERE Damage_Report_ID = ? AND Technician_ID = ? AND Status = 'Validated'";
 
         $stmt = $conn->prepare($query);
-        $stmt->bind_param("ssii", $findings, $final_severity, $report_id, $tech_id);
+        $stmt->bind_param("ssdii", $findings, $final_severity, $damaged_area, $report_id, $tech_id);
         $stmt->execute();
 
         if ($stmt->affected_rows === 0) {

@@ -63,6 +63,20 @@ try {
         exit;
     }
 
+    // A technician can do at most 3 field visits a day. The Admin's calendar
+    // greys out full days (tech_schedule.php); this is the check that holds.
+    // Re-saving this same report on its current day doesn't count twice.
+    $MAX_VISITS_PER_DAY = 3;
+    $dayStmt = $conn->prepare("SELECT COUNT(*) AS n FROM damage_report WHERE Technician_ID = ? AND Visit_Date = ? AND Damage_Report_ID <> ? AND Status <> 'Archived'");
+    $dayStmt->bind_param("isi", $techId, $visitDate, $reportId);
+    $dayStmt->execute();
+    $booked = (int)$dayStmt->get_result()->fetch_assoc()['n'];
+    $dayStmt->close();
+    if ($booked >= $MAX_VISITS_PER_DAY) {
+        echo json_encode(["status" => "error", "message" => "This technician already has {$MAX_VISITS_PER_DAY} field visits on that date. Please choose another date."]);
+        exit;
+    }
+
     $query = "UPDATE damage_report
               SET Technician_ID = ?,
                   Visit_Date    = ?,

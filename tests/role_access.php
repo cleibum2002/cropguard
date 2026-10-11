@@ -111,7 +111,7 @@ test('rb112 demoted user loses access on their next page load', function () use 
 
 test("rb113 technician cannot inspect a report assigned to someone else", function () use ($tech, $othersReport) {
     $res = $tech->postForm('api/technician/submit_validation.php', [
-        'id' => $othersReport, 'observations' => 'Trying to inspect a report that is not mine.', 'severity' => 'Severe',
+        'id' => $othersReport, 'observations' => 'Trying to inspect a report that is not mine.', 'severity' => 'High', 'damaged_area' => '1',
     ]);
     assertSame('error', $res['status'], 'refused');
     assertSame('Validated', reportRow($othersReport)['Status'], 'report unchanged');

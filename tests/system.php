@@ -94,23 +94,24 @@ test('st106 technician sees the visit in their assignment queue', function () us
 test('st107 technician submits the field inspection with evidence', function () use ($tech, $s) {
     $res = $tech->postForm('api/technician/submit_validation.php', [
         'id' => $s->reportId, 'observations' => 'Standing water across most of the field; tillers rotting.',
-        'severity' => 'Severe', 'geo_lat_0' => TEST_LAT, 'geo_lng_0' => TEST_LNG,
+        'severity' => 'High', 'damaged_area' => '1.5', 'geo_lat_0' => TEST_LAT, 'geo_lng_0' => TEST_LNG,
     ], ['evidencePhotos[0]' => [testFile('png'), 'image/png', 'evidence.png']]);
     assertSame('success', $res['status'], 'status');
 
     $report = reportRow($s->reportId);
     assertSame('Inspected', $report['Status'], 'now Inspected');
-    assertSame('Severe', $report['Damage_Severity'], 'severity confirmed by technician');
+    assertSame('High', $report['Damage_Severity'], 'severity confirmed by technician');
+    assertSame(1.5, (float)$report['Inspected_Area'], 'damaged area measured by technician');
     assertSame('Total Loss', $report['Farmer_Reported_Severity'], "farmer's original severity kept");
     $roles = array_column(imagesOf($s->reportId), 'Uploaded_By_Role');
     assertTrue(in_array('Technician', $roles, true), 'evidence photo saved');
 });
 
-test('st108 admin sees the estimated loss (2 ha x P45,000 x 80%)', function () use ($admin, $s) {
+test('st108 admin sees the estimated loss (1.5 ha inspected x P45,000 x 80%)', function () use ($admin, $s) {
     $res = $admin->get('api/dashboard/calculate_cost.php?report_id=' . $s->reportId);
     assertSame('success', $res['status'], 'status');
-    assertSame('80%', $res['severity_multiplier'], 'Severe = 80%');
-    assertSame('72,000.00', $res['estimated_loss'], 'estimated loss');
+    assertSame('80%', $res['severity_multiplier'], 'High = 80%');
+    assertSame('54,000.00', $res['estimated_loss'], "estimated loss uses the technician's area");
 });
 
 test('st109 admin approves the report with relief aid', function () use ($admin, $adminId, $itemId, $s) {

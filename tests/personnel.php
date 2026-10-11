@@ -80,7 +80,7 @@ test('pa108 a report can be reassigned before it is inspected', function () use 
 });
 
 test('pa109 only the assigned technician can submit the inspection', function () use ($techAc, $techBc, $report) {
-    $body = ['id' => $report, 'observations' => 'Lodged plants, about 70% damaged.', 'severity' => 'Severe'];
+    $body = ['id' => $report, 'observations' => 'Lodged plants, about 70% damaged.', 'severity' => 'High', 'damaged_area' => '1.5'];
     assertSame('error', $techAc->postForm('api/technician/submit_validation.php', $body)['status'], 'previous technician refused');
     assertSame('success', $techBc->postForm('api/technician/submit_validation.php', $body)['status'], 'assigned technician accepted');
     assertSame('Inspected', reportRow($report)['Status'], 'now Inspected');

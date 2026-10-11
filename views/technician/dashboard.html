@@ -209,29 +209,33 @@
                             </div>
 
                             <div>
+                                <label for="damagedAreaField" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4" data-i18n="label_damaged_area">Damaged Area (hectares)</label>
+                                <input type="number" id="damagedAreaField" name="damaged_area" step="0.01" min="0.01" required inputmode="decimal" placeholder="0.00"
+                                    class="w-full bg-gray-50 border-0 rounded-2xl px-5 py-4 text-sm font-semibold focus:ring-2 focus:ring-blue-500 transition-all outline-none">
+                                <p id="damagedAreaHint" class="text-[10px] text-gray-400 mt-2"></p>
+                            </div>
+
+                            <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-6" data-i18n="label_damage_classification">Damage Classification</label>
                                 <div class="grid grid-cols-1 gap-3">
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
-                                        <input type="radio" name="severity" value="Minimal" class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_minimal">Minimal</p><p class="text-[10px] text-gray-400" data-i18n="severity_minimal_range">1-10% Damage</p></div>
-                                    </label>
-                                    <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
-                                        <input type="radio" name="severity" value="Light" class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_light">Light</p><p class="text-[10px] text-gray-400" data-i18n="severity_light_range">11-30% Damage</p></div>
+                                        <input type="radio" name="severity" value="Low" required class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_low">Low</p><p class="text-[10px] text-gray-400" data-i18n="severity_low_range">1-30% Damage</p></div>
                                     </label>
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
                                         <input type="radio" name="severity" value="Moderate" class="w-5 h-5 text-green-600 border-gray-300 focus:ring-green-500">
                                         <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_moderate">Moderate</p><p class="text-[10px] text-gray-400" data-i18n="severity_moderate_range">31-50% Damage</p></div>
                                     </label>
-                                    <label class="flex items-center gap-4 p-4 border-2 border-blue-100 bg-blue-50/30 rounded-2xl cursor-pointer">
-                                        <input type="radio" name="severity" value="Severe" checked class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_severe">Severe</p><p class="text-[10px] text-gray-400" data-i18n="severity_severe_range">51-80% Damage</p></div>
+                                    <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
+                                        <input type="radio" name="severity" value="High" class="w-5 h-5 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                        <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_high">High</p><p class="text-[10px] text-gray-400" data-i18n="severity_high_range">51-80% Damage</p></div>
                                     </label>
                                     <label class="flex items-center gap-4 p-4 border border-gray-100 rounded-2xl cursor-pointer hover:bg-gray-50 transition-all">
                                         <input type="radio" name="severity" value="Total Loss" class="w-5 h-5 text-red-600 border-gray-300 focus:ring-red-500">
                                         <div class="flex-1"><p class="text-sm font-bold text-gray-700" data-i18n="severity_total_loss">Total Loss</p><p class="text-[10px] text-gray-400" data-i18n="severity_total_loss_range">81-100% Damage</p></div>
                                     </label>
                                 </div>
+                                <p class="text-[10px] text-gray-400 mt-3" data-i18n="hint_same_levels">Same four levels the farmer chose from, so the two can be compared.</p>
                             </div>
 
                             <div>
@@ -333,27 +337,30 @@
                     </div>
 
                     <div>
+                        <label for="editDamagedAreaField" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_damaged_area">Damaged Area (hectares)</label>
+                        <input type="number" id="editDamagedAreaField" step="0.01" min="0.01" required inputmode="decimal" placeholder="0.00"
+                            class="w-full bg-gray-50 border-0 rounded-2xl px-4 sm:px-5 py-3.5 text-sm font-semibold focus:ring-2 focus:ring-blue-500 transition-all outline-none">
+                        <p id="editDamagedAreaHint" class="text-[10px] text-gray-400 mt-2"></p>
+                    </div>
+
+                    <div>
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3" data-i18n="label_damage_classification">Damage Classification</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                             <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
-                                <input type="radio" name="editSeverity" value="Minimal" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_minimal">Minimal</p>
-                            </label>
-                            <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
-                                <input type="radio" name="editSeverity" value="Light" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_light">Light</p>
+                                <input type="radio" name="editSeverity" value="Low" required class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
+                                <div><p class="text-sm font-bold text-gray-700" data-i18n="severity_low">Low</p><p class="text-[10px] text-gray-400" data-i18n="severity_low_range">1-30% Damage</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
                                 <input type="radio" name="editSeverity" value="Moderate" class="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500">
-                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_moderate">Moderate</p>
+                                <div><p class="text-sm font-bold text-gray-700" data-i18n="severity_moderate">Moderate</p><p class="text-[10px] text-gray-400" data-i18n="severity_moderate_range">31-50% Damage</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
-                                <input type="radio" name="editSeverity" value="Severe" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_severe">Severe</p>
+                                <input type="radio" name="editSeverity" value="High" class="w-4 h-4 text-amber-600 border-gray-300 focus:ring-amber-500">
+                                <div><p class="text-sm font-bold text-gray-700" data-i18n="severity_high">High</p><p class="text-[10px] text-gray-400" data-i18n="severity_high_range">51-80% Damage</p></div>
                             </label>
                             <label class="flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
                                 <input type="radio" name="editSeverity" value="Total Loss" class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500">
-                                <p class="text-sm font-bold text-gray-700" data-i18n="severity_total_loss">Total Loss</p>
+                                <div><p class="text-sm font-bold text-gray-700" data-i18n="severity_total_loss">Total Loss</p><p class="text-[10px] text-gray-400" data-i18n="severity_total_loss_range">81-100% Damage</p></div>
                             </label>
                         </div>
                     </div>
@@ -410,11 +417,15 @@
             label_crop_damage_inspection: "Crop Damage Inspection", label_brgy_loading: "Brgy. Loading...", label_location: "Location",
             label_observations: "Observations / Field Findings", placeholder_observations: "Describe the current state of the crop...",
             label_damage_classification: "Damage Classification",
-            severity_minimal: "Minimal", severity_minimal_range: "1-10% Damage",
-            severity_light: "Light", severity_light_range: "11-30% Damage",
+            severity_low: "Low", severity_low_range: "1-30% Damage",
             severity_moderate: "Moderate", severity_moderate_range: "31-50% Damage",
-            severity_severe: "Severe", severity_severe_range: "51-80% Damage",
+            severity_high: "High", severity_high_range: "51-80% Damage",
             severity_total_loss: "Total Loss", severity_total_loss_range: "81-100% Damage",
+            hint_same_levels: "Same four levels the farmer chose from, so the two can be compared.",
+            label_damaged_area: "Damaged Area (hectares)",
+            hint_damaged_area: "Farmer reported {farmer} ha · Farm size {farm} ha. Enter the area you found damaged.",
+            hint_damaged_area_nofarm: "Farmer reported {farmer} ha. Enter the area you found damaged.",
+            sw_damaged_area_title: "Check the damaged area", sw_damaged_area_text: "Enter the damaged area in hectares - more than 0 and no bigger than the farm ({farm} ha).",
             label_attach_evidence: "Attach Field Evidence (Photos)",
             hint_gps_capture: "Upload clear photos showing what you observed during your field inspection.",
             label_click_upload: "Click to upload photos", label_upload_hint: "Accepts JPG, PNG (Max 5MB per file)",
@@ -462,11 +473,15 @@
             label_crop_damage_inspection: "Inspeksyon ng Pinsala sa Pananim", label_brgy_loading: "Brgy. Nilo-load...", label_location: "Lokasyon",
             label_observations: "Obserbasyon / Natuklasan sa Field", placeholder_observations: "Ilarawan ang kasalukuyang kalagayan ng pananim...",
             label_damage_classification: "Klasipikasyon ng Pinsala",
-            severity_minimal: "Minimal", severity_minimal_range: "1-10% na Pinsala",
-            severity_light: "Magaan", severity_light_range: "11-30% na Pinsala",
+            severity_low: "Mababa", severity_low_range: "1-30% na Pinsala",
             severity_moderate: "Katamtaman", severity_moderate_range: "31-50% na Pinsala",
-            severity_severe: "Malubha", severity_severe_range: "51-80% na Pinsala",
-            severity_total_loss: "Kabuuang Pagkawala", severity_total_loss_range: "81-100% na Pinsala",
+            severity_high: "Mataas", severity_high_range: "51-80% na Pinsala",
+            severity_total_loss: "Kumpletong Pagkalugi", severity_total_loss_range: "81-100% na Pinsala",
+            hint_same_levels: "Parehong apat na antas na pinagpilian ng magsasaka, para maihambing ang dalawa.",
+            label_damaged_area: "Napinsalang Lawak (ektarya)",
+            hint_damaged_area: "Iniulat ng magsasaka: {farmer} ha · Laki ng sakahan: {farm} ha. Ilagay ang lawak na nakita mong napinsala.",
+            hint_damaged_area_nofarm: "Iniulat ng magsasaka: {farmer} ha. Ilagay ang lawak na nakita mong napinsala.",
+            sw_damaged_area_title: "Suriin ang napinsalang lawak", sw_damaged_area_text: "Ilagay ang napinsalang lawak sa ektarya - higit sa 0 at hindi lalampas sa laki ng sakahan ({farm} ha).",
             label_attach_evidence: "Ilakip ang Ebidensya sa Field (Larawan)",
             hint_gps_capture: "Mag-upload ng malinaw na mga larawan ng iyong napansin habang sinusuri ang bukid.",
             label_click_upload: "I-click para mag-upload ng larawan", label_upload_hint: "Tumatanggap ng JPG, PNG (Max 5MB kada file)",
@@ -891,6 +906,41 @@
         photoGeo = [];
         renderPreviews();
         switchTab('validation');
+        fillDamagedAreaHint(id, 'damagedAreaField', 'damagedAreaHint');
+    }
+
+    // Shows the farmer's reported area and the farm size under the damaged-area
+    // box, and caps the box at the farm size (the server checks it too).
+    async function fillDamagedAreaHint(id, inputId, hintId, report) {
+        const input = document.getElementById(inputId), hint = document.getElementById(hintId);
+        hint.innerText = '';
+        input.removeAttribute('max');
+        try {
+            let r = report;
+            if (!r) {
+                const res = await fetch(`../../api/masterfile/damage_report/get_report_details.php?id=${id}`);
+                const data = await res.json();
+                if (data.status !== 'success') return;
+                r = data.report;
+            }
+            const farmer = r.Affected_Area ? Number(r.Affected_Area).toFixed(2) : '—';
+            const farm = r.Total_Farm_Area ? Number(r.Total_Farm_Area) : null;
+            if (farm) input.max = farm;
+            input.dataset.farm = farm || '';
+            hint.innerText = (farm ? t('hint_damaged_area').replace('{farm}', farm.toFixed(2)) : t('hint_damaged_area_nofarm')).replace('{farmer}', farmer);
+        } catch (e) { /* the hint is only a guide; the server still checks the value */ }
+    }
+
+    // Damaged area must be more than 0 and no bigger than the farm.
+    function damagedAreaProblem(inputId) {
+        const input = document.getElementById(inputId);
+        const v = parseFloat(input.value), farm = parseFloat(input.dataset.farm || '');
+        if (isNaN(v) || v <= 0 || (!isNaN(farm) && v > farm)) {
+            Swal.fire(t('sw_damaged_area_title'), t('sw_damaged_area_text').replace('{farm}', isNaN(farm) ? '—' : farm.toFixed(2)), 'warning');
+            input.focus();
+            return true;
+        }
+        return false;
     }
 
     // ── File Handling ────────────────────────────────────────────────
@@ -1048,6 +1098,8 @@
             document.querySelectorAll('#editInspectionForm input[name="editSeverity"]').forEach(radio => {
                 radio.checked = (radio.value === r.Damage_Severity);
             });
+            document.getElementById('editDamagedAreaField').value = r.Inspected_Area ? Number(r.Inspected_Area).toFixed(2) : '';
+            fillDamagedAreaHint(id, 'editDamagedAreaField', 'editDamagedAreaHint', r);
 
             const techPhotos = (data.images || []).filter(img => img.uploaded_by === 'Technician');
             renderEditExistingPhotos(techPhotos);
@@ -1152,12 +1204,14 @@
 
     async function submitEditForm(e) {
         e.preventDefault();
+        if (damagedAreaProblem('editDamagedAreaField')) return;
 
         const formData = new FormData();
         formData.append('id', document.getElementById('editReportIdField').value);
         formData.append('observations', document.getElementById('editObsField').value);
         const severityEl = document.querySelector('#editInspectionForm input[name="editSeverity"]:checked');
         formData.append('severity', severityEl ? severityEl.value : '');
+        formData.append('damaged_area', document.getElementById('editDamagedAreaField').value);
         // update_inspection.php reads geo_lat_$i / geo_lng_$i by its own loop
         // position over evidencePhotos[], so this i is the append order.
         editSelectedFiles.forEach((file, i) => {
@@ -1198,6 +1252,7 @@
     // ── Submit Inspection ────────────────────────────────────────────
     async function submitForm(e) {
         e.preventDefault();
+        if (damagedAreaProblem('damagedAreaField')) return;
 
         const formData = new FormData(document.getElementById('inspectionForm'));
         // submit_validation.php reads geo_lat_$i / geo_lng_$i by its own loop
