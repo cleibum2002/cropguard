@@ -54,7 +54,7 @@ try {
     $histQuery = "SELECT 
                     dr.Damage_Report_ID as id,
                     c.Crop_Name as crop_name,
-                    COALESCE(dr.Affected_Area, c.Area_Hectares) as area,
+                    COALESCE(dr.Inspected_Area, dr.Affected_Area, c.Area_Hectares) as area,
                     DATE(dr.Report_Date) as date,
                     dr.Damage_Type as damage_type,
                     dr.Damage_Severity as severity,

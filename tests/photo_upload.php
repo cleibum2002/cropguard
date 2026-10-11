@@ -97,7 +97,7 @@ test('pu108 technician evidence photos are saved and tagged', function () use ($
     $cropId = (int)row('SELECT Crop_ID FROM crop WHERE Location_ID = ? LIMIT 1', 'i', $loc)['Crop_ID'];
     $report = makeReport($farmerId, $loc, $cropId, 1, 'Moderate', 'Validated', ['technician' => $techId, 'visit_date' => date('Y-m-d')]);
     $res = $tech->postForm('api/technician/submit_validation.php', [
-        'id' => $report, 'observations' => 'Leaf damage on most plants.', 'severity' => 'Moderate',
+        'id' => $report, 'observations' => 'Leaf damage on most plants.', 'severity' => 'Moderate', 'damaged_area' => '0.5',
         'geo_lat_0' => TEST_LAT, 'geo_lng_0' => TEST_LNG,
     ], ['evidencePhotos[0]' => [testFile('jpg'), 'image/jpeg', 'evidence.jpg']]);
     assertSame('success', $res['status'], 'status');

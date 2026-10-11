@@ -23,7 +23,7 @@ try {
                 dr.Description,
                 u.Fullname       AS Farmer_Name,
                 c.Crop_Name,
-                COALESCE(dr.Affected_Area, c.Area_Hectares) AS Area_Hectares,
+                COALESCE(dr.Inspected_Area, dr.Affected_Area, c.Area_Hectares) AS Area_Hectares,
                 ct.Crop_Name     AS Crop_Type,
                 fl.Barangay
             FROM damage_report dr

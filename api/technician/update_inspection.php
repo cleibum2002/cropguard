@@ -31,9 +31,15 @@ if ($findings === '') {
     exit;
 }
 
-$allowed_severities = ['Minimal', 'Light', 'Moderate', 'Severe', 'Total Loss'];
-if (!in_array($severity, $allowed_severities)) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid severity value.']);
+// Same rules as the first inspection (submit_validation.php).
+require_once __DIR__ . '/inspection_rules.php';
+if (!in_array($severity, TECH_SEVERITIES, true)) {
+    echo json_encode(['status' => 'error', 'message' => 'Please choose a valid severity level (Low, Moderate, High or Total Loss).']);
+    exit;
+}
+[$damaged_area, $area_error] = checkDamagedArea($conn, $report_id, $_POST['damaged_area'] ?? '');
+if ($area_error) {
+    echo json_encode(['status' => 'error', 'message' => $area_error]);
     exit;
 }
 
@@ -67,8 +73,8 @@ try {
     }
     $newDescription = $farmerPart . "\n\n" . $techMarker . "\n" . $findings;
 
-    $update = $conn->prepare("UPDATE damage_report SET Description = ?, Damage_Severity = ? WHERE Damage_Report_ID = ? AND Technician_ID = ?");
-    $update->bind_param("ssii", $newDescription, $severity, $report_id, $tech_id);
+    $update = $conn->prepare("UPDATE damage_report SET Description = ?, Damage_Severity = ?, Inspected_Area = ? WHERE Damage_Report_ID = ? AND Technician_ID = ?");
+    $update->bind_param("ssdii", $newDescription, $severity, $damaged_area, $report_id, $tech_id);
     $update->execute();
     $update->close();
 
