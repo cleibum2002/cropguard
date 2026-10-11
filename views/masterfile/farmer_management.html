@@ -186,6 +186,7 @@
                 <button type="button" onclick="closeReview()" class="text-gray-400 hover:text-gray-600 text-xl flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 sm:p-6 space-y-5">
+                <div id="reviewDuplicates" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900"></div>
                 <dl id="reviewDetails" class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm"></dl>
                 <div id="rejectSection" class="hidden space-y-3 border-t border-gray-100 pt-4">
                     <label for="rejectReason" class="block text-[10px] font-black text-gray-400 uppercase" data-i18n="label_reject_reason">Reason for rejecting</label>
@@ -284,7 +285,11 @@
                 sw_approve_title: "Approve this registration?", sw_approve_text: "{name} will get a farmer account and can log in right away.", sw_approve_btn: "Yes, approve",
                 sw_approved_title: "Approved", sw_rejected_title: "Rejected",
                 sw_reason_required: "Please choose a reason, or write one for Other.",
-                sw_reject_title: "Reject this registration?", sw_reject_text: "The request will be deleted and {name} will be emailed this reason:", sw_reject_btn: "Yes, reject"
+                sw_reject_title: "Reject this registration?", sw_reject_text: "The request will be deleted and {name} will be emailed this reason:", sw_reject_btn: "Yes, reject",
+                dup_chip: "Possible duplicate", dup_title: "Possible duplicate - please check before approving",
+                dup_intro: "This applicant matches:", dup_farmer: "registered farmer", dup_request: "another waiting request",
+                dup_hint: "If it is the same person, reject with \u201cAlready has an account (duplicate)\u201d.",
+                dup_same_name_birth: "same name and date of birth", dup_same_name: "same name", dup_same_mobile: "same mobile number"
             },
             tl: {
                 header_title: "Pamamahala ng Magsasaka", badge_rsbsa_registry: "RSBSA Registry",
@@ -322,7 +327,11 @@
                 sw_approve_title: "Aprubahan ang pagpaparehistrong ito?", sw_approve_text: "Magkakaroon ng farmer account si {name} at makakapag-log in agad.", sw_approve_btn: "Oo, aprubahan",
                 sw_approved_title: "Naaprubahan", sw_rejected_title: "Tinanggihan",
                 sw_reason_required: "Pumili ng dahilan, o magsulat para sa Iba pa.",
-                sw_reject_title: "Tanggihan ang pagpaparehistrong ito?", sw_reject_text: "Buburahin ang kahilingan at ipapadala kay {name} ang dahilang ito:", sw_reject_btn: "Oo, tanggihan"
+                sw_reject_title: "Tanggihan ang pagpaparehistrong ito?", sw_reject_text: "Buburahin ang kahilingan at ipapadala kay {name} ang dahilang ito:", sw_reject_btn: "Oo, tanggihan",
+                dup_chip: "Posibleng doble", dup_title: "Posibleng doble - suriin muna bago aprubahan",
+                dup_intro: "Tugma ang aplikanteng ito sa:", dup_farmer: "rehistradong magsasaka", dup_request: "isa pang naghihintay na kahilingan",
+                dup_hint: "Kung iisang tao, tanggihan gamit ang \u201cMay account na (doble)\u201d.",
+                dup_same_name_birth: "parehong pangalan at petsa ng kapanganakan", dup_same_name: "parehong pangalan", dup_same_mobile: "parehong mobile number"
             }
         };
 
@@ -384,6 +393,7 @@
                     <td class="px-3 md:px-6 py-4">
                         <p class="text-sm font-black text-gray-800">${escapeHtml(fullName(r))}</p>
                         <p class="text-[10px] text-gray-400 break-all">${escapeHtml(r.email)}</p>
+                        ${(r.duplicates || []).length ? `<span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-black uppercase tracking-wide"><i class="fa-solid fa-triangle-exclamation"></i> ${t('dup_chip')}</span>` : ''}
                         <p class="md:hidden text-[10px] text-gray-500 font-mono mt-1">${escapeHtml(r.rsbsa_no)} · ${escapeHtml(r.requested_at || '')}</p>
                     </td>
                     <td class="hidden md:table-cell px-6 py-4 font-mono text-xs text-gray-700 whitespace-nowrap">${escapeHtml(r.rsbsa_no)}</td>
@@ -402,6 +412,15 @@
             currentRequest = r;
             const row = (label, value, wide) => `<div class="${wide ? 'col-span-2' : ''} min-w-0"><dt class="text-[10px] font-black text-gray-400 uppercase">${label}</dt><dd class="font-semibold text-gray-800 break-words">${escapeHtml(value || '—')}</dd></div>`;
             document.getElementById('reviewSub').textContent = fullName(r);
+            const dupBox = document.getElementById('reviewDuplicates');
+            const dups = r.duplicates || [];
+            const reasonKey = { 'same name and date of birth': 'dup_same_name_birth', 'same name': 'dup_same_name', 'same mobile number': 'dup_same_mobile' };
+            dupBox.classList.toggle('hidden', dups.length === 0);
+            dupBox.innerHTML = dups.length ? `
+                <p class="font-black mb-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i>${t('dup_title')}</p>
+                <p class="mb-1">${t('dup_intro')}</p>
+                <ul class="list-disc pl-5 space-y-0.5">${dups.map(d => `<li><b>${escapeHtml(d.name)}</b> (${escapeHtml(d.email)}) - ${t(d.kind === 'farmer' ? 'dup_farmer' : 'dup_request')}: ${d.reasons.map(x => t(reasonKey[x] || '') || escapeHtml(x)).join(', ')}</li>`).join('')}</ul>
+                <p class="mt-1.5">${t('dup_hint')}</p>` : '';
             document.getElementById('reviewDetails').innerHTML =
                 row(t('d_last'), r.last_name) + row(t('d_first'), r.first_name) +
                 row(t('d_middle'), r.middle_name) + row(t('d_suffix'), r.suffix || 'N/A') +
