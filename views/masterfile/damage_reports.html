@@ -251,6 +251,7 @@
                     <h4 class="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-4" data-i18n="label_direct_allocate">Direct Allocate Relief Assistance</h4>
                     <p class="text-[10px] text-gray-500 mb-3 font-medium" data-i18n="label_allocate_hint">You can allocate multiple items at once. Click "Add another item" to include more.</p>
                     
+                    <p id="cropSeedNote" class="hidden text-[11px] font-semibold rounded-lg px-3 py-2 mb-3"></p>
                     <div id="multiAidContainer">
                         <!-- Single aid item row (template) -->
                         <div class="aid-item-row bg-indigo-50/30 p-4 rounded-xl border border-indigo-100 mb-3">
@@ -486,6 +487,12 @@
                 sw_not_enough_stock_title: "Not Enough Stock", sw_not_enough_stock_text: '"{item}": You want {qty} {unit}, but only {stock} available.',
                 sw_required_title: "Required", sw_required_relief_item: "Please add at least one relief item with a valid quantity.",
                 sw_whole_qty: "Aid quantity must be a whole number (no decimals).",
+                seed_note_found: "The farmer's crop is {crop}, so its seed ({item}) is filled in first with the recommended {qty}. You can change the quantity. Other items are optional.",
+                seed_note_low: "Only {stock} {unit} of {item} left in stock - lower the quantity or restock it in Item Management.",
+                seed_note_nostock: "{item} (the seed for {crop}) is out of stock. Restock it in Item Management, or allocate other items.",
+                seed_note_missing: "No seed item for {crop} was found in the inventory. Add it in Item Management, or choose an item below.",
+                sw_seed_qty_required: "The farmer's crop seed ({item}) is the first relief item. Please give it a quantity of at least 1.",
+                sw_duplicate_item: "{item} is listed more than once. Please put its total in one row.",
                 sw_direct_approve_title: "Direct Approve & Allocate Aid?", sw_direct_approve_html: "You are about to approve this report and allocate:",
                 sw_direct_approve_confirm: "Yes, Direct Approve", sw_approved_title: "Approved!", sw_approved_text: "Report approved and all aid items allocated.",
                 sw_required_technician: "Please select a technician.", sw_required_visit_date: "Please set a scheduled visit date.",
@@ -578,6 +585,12 @@
                 sw_not_enough_stock_title: "Kulang ang Stock", sw_not_enough_stock_text: '"{item}": Gusto mong bigyan ng {qty} {unit}, pero {stock} lang ang available.',
                 sw_required_title: "Kailangan", sw_required_relief_item: "Magdagdag ng kahit isang item ng tulong na may wastong dami.",
                 sw_whole_qty: "Ang dami ng tulong ay dapat buong numero (walang decimal).",
+                seed_note_found: "Ang pananim ng magsasaka ay {crop}, kaya ang binhi nito ({item}) ang unang inilagay na may inirerekomendang {qty}. Maaari mong baguhin ang dami. Opsyonal ang ibang item.",
+                seed_note_low: "{stock} {unit} na lang ng {item} ang natitira - bawasan ang dami o dagdagan ang stock sa Item Management.",
+                seed_note_nostock: "Ubos na ang {item} (ang binhi para sa {crop}). Dagdagan ang stock sa Item Management, o maglaan ng ibang item.",
+                seed_note_missing: "Walang nakitang binhi para sa {crop} sa imbentaryo. Idagdag ito sa Item Management, o pumili ng item sa ibaba.",
+                sw_seed_qty_required: "Ang binhi ng pananim ng magsasaka ({item}) ang unang item ng tulong. Lagyan ito ng dami na hindi bababa sa 1.",
+                sw_duplicate_item: "Higit sa isang beses nakalista ang {item}. Ilagay ang kabuuan nito sa iisang hilera.",
                 sw_direct_approve_title: "Direktang Aprubahan at Maglaan ng Tulong?", sw_direct_approve_html: "Aaprubahan mo ang ulat na ito at ilalaan ang:",
                 sw_direct_approve_confirm: "Oo, Direktang Aprubahan", sw_approved_title: "Naaprubahan!", sw_approved_text: "Naaprubahan ang ulat at na-allocate na ang lahat ng item ng tulong.",
                 sw_required_technician: "Pumili ng technician.", sw_required_visit_date: "Magtakda ng iskedyul ng pagbisita.",
@@ -723,6 +736,8 @@
             // Clear selections
             const select = newRow.querySelector('.adminAidItem');
             select.value = '';
+            select.disabled = false;
+            select.classList.remove('bg-green-50', 'cursor-not-allowed');
             newRow.querySelector('.adminAidQty').value = '';
             newRow.querySelector('.aidUnitDisplay').textContent = '—';
             newRow.querySelector('.aidStockDisplay').textContent = '—';
@@ -758,6 +773,8 @@
             const rows = container.querySelectorAll('.aid-item-row');
             rows.forEach((row, i) => {
                 if (i === 0) {
+                    row.querySelector('.adminAidItem').disabled = false;
+                    row.querySelector('.adminAidItem').classList.remove('bg-green-50', 'cursor-not-allowed');
                     row.querySelector('.adminAidItem').value = '';
                     row.querySelector('.adminAidQty').value = '';
                     row.querySelector('.aidUnitDisplay').textContent = '—';
@@ -767,6 +784,62 @@
                     row.remove();
                 }
             });
+            lockedSeedItem = null;
+            const note = document.getElementById('cropSeedNote');
+            note.classList.add('hidden');
+            note.innerText = '';
+        }
+
+        // The seed for the farmer's own crop always comes first in the relief
+        // list (panel revision): e.g. a damaged NSIC Rc 480 farm gets
+        // "NSIC Rc 480 Certified Rice Seeds" x the recommended bags. The item
+        // is locked; only its quantity can be changed. Other rows are optional.
+        let lockedSeedItem = null;
+
+        // Inventory names are longer than crop names ("RC-222" vs "NSIC Rc 222
+        // Certified Rice Seeds"), so match on the words and numbers in the crop
+        // name: every one must appear in the item name. Seeds category only;
+        // if several match, the closest (fewest extra words) wins.
+        const nameTokens = str => (String(str || '').toLowerCase().match(/[a-z]+|\d+/g) || []);
+        function findCropSeed(cropName) {
+            const want = nameTokens(cropName);
+            if (!want.length) return null;
+            let best = null, bestExtra = Infinity;
+            aidInventory.filter(i => /seed/i.test(i.category)).forEach(item => {
+                const have = nameTokens(item.item_name);
+                if (want.every(w => have.includes(w)) && have.length - want.length < bestExtra) {
+                    best = item; bestExtra = have.length - want.length;
+                }
+            });
+            return best;
+        }
+
+        async function fillCropSeed(reportId, cropName, bags) {
+            if (!aidInventory.length) await loadMasterfileItems();
+            // The Admin may have opened another report meanwhile.
+            if (document.getElementById('reviewReportId').value != reportId) return;
+            const row = document.querySelector('#multiAidContainer .aid-item-row');
+            const select = row.querySelector('.adminAidItem');
+            const qty = row.querySelector('.adminAidQty');
+            const note = document.getElementById('cropSeedNote');
+            const seed = findCropSeed(cropName);
+            const say = (key, cls) => {
+                note.innerText = t(key).replace('{crop}', cropName).replace('{item}', seed ? seed.item_name : '')
+                    .replace('{qty}', `${bags} ${seed ? seed.unit : ''}`.trim()).replace('{stock}', seed ? Number(seed.current_stock) : '').replace('{unit}', seed ? seed.unit : '');
+                note.className = 'text-[11px] font-semibold rounded-lg px-3 py-2 mb-3 ' + cls;
+            };
+            qty.value = bags || 1;
+            if (!seed) { say('seed_note_missing', 'bg-amber-50 text-amber-700 border border-amber-200'); return; }
+            if (parseFloat(seed.current_stock) <= 0) { say('seed_note_nostock', 'bg-amber-50 text-amber-700 border border-amber-200'); return; }
+            select.value = seed.id;
+            updateAidDetailsRow(select);
+            select.disabled = true;
+            select.classList.add('bg-green-50', 'cursor-not-allowed');
+            lockedSeedItem = seed;
+            say('seed_note_found', 'bg-green-50 text-green-800 border border-green-200');
+            if (parseFloat(seed.current_stock) < (bags || 1)) {
+                note.innerText += ' ' + t('seed_note_low').replace('{stock}', Number(seed.current_stock)).replace('{unit}', seed.unit).replace('{item}', seed.item_name);
+            }
         }
 
         async function loadTechnicians() {
@@ -969,8 +1042,7 @@
                         document.getElementById('calcBase').innerText        = '2 Bags / Ha';
                         document.getElementById('calcMultiplier').innerText  = cost.severity_multiplier;
                         document.getElementById('calcRecommended').innerText = `${bags} Bag(s)`;
-                        const firstQtyInput = document.querySelector('#multiAidContainer .aid-item-row .adminAidQty');
-                        if (firstQtyInput) firstQtyInput.value = bags || 1;
+                        fillCropSeed(id, cost.crop_name, bags);
                     }
                 })
                 .catch(() => { document.getElementById('calcLoading').innerText = t('could_not_calc_relief'); });
@@ -1071,6 +1143,19 @@
             const rows = document.querySelectorAll('.aid-item-row');
             const allocations = [];
             let hasError = false;
+
+            if (lockedSeedItem) {
+                const seedQty = parseFloat(rows[0].querySelector('.adminAidQty').value);
+                if (!(seedQty >= 1)) {
+                    return Swal.fire(t('sw_required_title'), t('sw_seed_qty_required').replace('{item}', lockedSeedItem.item_name), 'warning');
+                }
+            }
+            const picked = [...rows].map(r => r.querySelector('.adminAidItem').value).filter(Boolean);
+            const twice = picked.find((v, i) => picked.indexOf(v) !== i);
+            if (twice) {
+                const it = aidInventory.find(i => i.id == twice);
+                return Swal.fire(t('sw_required_title'), t('sw_duplicate_item').replace('{item}', it ? it.item_name : ''), 'warning');
+            }
             
             rows.forEach((row, index) => {
                 const select = row.querySelector('.adminAidItem');
