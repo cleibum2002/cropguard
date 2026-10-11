@@ -277,6 +277,7 @@ function imagesOf(int $reportId): array
 // ── Cleanup ────────────────────────────────────────────────────────────────
 function cleanupTestData(): void
 {
+    q("DELETE FROM registration_requests WHERE Email LIKE '%@example.test'");
     $ids = array_map('intval', array_column(q("SELECT User_ID FROM users WHERE Email LIKE '%@example.test'"), 'User_ID'));
     $typeIds = array_map('intval', array_column(q("SELECT Type_ID FROM crop_type WHERE Crop_Name LIKE 'TEST-CG %'"), 'Type_ID'));
     $itemIds = array_map('intval', array_column(q("SELECT id FROM masterfile_items WHERE item_name LIKE 'TEST-CG %'"), 'id'));

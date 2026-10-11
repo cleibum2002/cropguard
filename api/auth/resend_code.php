@@ -28,6 +28,18 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
+// Not an account: maybe a new farmer's registration request still waiting for
+// its email code (see api/auth/register.php). Same rules, other table.
+$table = 'users';
+if (!$user) {
+    $rq = $conn->prepare("SELECT Request_ID AS User_ID, CONCAT(First_Name, ' ', Last_Name) AS Fullname, Verification_Token_Expires FROM registration_requests WHERE Email = ? AND Email_Verified = 0");
+    $rq->bind_param("s", $email);
+    $rq->execute();
+    $user = $rq->get_result()->fetch_assoc();
+    $rq->close();
+    $table = 'registration_requests';
+}
+
 if (!$user) {
     echo json_encode(['status' => 'error', 'message' => 'No unverified account found with that email.']);
     exit;
@@ -59,7 +71,9 @@ if (!empty($user['Verification_Token_Expires'])) {
 $new_code      = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 $token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
 
-$update = $conn->prepare("UPDATE users SET Verification_Token = ?, Verification_Token_Expires = ? WHERE User_ID = ?");
+$update = $table === 'users'
+    ? $conn->prepare("UPDATE users SET Verification_Token = ?, Verification_Token_Expires = ? WHERE User_ID = ?")
+    : $conn->prepare("UPDATE registration_requests SET Verification_Token = ?, Verification_Token_Expires = ? WHERE Request_ID = ?");
 $update->bind_param("ssi", $new_code, $token_expires, $user['User_ID']);
 $update->execute();
 $update->close();

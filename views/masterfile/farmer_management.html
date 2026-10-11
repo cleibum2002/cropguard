@@ -47,6 +47,9 @@
     .sidebar-link:hover { background: rgba(255,255,255,0.06); color: white; }
     .custom-scrollbar::-webkit-scrollbar { width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    .tab-btn { padding: 0.6rem 0.25rem; margin-bottom: -1px; font-size: 0.8rem; font-weight: 800; color: #9ca3af; border-bottom: 2px solid transparent; display: inline-flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+    .tab-btn:hover { color: #374151; }
+    .tab-btn.active { color: #11542e; border-bottom-color: #11542e; }
 </style>
 </head>
 <body class="h-screen flex overflow-hidden" style="display:none!important">
@@ -78,7 +81,7 @@
                     </div>
                 </div>
             </div>
-            <div class="order-3 sm:order-2 w-full sm:w-auto flex flex-wrap items-center gap-3">
+            <div id="farmerFilters" class="order-3 sm:order-2 w-full sm:w-auto flex flex-wrap items-center gap-3">
                 <div class="relative w-full sm:w-auto sm:flex-none min-w-0">
                     <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                     <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search farmer or RSBSA..." data-i18n-placeholder="search_placeholder"
@@ -101,6 +104,32 @@
         <main class="flex-1 overflow-y-auto p-6 bg-[#f0f2f0] custom-scrollbar">
             <div class="max-w-7xl mx-auto">
 
+                <div class="flex gap-6 mb-5 border-b border-gray-200 overflow-x-auto">
+                    <button type="button" id="tabFarmers" onclick="showTab('farmers')" class="tab-btn active"><i class="fa-solid fa-users"></i><span data-i18n="tab_farmers">Registered Farmers</span></button>
+                    <button type="button" id="tabRequests" onclick="showTab('requests')" class="tab-btn"><i class="fa-solid fa-user-clock"></i><span data-i18n="tab_requests">Registration Requests</span>
+                        <span id="reqCount" class="hidden min-w-[20px] h-5 px-1.5 bg-red-500 text-white rounded-full text-[10px] font-black flex items-center justify-center">0</span></button>
+                </div>
+
+                <div id="requestsPanel" class="hidden">
+                    <p class="text-xs text-gray-500 mb-4 max-w-2xl" data-i18n="requests_intro">Farmers who registered and verified their email. No account exists until you approve. A rejected request is deleted and the applicant is emailed the reason.</p>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 border-b border-gray-100">
+                                    <tr>
+                                        <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_applicant">Applicant</th>
+                                        <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_rsbsa_number">RSBSA Number</th>
+                                        <th class="hidden md:table-cell px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_requested">Requested</th>
+                                        <th class="px-3 md:px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_action">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestTableBody" class="divide-y divide-gray-50"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="farmersPanel">
                 <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
                     <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-gray-100">
                         <p class="text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="stat_total_farmers">Total Farmers</p>
@@ -140,9 +169,50 @@
                         <p class="order-2 sm:order-1 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center sm:text-left" id="pageInfo">Showing entries...</p>
                     </div>
                 </div>
+                </div>
 
             </div>
         </main>
+    </div>
+
+    <!-- REVIEW REGISTRATION MODAL -->
+    <div id="reviewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-y-auto max-h-[90dvh]">
+            <div class="flex items-center justify-between p-5 sm:p-6 border-b border-gray-100">
+                <div class="min-w-0">
+                    <h2 class="text-lg font-black text-gray-800" data-i18n="modal_review_title">Registration Request</h2>
+                    <p id="reviewSub" class="text-xs text-gray-400 mt-1 break-all"></p>
+                </div>
+                <button type="button" onclick="closeReview()" class="text-gray-400 hover:text-gray-600 text-xl flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 sm:p-6 space-y-5">
+                <dl id="reviewDetails" class="grid grid-cols-2 gap-x-4 gap-y-3 text-sm"></dl>
+                <div id="rejectSection" class="hidden space-y-3 border-t border-gray-100 pt-4">
+                    <label for="rejectReason" class="block text-[10px] font-black text-gray-400 uppercase" data-i18n="label_reject_reason">Reason for rejecting</label>
+                    <select id="rejectReason" onchange="document.getElementById('rejectOther').classList.toggle('hidden', this.value !== 'Other')"
+                        class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e]">
+                        <option value="" data-i18n="reason_choose">Choose a reason</option>
+                        <option value="The RSBSA number was not found in the registry." data-i18n="reason_rsbsa_not_found">RSBSA number not found in the registry</option>
+                        <option value="Your details do not match the RSBSA record." data-i18n="reason_mismatch">Details do not match the RSBSA record</option>
+                        <option value="You already have a CropGuard account." data-i18n="reason_duplicate">Already has an account (duplicate)</option>
+                        <option value="Your farm is outside the service area of MAO Balingasag." data-i18n="reason_outside_area">Farm is outside the service area</option>
+                        <option value="Some of the information you gave is incomplete or invalid." data-i18n="reason_incomplete">Incomplete or invalid information</option>
+                        <option value="Other" data-i18n="reason_other">Other (write the reason)</option>
+                    </select>
+                    <textarea id="rejectOther" rows="3" maxlength="300" placeholder="Write the reason the applicant will see" data-i18n-placeholder="placeholder_reject_other"
+                        class="hidden w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e]"></textarea>
+                    <p class="text-[11px] text-gray-400" data-i18n="hint_reject">The applicant is emailed this reason, and the request is deleted.</p>
+                </div>
+            </div>
+            <div id="reviewActions" class="flex gap-3 p-5 sm:p-6 border-t border-gray-100">
+                <button type="button" id="btnReject" onclick="startReject()" class="flex-1 py-3 rounded-xl border border-red-200 text-red-600 text-sm font-bold hover:bg-red-50"><i class="fa-solid fa-xmark mr-2"></i><span data-i18n="btn_reject">Reject</span></button>
+                <button type="button" id="btnApprove" onclick="approveRequest()" class="flex-1 py-3 rounded-xl bg-[#11542e] text-white text-sm font-bold shadow-md hover:bg-green-800"><i class="fa-solid fa-check mr-2"></i><span data-i18n="btn_approve">Approve</span></button>
+            </div>
+            <div id="rejectActions" class="hidden flex gap-3 p-5 sm:p-6 border-t border-gray-100">
+                <button type="button" onclick="cancelReject()" class="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50" data-i18n="btn_back">Back</button>
+                <button type="button" onclick="confirmReject()" class="flex-1 py-3 rounded-xl bg-red-600 text-white text-sm font-bold shadow-md hover:bg-red-700"><span data-i18n="btn_confirm_reject">Reject Registration</span></button>
+            </div>
+        </div>
     </div>
 
     <!-- EDIT MODAL -->
@@ -198,7 +268,23 @@
                 sw_saved_title: "Saved!", sw_saved_text: "RSBSA number updated.", sw_error_title: "Error",
                 sw_update_failed: "Update failed.", sw_server_failed: "Server connection failed.",
                 sw_logout_title: "Logout?", sw_logout_btn: "Logout",
-                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity."
+                sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 5 minutes of inactivity.",
+                tab_farmers: "Registered Farmers", tab_requests: "Registration Requests",
+                requests_intro: "Farmers who registered and verified their email. No account exists until you approve. A rejected request is deleted and the applicant is emailed the reason.",
+                th_applicant: "Applicant", th_requested: "Requested", btn_review: "Review", no_requests: "No registration requests waiting.",
+                modal_review_title: "Registration Request", label_reject_reason: "Reason for rejecting", reason_choose: "Choose a reason",
+                reason_rsbsa_not_found: "RSBSA number not found in the registry", reason_mismatch: "Details do not match the RSBSA record",
+                reason_duplicate: "Already has an account (duplicate)", reason_outside_area: "Farm is outside the service area",
+                reason_incomplete: "Incomplete or invalid information", reason_other: "Other (write the reason)",
+                placeholder_reject_other: "Write the reason the applicant will see", hint_reject: "The applicant is emailed this reason, and the request is deleted.",
+                btn_reject: "Reject", btn_approve: "Approve", btn_back: "Back", btn_confirm_reject: "Reject Registration",
+                d_last: "Last name", d_first: "First name", d_middle: "Middle name", d_suffix: "Suffix", d_birth: "Date of birth", d_age: "Age",
+                d_gender: "Gender", d_civil: "Civil status", d_email: "Email", d_mobile: "Mobile number", d_rsbsa: "RSBSA number", d_requested: "Requested on",
+                years_old: "years old",
+                sw_approve_title: "Approve this registration?", sw_approve_text: "{name} will get a farmer account and can log in right away.", sw_approve_btn: "Yes, approve",
+                sw_approved_title: "Approved", sw_rejected_title: "Rejected",
+                sw_reason_required: "Please choose a reason, or write one for Other.",
+                sw_reject_title: "Reject this registration?", sw_reject_text: "The request will be deleted and {name} will be emailed this reason:", sw_reject_btn: "Yes, reject"
             },
             tl: {
                 header_title: "Pamamahala ng Magsasaka", badge_rsbsa_registry: "RSBSA Registry",
@@ -220,13 +306,31 @@
                 sw_saved_title: "Na-save na!", sw_saved_text: "Na-update ang RSBSA number.", sw_error_title: "Error",
                 sw_update_failed: "Nabigo ang pag-update.", sw_server_failed: "Nabigo ang koneksyon sa server.",
                 sw_logout_title: "Mag-logout?", sw_logout_btn: "Mag-logout",
-                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit."
+                sw_session_expired_title: "Nag-expire ang Session", sw_session_expired_text: "Na-log out ka dahil sa 5 minuto ng hindi paggamit.",
+                tab_farmers: "Mga Rehistradong Magsasaka", tab_requests: "Mga Kahilingan sa Pagpaparehistro",
+                requests_intro: "Mga magsasakang nagparehistro at nag-verify ng email. Walang account hangga't hindi mo inaaprubahan. Ang tinanggihang kahilingan ay binubura at ipinapadala sa email ang dahilan.",
+                th_applicant: "Aplikante", th_requested: "Petsa ng Kahilingan", btn_review: "Suriin", no_requests: "Walang kahilingang naghihintay.",
+                modal_review_title: "Kahilingan sa Pagpaparehistro", label_reject_reason: "Dahilan ng pagtanggi", reason_choose: "Pumili ng dahilan",
+                reason_rsbsa_not_found: "Hindi makita ang RSBSA number sa registry", reason_mismatch: "Hindi tugma ang detalye sa RSBSA record",
+                reason_duplicate: "May account na (doble)", reason_outside_area: "Ang sakahan ay labas sa saklaw ng serbisyo",
+                reason_incomplete: "Kulang o maling impormasyon", reason_other: "Iba pa (isulat ang dahilan)",
+                placeholder_reject_other: "Isulat ang dahilang makikita ng aplikante", hint_reject: "Ipapadala sa email ng aplikante ang dahilang ito, at buburahin ang kahilingan.",
+                btn_reject: "Tanggihan", btn_approve: "Aprubahan", btn_back: "Bumalik", btn_confirm_reject: "Tanggihan ang Pagpaparehistro",
+                d_last: "Apelyido", d_first: "Pangalan", d_middle: "Gitnang pangalan", d_suffix: "Suffix", d_birth: "Petsa ng kapanganakan", d_age: "Edad",
+                d_gender: "Kasarian", d_civil: "Katayuang sibil", d_email: "Email", d_mobile: "Mobile number", d_rsbsa: "RSBSA number", d_requested: "Petsa ng kahilingan",
+                years_old: "taong gulang",
+                sw_approve_title: "Aprubahan ang pagpaparehistrong ito?", sw_approve_text: "Magkakaroon ng farmer account si {name} at makakapag-log in agad.", sw_approve_btn: "Oo, aprubahan",
+                sw_approved_title: "Naaprubahan", sw_rejected_title: "Tinanggihan",
+                sw_reason_required: "Pumili ng dahilan, o magsulat para sa Iba pa.",
+                sw_reject_title: "Tanggihan ang pagpaparehistrong ito?", sw_reject_text: "Buburahin ang kahilingan at ipapadala kay {name} ang dahilang ito:", sw_reject_btn: "Oo, tanggihan"
             }
         };
 
         // Called automatically by i18n.js whenever the user picks a new language
         function onLanguageChange() {
             filterTable(); // re-renders respecting whatever search text is currently active
+            renderRequests();
+            if (currentRequest) openReview(currentRequest.id);
         }
 
         let allFarmers = [];
@@ -234,7 +338,133 @@
         let currentPage = 1;
         const rowsPerPage = 10;
 
-        document.addEventListener('DOMContentLoaded', loadFarmers);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFarmers();
+            loadRequests();
+            if (location.hash === '#requests') showTab('requests');
+        });
+        // The bell's "View" link for a new request is farmer_management.html#requests;
+        // on this same page that only changes the hash, so switch tabs here too.
+        window.addEventListener('hashchange', () => { if (location.hash === '#requests') { showTab('requests'); loadRequests(); } });
+
+        // ─── REGISTRATION REQUESTS ──────────────────────────────────────────
+        let allRequests = [];
+        let currentRequest = null;
+
+        function showTab(tab) {
+            const req = tab === 'requests';
+            document.getElementById('requestsPanel').classList.toggle('hidden', !req);
+            document.getElementById('farmersPanel').classList.toggle('hidden', req);
+            document.getElementById('farmerFilters').classList.toggle('invisible', req);
+            document.getElementById('tabRequests').classList.toggle('active', req);
+            document.getElementById('tabFarmers').classList.toggle('active', !req);
+        }
+
+        async function loadRequests() {
+            try {
+                const res = await fetch('../../api/masterfile/registrations/get_pending.php');
+                const data = await res.json();
+                if (data.status === 'success') { allRequests = data.data; renderRequests(); }
+            } catch (e) { console.error('Requests load failed', e); }
+        }
+
+        const fullName = r => [r.first_name, r.middle_name, r.last_name, r.suffix].filter(Boolean).join(' ');
+
+        function renderRequests() {
+            const badge = document.getElementById('reqCount');
+            badge.textContent = allRequests.length;
+            badge.classList.toggle('hidden', allRequests.length === 0);
+            const tbody = document.getElementById('requestTableBody');
+            if (!allRequests.length) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-3 md:px-6 py-12 text-center text-gray-400 italic">${t('no_requests')}</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = allRequests.map(r => `
+                <tr class="hover:bg-gray-50/50 transition-colors">
+                    <td class="px-3 md:px-6 py-4">
+                        <p class="text-sm font-black text-gray-800">${escapeHtml(fullName(r))}</p>
+                        <p class="text-[10px] text-gray-400 break-all">${escapeHtml(r.email)}</p>
+                        <p class="md:hidden text-[10px] text-gray-500 font-mono mt-1">${escapeHtml(r.rsbsa_no)} · ${escapeHtml(r.requested_at || '')}</p>
+                    </td>
+                    <td class="hidden md:table-cell px-6 py-4 font-mono text-xs text-gray-700 whitespace-nowrap">${escapeHtml(r.rsbsa_no)}</td>
+                    <td class="hidden md:table-cell px-6 py-4 text-xs text-gray-600 whitespace-nowrap">${escapeHtml(r.requested_at || '')}</td>
+                    <td class="px-3 md:px-6 py-4 text-right">
+                        <button type="button" onclick="openReview(${Number(r.id)})" class="px-4 py-2 bg-[#11542e] text-white rounded-xl text-[10px] font-black uppercase tracking-wide hover:bg-green-800 transition-all inline-flex items-center gap-1.5">
+                            <i class="fa-solid fa-eye"></i> ${t('btn_review')}
+                        </button>
+                    </td>
+                </tr>`).join('');
+        }
+
+        function openReview(id) {
+            const r = allRequests.find(x => Number(x.id) === Number(id));
+            if (!r) return;
+            currentRequest = r;
+            const row = (label, value, wide) => `<div class="${wide ? 'col-span-2' : ''} min-w-0"><dt class="text-[10px] font-black text-gray-400 uppercase">${label}</dt><dd class="font-semibold text-gray-800 break-words">${escapeHtml(value || '—')}</dd></div>`;
+            document.getElementById('reviewSub').textContent = fullName(r);
+            document.getElementById('reviewDetails').innerHTML =
+                row(t('d_last'), r.last_name) + row(t('d_first'), r.first_name) +
+                row(t('d_middle'), r.middle_name) + row(t('d_suffix'), r.suffix || 'N/A') +
+                row(t('d_birth'), r.birth_date) + row(t('d_age'), r.age ? `${r.age} ${t('years_old')}` : '') +
+                row(t('d_gender'), r.gender) + row(t('d_civil'), r.civil_status) +
+                row(t('d_email'), r.email, true) + row(t('d_mobile'), r.contact) +
+                row(t('d_rsbsa'), r.rsbsa_no) + row(t('d_requested'), r.requested_at, true);
+            cancelReject();
+            document.getElementById('reviewModal').classList.remove('hidden');
+        }
+
+        function closeReview() { currentRequest = null; document.getElementById('reviewModal').classList.add('hidden'); }
+
+        function startReject() {
+            document.getElementById('rejectSection').classList.remove('hidden');
+            document.getElementById('reviewActions').classList.add('hidden');
+            document.getElementById('rejectActions').classList.remove('hidden');
+            document.getElementById('rejectReason').focus();
+        }
+        function cancelReject() {
+            document.getElementById('rejectReason').value = '';
+            document.getElementById('rejectOther').value = '';
+            document.getElementById('rejectOther').classList.add('hidden');
+            document.getElementById('rejectSection').classList.add('hidden');
+            document.getElementById('rejectActions').classList.add('hidden');
+            document.getElementById('reviewActions').classList.remove('hidden');
+        }
+
+        async function sendDecision(action, reason) {
+            const r = currentRequest;
+            try {
+                const res = await fetch('../../api/masterfile/registrations/process.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request_id: r.id, action, reason })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    closeReview();
+                    Swal.fire({ icon: 'success', title: t(action === 'approve' ? 'sw_approved_title' : 'sw_rejected_title'), text: data.message, confirmButtonColor: '#11542e' });
+                    loadRequests(); loadFarmers();
+                } else {
+                    Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
+                    loadRequests();
+                }
+            } catch (e) { Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'); }
+        }
+
+        function approveRequest() {
+            if (!currentRequest) return;
+            Swal.fire({ title: t('sw_approve_title'), text: t('sw_approve_text').replace('{name}', fullName(currentRequest)), icon: 'question',
+                        showCancelButton: true, confirmButtonColor: '#11542e', confirmButtonText: t('sw_approve_btn') })
+                .then(res => { if (res.isConfirmed) sendDecision('approve', ''); });
+        }
+
+        function confirmReject() {
+            if (!currentRequest) return;
+            const choice = document.getElementById('rejectReason').value;
+            const reason = choice === 'Other' ? document.getElementById('rejectOther').value.trim() : choice;
+            if (!reason) { Swal.fire(t('sw_error_title'), t('sw_reason_required'), 'warning'); return; }
+            Swal.fire({ title: t('sw_reject_title'), html: `${escapeHtml(t('sw_reject_text').replace('{name}', fullName(currentRequest)))}<br><br><b>${escapeHtml(reason)}</b>`,
+                        icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: t('sw_reject_btn') })
+                .then(res => { if (res.isConfirmed) sendDecision('reject', reason); });
+        }
 
         async function loadFarmers() {
             try {

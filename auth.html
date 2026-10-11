@@ -175,6 +175,27 @@
         .toggle-password:hover { color: var(--green); }
         .field-hint { font-size: 0.75rem; color: var(--muted); margin: -8px 0 16px; }
 
+        /* Registration form: dropdowns and the date picker match the text inputs;
+           fields without an icon drop the left padding reserved for one. */
+        .input-group select, .input-group input[type="date"] {
+            width: 100%; height: 48px; padding: 0 14px;
+            font: inherit; font-size: 0.95rem; color: var(--ink);
+            background: var(--field); border: 1px solid var(--line); border-radius: 12px;
+            outline: none; transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+        .input-group select:focus, .input-group input[type="date"]:focus { border-color: var(--green); background: #fff; box-shadow: 0 0 0 4px var(--green-soft); }
+        .input-group input.no-icon { padding-left: 14px; padding-right: 14px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+        .grid-2 > div { min-width: 0; }
+        .form-section {
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--green); margin: 6px 0 12px; padding-top: 4px;
+        }
+        .form-section:not(:first-of-type) { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 10px; }
+        .optional { font-weight: 400; color: var(--muted); }
+        #registerForm { max-width: 440px; }
+        @media (max-width: 380px) { .grid-2 { grid-template-columns: 1fr; } }
+
         .phone-row { display: flex; gap: 8px; }
         .phone-prefix {
             display: flex; align-items: center; gap: 6px; padding: 0 14px; flex-shrink: 0;
@@ -308,12 +329,74 @@
             </div>
             <div class="msg-box" id="regMsg"></div>
 
-            <label class="field-label" for="regName">Full name</label>
-            <div class="input-group">
-                <i class="fa-regular fa-user field-icon"></i>
-                <input type="text" id="regName" placeholder="Juan Dela Cruz" autocomplete="name" required>
+            <p class="form-section">Personal information</p>
+            <div class="grid-2">
+                <div>
+                    <label class="field-label" for="regLastName">Last name</label>
+                    <div class="input-group">
+                        <input type="text" id="regLastName" class="no-icon" placeholder="Dela Cruz" autocomplete="family-name" maxlength="50" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label" for="regFirstName">First name</label>
+                    <div class="input-group">
+                        <input type="text" id="regFirstName" class="no-icon" placeholder="Juan" autocomplete="given-name" maxlength="50" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label" for="regMiddleName">Middle name <span class="optional">(optional)</span></label>
+                    <div class="input-group">
+                        <input type="text" id="regMiddleName" class="no-icon" placeholder="Santos" autocomplete="additional-name" maxlength="50">
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label" for="regSuffix">Suffix</label>
+                    <div class="input-group">
+                        <select id="regSuffix" class="no-icon">
+                            <option value="N/A">N/A</option>
+                            <option value="Jr.">Jr.</option>
+                            <option value="Sr.">Sr.</option>
+                            <option value="II">II</option>
+                            <option value="III">III</option>
+                            <option value="IV">IV</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
+            <label class="field-label" for="regBirthDate">Date of birth</label>
+            <div class="input-group">
+                <input type="date" id="regBirthDate" class="no-icon" required>
+            </div>
+            <p class="field-hint">You must be at least 18 years old.</p>
+
+            <div class="grid-2">
+                <div>
+                    <label class="field-label" for="regGender">Gender</label>
+                    <div class="input-group">
+                        <select id="regGender" class="no-icon" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="field-label" for="regCivilStatus">Civil status</label>
+                    <div class="input-group">
+                        <select id="regCivilStatus" class="no-icon" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Separated">Separated</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <p class="form-section">Contact details</p>
             <label class="field-label" for="regContact">Mobile number</label>
             <div class="input-group phone-row">
                 <span class="phone-prefix">🇵🇭 +63</span>
@@ -326,7 +409,18 @@
                 <i class="fa-regular fa-envelope field-icon"></i>
                 <input type="email" id="regEmail" placeholder="name@example.com" autocomplete="email" required>
             </div>
+            <p class="field-hint">We will send a 6-digit code to this email to confirm it is yours.</p>
 
+            <p class="form-section">RSBSA</p>
+            <label class="field-label" for="regRSBSA">RSBSA number</label>
+            <div class="input-group">
+                <i class="fa-regular fa-id-card field-icon"></i>
+                <input type="text" id="regRSBSA" placeholder="###-####-#####" inputmode="numeric" autocomplete="off" required
+                       oninput="this.value = formatRSBSA(this.value);">
+            </div>
+            <p class="field-hint">As shown on your RSBSA enrollment, e.g. 102-4304-10231. The DA Admin checks it before approving your account.</p>
+
+            <p class="form-section">Password</p>
             <label class="field-label" for="regPass">Password</label>
             <div class="input-group">
                 <i class="fa-solid fa-lock field-icon"></i>
@@ -467,7 +561,8 @@
                 handleResendCode();
                 startCountdown(); // fire off a fresh code right away - don't make them notice and click it themselves
             } else {
-                errorBox.className = 'msg-box error';
+                // Waiting for the Admin's approval is not a mistake by the farmer.
+                errorBox.className = /waiting for approval/i.test(data.message || '') ? 'msg-box' : 'msg-box error';
                 errorBox.innerText = data.message;
             }
         } catch(e) {
@@ -530,48 +625,54 @@
         return { valid: true, message: '' };
     }
 
+    // RSBSA as ###-####-#####: dashes are added while typing, so a farmer only
+    // types the 12 digits from their RSBSA slip.
+    function formatRSBSA(value) {
+        const d = String(value).replace(/\D/g, '').slice(0, 12);
+        return [d.slice(0, 3), d.slice(3, 7), d.slice(7)].filter(Boolean).join('-');
+    }
+
+    // Same rules as api/auth/register.php (the server checks again).
+    const NAME_RE = /^\p{L}[\p{L} .'\-]*$/u;
+    function nameOk(v, minLetters) {
+        return NAME_RE.test(v) && (v.match(/\p{L}/gu) || []).length >= minLetters && v.length <= 50;
+    }
+    function ageFrom(isoDate) {
+        const b = new Date(isoDate + 'T00:00:00'), n = new Date();
+        let age = n.getFullYear() - b.getFullYear();
+        if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) age--;
+        return age;
+    }
+
     async function handleRegister() {
-        const name = document.getElementById('regName').value;
-        const contactDigits = document.getElementById('regContact').value.trim();
-        const email = document.getElementById('regEmail').value;
+        const val = id => document.getElementById(id).value.trim();
+        const lastName = val('regLastName'), firstName = val('regFirstName'), middleName = val('regMiddleName');
+        const suffix = val('regSuffix'), birthDate = val('regBirthDate'), gender = val('regGender'), civilStatus = val('regCivilStatus');
+        const contactDigits = val('regContact');
+        const email = val('regEmail');
+        const rsbsa = val('regRSBSA');
         const pass = document.getElementById('regPass').value;
         const passConfirm = document.getElementById('regPassConfirm').value;
-        
+
         const msgBox = document.getElementById('regMsg');
+        const fail = (m) => { msgBox.className = 'msg-box error'; msgBox.innerText = m; msgBox.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
 
-        const cleanName = name.trim();
-        if (!/^\p{L}[\p{L} .'\-]*$/u.test(cleanName) || (cleanName.match(/\p{L}/gu) || []).length < 2 || cleanName.length > 100) {
-            msgBox.className = 'msg-box error';
-            msgBox.innerText = 'Please enter a valid full name using letters only (spaces, periods, hyphens and apostrophes are allowed).';
-            return;
-        }
-
-        if (pass !== passConfirm) {
-            msgBox.className = 'msg-box error';
-            msgBox.innerText = "Passwords do not match!";
-            return;
-        }
-
-        const strength = validatePasswordStrength(pass);
-        if (!strength.valid) {
-            msgBox.className = 'msg-box error';
-            msgBox.innerText = strength.message;
-            return;
-        }
-
+        if (!nameOk(lastName, 2))  return fail('Please enter a valid last name using letters only (spaces, periods, hyphens and apostrophes are allowed).');
+        if (!nameOk(firstName, 2)) return fail('Please enter a valid first name using letters only (spaces, periods, hyphens and apostrophes are allowed).');
+        if (middleName && !nameOk(middleName, 1)) return fail('Please enter a valid middle name using letters only, or leave it blank.');
+        if (!birthDate) return fail('Please enter your date of birth.');
+        const age = ageFrom(birthDate);
+        if (isNaN(age) || age > 120) return fail('Please enter a valid date of birth.');
+        if (age < 18) return fail('You must be at least 18 years old to register.');
+        if (!gender) return fail('Please choose your gender.');
+        if (!civilStatus) return fail('Please choose your civil status.');
+        if (contactDigits.length !== 10) return fail('Contact number must be exactly 10 digits (e.g. 9171234567).');
         const emailCheck = validateEmailFormat(email);
-        if (!emailCheck.valid) {
-            msgBox.className = 'msg-box error';
-            msgBox.innerText = emailCheck.message;
-            return;
-        }
-
-        if (contactDigits.length !== 10) {
-            msgBox.className = 'msg-box error';
-            msgBox.innerText = 'Contact number must be exactly 10 digits (e.g. 9171234567).';
-            return;
-        }
-        const contact = '+63' + contactDigits;
+        if (!emailCheck.valid) return fail(emailCheck.message);
+        if (!/^\d{3}-\d{4}-\d{5}$/.test(rsbsa)) return fail('Please enter your RSBSA number in the format ###-####-##### (e.g. 102-4304-10231).');
+        const strength = validatePasswordStrength(pass);
+        if (!strength.valid) return fail(strength.message);
+        if (pass !== passConfirm) return fail('Passwords do not match!');
 
         msgBox.className = 'msg-box';
         msgBox.innerText = 'Registering...';
@@ -580,17 +681,15 @@
             const res = await fetch('api/auth/register.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Notice we dropped the farm_location field here entirely!
                 body: JSON.stringify({
-                    full_name: name,
-                    contact_number: contact,
-                    email: email,
-                    password: pass
+                    last_name: lastName, first_name: firstName, middle_name: middleName, suffix,
+                    birth_date: birthDate, gender, civil_status: civilStatus,
+                    email, contact_number: '+63' + contactDigits, rsbsa_no: rsbsa, password: pass
                 })
             });
             const data = await res.json();
-            
-            if(data.status === 'success') {
+
+            if (data.status === 'success') {
                 switchForm('verify');
                 // switchForm() resets the form, so this has to come after it.
                 document.getElementById('verifyEmail').value = email;
@@ -599,14 +698,21 @@
                 document.querySelector('.code-digit').focus();
                 startCountdown();
             } else {
-                msgBox.className = 'msg-box error';
-                msgBox.innerText = data.message;
+                fail(data.message);
             }
-        } catch(e) { 
-            msgBox.className = 'msg-box error';
-            msgBox.innerText = connectionMessage(e);
+        } catch(e) {
+            fail(connectionMessage(e));
         }
     }
+
+    // Date of birth: nobody younger than 18 can be picked (the server checks too).
+    (function setBirthDateLimit() {
+        const el = document.getElementById('regBirthDate');
+        if (!el) return;
+        const d = new Date(); d.setFullYear(d.getFullYear() - 18);
+        el.max = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        el.min = (new Date().getFullYear() - 120) + '-01-01';
+    })();
 
     // ── 6-digit code boxes: auto-advance forward on type, back on backspace,
     // supports pasting the whole code at once, keeps the hidden input in sync.
@@ -774,7 +880,16 @@
             if (data.status === 'success') {
                 msgBox.className = 'msg-box success';
                 msgBox.innerText = data.message;
-                setTimeout(() => switchForm('login'), 1500);
+                // A new farmer's registration still needs the Admin's approval,
+                // so leave that longer message up long enough to read.
+                setTimeout(() => {
+                    switchForm('login');
+                    if (data.step === 'pending_approval') {
+                        const box = document.getElementById('loginError');
+                        box.className = 'msg-box success';
+                        box.innerText = data.message;
+                    }
+                }, data.step === 'pending_approval' ? 2500 : 1500);
             } else {
                 msgBox.className = 'msg-box error';
                 msgBox.innerText = data.message;

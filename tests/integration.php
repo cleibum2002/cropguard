@@ -23,31 +23,30 @@ $guest  = new Client();
 $farmer = new Client();
 $admin  = new Client();
 
-test('it101 registration rejects a blank name', function () use ($guest, $newEmail) {
-    $res = $guest->post('api/auth/register.php', [
-        'full_name' => '   ', 'contact_number' => '09171234567',
-        'email' => $newEmail, 'password' => 'Palay@2026',
-    ]);
+// A complete, valid sign-up (2026-10-11 form); each test breaks one field.
+$signup = fn(array $override) => array_merge([
+    'last_name' => 'Dela Cruz', 'first_name' => 'Juan', 'middle_name' => '', 'suffix' => 'N/A',
+    'birth_date' => '1980-05-20', 'gender' => 'Male', 'civil_status' => 'Married',
+    'email' => $newEmail, 'contact_number' => '09171234567', 'rsbsa_no' => '999-0000-00001', 'password' => 'Palay@2026',
+], $override);
+
+test('it101 registration rejects a blank name', function () use ($guest, $signup) {
+    $res = $guest->post('api/auth/register.php', $signup(['last_name' => '   ']));
     assertSame('error', $res['status'], 'status');
-    assertContains('full name', $res['message'], 'message');
+    assertContains('fill in all required fields', $res['message'], 'message');
 });
 
-test('it102 registration rejects an invalid mobile number', function () use ($guest, $newEmail) {
-    $res = $guest->post('api/auth/register.php', [
-        'full_name' => 'Juan Dela Cruz', 'contact_number' => '12345',
-        'email' => $newEmail, 'password' => 'Palay@2026',
-    ]);
+test('it102 registration rejects an invalid mobile number', function () use ($guest, $signup) {
+    $res = $guest->post('api/auth/register.php', $signup(['contact_number' => '12345']));
     assertSame('error', $res['status'], 'status');
     assertContains('mobile number', $res['message'], 'message');
 });
 
-test('it103 registration rejects a weak password', function () use ($guest, $newEmail) {
-    $res = $guest->post('api/auth/register.php', [
-        'full_name' => 'Juan Dela Cruz', 'contact_number' => '09171234567',
-        'email' => $newEmail, 'password' => 'short',
-    ]);
+test('it103 registration rejects a weak password', function () use ($guest, $newEmail, $signup) {
+    $res = $guest->post('api/auth/register.php', $signup(['password' => 'short']));
     assertSame('error', $res['status'], 'status');
     assertNull(row('SELECT User_ID FROM users WHERE Email = ?', 's', $newEmail), 'no account was created');
+    assertNull(row('SELECT Request_ID FROM registration_requests WHERE Email = ?', 's', $newEmail), 'no request was filed');
 });
 
 test('it104 unverified account is blocked at login', function () use ($farmer, $farmerEmail) {
