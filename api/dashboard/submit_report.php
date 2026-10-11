@@ -170,7 +170,7 @@ try {
         $rsbaStmt->execute();
         $rsba = $rsbaStmt->get_result()->fetch_assoc()['RSBA_No'] ?? '';
         $rsbaStmt->close();
-        if (empty($rsba) || !preg_match('/^\d{3}-\d{4}-\d{5}$/', $rsba)) {
+        if (empty($rsba) || !preg_match('/^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/', $rsba)) {
             $conn->rollback();
             if (ob_get_length()) ob_clean();
             echo json_encode(['status' => 'error', 'message' => 'A valid RSBSA number is required in your profile before you can submit a damage report.']);

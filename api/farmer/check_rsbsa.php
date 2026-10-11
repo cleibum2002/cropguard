@@ -27,10 +27,10 @@ try {
         exit;
     }
 
-    if (!preg_match('/^\d{3}-\d{4}-\d{5}$/', $rsba)) {
+    if (!preg_match('/^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/', $rsba)) {
         echo json_encode([
             'status'  => 'invalid_format',
-            'message' => 'Your RSBSA number format is invalid. Please update it in your profile. Format: ###-####-##### (e.g. 202-5985-77856)'
+            'message' => 'Your RSBSA number format is invalid. Please update it in your profile. Format: ##-##-##-###-###### (e.g. 10-43-04-019-000123)'
         ]);
         exit;
     }

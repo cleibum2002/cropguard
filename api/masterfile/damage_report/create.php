@@ -82,7 +82,7 @@ try {
             echo json_encode(["status" => "error", "message" => "Please choose a valid, active registered farmer."]);
             exit;
         }
-        if (empty($f['RSBA_No']) || !preg_match('/^\d{3}-\d{4}-\d{5}$/', $f['RSBA_No'])) {
+        if (empty($f['RSBA_No']) || !preg_match('/^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/', $f['RSBA_No'])) {
             echo json_encode(["status" => "error", "message" => "This farmer has no valid RSBSA number on file. Please set it in Farmer Management before filing a report for them."]);
             exit;
         }

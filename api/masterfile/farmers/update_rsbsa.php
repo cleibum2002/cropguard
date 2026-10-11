@@ -17,8 +17,8 @@ if (!$user_id) {
     exit;
 }
 
-if (!empty($rsbsa) && !preg_match('/^\d{3}-\d{4}-\d{5}$/', $rsbsa)) {
-    echo json_encode(['status' => 'error', 'message' => 'Invalid RSBSA format. Use: ###-####-##### (e.g. 202-5985-77856)']);
+if (!empty($rsbsa) && !preg_match('/^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/', $rsbsa)) {
+    echo json_encode(['status' => 'error', 'message' => 'Invalid RSBSA format. Use: ##-##-##-###-###### (e.g. 10-43-04-019-000123)']);
     exit;
 }
 
