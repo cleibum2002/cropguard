@@ -5,13 +5,13 @@
 // session_check.php (which enforces it) and heartbeat.php (which refreshes it),
 // so the limit can never drift between the two.
 //
-// The browser runs its own 5-minute timer as well, but that one only exists
+// The browser runs its own 30-minute timer as well, but that one only exists
 // while the tab is open and was bypassable by refreshing instead of clicking
 // OK on the expiry dialog. This server-side check is the one that actually
 // ends the session.
 
 if (!defined('CG_IDLE_LIMIT_SECONDS')) {
-    define('CG_IDLE_LIMIT_SECONDS', 300); // 5 minutes, matches the client timer
+    define('CG_IDLE_LIMIT_SECONDS', 1800); // 30 minutes, matches the client timer
 }
 
 if (!function_exists('cg_session_is_idle_expired')) {
