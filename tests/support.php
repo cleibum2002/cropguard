@@ -186,7 +186,7 @@ function makeUser(string $role, string $key, array $o = []): int
     // RSBA_No is UNIQUE, so each test farmer gets its own number, from a range
     // (000-0000-xxxxx) that real RSBSA numbers don't use.
     static $rsbsaSeq = 0;
-    $rsbsa    = array_key_exists('rsbsa', $o) ? $o['rsbsa'] : ($role === 'Farmer' ? sprintf('000-0000-%05d', ++$rsbsaSeq) : null);
+    $rsbsa    = array_key_exists('rsbsa', $o) ? $o['rsbsa'] : ($role === 'Farmer' ? sprintf('00-00-00-000-%06d', ++$rsbsaSeq) : null);
     $code     = $o['code'] ?? null;
     $expires  = $o['expires'] ?? ($code ? date('Y-m-d H:i:s', strtotime('+5 minutes')) : null);
 

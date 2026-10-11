@@ -437,10 +437,10 @@
             <label class="field-label" for="regRSBSA">RSBSA number</label>
             <div class="input-group">
                 <i class="fa-regular fa-id-card field-icon"></i>
-                <input type="text" id="regRSBSA" placeholder="###-####-#####" inputmode="numeric" autocomplete="off" required
+                <input type="text" id="regRSBSA" placeholder="##-##-##-###-######" inputmode="numeric" autocomplete="off" required
                        oninput="this.value = formatRSBSA(this.value);">
             </div>
-            <p class="field-hint">As shown on your RSBSA enrollment, e.g. 102-4304-10231. The DA Admin checks it before approving your account.</p>
+            <p class="field-hint">As shown on your RSBSA record or DA card, e.g. 10-43-04-019-000123 (region - province - municipality - barangay - number). The DA Admin checks it before approving your account.</p>
             <div class="step-nav">
                 <button type="button" class="btn-back" onclick="regBack()"><i class="fa-solid fa-arrow-left"></i> Back</button>
                 <button type="button" class="btn-submit" onclick="regNext()">Next <i class="fa-solid fa-arrow-right" style="margin-left:6px;"></i></button>
@@ -658,11 +658,12 @@
         return { valid: true, message: '' };
     }
 
-    // RSBSA as ###-####-#####: dashes are added while typing, so a farmer only
+    // RSBSA as ##-##-##-###-###### (region-province-municipality-barangay-number, the PSGC
+    // place code plus the farmer's number): dashes are added while typing, so a farmer only
     // types the 12 digits from their RSBSA slip.
     function formatRSBSA(value) {
-        const d = String(value).replace(/\D/g, '').slice(0, 12);
-        return [d.slice(0, 3), d.slice(3, 7), d.slice(7)].filter(Boolean).join('-');
+        const d = String(value).replace(/\D/g, '').slice(0, 15);
+        return [d.slice(0, 2), d.slice(2, 4), d.slice(4, 6), d.slice(6, 9), d.slice(9)].filter(Boolean).join('-');
     }
 
     // Same rules as api/auth/register.php (the server checks again).
@@ -704,7 +705,7 @@
             if (v.contactDigits.length !== 10) return 'Contact number must be exactly 10 digits (e.g. 9171234567).';
             const emailCheck = validateEmailFormat(v.email);
             if (!emailCheck.valid) return emailCheck.message;
-            if (!/^\d{3}-\d{4}-\d{5}$/.test(v.rsbsa)) return 'Please enter your RSBSA number in the format ###-####-##### (e.g. 102-4304-10231).';
+            if (!/^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/.test(v.rsbsa)) return 'Please enter your RSBSA number in the format ##-##-##-###-###### (e.g. 10-43-04-019-000123).';
         } else if (n === 3) {
             const strength = validatePasswordStrength(v.pass);
             if (!strength.valid) return strength.message;

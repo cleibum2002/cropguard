@@ -101,7 +101,7 @@ try {
     if ($contact === null) fail('Please enter a valid Philippine mobile number, for example 09171234567.');
 
     $rsbsa = $get('rsbsa_no');
-    if (!preg_match('/^\d{3}-\d{4}-\d{5}$/', $rsbsa)) fail('Please enter your RSBSA number in the format ###-####-##### (e.g. 102-4304-10231).');
+    if (!preg_match('/^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/', $rsbsa)) fail('Please enter your RSBSA number in the format ##-##-##-###-###### (e.g. 10-43-04-019-000123).');
 
     $password_error = validatePasswordStrength($data['password'] ?? '');
     if ($password_error) fail($password_error);

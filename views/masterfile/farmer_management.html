@@ -253,9 +253,9 @@
                 <input type="hidden" id="editUserId">
                 <div>
                     <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="th_rsbsa_number">RSBSA Number</label>
-                    <input type="text" id="editRSBSA" placeholder="e.g. 202-5985-77856"
+                    <input type="text" id="editRSBSA" placeholder="e.g. 10-43-04-019-000123" inputmode="numeric" oninput="this.value = formatRSBSA(this.value);"
                         class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#11542e]">
-                    <p class="text-[10px] text-gray-400 mt-1" data-i18n="hint_rsbsa_format">Format: ###-####-##### (e.g. 202-5985-77856)</p>
+                    <p class="text-[10px] text-gray-400 mt-1" data-i18n="hint_rsbsa_format">Format: ##-##-##-###-###### (e.g. 10-43-04-019-000123)</p>
                 </div>
             </div>
             <div class="flex gap-3 p-6 border-t border-gray-100">
@@ -277,7 +277,7 @@
                 stat_total_farmers: "Total Farmers", stat_with_rsbsa: "With RSBSA", stat_missing_rsbsa: "Missing RSBSA",
                 th_farmer: "Farmer", th_contact: "Contact", th_rsbsa_number: "RSBSA Number", th_rsbsa_status: "RSBSA Status",
                 th_account: "Account", th_action: "Action",
-                modal_title_edit_rsbsa: "Edit RSBSA Number", hint_rsbsa_format: "Format: ###-####-##### (e.g. 202-5985-77856)",
+                modal_title_edit_rsbsa: "Edit RSBSA Number", hint_rsbsa_format: "Format: ##-##-##-###-###### (e.g. 10-43-04-019-000123)",
                 btn_cancel: "Cancel", btn_save: "Save",
                 no_farmers_found: "No farmers found.",
                 badge_missing: "Missing", badge_verified: "Verified", badge_invalid_format: "Invalid Format",
@@ -286,7 +286,7 @@
                 btn_previous: "Previous", btn_next: "Next",
                 label_showing: "Showing", label_to: "to", label_of: "of",
                 btn_edit_rsbsa: "Edit RSBSA",
-                sw_invalid_format_title: "Invalid Format", sw_invalid_format_text: "RSBSA must follow: ###-####-##### (e.g. 202-5985-77856)",
+                sw_invalid_format_title: "Invalid Format", sw_invalid_format_text: "RSBSA must follow: ##-##-##-###-###### (e.g. 10-43-04-019-000123)",
                 sw_saved_title: "Saved!", sw_saved_text: "RSBSA number updated.", sw_error_title: "Error",
                 sw_update_failed: "Update failed.", sw_server_failed: "Server connection failed.",
                 sw_logout_title: "Logout?", sw_logout_btn: "Logout",
@@ -322,7 +322,7 @@
                 stat_total_farmers: "Kabuuang Magsasaka", stat_with_rsbsa: "May RSBSA", stat_missing_rsbsa: "Walang RSBSA",
                 th_farmer: "Magsasaka", th_contact: "Contact", th_rsbsa_number: "RSBSA Number", th_rsbsa_status: "Katayuan ng RSBSA",
                 th_account: "Account", th_action: "Aksyon",
-                modal_title_edit_rsbsa: "I-edit ang RSBSA Number", hint_rsbsa_format: "Format: ###-####-##### (hal. 202-5985-77856)",
+                modal_title_edit_rsbsa: "I-edit ang RSBSA Number", hint_rsbsa_format: "Format: ##-##-##-###-###### (hal. 10-43-04-019-000123)",
                 btn_cancel: "Kanselahin", btn_save: "I-save",
                 no_farmers_found: "Walang nahanap na magsasaka.",
                 badge_missing: "Kulang", badge_verified: "Beripikado", badge_invalid_format: "Maling Format",
@@ -331,7 +331,7 @@
                 btn_previous: "Nakaraan", btn_next: "Susunod",
                 label_showing: "Ipinapakita", label_to: "hanggang", label_of: "ng",
                 btn_edit_rsbsa: "I-edit ang RSBSA",
-                sw_invalid_format_title: "Maling Format", sw_invalid_format_text: "Dapat sundin ng RSBSA ang: ###-####-##### (hal. 202-5985-77856)",
+                sw_invalid_format_title: "Maling Format", sw_invalid_format_text: "Dapat sundin ng RSBSA ang: ##-##-##-###-###### (hal. 10-43-04-019-000123)",
                 sw_saved_title: "Na-save na!", sw_saved_text: "Na-update ang RSBSA number.", sw_error_title: "Error",
                 sw_update_failed: "Nabigo ang pag-update.", sw_server_failed: "Nabigo ang koneksyon sa server.",
                 sw_logout_title: "Mag-logout?", sw_logout_btn: "Mag-logout",
@@ -368,6 +368,13 @@
             renderRequests();
             if (currentRequest) openReview(currentRequest.id);
             if (viewedFarmerId) openFarmerView(viewedFarmerId);
+        }
+
+        // RSBSA number: ##-##-##-###-###### (region-province-municipality-barangay-number).
+        const RSBSA_RE = /^\d{2}-\d{2}-\d{2}-\d{3}-\d{6}$/;
+        function formatRSBSA(value) {
+            const d = String(value).replace(/\D/g, '').slice(0, 15);
+            return [d.slice(0, 2), d.slice(2, 4), d.slice(4, 6), d.slice(6, 9), d.slice(9)].filter(Boolean).join('-');
         }
 
         let allFarmers = [];
@@ -573,7 +580,7 @@
             }
             tbody.innerHTML = data.map(f => {
                 const hasRSBSA    = f.rsbsa_no && f.rsbsa_no.trim() !== '';
-                const validFormat = hasRSBSA && /^\d{3}-\d{4}-\d{5}$/.test(f.rsbsa_no);
+                const validFormat = hasRSBSA && RSBSA_RE.test(f.rsbsa_no);
                 const isActive    = f.status === 'Active';
                 const rsbsaBadge  = !hasRSBSA
                     ? `<span class="px-2 py-1 bg-red-100 text-red-600 rounded-full text-[9px] font-black uppercase">${t('badge_missing')}</span>`
@@ -644,7 +651,7 @@
                     (looksNumeric && qDigits.length >= 3 && localPhone((f.contact || '').replace(/\D/g, '')).includes(localPhone(qDigits)));
 
                 const hasRSBSA    = f.rsbsa_no && f.rsbsa_no.trim() !== '';
-                const validFormat = hasRSBSA && /^\d{3}-\d{4}-\d{5}$/.test(f.rsbsa_no);
+                const validFormat = hasRSBSA && RSBSA_RE.test(f.rsbsa_no);
                 const rsbsaState  = !hasRSBSA ? 'Missing' : (validFormat ? 'Verified' : 'Invalid');
                 const matchesRSBSA = (rsbsaFilter === 'ALL') || (rsbsaState === rsbsaFilter);
 
@@ -672,7 +679,7 @@
             const id    = document.getElementById('editUserId').value;
             const rsbsa = document.getElementById('editRSBSA').value.trim();
 
-            if (rsbsa && !/^\d{3}-\d{4}-\d{5}$/.test(rsbsa)) {
+            if (rsbsa && !RSBSA_RE.test(rsbsa)) {
                 Swal.fire(t('sw_invalid_format_title'), t('sw_invalid_format_text'), 'warning');
                 return;
             }

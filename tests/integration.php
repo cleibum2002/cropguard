@@ -27,7 +27,7 @@ $admin  = new Client();
 $signup = fn(array $override) => array_merge([
     'last_name' => 'Dela Cruz', 'first_name' => 'Juan', 'middle_name' => '', 'suffix' => 'N/A',
     'birth_date' => '1980-05-20', 'gender' => 'Male', 'civil_status' => 'Married',
-    'email' => $newEmail, 'contact_number' => '09171234567', 'rsbsa_no' => '999-0000-00001', 'password' => 'Palay@2026',
+    'email' => $newEmail, 'contact_number' => '09171234567', 'rsbsa_no' => '00-00-00-999-000001', 'password' => 'Palay@2026',
 ], $override);
 
 test('it101 registration rejects a blank name', function () use ($guest, $signup) {
