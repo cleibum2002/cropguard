@@ -183,6 +183,8 @@
                     <div class="col-span-2 sm:col-span-1">
                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_unit_type">Unit Type</label>
                         <input type="text" id="itemUnit" class="w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm" placeholder="e.g. Bags, Sacks, PHP">
+                        <!-- Seeds / Fertilizer / Equipment pick from their own list (UNIT_OPTIONS). -->
+                        <select id="itemUnitChoice" onchange="document.getElementById('itemUnit').value = this.value" class="hidden w-full px-4 py-3 sm:px-5 sm:py-3.5 bg-gray-50 border-none rounded-xl outline-none focus:ring-2 focus:ring-[#11542e] text-sm"></select>
                     </div>
                     <div class="col-span-2">
                         <label id="stockLabel" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 sm:mb-2" data-i18n="label_initial_stock">Initial Stock</label>
@@ -220,6 +222,8 @@
                 search_placeholder: "Search commodity name...", offline_ready: "Offline Mode Ready",
                 notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
                 filter_all_categories: "All Categories", filter_all_statuses: "All Statuses", category_seeds: "Seeds", category_fertilizer: "Fertilizer",
+                unit_bags: "Bags", unit_sacks: "Sacks", unit_packs: "Packs", unit_kilos: "Kilos", unit_liters: "Liters",
+                unit_units: "Units", unit_pieces: "Pieces", unit_sets: "Sets",
                 category_cash_aid: "Cash Aid", category_equipment: "Equipment", category_general: "General",
                 page_title: "Resource Management", page_sub: "DA Region X — System-wide commodity and supply inventory.",
                 btn_add_commodity: "Add New Commodity",
@@ -254,6 +258,8 @@
                 search_placeholder: "Maghanap ng pangalan ng commodity...", offline_ready: "Handa ang Offline Mode",
                 notif_title: "Mga Abiso", notif_loading: "Nilo-load...", notif_none: "Wala pang abiso.",
                 filter_all_categories: "Lahat ng Kategorya", filter_all_statuses: "Lahat ng Katayuan", category_seeds: "Binhi", category_fertilizer: "Pataba",
+                unit_bags: "Bags (Supot)", unit_sacks: "Sako", unit_packs: "Pakete", unit_kilos: "Kilo", unit_liters: "Litro",
+                unit_units: "Yunit", unit_pieces: "Piraso", unit_sets: "Set",
                 category_cash_aid: "Tulong Pera", category_equipment: "Kagamitan", category_general: "Pangkalahatan",
                 page_title: "Pamamahala ng Rekurso", page_sub: "DA Region X — Sistemang imbentaryo ng commodity at suplay.",
                 btn_add_commodity: "Magdagdag ng Bagong Commodity",
@@ -514,7 +520,32 @@
                 unitInput.readOnly = false;
                 unitInput.classList.remove('opacity-60', 'cursor-not-allowed');
             }
+
+            // Seeds, Fertilizer and Equipment choose their unit from their own list
+            // (Cash Aid stays fixed at PHP above). The text box stays the value
+            // that gets saved; the dropdown just fills it.
+            const choice = document.getElementById('itemUnitChoice');
+            const list = UNIT_OPTIONS[cat];
+            choice.classList.toggle('hidden', !list);
+            unitInput.classList.toggle('hidden', !!list);
+            if (list) {
+                const cur = unitInput.value.trim();
+                choice.innerHTML = '';
+                list.forEach(u => choice.add(new Option(t('unit_' + u.toLowerCase()), u)));
+                let match = list.find(u => u.toLowerCase() === cur.toLowerCase());
+                // An older item saved with some other unit keeps it, rather than
+                // being quietly changed on the next save. Only the saved unit -
+                // not one just picked under another category.
+                if (!match && cur && cur === unitInput.dataset.saved) { choice.add(new Option(cur, cur)); match = cur; }
+                choice.value = match || list[0];
+                unitInput.value = choice.value;
+            }
         }
+        const UNIT_OPTIONS = {
+            'Seeds':      ['Bags', 'Sacks', 'Packs', 'Kilos'],
+            'Fertilizer': ['Bags', 'Sacks', 'Kilos', 'Liters'],
+            'Equipment':  ['Units', 'Pieces', 'Sets'],
+        };
 
         function openModal() {
             document.getElementById("modalTitle").innerText = t('btn_add_commodity');
@@ -522,6 +553,7 @@
             document.getElementById("itemName").value = "";
             document.getElementById("itemCat").value = "Seeds";
             document.getElementById("itemUnit").value = "Bags";
+            document.getElementById("itemUnit").dataset.saved = "";
             document.getElementById("itemPrice").value = "0";
             document.getElementById("itemStock").value = "0";
             document.getElementById("itemDesc").value = "";
@@ -536,6 +568,7 @@
             document.getElementById("itemName").value = i.item_name;
             document.getElementById("itemCat").value = i.category || "Seeds";
             document.getElementById("itemUnit").value = i.unit || "";
+            document.getElementById("itemUnit").dataset.saved = i.unit || "";
             document.getElementById("itemUnit").readOnly = false;
             document.getElementById("itemUnit").classList.remove('opacity-60', 'cursor-not-allowed');
             document.getElementById("itemPrice").value = i.price || 0;
