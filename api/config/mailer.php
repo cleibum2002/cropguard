@@ -66,4 +66,54 @@ function sendVerificationEmail($toEmail, $toName, $code) {
     error_log('[' . date('Y-m-d H:i:s') . '] Brevo send failed (HTTP ' . $httpCode . '): ' . $response);
     return false;
 }
+
+// Generic Brevo send used by the registration approval / rejection emails.
+// Best-effort like sendVerificationEmail(): returns false instead of throwing.
+function sendBrevoEmail($toEmail, $toName, $subject, $htmlBody) {
+    if (empty(BREVO_API_KEY)) {
+        error_log('[' . date('Y-m-d H:i:s') . '] Brevo send skipped: BREVO_API_KEY not configured.');
+        return false;
+    }
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        'sender'      => ['name' => BREVO_SENDER_NAME, 'email' => BREVO_SENDER_EMAIL],
+        'to'          => [['email' => $toEmail, 'name' => $toName]],
+        'subject'     => $subject,
+        'htmlContent' => $htmlBody
+    ]));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json', 'Content-Type: application/json', 'api-key: ' . BREVO_API_KEY]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    $response  = curl_exec($ch);
+    $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    if ($curlError || $httpCode < 200 || $httpCode >= 300) {
+        error_log('[' . date('Y-m-d H:i:s') . '] Brevo send failed: ' . ($curlError ?: "HTTP $httpCode $response"));
+        return false;
+    }
+    return true;
+}
+
+function sendRegistrationApprovedEmail($toEmail, $toName) {
+    $name = htmlspecialchars($toName, ENT_QUOTES, 'UTF-8');
+    return sendBrevoEmail($toEmail, $toName, 'Your CropGuard registration was approved', "
+        <div style=\"font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;\">
+            <h2 style=\"color: #11542e;\">Welcome to CropGuard, $name!</h2>
+            <p>Your farmer registration has been reviewed and <strong>approved</strong> by the Department of Agriculture.</p>
+            <p>You can now log in with your email address and the password you created.</p>
+        </div>");
+}
+
+function sendRegistrationRejectedEmail($toEmail, $toName, $reason) {
+    $name   = htmlspecialchars($toName, ENT_QUOTES, 'UTF-8');
+    $reason = htmlspecialchars($reason, ENT_QUOTES, 'UTF-8');
+    return sendBrevoEmail($toEmail, $toName, 'Your CropGuard registration was not approved', "
+        <div style=\"font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;\">
+            <h2 style=\"color: #11542e;\">Hello, $name</h2>
+            <p>Your farmer registration was reviewed by the Department of Agriculture and was <strong>not approved</strong>.</p>
+            <p style=\"background:#f6f8f6; padding:12px 14px; border-radius:8px;\"><strong>Reason:</strong> $reason</p>
+            <p>Your details were not kept. You may register again with corrected information, or visit the Municipal Agriculture Office for help.</p>
+        </div>");
+}
 ?>

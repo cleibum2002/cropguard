@@ -1,5 +1,10 @@
 <?php
 // File: api/auth/register.php
+// Farmer sign-up. Since the 2026-10-11 revision this does NOT create an
+// account: it files a request in `registration_requests`. The applicant
+// verifies their email with a 6-digit code (verify_code.php), then the Admin
+// approves or rejects it (api/masterfile/registrations/process.php). Only an
+// approved request becomes a row in `users`; a rejected one is deleted.
 header('Content-Type: application/json');
 require_once '../config/db_connection.php'; // Adjust this path if your config is located elsewhere
 require_once '../config/mailer.php';
@@ -35,112 +40,127 @@ function validateEmailFormat($email) {
     return null;
 }
 
+// Letters (including ñ and accents), spaces, and . - ' only. strip_tags first:
+// names are later shown to staff, and never legitimately contain markup.
+function cleanNamePart($value, $minLetters) {
+    $v = trim(preg_replace('/\s+/', ' ', strip_tags((string)$value)));
+    if ($v === '') return ['', null];
+    if (!preg_match("/^[\p{L}][\p{L} .'\-]*$/u", $v) || preg_match_all('/\p{L}/u', $v) < $minLetters || mb_strlen($v) > 50) {
+        return [$v, false];
+    }
+    return [$v, true];
+}
+
+$SUFFIXES      = ['N/A', 'Jr.', 'Sr.', 'II', 'III', 'IV'];
+$GENDERS       = ['Male', 'Female', 'Prefer not to say'];
+$CIVIL_STATUS  = ['Single', 'Married', 'Widowed', 'Separated'];
+
+function fail($message) {
+    echo json_encode(['status' => 'error', 'message' => $message]);
+    exit;
+}
+
 try {
-    // 1. Get the JSON payload
-    $data = json_decode(file_get_contents("php://input"));
+    $data = json_decode(file_get_contents("php://input"), true) ?: [];
+    $get  = fn($k) => trim((string)($data[$k] ?? ''));
 
-    // 2. Validate inputs
-    if (empty($data->full_name) || empty($data->contact_number) || empty($data->email) || empty($data->password)) {
-        echo json_encode(['status' => 'error', 'message' => 'Please fill in all required fields.']);
-        exit;
+    // 1. Required fields
+    foreach (['last_name', 'first_name', 'birth_date', 'gender', 'civil_status', 'email', 'contact_number', 'rsbsa_no', 'password'] as $k) {
+        if ($get($k) === '') fail('Please fill in all required fields.');
     }
 
-    $password_error = validatePasswordStrength($data->password);
-    if ($password_error) {
-        echo json_encode(['status' => 'error', 'message' => $password_error]);
-        exit;
+    // 2. Name parts
+    [$last, $okLast]     = cleanNamePart($data['last_name'] ?? '', 2);
+    [$first, $okFirst]   = cleanNamePart($data['first_name'] ?? '', 2);
+    [$middle, $okMiddle] = cleanNamePart($data['middle_name'] ?? '', 1);
+    if ($okLast !== true)  fail('Please enter a valid last name using letters only (spaces, periods, hyphens and apostrophes are allowed).');
+    if ($okFirst !== true) fail('Please enter a valid first name using letters only (spaces, periods, hyphens and apostrophes are allowed).');
+    if ($middle !== '' && $okMiddle !== true) fail('Please enter a valid middle name using letters only, or leave it blank.');
+    $suffix = $get('suffix') === '' ? 'N/A' : $get('suffix');
+    if (!in_array($suffix, $SUFFIXES, true)) fail('Please choose a suffix from the list.');
+
+    // 3. Date of birth: a real date, at least 18 years old, not over 120.
+    $birth = $get('birth_date');
+    $bd = DateTime::createFromFormat('Y-m-d', $birth);
+    if (!$bd || $bd->format('Y-m-d') !== $birth) fail('Please enter a valid date of birth.');
+    $age = (int)$bd->diff(new DateTime('today'))->y;
+    if ($bd > new DateTime('today')) fail('Date of birth cannot be in the future.');
+    if ($age < 18)  fail('You must be at least 18 years old to register.');
+    if ($age > 120) fail('Please enter a valid date of birth.');
+
+    // 4. Choices
+    if (!in_array($get('gender'), $GENDERS, true))            fail('Please choose a gender from the list.');
+    if (!in_array($get('civil_status'), $CIVIL_STATUS, true)) fail('Please choose a civil status from the list.');
+
+    // 5. Contact details and RSBSA
+    $email = $get('email');
+    $email_error = validateEmailFormat($email);
+    if ($email_error) fail($email_error);
+
+    $contact = normalizePhMobile($get('contact_number'));
+    if ($contact === null) fail('Please enter a valid Philippine mobile number, for example 09171234567.');
+
+    $rsbsa = $get('rsbsa_no');
+    if (!preg_match('/^\d{3}-\d{4}-\d{5}$/', $rsbsa)) fail('Please enter your RSBSA number in the format ###-####-##### (e.g. 102-4304-10231).');
+
+    $password_error = validatePasswordStrength($data['password'] ?? '');
+    if ($password_error) fail($password_error);
+
+    // 6. Requests whose email was never verified are not kept for more than a day.
+    $conn->query("DELETE FROM registration_requests WHERE Email_Verified = 0 AND Created_At < NOW() - INTERVAL 1 DAY");
+
+    // 7. Not already a farmer / user
+    $chk = $conn->prepare("SELECT User_ID FROM users WHERE Email = ?");
+    $chk->bind_param("s", $email); $chk->execute();
+    if ($chk->get_result()->fetch_assoc()) fail('This email is already registered.');
+    $chk->close();
+
+    $chk = $conn->prepare("SELECT User_ID FROM users WHERE RSBA_No = ?");
+    $chk->bind_param("s", $rsbsa); $chk->execute();
+    if ($chk->get_result()->fetch_assoc()) fail('This RSBSA number is already registered to another farmer.');
+    $chk->close();
+
+    // 8. Not already waiting for approval. An unverified earlier attempt with the
+    //    same email is replaced, so a typo in the first try never blocks them.
+    $chk = $conn->prepare("SELECT Request_ID, Email, Email_Verified FROM registration_requests WHERE Email = ? OR RSBA_No = ?");
+    $chk->bind_param("ss", $email, $rsbsa); $chk->execute();
+    $existing = $chk->get_result()->fetch_all(MYSQLI_ASSOC);
+    $chk->close();
+    foreach ($existing as $row) {
+        if ((int)$row['Email_Verified'] === 1) {
+            fail(strcasecmp($row['Email'], $email) === 0
+                ? 'A registration with this email is already waiting for approval by the DA Admin.'
+                : 'This RSBSA number already has a registration waiting for approval.');
+        }
+        if (strcasecmp($row['Email'], $email) !== 0) {
+            fail('This RSBSA number already has a registration in progress. Please check the email used, or try again tomorrow.');
+        }
+    }
+    foreach ($existing as $row) {
+        $del = $conn->prepare("DELETE FROM registration_requests WHERE Request_ID = ? AND Email_Verified = 0");
+        $del->bind_param("i", $row['Request_ID']); $del->execute(); $del->close();
     }
 
-    $email_error = validateEmailFormat($data->email);
-    if ($email_error) {
-        echo json_encode(['status' => 'error', 'message' => $email_error]);
-        exit;
-    }
+    // 9. File the request and email the code. The code is deliberately NOT
+    //    returned in this response: it goes out by email only, which is what
+    //    proves the applicant controls the address.
+    $middleDb = $middle === '' ? null : $middle;
+    $suffixDb = $suffix === 'N/A' ? null : $suffix;
+    $hashed   = hashUserPassword($data['password']);
+    $code     = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    $expires  = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+    $gender   = $get('gender');
+    $civil    = $get('civil_status');
 
-    // The farmer's contact number. Not used for verification (that is email
-    // only), but MAO and Admin rely on it to reach the farmer, so a malformed
-    // number is caught here while the farmer can still fix it.
-    $normalized_contact = normalizePhMobile($data->contact_number);
-    if ($normalized_contact === null) {
-        echo json_encode([
-            'status'  => 'error',
-            'message' => 'Please enter a valid Philippine mobile number, for example 09171234567.'
-        ]);
-        exit;
-    }
+    $ins = $conn->prepare("INSERT INTO registration_requests
+        (Last_Name, First_Name, Middle_Name, Suffix, Birth_Date, Gender, Civil_Status, Email, Contact_Number, RSBA_No, Password, Email_Verified, Verification_Token, Verification_Token_Expires)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)");
+    $ins->bind_param("sssssssssssss", $last, $first, $middleDb, $suffixDb, $birth, $gender, $civil, $email, $contact, $rsbsa, $hashed, $code, $expires);
+    if (!$ins->execute()) fail('Could not save your registration. Please try again.');
+    $ins->close();
 
-    // 3. Clean inputs
-    // No real_escape_string here: every query below uses a prepared statement,
-    // which already makes the values SQL-safe. Escaping by hand as well stored a
-    // literal backslash - "D'Cruz" became "D\'Cruz", and an apostrophe email like
-    // o'person7@example.com was saved as o\'person7@example.com, so that farmer could never
-    // log in (login.php compares against what they actually type).
-    // strip_tags on the name: it's later spliced into admin notification text
-    // that the Admin dashboard renders with innerHTML, so an unauthenticated
-    // registration was a route to stored XSS in staff browsers. Names never
-    // legitimately contain markup.
-    $name = trim(strip_tags(trim($data->full_name)));
-    // The empty() check above passes a name of only spaces or only tags ("   ",
-    // "<b></b>"), which is blank once cleaned - that farmer would show up as a
-    // nameless row in every list and report.
-    if ($name === '') {
-        echo json_encode(['status' => 'error', 'message' => 'Please enter your full name.']);
-        exit;
-    }
-    // Letters (including ñ and accents), spaces, and . - ' only - so a typo'd
-    // phone number or random symbols can't become a farmer's name.
-    if (!preg_match("/^[\p{L}][\p{L} .'\-]*$/u", $name) || preg_match_all('/\p{L}/u', $name) < 2 || mb_strlen($name) > 100) {
-        echo json_encode(['status' => 'error', 'message' => "Please enter a valid full name using letters only (spaces, periods, hyphens and apostrophes are allowed)."]);
-        exit;
-    }
-    // Stored in the normalized 09XXXXXXXXX form so the column stays consistent
-    // regardless of how the farmer originally typed it.
-    $contact = $normalized_contact;
-    $email = $data->email;
-    // Hash the password securely!
-    $hashed_pass = hashUserPassword($data->password);
-    $role = 'Farmer';
-
-    // 4. Check if the email is already registered (users table, not Farmer)
-    $check_stmt = $conn->prepare("SELECT User_ID FROM users WHERE Email = ?");
-    $check_stmt->bind_param("s", $email);
-    $check_stmt->execute();
-    $result = $check_stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        echo json_encode(['status' => 'error', 'message' => 'This email is already registered.']);
-        $check_stmt->close();
-        exit;
-    }
-    $check_stmt->close();
-
-    // 5. Insert the new Farmer into the users table with Role = 'Farmer'
-    // Email_Verified starts at 0 - they can't log in until they enter this code correctly.
-    // A short 6-digit code (not a link-token) so it can be shown directly on screen and
-    // typed in - this works even while a working email provider isn't confirmed yet.
-    // We still ATTEMPT to email it too (best-effort, ignored if it fails) - once a real
-    // provider is sorted, delivery just starts working with zero further code changes.
-    $verification_code = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-    $token_expires = date('Y-m-d H:i:s', strtotime('+5 minutes'));
-
-    $insert_stmt = $conn->prepare("INSERT INTO users (Role, Fullname, Contact_Number, Email, Password, STATUS, Email_Verified, Verification_Token, Verification_Token_Expires) VALUES (?, ?, ?, ?, ?, 'Active', 0, ?, ?)");
-    $insert_stmt->bind_param("sssssss", $role, $name, $contact, $email, $hashed_pass, $verification_code, $token_expires);
-
-    if ($insert_stmt->execute()) {
-        sendVerificationEmail($email, $name, $verification_code); // best-effort, result intentionally ignored
-        // The code is deliberately NOT returned in this response. Handing it to
-        // whoever submitted the form defeats the entire point of verifying that
-        // they control the email address - and it was plainly visible in the
-        // browser's Network tab. It goes out by email only.
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Registration successful!'
-        ]);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Database error: Could not create account.']);
-    }
-
-    $insert_stmt->close();
+    sendVerificationEmail($email, $first . ' ' . $last, $code); // best-effort, result intentionally ignored
+    echo json_encode(['status' => 'success', 'message' => 'Registration received! Please verify your email.']);
 
 } catch (Exception $e) {
     echo json_encode(['status' => 'error', 'message' => safeErrorMessage($e)]);

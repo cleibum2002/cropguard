@@ -27,7 +27,42 @@ $user = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 if (!$user) {
-    echo json_encode(['status' => 'error', 'message' => 'Incorrect code, or this account is already verified.']);
+    // Case 3: a new farmer's registration request (not an account yet - see
+    // api/auth/register.php). Verifying the email puts it in the Admin's
+    // approval queue.
+    $rq = $conn->prepare("SELECT Request_ID, First_Name, Last_Name, Suffix, Verification_Token_Expires FROM registration_requests WHERE Email = ? AND Verification_Token = ? AND Email_Verified = 0");
+    $rq->bind_param("ss", $email, $code);
+    $rq->execute();
+    $req = $rq->get_result()->fetch_assoc();
+    $rq->close();
+
+    if (!$req) {
+        echo json_encode(['status' => 'error', 'message' => 'Incorrect code, or this account is already verified.']);
+        exit;
+    }
+    if (strtotime($req['Verification_Token_Expires']) < time()) {
+        echo json_encode(['status' => 'error', 'message' => 'This code has expired. Please request a new one.']);
+        exit;
+    }
+
+    $up = $conn->prepare("UPDATE registration_requests SET Email_Verified = 1, Verification_Token = NULL, Verification_Token_Expires = NULL, Verified_At = NOW() WHERE Request_ID = ?");
+    $up->bind_param("i", $req['Request_ID']);
+    $up->execute();
+    $up->close();
+
+    $name = trim($req['First_Name'] . ' ' . $req['Last_Name'] . ($req['Suffix'] ? ' ' . $req['Suffix'] : ''));
+    $msg  = "New farmer registration request from {$name} - waiting for your approval.";
+    $url  = 'farmer_management.html#requests';
+    $n = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Redirect_URL) VALUES ('Admin', ?, ?)");
+    $n->bind_param("ss", $msg, $url);
+    $n->execute();
+    $n->close();
+
+    echo json_encode([
+        'status'  => 'success',
+        'step'    => 'pending_approval',
+        'message' => 'Email verified! Your registration is now waiting for approval by the DA Admin. You will receive an email once it has been reviewed.'
+    ]);
     exit;
 }
 

@@ -33,6 +33,26 @@ if (isset($input['email'], $input['password'])) {
     $stmt->close();
     $stmt = null;   // the isset() guard further down must not re-close it
 
+    // Not an account yet: a farmer whose registration request is still waiting
+    // (api/auth/register.php). Only answered when the password matches, so this
+    // tells nobody else whether an email has applied.
+    if (!$user) {
+        $rq = $conn->prepare("SELECT Password, Email_Verified FROM registration_requests WHERE Email = ?");
+        $rq->bind_param("s", $email);
+        $rq->execute();
+        $req = $rq->get_result()->fetch_assoc();
+        $rq->close();
+        if ($req && password_verify($password, $req['Password'])) {
+            // auth.html opens the code screen when the message contains "verify",
+            // so the approval message must not use that word.
+            echo json_encode(['status' => 'error', 'message' => (int)$req['Email_Verified'] === 1
+                ? 'Your registration is waiting for approval by the DA Admin. You will receive an email once it has been reviewed.'
+                : 'Please verify your email before logging in. Check your inbox for the verification code.']);
+            $conn->close();
+            exit;
+        }
+    }
+
     if ($user) {
         $is_valid = false;
 
