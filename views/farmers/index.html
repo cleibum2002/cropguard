@@ -513,8 +513,10 @@
                     
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_planting_date">Planting Date</label>
-                            <input type="date" id="plantingDate" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700 read-only:bg-gray-100 read-only:text-gray-500">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5" data-i18n="label_planting_date">When was this crop planted?</label>
+                            <input type="date" id="plantingDate" required oninput="updateCropAge()" onchange="updateCropAge()" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#11542e] outline-none text-sm font-semibold text-gray-700 read-only:bg-gray-100 read-only:text-gray-500">
+                            <p class="text-[10px] text-gray-400 mt-1 leading-snug" data-i18n="hint_planting_date">The day you planted or transplanted it - it tells the DA how old the crop was when the damage happened.</p>
+                            <p id="cropAgeLine" class="text-[11px] font-black text-[#11542e] mt-1 hidden"></p>
                             <p id="plantingDateLockHint" class="text-[10px] text-gray-400 mt-1 hidden" data-i18n="hint_planting_date_locked">This crop is already registered — planting date is locked so it can't be accidentally changed.</p>
                             <label id="newPlantingToggleWrap" class="hidden items-center gap-1.5 mt-1.5 cursor-pointer">
                                 <input type="checkbox" id="newPlantingToggle" onchange="onNewPlantingToggle()" class="w-3.5 h-3.5 rounded border-gray-300 text-[#11542e] focus:ring-[#11542e]">
@@ -708,41 +710,15 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Period</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <select id="farmCroppingFrom" required disabled
-                                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
-                                    <option value="" data-i18n="opt_month_from">From...</option>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
-                                </select>
-                                <select id="farmCroppingTo" required disabled
-                                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
-                                    <option value="" data-i18n="opt_month_to">To...</option>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
-                                </select>
-                            </div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Season</label>
+                            <select id="farmCroppingSeason" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
+                                <option value="" data-i18n="opt_select_season">Select season...</option>
+                                <option value="Wet Season" data-i18n="season_wet">Wet season (tag-ulan)</option>
+                                <option value="Dry Season" data-i18n="season_dry">Dry season (tag-init)</option>
+                                <option value="Year-round" data-i18n="season_year_round">Year-round</option>
+                            </select>
+                            <p class="text-[10px] text-gray-400 mt-1 leading-snug" data-i18n="hint_cropping_season">Wet season: planted around April–August. Dry season: planted around September–February.</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -818,7 +794,7 @@
                 th_date: "Date Filed", th_crop: "Crop Details", th_incident: "Incident", th_remarks: "Remarks", th_status: "Status", th_actions: "Actions",
                 modal_report_title: "File Crop Damage Report",
                 label_farm_location: "Farm Location", label_crop_picker: "Which Crop Was Damaged?",
-                label_planting_date: "Planting Date", label_affected_area: "Affected Area (Ha)", area_warning: "Cannot exceed total farm size!",
+                label_planting_date: "When was this crop planted?", hint_planting_date: "The day you planted or transplanted it - it tells the DA how old the crop was when the damage happened.", crop_age_line: "Crop age: {n} days", crop_age_today: "Crop age: planted today", label_affected_area: "Affected Area (Ha)", area_warning: "Cannot exceed total farm size!",
                 hint_planting_date_locked: "This crop is already registered — planting date is locked so it can't be accidentally changed.",
                 label_new_planting_toggle: "This is a new planting (replanted)",
                 area_negative_warning: "Area must be greater than 0.",
@@ -855,7 +831,7 @@
                 label_zip: "Postal / ZIP Code", zip_hint: "Auto-filled when available",
                 label_landmark: "Landmark", label_optional: "(optional)",
                 label_main_crop: "Main Crop Type", opt_select_type: "Select Type...",
-                label_cropping_period: "Cropping Period", label_area_size: "Area Size (Ha)",
+                label_cropping_period: "Cropping Season", opt_select_season: "Select season...", season_wet: "Wet season (tag-ulan)", season_dry: "Dry season (tag-init)", season_year_round: "Year-round", hint_cropping_season: "Wet season: planted around April–August. Dry season: planted around September–February.", label_area_size: "Area Size (Ha)",
                 opt_month_from: "From...", opt_month_to: "To...",
                 label_land_type: "Land Type", opt_irrigated: "Irrigated", opt_rainfed: "Rainfed", opt_upland: "Upland",
                 btn_use_location: "Use My Location", label_latitude: "Latitude", label_longitude: "Longitude",
@@ -889,7 +865,7 @@
                 sw_generic_error_title: "Error",
                 sw_connect_error_text: "Could not connect to server.",
                 sw_invalid_area_text: "Area size must be greater than 0.",
-                sw_cropping_period_required_text: "Please select both the start and end month of the cropping period.",
+                sw_cropping_period_required_text: "Please choose the cropping season.",
                 sw_discard_title: "Discard changes?", sw_discard_text: "What you've entered will not be saved.",
                 sw_discard_confirm: "Yes, discard", sw_discard_cancel: "Keep editing",
                 sw_invalid_date_text: "The 'From' date can't be after the 'To' date. Filter cleared.",
@@ -925,7 +901,7 @@
                 th_date: "Petsa ng Pagsumite", th_crop: "Detalye ng Pananim", th_incident: "Insidente", th_remarks: "Tala", th_status: "Katayuan", th_actions: "Aksyon",
                 modal_report_title: "Maghain ng Ulat ng Pinsala sa Pananim",
                 label_farm_location: "Lokasyon ng Sakahan", label_crop_picker: "Aling Pananim ang Nasira?",
-                label_planting_date: "Petsa ng Pagtatanim", label_affected_area: "Apektadong Lugar (Ha)", area_warning: "Hindi maaaring lumampas sa kabuuang sukat ng sakahan!",
+                label_planting_date: "Kailan itinanim ang pananim na ito?", hint_planting_date: "Ang araw na itinanim o inilipat-tanim mo ito - dito malalaman ng DA kung ilang araw na ang pananim nang masira ito.", crop_age_line: "Edad ng pananim: {n} araw", crop_age_today: "Edad ng pananim: itinanim ngayong araw", label_affected_area: "Apektadong Lugar (Ha)", area_warning: "Hindi maaaring lumampas sa kabuuang sukat ng sakahan!",
                 hint_planting_date_locked: "Naka-rehistro na ang pananim na ito — naka-lock ang petsa ng pagtatanim para hindi ito aksidenteng mabago.",
                 label_new_planting_toggle: "Bagong pagtatanim ito (muling itinanim)",
                 area_negative_warning: "Ang lugar ay dapat higit sa 0.",
@@ -962,7 +938,7 @@
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatikong nalalagay kapag available",
                 label_landmark: "Palatandaan", label_optional: "(opsyonal)",
                 label_main_crop: "Pangunahing Uri ng Pananim", opt_select_type: "Pumili ng Uri...",
-                label_cropping_period: "Panahon ng Pagtatanim", label_area_size: "Sukat ng Lugar (Ha)",
+                label_cropping_period: "Panahon ng Pagtatanim", opt_select_season: "Piliin ang panahon...", season_wet: "Tag-ulan (wet season)", season_dry: "Tag-init (dry season)", season_year_round: "Buong taon", hint_cropping_season: "Tag-ulan: itinatanim mga Abril–Agosto. Tag-init: itinatanim mga Setyembre–Pebrero.", label_area_size: "Sukat ng Lugar (Ha)",
                 opt_month_from: "Mula...", opt_month_to: "Hanggang...",
                 label_land_type: "Uri ng Lupa", opt_irrigated: "May Patubig", opt_rainfed: "Umaasa sa Ulan", opt_upland: "Kabundukan",
                 btn_use_location: "Gamitin ang Aking Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
@@ -997,7 +973,7 @@
                 sw_generic_error_title: "Error",
                 sw_connect_error_text: "Hindi makakonekta sa server.",
                 sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0.",
-                sw_cropping_period_required_text: "Piliin ang simula at katapusang buwan ng cropping period.",
+                sw_cropping_period_required_text: "Piliin ang panahon ng pagtatanim.",
                 sw_discard_title: "I-discard ang mga pagbabago?", sw_discard_text: "Hindi mase-save ang mga inilagay mo.",
                 sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Ipagpatuloy ang pag-edit",
                 sw_invalid_date_text: "Hindi maaaring mauna ang petsa sa 'Mula' kaysa sa 'Hanggang'. Nabura ang filter.",
@@ -1028,7 +1004,7 @@
                 th_date: "Petsa sa Pag-file", th_crop: "Detalye sa Tanom", th_incident: "Insidente", th_remarks: "Pahinumdom", th_status: "Status", th_actions: "Aksyon",
                 modal_report_title: "Pag-file og Report sa Kadaot sa Tanom",
                 label_farm_location: "Lokasyon sa Uma", label_crop_picker: "Unsa nga Tanom ang Naguba?",
-                label_planting_date: "Petsa sa Pagtanom", label_affected_area: "Naapektuhan nga Sukod (Ha)", area_warning: "Dili pwede molapas sa total nga sukod sa uma!",
+                label_planting_date: "Kanus-a gitanom kini nga tanom?", hint_planting_date: "Ang adlaw nga imong gitanom o gibalhin-tanom - niini mahibal-an sa DA kung pila na ka adlaw ang tanom sa dihang nadaot kini.", crop_age_line: "Edad sa tanom: {n} ka adlaw", crop_age_today: "Edad sa tanom: gitanom karong adlawa", label_affected_area: "Naapektuhan nga Sukod (Ha)", area_warning: "Dili pwede molapas sa total nga sukod sa uma!",
                 hint_planting_date_locked: "Naka-rehistro na kini nga tanom — naka-lock ang petsa sa pagtanom aron dili kini mausab nga wala tuyo-a.",
                 label_new_planting_toggle: "Bag-o nga pagtanom kini (gitanom pag-usab)",
                 area_negative_warning: "Ang sukod kinahanglan labaw sa 0.",
@@ -1065,7 +1041,7 @@
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatik ma-fill kung naa",
                 label_landmark: "Landmark", label_optional: "(opsyonal)",
                 label_main_crop: "Pangunang Klase sa Tanom", opt_select_type: "Pilia ang Klase...",
-                label_cropping_period: "Panahon sa Pagtanom", label_area_size: "Sukod sa Uma (Ha)",
+                label_cropping_period: "Panahon sa Pagtanom", opt_select_season: "Pilia ang panahon...", season_wet: "Ting-ulan (wet season)", season_dry: "Ting-init (dry season)", season_year_round: "Tibuok tuig", hint_cropping_season: "Ting-ulan: gitanom mga Abril–Agosto. Ting-init: gitanom mga Septiyembre–Pebrero.", label_area_size: "Sukod sa Uma (Ha)",
                 opt_month_from: "Gikan...", opt_month_to: "Hangtod...",
                 label_land_type: "Klase sa Yuta", opt_irrigated: "May Tubig", opt_rainfed: "Nagsalig sa Ulan", opt_upland: "Bungtod",
                 btn_use_location: "Gamiton ang Akong Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
@@ -1100,7 +1076,7 @@
                 sw_generic_error_title: "Error",
                 sw_connect_error_text: "Dili maka-connect sa server.",
                 sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0.",
-                sw_cropping_period_required_text: "Palihug pilia ang sinugdanan ug kataposang bulan sa cropping period.",
+                sw_cropping_period_required_text: "Palihug pilia ang panahon sa pagtanom.",
                 sw_discard_title: "I-discard ang mga kausaban?", sw_discard_text: "Dili ma-save ang imong gisulod.",
                 sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Padayon sa pag-edit",
                 sw_invalid_date_text: "Ang petsa nga 'Gikan' dili pwede mag-una sa 'Hangtod'. Gi-clear ang filter.",
@@ -1541,7 +1517,7 @@
             const barangaySel = document.getElementById('addrBarangay');
             const unlocked = barangaySel && barangaySel.value && !barangaySel.disabled;
 
-            const fields = ['farmCropType', 'farmCroppingFrom', 'farmCroppingTo', 'farmArea', 'farmLandType'];
+            const fields = ['farmCropType', 'farmCroppingSeason', 'farmArea', 'farmLandType'];
             fields.forEach(id => {
                 const el = document.getElementById(id);
                 el.disabled = !unlocked;
@@ -1675,9 +1651,8 @@
             if (isNaN(areaVal) || areaVal <= 0) {
                 Swal.fire(t('sw_generic_error_title'), t('sw_invalid_area_text'), 'warning'); return;
             }
-            const cropFromVal = document.getElementById('farmCroppingFrom').value;
-            const cropToVal   = document.getElementById('farmCroppingTo').value;
-            if (!cropFromVal || !cropToVal) {
+            const seasonVal = document.getElementById('farmCroppingSeason').value;
+            if (!seasonVal) {
                 Swal.fire(t('sw_required_title'), t('sw_cropping_period_required_text'), 'warning'); return;
             }
             const province = getSelectedText('addrProvince');
@@ -1693,7 +1668,7 @@
             const payload = {
                 barangay: fullAddress,
                 type_id: document.getElementById('farmCropType').value,
-                cropping_period: cropFromVal + ' - ' + cropToVal,
+                cropping_period: seasonVal,
                 area_size: document.getElementById('farmArea').value,
                 land_type: document.getElementById('farmLandType').value,
                 latitude: document.getElementById('farmLat').value || null,
@@ -1945,6 +1920,20 @@
                 toggleWrap.classList.add('hidden');
                 toggleWrap.classList.remove('flex');
             }
+            updateCropAge();
+        }
+
+        // "Crop age: 45 days" under the planting date (panel revision), so the
+        // farmer sees what the date is for. Staff see the age at the time of
+        // the report in their own review windows.
+        function updateCropAge() {
+            const line = document.getElementById('cropAgeLine');
+            const v = document.getElementById('plantingDate').value;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const days = v ? Math.round((today - new Date(v + 'T00:00:00')) / 86400000) : -1;
+            if (days < 0) { line.classList.add('hidden'); line.textContent = ''; return; }
+            line.textContent = days === 0 ? t('crop_age_today') : t('crop_age_line').replace('{n}', days);
+            line.classList.remove('hidden');
         }
 
         function onNewPlantingToggle() {
@@ -1958,6 +1947,7 @@
                 field.readOnly = true;
                 field.value = lockedPlantingDate;
             }
+            updateCropAge();
         }
 
         // farm_location.Barangay stores the whole address the farmer typed in

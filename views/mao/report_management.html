@@ -172,7 +172,7 @@
             farmer_id_section: "Farmer Identification", full_name_label: "Full Name",
             rsbsa_number_label: "RSBSA Number", declared_location_label: "Declared Farm Location",
             location_missing: "Location data missing", unregistered: "UNREGISTERED",
-            crop_type_label: "Crop Type", reported_damage_label: "Reported Damage", affected_area_label: "Affected Area",
+            crop_type_label: "Crop Type", reported_damage_label: "Reported Damage", affected_area_label: "Affected Area", profile_crop_age: "Crop Age at Report", crop_age_days: "{n} days old", label_planted: "Planted",
             farmer_remarks_title: "Farmer's Initial Remarks", no_remarks: "No additional remarks provided by the farmer.",
             failed_load_profile: "Failed to load detailed profile.",
             status_pending: "Pending", status_validated: "Validated", status_inspected: "Inspected",
@@ -217,7 +217,7 @@
             farmer_id_section: "Pagkakakilanlan ng Magsasaka", full_name_label: "Buong Pangalan",
             rsbsa_number_label: "Numero ng RSBSA", declared_location_label: "Idineklarang Lokasyon ng Sakahan",
             location_missing: "Walang datos ng lokasyon", unregistered: "HINDI REHISTRADO",
-            crop_type_label: "Uri ng Pananim", reported_damage_label: "Naiulat na Pinsala", affected_area_label: "Apektadong Sukat",
+            crop_type_label: "Uri ng Pananim", reported_damage_label: "Naiulat na Pinsala", affected_area_label: "Apektadong Sukat", profile_crop_age: "Edad ng Pananim sa Ulat", crop_age_days: "{n} araw", label_planted: "Itinanim",
             farmer_remarks_title: "Paunang Puna ng Magsasaka", no_remarks: "Walang karagdagang puna na ibinigay ng magsasaka.",
             failed_load_profile: "Hindi na-load ang detalyadong profile.",
             status_pending: "Naghihintay", status_validated: "Napatunayan", status_inspected: "Na-inspeksyon",
@@ -752,6 +752,11 @@
                             <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('affected_area_label')}</p>
                             <p class="text-sm font-bold text-gray-800">${reportArea} Ha</p>
                         </div>
+                        ${cropAgeAtReport(detail.Planting_Date, detail.Report_Date) !== null ? `<div class="bg-white border border-gray-100 p-3 sm:p-5 rounded-2xl shadow-sm">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">${t('profile_crop_age')}</p>
+                            <p class="text-sm font-bold text-gray-800">${t('crop_age_days').replace('{n}', cropAgeAtReport(detail.Planting_Date, detail.Report_Date))}</p>
+                            <p class="text-[10px] text-gray-400">${t('label_planted')} ${detail.Planting_Date}</p>
+                        </div>` : ''}
                     </div>
 
                     <!-- Evidence photos + Farmer's Original Report vs Technician's Field Findings -->
@@ -818,6 +823,15 @@
                 .catch(() => Swal.fire(t('sw_error_title'), t('sw_server_error'), 'error'));
             }
         });
+    }
+
+    // Days from planting to the day the report was filed (panel revision).
+    function cropAgeAtReport(planted, reported) {
+        if (!planted) return null;
+        const end = reported ? new Date(String(reported).replace(' ', 'T')) : new Date();
+        end.setHours(0, 0, 0, 0);
+        const days = Math.round((end - new Date(planted + 'T00:00:00')) / 86400000);
+        return days >= 0 ? days : null;
     }
 
     function confirmLogout() {

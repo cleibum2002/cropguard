@@ -458,7 +458,7 @@
                 btn_approve_allocate: "Approve & Allocate Aid", btn_direct_approve_allocate: "Direct Approve & Allocate Aid",
                 btn_close_viewer: "Close Viewer", could_not_calc_relief: "Could not calculate relief.",
                 profile_farmer_name: "Farmer Name", profile_rsbsa_no: "RSBSA No.", profile_declared_location: "Declared Location",
-                profile_crop_type: "Crop Type", profile_reported_damage: "Reported Damage", profile_affected_area: "Affected Area",
+                profile_crop_type: "Crop Type", profile_reported_damage: "Reported Damage", profile_affected_area: "Affected Area", profile_crop_age: "Crop Age at Report", crop_age_days: "{n} days old", label_planted: "Planted",
                 label_unregistered: "UNREGISTERED", label_missing: "Missing",
                 no_notes_provided: "No notes provided.", no_findings_provided: "No findings provided.",
                 error_loading_details: "Error loading details.", failed_connect_server: "Failed to connect to server.",
@@ -557,7 +557,7 @@
                 btn_approve_allocate: "Aprubahan at Maglaan ng Tulong", btn_direct_approve_allocate: "Direktang Aprubahan at Maglaan ng Tulong",
                 btn_close_viewer: "Isara ang Viewer", could_not_calc_relief: "Hindi makalkula ang tulong.",
                 profile_farmer_name: "Pangalan ng Magsasaka", profile_rsbsa_no: "RSBSA No.", profile_declared_location: "Idineklarang Lokasyon",
-                profile_crop_type: "Uri ng Pananim", profile_reported_damage: "Iniulat na Pinsala", profile_affected_area: "Apektadong Sukat",
+                profile_crop_type: "Uri ng Pananim", profile_reported_damage: "Iniulat na Pinsala", profile_affected_area: "Apektadong Sukat", profile_crop_age: "Edad ng Pananim sa Ulat", crop_age_days: "{n} araw", label_planted: "Itinanim",
                 label_unregistered: "HINDI NAKAREHISTRO", label_missing: "Nawawala",
                 no_notes_provided: "Walang naibigay na tala.", no_findings_provided: "Walang naibigay na natuklasan.",
                 error_loading_details: "Error sa pag-load ng detalye.", failed_connect_server: "Hindi makakonekta sa server.",
@@ -989,6 +989,16 @@
         }
 
         // ─── REVIEW MODAL ─────────────────────────────────────────────────────
+        // Days from planting to the day the report was filed (panel revision:
+        // shows what the planting date is for - DA reports damage by crop stage).
+        function cropAgeAtReport(planted, reported) {
+            if (!planted) return null;
+            const end = reported ? new Date(String(reported).replace(' ', 'T')) : new Date();
+            end.setHours(0, 0, 0, 0);
+            const days = Math.round((end - new Date(planted + 'T00:00:00')) / 86400000);
+            return days >= 0 ? days : null;
+        }
+
         function reviewInspection(id, status) {
             document.getElementById('reviewReportId').value = id;
             document.getElementById('reviewModalTitle').innerText = `${t('label_report_details_prefix')} #REP-${id}`;
@@ -1064,6 +1074,7 @@
                             <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_crop_type')}</p><p class="text-xs font-bold text-[#11542e]">${detail.Crop_Name || t('label_unknown')}</p></div>
                             <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_reported_damage')}</p><p class="text-xs font-bold text-red-600">${detail.Damage_Type || t('label_unknown')}</p></div>
                             <div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_affected_area')}</p><p class="text-xs font-bold text-gray-800">${detail.Affected_Area || detail.Area_Size || '0.00'} Ha</p></div>
+                            ${cropAgeAtReport(detail.Planting_Date, detail.Report_Date) !== null ? `<div class="bg-gray-50 rounded-xl p-3"><p class="text-[10px] font-black text-gray-400 uppercase mb-1">${t('profile_crop_age')}</p><p class="text-xs font-bold text-gray-800">${t('crop_age_days').replace('{n}', cropAgeAtReport(detail.Planting_Date, detail.Report_Date))}</p><p class="text-[10px] text-gray-400">${t('label_planted')} ${detail.Planting_Date}</p></div>` : ''}
                             ${detail.Inspected_Area ? `<div class="bg-blue-50 rounded-xl p-3"><p class="text-[10px] font-black text-blue-400 uppercase mb-1">${t('profile_inspected_area')}</p><p class="text-xs font-bold text-blue-800">${Number(detail.Inspected_Area).toFixed(2)} Ha</p></div>` : ''}
                         `;
                         // Split the Description into the Farmer's original report vs the Technician's field findings

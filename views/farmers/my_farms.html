@@ -322,41 +322,15 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Period</label>
-                            <div class="grid grid-cols-2 gap-2">
-                                <select id="farmCroppingFrom" required disabled
-                                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
-                                    <option value="" data-i18n="opt_month_from">From...</option>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
-                                </select>
-                                <select id="farmCroppingTo" required disabled
-                                        class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
-                                    <option value="" data-i18n="opt_month_to">To...</option>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
-                                </select>
-                            </div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5" data-i18n="label_cropping_period">Cropping Season</label>
+                            <select id="farmCroppingSeason" required disabled
+                                    class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md focus:ring-1 focus:ring-[#11542e] outline-none text-sm text-gray-400 cursor-not-allowed">
+                                <option value="" data-i18n="opt_select_season">Select season...</option>
+                                <option value="Wet Season" data-i18n="season_wet">Wet season (tag-ulan)</option>
+                                <option value="Dry Season" data-i18n="season_dry">Dry season (tag-init)</option>
+                                <option value="Year-round" data-i18n="season_year_round">Year-round</option>
+                            </select>
+                            <p class="text-[10px] text-gray-400 mt-1 leading-snug" data-i18n="hint_cropping_season">Wet season: planted around April–August. Dry season: planted around September–February.</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
@@ -428,7 +402,7 @@
                 no_farms: "You have no registered farm locations yet. Add one above!",
                 view_on_map: "View on Map", no_coords: "No coordinates set",
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Unregistered",
-                hectares_label: "Hectares", not_set: "Not Set", cycle_label: "Cycle:", na_text: "N/A",
+                hectares_label: "Hectares", not_set: "Not Set", cycle_label: "Season:", na_text: "N/A",
                 opt_irrigated: "Irrigated", opt_rainfed: "Rainfed", opt_upland: "Upland",
                 sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 30 minutes of inactivity.",
                 sw_signout_title: "Sign Out?",
@@ -439,7 +413,7 @@
                 label_zip: "Postal / ZIP Code", zip_hint: "Auto-filled when available",
                 label_landmark: "Landmark", label_optional: "(optional)",
                 label_main_crop: "Main Crop Type", opt_select_type: "Select Type...",
-                label_cropping_period: "Cropping Period", label_area_size: "Area Size (Ha)",
+                label_cropping_period: "Cropping Season", opt_select_season: "Select season...", season_wet: "Wet season (tag-ulan)", season_dry: "Dry season (tag-init)", season_year_round: "Year-round", hint_cropping_season: "Wet season: planted around April–August. Dry season: planted around September–February.", label_area_size: "Area Size (Ha)",
                 opt_month_from: "From...", opt_month_to: "To...",
                 label_land_type: "Land Type",
                 btn_use_location: "Use My Location", label_latitude: "Latitude", label_longitude: "Longitude",
@@ -455,7 +429,7 @@
                 sw_gps_required_title: "Location Needed", sw_gps_required_text: "Please tap \"Use My Location\" to save this farm's GPS coordinates. This is required so it shows up correctly on the MAO map.",
                 sw_required_title: "Required", sw_required_text: "Please complete the address up to Barangay level.",
                 sw_farm_saved_title: "Farm Saved!", sw_generic_error_title: "Error", sw_connect_error_text: "Could not connect to server.", sw_invalid_area_text: "Area size must be greater than 0.",
-                sw_cropping_period_required_text: "Please select both the start and end month of the cropping period.",
+                sw_cropping_period_required_text: "Please choose the cropping season.",
                 sw_discard_title: "Discard changes?", sw_discard_text: "What you've entered will not be saved.",
                 sw_discard_confirm: "Yes, discard", sw_discard_cancel: "Keep editing"
             },
@@ -474,7 +448,7 @@
                 no_farms: "Wala ka pang nakarehistrong lokasyon ng sakahan. Magdagdag sa itaas!",
                 view_on_map: "Tingnan sa Mapa", no_coords: "Walang nakatakdang coordinates",
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Hindi Nakarehistro",
-                hectares_label: "Ektarya", not_set: "Hindi Nakatakda", cycle_label: "Ikot:", na_text: "N/A",
+                hectares_label: "Ektarya", not_set: "Hindi Nakatakda", cycle_label: "Panahon:", na_text: "N/A",
                 opt_irrigated: "May Patubig", opt_rainfed: "Umaasa sa Ulan", opt_upland: "Kabundukan",
                 sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 30 minutong hindi paggamit.",
                 sw_signout_title: "Mag-sign Out?",
@@ -485,7 +459,7 @@
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatikong nalalagay kapag available",
                 label_landmark: "Palatandaan", label_optional: "(opsyonal)",
                 label_main_crop: "Pangunahing Uri ng Pananim", opt_select_type: "Pumili ng Uri...",
-                label_cropping_period: "Panahon ng Pagtatanim", label_area_size: "Sukat ng Lugar (Ha)",
+                label_cropping_period: "Panahon ng Pagtatanim", opt_select_season: "Piliin ang panahon...", season_wet: "Tag-ulan (wet season)", season_dry: "Tag-init (dry season)", season_year_round: "Buong taon", hint_cropping_season: "Tag-ulan: itinatanim mga Abril–Agosto. Tag-init: itinatanim mga Setyembre–Pebrero.", label_area_size: "Sukat ng Lugar (Ha)",
                 opt_month_from: "Mula...", opt_month_to: "Hanggang...",
                 label_land_type: "Uri ng Lupa",
                 btn_use_location: "Gamitin ang Aking Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
@@ -501,7 +475,7 @@
                 sw_gps_required_title: "Kailangan ang Lokasyon", sw_gps_required_text: "Pakipindot ang \"Use My Location\" para ma-save ang GPS coordinates ng sakahang ito. Kailangan ito para tama ang lalabas sa MAO map.",
                 sw_required_title: "Kailangan", sw_required_text: "Pakikumpleto ang address hanggang antas ng Barangay.",
                 sw_farm_saved_title: "Na-save ang Sakahan!", sw_generic_error_title: "Error", sw_connect_error_text: "Hindi makakonekta sa server.", sw_invalid_area_text: "Ang sukat ng lugar ay dapat higit sa 0.",
-                sw_cropping_period_required_text: "Piliin ang simula at katapusang buwan ng cropping period.",
+                sw_cropping_period_required_text: "Piliin ang panahon ng pagtatanim.",
                 sw_discard_title: "I-discard ang mga pagbabago?", sw_discard_text: "Hindi mase-save ang mga inilagay mo.",
                 sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Ipagpatuloy ang pag-edit"
             },
@@ -520,7 +494,7 @@
                 no_farms: "Wala ka pay narehistro nga lokasyon sa uma. Pagdugang sa taas!",
                 view_on_map: "Tan-awa sa Mapa", no_coords: "Walay gitakda nga coordinates",
                 brgy_prefix: "Brgy.", rsba_label: "RSBA:", unregistered: "Wala Marehistro",
-                hectares_label: "Ektarya", not_set: "Wala Gitakda", cycle_label: "Ikot:", na_text: "N/A",
+                hectares_label: "Ektarya", not_set: "Wala Gitakda", cycle_label: "Panahon:", na_text: "N/A",
                 opt_irrigated: "May Tubig", opt_rainfed: "Nagsalig sa Ulan", opt_upland: "Bungtod",
                 sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 30 minutos nga walay kalihukan.",
                 sw_signout_title: "Mo-sign Out?",
@@ -531,7 +505,7 @@
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatik ma-fill kung naa",
                 label_landmark: "Landmark", label_optional: "(opsyonal)",
                 label_main_crop: "Pangunang Klase sa Tanom", opt_select_type: "Pilia ang Klase...",
-                label_cropping_period: "Panahon sa Pagtanom", label_area_size: "Sukod sa Uma (Ha)",
+                label_cropping_period: "Panahon sa Pagtanom", opt_select_season: "Pilia ang panahon...", season_wet: "Ting-ulan (wet season)", season_dry: "Ting-init (dry season)", season_year_round: "Tibuok tuig", hint_cropping_season: "Ting-ulan: gitanom mga Abril–Agosto. Ting-init: gitanom mga Septiyembre–Pebrero.", label_area_size: "Sukod sa Uma (Ha)",
                 opt_month_from: "Gikan...", opt_month_to: "Hangtod...",
                 label_land_type: "Klase sa Yuta",
                 btn_use_location: "Gamiton ang Akong Lokasyon", label_latitude: "Latitude", label_longitude: "Longitude",
@@ -547,7 +521,7 @@
                 sw_gps_required_title: "Gikinahanglan ang Lokasyon", sw_gps_required_text: "Palihug pindota ang \"Use My Location\" para ma-save ang GPS coordinates niini nga uma. Gikinahanglan kini aron sakto ang mapakita sa MAO map.",
                 sw_required_title: "Gikinahanglan", sw_required_text: "Palihug kompletoha ang address hangtod sa Barangay.",
                 sw_farm_saved_title: "Na-save ang Uma!", sw_generic_error_title: "Error", sw_connect_error_text: "Dili maka-connect sa server.", sw_invalid_area_text: "Ang sukod sa yuta kinahanglan labaw sa 0.",
-                sw_cropping_period_required_text: "Palihug pilia ang sinugdanan ug kataposang bulan sa cropping period.",
+                sw_cropping_period_required_text: "Palihug pilia ang panahon sa pagtanom.",
                 sw_discard_title: "I-discard ang mga kausaban?", sw_discard_text: "Dili ma-save ang imong gisulod.",
                 sw_discard_confirm: "Oo, i-discard", sw_discard_cancel: "Padayon sa pag-edit"
             }
@@ -638,11 +612,27 @@
         // Farm Details (crop, area, GPS) stay locked until a real Barangay is picked -
         // there's no point letting someone fill in crop/area details for an address
         // that isn't actually complete yet.
+        // Season stored on the farm -> its translated label. Older farms that
+        // still hold a month range ("June - October") are shown as they are.
+        function seasonLabel(value) {
+            const keys = { 'Wet Season': 'season_wet', 'Dry Season': 'season_dry', 'Year-round': 'season_year_round' };
+            return keys[value] ? t(keys[value]) : (value || '');
+        }
+
+        function seasonFromSaved(value) {
+            if (['Wet Season', 'Dry Season', 'Year-round'].includes(value)) return value;
+            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+            const first = String(value || '').toLowerCase().split(/[\s-]+/)[0];
+            const i = months.indexOf(first);
+            if (i < 0) return '';
+            return (i >= 3 && i <= 7) ? 'Wet Season' : 'Dry Season';
+        }
+
         function updateFarmDetailsLockState() {
             const barangaySel = document.getElementById('addrBarangay');
             const unlocked = barangaySel && barangaySel.value && !barangaySel.disabled;
 
-            const fields = ['farmCropType', 'farmCroppingFrom', 'farmCroppingTo', 'farmArea', 'farmLandType'];
+            const fields = ['farmCropType', 'farmCroppingSeason', 'farmArea', 'farmLandType'];
             fields.forEach(id => {
                 const el = document.getElementById(id);
                 el.disabled = !unlocked;
@@ -772,16 +762,11 @@
 
             loadCropTypesForFarmModal(farm.Type_ID);
 
-            // Existing farms stored this as one free-text string (e.g. "May - October")
-            // from before the two-dropdown change - split it back apart so editing an
-            // old farm doesn't just show blank dropdowns. Only pre-selects a side that
-            // actually matches a real month name; anything that doesn't parse (typos,
-            // old garbage text) is just left unselected rather than guessed at.
-            const savedPeriod = (farm.Cropping_Period || '').split(' - ');
-            const fromSelect = document.getElementById('farmCroppingFrom');
-            const toSelect   = document.getElementById('farmCroppingTo');
-            fromSelect.value = [...fromSelect.options].some(o => o.value === savedPeriod[0]) ? savedPeriod[0] : '';
-            toSelect.value   = [...toSelect.options].some(o => o.value === savedPeriod[1]) ? savedPeriod[1] : '';
+            // Cropping Season (panel revision) replaced the From/To months. Older
+            // farms still hold a month range like "June - October": pre-select the
+            // season its first month falls in (planted April-August = wet,
+            // September-March = dry). Anything unreadable is left for the farmer.
+            document.getElementById('farmCroppingSeason').value = seasonFromSaved(farm.Cropping_Period);
             document.getElementById("farmArea").value            = farm.Area_Size || '';
             document.getElementById("farmLandType").value        = farm.Land_Type || 'Irrigated';
             document.getElementById("farmLat").value              = farm.Latitude || '';
@@ -789,7 +774,7 @@
 
             // Edit mode isn't gated by "pick a Barangay first" like Add mode is - the farm
             // already has a real address, so Farm Details can be edited immediately.
-            ['farmCropType', 'farmCroppingFrom', 'farmCroppingTo', 'farmArea', 'farmLandType'].forEach(id2 => {
+            ['farmCropType', 'farmCroppingSeason', 'farmArea', 'farmLandType'].forEach(id2 => {
                 const el = document.getElementById(id2);
                 el.disabled = false;
                 el.classList.remove('bg-gray-50', 'border-gray-200', 'text-gray-400', 'cursor-not-allowed');
@@ -862,9 +847,8 @@
             if (isNaN(areaVal) || areaVal <= 0) {
                 Swal.fire(t('sw_generic_error_title'), t('sw_invalid_area_text'), 'warning'); return;
             }
-            const cropFromVal = document.getElementById('farmCroppingFrom').value;
-            const cropToVal   = document.getElementById('farmCroppingTo').value;
-            if (!cropFromVal || !cropToVal) {
+            const seasonVal = document.getElementById('farmCroppingSeason').value;
+            if (!seasonVal) {
                 Swal.fire(t('sw_required_title'), t('sw_cropping_period_required_text'), 'warning'); return;
             }
 
@@ -873,7 +857,7 @@
                 const payload = {
                     location_id: editingId,
                     type_id: document.getElementById('farmCropType').value,
-                    cropping_period: cropFromVal + ' - ' + cropToVal,
+                    cropping_period: seasonVal,
                     area_size: document.getElementById('farmArea').value,
                     land_type: document.getElementById('farmLandType').value,
                     latitude: document.getElementById('farmLat').value || null,
@@ -917,7 +901,7 @@
             const payload = {
                 barangay: fullAddress,
                 type_id: document.getElementById('farmCropType').value,
-                cropping_period: cropFromVal + ' - ' + cropToVal,
+                cropping_period: seasonVal,
                 area_size: document.getElementById('farmArea').value,
                 land_type: document.getElementById('farmLandType').value,
                 latitude: document.getElementById('farmLat').value || null,
@@ -977,7 +961,7 @@
                 const areaText = `${loc.Area_Size || '0.00'} ${t('hectares_label')}`;
                 const landType = landTypeLabel(loc.Land_Type);
                 const cropName = loc.Crop_Name || t('not_set');
-                const cycleText = `${t('cycle_label')} ${loc.Cropping_Period || t('na_text')}`;
+                const cycleText = `${t('cycle_label')} ${seasonLabel(loc.Cropping_Period) || t('na_text')}`;
 
                 const actionButtons = `
                     <div class="flex items-center justify-end gap-3">
