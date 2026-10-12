@@ -49,6 +49,12 @@ if ($area <= 0) {
 $type_id = (int)$data->type_id;
 $land_type = $data->land_type ?? '';
 $cropping_period = $data->cropping_period ?? '';
+// Cropping Season replaced the From/To months (panel revision).
+if (!in_array($cropping_period, ['Wet Season', 'Dry Season', 'Year-round'], true)) {
+    if (ob_get_length()) ob_clean();
+    echo json_encode(['status' => 'error', 'message' => 'Please choose the cropping season (Wet season, Dry season or Year-round).']);
+    exit;
+}
 $lat = !empty($data->latitude) ? (float)$data->latitude : null;
 $lng = !empty($data->longitude) ? (float)$data->longitude : null;
 

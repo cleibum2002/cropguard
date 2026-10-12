@@ -16,6 +16,11 @@ try {
     $farmer_id = $_SESSION['user_id'] ?? $_SESSION['User_ID'] ?? $_SESSION['id'] ?? null;
     if (!$farmer_id) throw new Exception('Session expired. Please login again.');
 
+    // Cropping Season replaced the From/To months (panel revision).
+    if (!in_array($data->cropping_period ?? '', ['Wet Season', 'Dry Season', 'Year-round'], true)) {
+        throw new Exception('Please choose the cropping season (Wet season, Dry season or Year-round).');
+    }
+
     // REMOVED: RSBA_Reference_No from the column list and removed one "?" placeholder
     $sql = "INSERT INTO farm_location (Farmer_ID, Type_ID, Barangay, Area_Size, Latitude, Longitude, Land_Type, Cropping_Period) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -101,6 +106,7 @@ try {
         'Session expired. Please login again.',
         'GPS coordinates are required.',
         'Invalid GPS coordinates received.',
+        'Please choose the cropping season',
     ];
     $isKnown = false;
     foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }

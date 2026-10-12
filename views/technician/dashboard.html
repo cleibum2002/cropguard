@@ -434,7 +434,7 @@
             btn_submit_validation: "Submit Field Validation", btn_cancel: "Cancel",
             modal_farmer_report_title: "Farmer's Damage Report", modal_pre_inspection: "Pre-Inspection Details",
             label_na: "N/A", na_fallback: "N/A", label_farmer: "Farmer", label_crop_variety: "Crop Variety", label_farm_location: "Farm Location",
-            label_report_date: "Report Date", label_damage_cause: "Damage Cause", label_est_area: "Est. Area (Ha)",
+            label_report_date: "Report Date", label_damage_cause: "Damage Cause", label_est_area: "Est. Area (Ha)", profile_crop_age: "Crop Age at Report", crop_age_days: "{n} days old", label_planted: "planted",
             label_location_missing: "Location data missing", label_farmers_remarks: "Farmer's Remarks", no_description: "No description provided by the farmer.",
             label_attached_evidence: "Attached Field Evidence", no_field_photos: "No field photos attached by the farmer.",
             label_no_pending_assignments: "No pending assignments in your area.",
@@ -491,7 +491,7 @@
             btn_submit_validation: "Isumite ang Field Validation", btn_cancel: "Kanselahin",
             modal_farmer_report_title: "Ulat ng Pinsala ng Magsasaka", modal_pre_inspection: "Detalye Bago ang Inspeksyon",
             label_na: "N/A", na_fallback: "N/A", label_farmer: "Magsasaka", label_crop_variety: "Barayti ng Pananim", label_farm_location: "Lokasyon ng Bukid",
-            label_report_date: "Petsa ng Ulat", label_damage_cause: "Sanhi ng Pinsala", label_est_area: "Tinatayang Sukat (Ha)",
+            label_report_date: "Petsa ng Ulat", label_damage_cause: "Sanhi ng Pinsala", label_est_area: "Tinatayang Sukat (Ha)", profile_crop_age: "Edad ng Pananim sa Ulat", crop_age_days: "{n} araw", label_planted: "itinanim",
             label_location_missing: "Kulang ang datos ng lokasyon", label_farmers_remarks: "Puna ng Magsasaka", no_description: "Walang ibinigay na deskripsyon ang magsasaka.",
             label_attached_evidence: "Nakalakip na Ebidensya sa Field", no_field_photos: "Walang larawan sa field na inilakip ng magsasaka.",
             label_no_pending_assignments: "Walang naghihintay na atas sa iyong lugar.",
@@ -844,6 +844,7 @@
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_report_date')}</p><p class="font-bold text-gray-800">${r.Report_Date}</p></div>
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_damage_cause')}</p><p class="font-bold text-red-600">${r.Damage_Type || t('label_na')}</p></div>
                         <div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('label_est_area')}</p><p class="font-bold text-gray-800">${r.Affected_Area || r.Area_Hectares || r.Area_Size || '0.00'} Ha</p></div>
+                        ${cropAgeAtReport(r.Planting_Date, r.Report_Date) !== null ? `<div><p class="text-gray-400 text-[10px] uppercase font-black tracking-widest mb-1">${t('profile_crop_age')}</p><p class="font-bold text-gray-800">${t('crop_age_days').replace('{n}', cropAgeAtReport(r.Planting_Date, r.Report_Date))} <span class="text-[10px] text-gray-400 font-semibold">(${t('label_planted')} ${r.Planting_Date})</span></p></div>` : ''}
                     </div>
 
                     ${remarksHTML}
@@ -890,6 +891,15 @@
     }
 
     // ── Open Validation Form ─────────────────────────────────────────
+    // Days from planting to the day the report was filed (panel revision).
+    function cropAgeAtReport(planted, reported) {
+        if (!planted) return null;
+        const end = reported ? new Date(String(reported).replace(' ', 'T')) : new Date();
+        end.setHours(0, 0, 0, 0);
+        const days = Math.round((end - new Date(planted + 'T00:00:00')) / 86400000);
+        return days >= 0 ? days : null;
+    }
+
     function openValidation(id, crop, brgy, visitDate) {
         document.getElementById('reportIdField').value    = id;
         document.getElementById('formReportID').innerText = `Report #REP-${id}`;
