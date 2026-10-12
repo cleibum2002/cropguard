@@ -72,9 +72,9 @@ test('rb107 technician cannot validate or reject reports', function () use ($tec
     assertSame('Validated', reportRow($validatedReport)['Status'], 'report unchanged');
 });
 
-test("rb108 farmer cannot see another farmer's loss estimate", function () use ($farmerAc, $farmerBc, $validatedReport) {
+test("rb108 farmers cannot see loss estimates, not even their own", function () use ($farmerAc, $farmerBc, $validatedReport) {
     $own = $farmerAc->get("api/dashboard/calculate_cost.php?report_id=$validatedReport");
-    assertSame('success', $own['status'], 'owner can see it');
+    assertSame('Unauthorized.', $own['message'], 'not the owner either (panel revision)');
     $other = $farmerBc->get("api/dashboard/calculate_cost.php?report_id=$validatedReport");
     assertSame('Unauthorized.', $other['message'], 'another farmer cannot');
 });
