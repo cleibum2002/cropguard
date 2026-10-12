@@ -305,6 +305,11 @@ try {
     }
 
     // 5. PROCESS IMAGE UPLOADS
+    // At most 5 farmer photos per report, counting the ones already saved (the
+    // removals above have run, inside this same transaction).
+    require_once '../config/photo_limit.php';
+    $photo_error = cg_photo_limit_error($conn, (int)$report_id, 'Farmer', 'images');
+    if ($photo_error) throw new Exception($photo_error);
     $skipped_uploads = 0;
     if (isset($_FILES['images']) && is_array($_FILES['images']['name'])) {
         $upload_dir = '../../uploads/reports/'; 
@@ -360,6 +365,7 @@ try {
     // anything else (a database error) still stays generic.
     $known = [
         'Report not found.',
+        'You can attach up to',
     ];
     $isKnown = false;
     foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }

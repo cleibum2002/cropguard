@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=9"></script>
+    <script src="../../assets/js/photo_viewer.js?v=1"></script>
     <script src="../../assets/js/mao_notifications.js?v=1"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -617,7 +618,7 @@
                 const proof = geoProofLabel(img, detail.Farm_Lat, detail.Farm_Lng);
                 return `
                 <div class="w-20 sm:w-24">
-                    <a href="${img.path || img}" target="_blank" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
+                    <a href="${img.path || img}" data-photo="${img.path || img}" data-caption="${proof.text.replace(/"/g, '&quot;')}" class="block w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-[#11542e] transition-all shadow-sm">
                         <img src="${img.path || img}" class="w-full h-full object-cover hover:scale-110 transition-transform">
                     </a>
                     <p class="mt-1 text-[8px] font-black text-center leading-tight ${proof.cls}">${proof.text}</p>
@@ -626,7 +627,7 @@
             const gallery = (titleKey, borderCls, list) => `
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 sm:mb-3 border-l-2 ${borderCls} pl-2">${t(titleKey)}</h4>
                     ${list.length > 0
-                        ? `<div class="flex flex-wrap gap-3 sm:gap-4">${thumbs(list)}</div>`
+                        ? `<div data-photo-group class="flex flex-wrap gap-3 sm:gap-4">${thumbs(list)}</div>`
                         : `<div class="bg-gray-50 border border-gray-100 p-3 sm:p-4 rounded-xl">
                         <p class="text-xs text-gray-400 italic">${t('no_evidence')}</p>
                     </div>`}`;
