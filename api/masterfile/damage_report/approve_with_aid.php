@@ -136,14 +136,14 @@ try {
         : $parts[0];
 
     // STEP 4: Create the Farmer Notification (one, listing every item)
-    $msg = "Good news! Your report for $crop_name (#REP-$report_id) has been approved. You can now claim $aidText at the MAO office.";
+    $msg = "Good news! Relief aid has been allocated for your $crop_name report (#REP-$report_id). You can now claim $aidText at the MAO office.";
     $redirectUrl = 'index.html';
     $stmtNotif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
     $stmtNotif->bind_param("iss", $farmer_id, $msg, $redirectUrl);
     $stmtNotif->execute();
 
     // STEP 4b: Notify MAO — aid is now sitting in their queue waiting to be handed out
-    $mao_msg = "Aid for report #REP-$report_id ($aidText) has been approved and is ready for distribution.";
+    $mao_msg = "Aid for report #REP-$report_id ($aidText) has been allocated and is ready for distribution.";
     $mao_redirect = 'inventory_aid.html';
     $stmtMaoNotif = $conn->prepare("INSERT INTO admin_notification (Target_Role, Message, Related_Report_ID, Redirect_URL) VALUES ('MAO', ?, ?, ?)");
     $stmtMaoNotif->bind_param("sis", $mao_msg, $report_id, $mao_redirect);

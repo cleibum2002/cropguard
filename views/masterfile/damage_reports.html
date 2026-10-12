@@ -112,9 +112,9 @@
                             <select id="filterStatus" onchange="filterTable()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
                                 <option value="" data-i18n="filter_all_statuses">All Statuses</option>
                                 <option value="Pending">Pending</option>
-                                <option value="Validated">Validated</option>
+                                <option value="Validated" data-i18n="status_validated">Approved</option>
                                 <option value="Inspected">Inspected</option>
-                                <option value="Approved">Approved</option>
+                                <option value="Approved" data-i18n="status_approved">Aid Allocated</option>
                                 <option value="Rejected">Rejected</option>
                             </select>
                         </div>
@@ -437,8 +437,8 @@
                 btn_assign_tech: "Assign Tech", label_awaiting_mao: "Awaiting MAO",
                 title_view_details: "View Details", title_archive_report: "Archive Report",
                 label_unknown: "Unknown", label_submitted: "Submitted", label_area: "Area", label_visit: "Visit",
-                status_pending: "Pending", status_validated: "Validated", status_inspected: "Inspected",
-                status_approved: "Approved", status_rejected: "Rejected", status_archived: "Archived",
+                status_pending: "Pending", status_validated: "Approved", status_inspected: "Inspected",
+                status_approved: "Aid Allocated", status_rejected: "Rejected", status_archived: "Archived",
                 label_showing: "SHOWING", label_to: "TO", label_of: "OF",
                 modal_subtitle: "Validation & Evidence Data", loading_profile: "Loading profile...",
                 label_farmer_original_report: "Farmer's Original Report", label_severity_reported: "Severity Reported",
@@ -536,8 +536,8 @@
                 btn_assign_tech: "Magtalaga ng Technician", label_awaiting_mao: "Naghihintay sa MAO",
                 title_view_details: "Tingnan ang Detalye", title_archive_report: "I-archive ang Ulat",
                 label_unknown: "Hindi Alam", label_submitted: "Isinumite", label_area: "Sukat", label_visit: "Pagbisita",
-                status_pending: "Naghihintay", status_validated: "Napatunayan", status_inspected: "Naispeksyon",
-                status_approved: "Naaprubahan", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
+                status_pending: "Naghihintay", status_validated: "Naaprubahan", status_inspected: "Naispeksyon",
+                status_approved: "Nailaan na ang Tulong", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
                 label_showing: "IPINAPAKITA", label_to: "HANGGANG", label_of: "SA",
                 modal_subtitle: "Datos ng Pagpapatunay at Ebidensya", loading_profile: "Nilo-load ang profile...",
                 label_farmer_original_report: "Orihinal na Ulat ng Magsasaka", label_severity_reported: "Iniulat na Kalubhaan",

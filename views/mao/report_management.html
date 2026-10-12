@@ -81,7 +81,7 @@
 
         <div class="bg-white px-4 sm:px-8 flex-shrink-0 flex gap-4 sm:gap-8 border-b border-gray-100 overflow-x-auto">
             <button onclick="setTab('Pending')" id="tabPending" class="tab-btn tab-active py-4 text-[10px] font-black uppercase transition-all" data-i18n="tab_pending">Pending Approval</button>
-            <button onclick="setTab('Validated')" id="tabValidated" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all" data-i18n="tab_validated">Validated</button>
+            <button onclick="setTab('Validated')" id="tabValidated" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all" data-i18n="tab_validated">Approved</button>
             <button onclick="setTab('All')" id="tabAll" class="tab-btn py-4 text-[10px] font-black uppercase text-gray-400 transition-all" data-i18n="tab_all">All Reports</button>
         </div>
 
@@ -155,7 +155,7 @@
             nav_inventory: "Inventory & Aid", nav_analytics: "Distribution Reports", nav_comm: "Communication",
             sidebar_role: "MAO Officer",
             header_title: "Report Management", search_placeholder: "Search farmer, crop, or ID...",
-            tab_pending: "Pending Approval", tab_validated: "Validated", tab_all: "All Reports",
+            tab_pending: "Pending Approval", tab_validated: "Approved", tab_all: "All Reports",
             empty_state_text: "Select a report to view details", loading_details: "Loading validation details...",
             no_matching_records: "No matching records", crop_report_fallback: "Crop Report",
             area_label: "Area", na_fallback: "N/A",
@@ -175,10 +175,10 @@
             crop_type_label: "Crop Type", reported_damage_label: "Reported Damage", affected_area_label: "Affected Area", profile_crop_age: "Crop Age at Report", crop_age_days: "{n} days old", label_planted: "Planted",
             farmer_remarks_title: "Farmer's Initial Remarks", no_remarks: "No additional remarks provided by the farmer.",
             failed_load_profile: "Failed to load detailed profile.",
-            status_pending: "Pending", status_validated: "Validated", status_inspected: "Inspected",
-            status_approved: "Approved", status_rejected: "Rejected",
+            status_pending: "Pending", status_validated: "Approved", status_inspected: "Inspected",
+            status_approved: "Aid Allocated", status_rejected: "Rejected",
             sw_error_title: "Error", sw_invalid_id: "Invalid Report ID. Cannot update.",
-            sw_confirm_validation_title: "Confirm Validation?", sw_reject_title: "Reject Report?",
+            sw_confirm_validation_title: "Approve this report?", sw_reject_title: "Reject Report?",
             sw_validation_text: "The Admin will be notified to assign a technician.",
             sw_reject_text: "This will permanently close the report.", sw_reject_reason_label: "Reason - the farmer will see this", sw_reject_reason_required: "Please give a reason so the farmer knows why.", sw_reject_reason_placeholder: "e.g. The photos do not show crop damage. Please visit the MAO office.", sw_yes_confirm: "Yes, Confirm",
             sw_updated_title: "Updated!", sw_updated_text: "Workflow updated successfully.",
@@ -200,7 +200,7 @@
             nav_inventory: "Imbentaryo at Tulong", nav_analytics: "Ulat ng Pamamahagi", nav_comm: "Komunikasyon",
             sidebar_role: "Opisyal ng MAO",
             header_title: "Pamamahala ng Ulat", search_placeholder: "Maghanap ng magsasaka, pananim, o ID...",
-            tab_pending: "Naghihintay ng Pag-apruba", tab_validated: "Napatunayan", tab_all: "Lahat ng Ulat",
+            tab_pending: "Naghihintay ng Pag-apruba", tab_validated: "Naaprubahan", tab_all: "Lahat ng Ulat",
             empty_state_text: "Pumili ng ulat para makita ang detalye", loading_details: "Nilo-load ang mga detalye ng pagpapatunay...",
             no_matching_records: "Walang tumugmang record", crop_report_fallback: "Ulat ng Pananim",
             area_label: "Sukat", na_fallback: "N/A",
@@ -220,10 +220,10 @@
             crop_type_label: "Uri ng Pananim", reported_damage_label: "Naiulat na Pinsala", affected_area_label: "Apektadong Sukat", profile_crop_age: "Edad ng Pananim sa Ulat", crop_age_days: "{n} araw", label_planted: "Itinanim",
             farmer_remarks_title: "Paunang Puna ng Magsasaka", no_remarks: "Walang karagdagang puna na ibinigay ng magsasaka.",
             failed_load_profile: "Hindi na-load ang detalyadong profile.",
-            status_pending: "Naghihintay", status_validated: "Napatunayan", status_inspected: "Na-inspeksyon",
-            status_approved: "Naaprubahan", status_rejected: "Tinanggihan",
+            status_pending: "Naghihintay", status_validated: "Naaprubahan", status_inspected: "Na-inspeksyon",
+            status_approved: "Nailaan na ang Tulong", status_rejected: "Tinanggihan",
             sw_error_title: "Error", sw_invalid_id: "Hindi wastong Report ID. Hindi maaaring i-update.",
-            sw_confirm_validation_title: "Kumpirmahin ang Pagpapatunay?", sw_reject_title: "Tanggihan ang Ulat?",
+            sw_confirm_validation_title: "Aprubahan ang ulat na ito?", sw_reject_title: "Tanggihan ang Ulat?",
             sw_validation_text: "Aabisuhan ang Admin para mag-assign ng technician.",
             sw_reject_text: "Permanenteng isasara nito ang ulat.", sw_reject_reason_label: "Dahilan - makikita ito ng magsasaka", sw_reject_reason_required: "Maglagay ng dahilan para malaman ng magsasaka kung bakit.", sw_reject_reason_placeholder: "hal. Walang makitang pinsala sa pananim sa mga larawan. Pumunta po sa opisina ng MAO.", sw_yes_confirm: "Oo, Kumpirmahin",
             sw_updated_title: "Na-update!", sw_updated_text: "Matagumpay na na-update ang workflow.",

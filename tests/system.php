@@ -137,9 +137,9 @@ test('st110 MAO hands out the aid and marks it claimed', function () use ($mao, 
 test('st111 farmer is notified at every step', function () use ($farmer) {
     $res = $farmer->get('api/dashboard/farmer_notifications.php?action=fetch');
     $all = implode(' | ', array_column($res['data'], 'Message'));
-    assertContains('marked as Validated', $all, 'validated');
+    assertContains('approved by the MAO', $all, 'approved by the MAO (Validated)');
     assertContains('Field inspection completed', $all, 'inspected');
-    assertContains('has been approved', $all, 'approved');
+    assertContains('Relief aid has been allocated', $all, 'aid allocated (Approved)');
     assertContains('successfully claimed', $all, 'claimed');
 });
 
