@@ -259,9 +259,15 @@
                             <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
                                 <div class="md:col-span-2">
                                     <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase" data-i18n="label_agri_input">Agricultural Input</label>
-                                    <select class="adminAidItem w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-indigo-500 font-semibold" onchange="updateAidDetailsRow(this)">
+                                    <!-- The hidden select is the real value (approveWithAid, the locked
+                                         seed and stock checks read it); the button opens the search picker. -->
+                                    <select class="adminAidItem hidden" onchange="updateAidDetailsRow(this)" tabindex="-1" aria-hidden="true">
                                         <option value="" data-i18n="placeholder_select_relief">-- Select Relief Item --</option>
                                     </select>
+                                    <button type="button" class="aidPickerBtn w-full flex items-center justify-between gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-left hover:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" onclick="openAidPicker(this)">
+                                        <span class="aidPickerLabel truncate text-gray-400">-- Select Relief Item --</span>
+                                        <i class="aidPickerIcon fa-solid fa-magnifying-glass text-[11px] text-gray-400 flex-shrink-0"></i>
+                                    </button>
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-bold text-gray-500 mb-1 uppercase" data-i18n="label_quantity">Quantity</label>
@@ -294,6 +300,16 @@
             <input type="hidden" id="reviewReportId">
             <div id="reviewModalFooter" class="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-100 grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-end gap-2 sm:gap-3 flex-shrink-0"></div>
         </div>
+    </div>
+
+    <!-- ─── RELIEF ITEM PICKER (opened from any Agricultural Input row) ─── -->
+    <div id="aidPicker" class="hidden fixed z-[95] bg-white rounded-xl shadow-2xl border border-gray-200 flex-col overflow-hidden" role="dialog" aria-label="Choose a relief item">
+        <div class="p-2 border-b border-gray-100 flex items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass text-gray-400 text-xs ml-2"></i>
+            <input id="aidPickerSearch" type="text" autocomplete="off" class="flex-1 px-2 py-2 text-sm outline-none" placeholder="Search items..." data-i18n-placeholder="picker_search_ph">
+            <button type="button" onclick="closeAidPicker()" class="w-8 h-8 rounded-lg text-gray-400 hover:bg-gray-100" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="aidPickerList" class="overflow-y-auto flex-1 py-1"></div>
     </div>
 
     <!-- ─── ASSIGN MODAL ──────────────────────────────────────────────────── -->
@@ -450,6 +466,7 @@
                 label_base_requirement: "Base Requirement", label_damage_severity: "Damage Severity", label_recommended_relief: "Recommended Relief",
                 label_direct_allocate: "Direct Allocate Relief Assistance", label_allocate_hint: 'You can allocate multiple items at once. Click "Add another item" to include more.',
                 label_agri_input: "Agricultural Input", placeholder_select_relief: "-- Select Relief Item --",
+                picker_search_ph: "Search items...", picker_no_match: "No items match your search.", picker_out_of_stock: "Out of stock", picker_already_added: "Already added", picker_left: "left",
                 label_quantity: "Quantity", label_unit: "Unit", label_stock: "Stock",
                 btn_remove_item: "Remove this item", btn_add_item: "Add another item",
                 label_allocation_hint: "This allocation will be deducted from inventory and sent to the MAO for distribution.",
@@ -549,6 +566,7 @@
                 label_base_requirement: "Batayang Kinakailangan", label_damage_severity: "Kalubhaan ng Pinsala", label_recommended_relief: "Inirerekomendang Tulong",
                 label_direct_allocate: "Direktang Maglaan ng Tulong", label_allocate_hint: 'Maaari kang maglaan ng maraming item nang sabay. I-click ang "Magdagdag ng isa pang item" para magdagdag pa.',
                 label_agri_input: "Panustos sa Agrikultura", placeholder_select_relief: "-- Piliin ang Item ng Tulong --",
+                picker_search_ph: "Maghanap ng item...", picker_no_match: "Walang tugmang item.", picker_out_of_stock: "Ubos na", picker_already_added: "Naidagdag na", picker_left: "natitira",
                 label_quantity: "Dami", label_unit: "Yunit", label_stock: "Stock",
                 btn_remove_item: "Alisin ang item na ito", btn_add_item: "Magdagdag ng isa pang item",
                 label_allocation_hint: "Ang paglalaang ito ay ibabawas sa imbentaryo at ipapadala sa MAO para sa pamamahagi.",
@@ -626,6 +644,7 @@
 
         // Called automatically by i18n.js whenever the user picks a new language
         function onLanguageChange() {
+            refreshAidPickers();
             const title = document.getElementById('pageTitle');
             const subtitle = document.getElementById('pageSubtitle');
             const btn = document.getElementById('archiveToggleBtn');
@@ -691,6 +710,7 @@
                             select.innerHTML += `<option value="${item.id}">${item.item_name} (${item.category})</option>`;
                         });
                     });
+                    refreshAidPickers();
                 }
             } catch (e) { console.error("Failed to load inventory items."); document.getElementById('adminAidItem').innerHTML = '<option value="">Error loading items</option>'; }
         }
@@ -753,6 +773,7 @@
             removeBtn.onclick = function() { this.closest('.aid-item-row').remove(); };
             
             container.appendChild(newRow);
+            refreshAidPickers();
         }
 
         function updateAidDetailsRow(el) {
@@ -768,7 +789,155 @@
                 stockEl.textContent = '—';
                 stockEl.className   = "aidStockDisplay text-sm font-black text-gray-400";
             }
+            refreshAidPickers();
         }
+
+        // ═══ Relief item picker: search + grouped by category ═══
+        // Replaces the long native dropdown (panel feedback: hard to scan, easy to
+        // mis-click). Out-of-stock items and items already added in another row
+        // are shown greyed out and can't be picked.
+        const PICKER_CATEGORY_ORDER = ['Seeds', 'Fertilizer', 'Cash Aid', 'Equipment'];
+        let pickerRow = null, pickerActive = -1;
+        const escHtml = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+        function refreshAidPickers() {
+            document.querySelectorAll('#multiAidContainer .aid-item-row').forEach(row => {
+                const select = row.querySelector('.adminAidItem');
+                const btn = row.querySelector('.aidPickerBtn');
+                if (!select || !btn) return;
+                const item = aidInventory.find(i => i.id == select.value);
+                const label = btn.querySelector('.aidPickerLabel');
+                label.textContent = item ? `${item.item_name} (${item.category})` : t('placeholder_select_relief');
+                label.classList.toggle('text-gray-400', !item);
+                label.classList.toggle('text-gray-800', !!item);
+                btn.disabled = select.disabled;
+                btn.classList.toggle('bg-green-50', select.disabled);
+                btn.classList.toggle('cursor-not-allowed', select.disabled);
+                btn.classList.toggle('bg-white', !select.disabled);
+                btn.querySelector('.aidPickerIcon').className = 'aidPickerIcon fa-solid ' + (select.disabled ? 'fa-lock text-green-600' : 'fa-magnifying-glass text-gray-400') + ' text-[11px] flex-shrink-0';
+            });
+        }
+
+        function openAidPicker(btn) {
+            if (btn.disabled) return;
+            pickerRow = btn.closest('.aid-item-row');
+            const panel = document.getElementById('aidPicker');
+            const search = document.getElementById('aidPickerSearch');
+            search.value = '';
+            btn.scrollIntoView({ block: 'nearest' });
+            panel.classList.remove('hidden');
+            panel.classList.add('flex');
+            positionAidPicker(btn);
+            renderAidPicker();
+            search.focus();
+        }
+
+        function positionAidPicker(btn) {
+            const panel = document.getElementById('aidPicker');
+            if (window.innerWidth < 640) {
+                // Phones: a sheet across the bottom, big enough to tap.
+                Object.assign(panel.style, { left: '8px', right: '8px', bottom: '8px', top: 'auto', width: 'auto', maxHeight: '65vh' });
+                return;
+            }
+            const r = btn.getBoundingClientRect();
+            const width = Math.max(r.width, 340);
+            const below = window.innerHeight - r.bottom - 12, above = r.top - 12;
+            const maxH = Math.max(200, Math.min(380, Math.max(below, above)));
+            const left = Math.max(8, Math.min(r.left, window.innerWidth - width - 8));
+            let top = (below >= 220 || below >= above) ? r.bottom + 4 : r.top - 4 - maxH;
+            // Never off-screen, even if the row itself is partly hidden.
+            top = Math.max(8, Math.min(top, window.innerHeight - maxH - 8));
+            Object.assign(panel.style, { left: left + 'px', right: 'auto', width: width + 'px', maxHeight: maxH + 'px', bottom: 'auto', top: top + 'px' });
+        }
+
+        function closeAidPicker() {
+            const panel = document.getElementById('aidPicker');
+            panel.classList.add('hidden');
+            panel.classList.remove('flex');
+            if (pickerRow) { const b = pickerRow.querySelector('.aidPickerBtn'); if (b) b.focus(); }
+            pickerRow = null;
+        }
+
+        function renderAidPicker() {
+            const list = document.getElementById('aidPickerList');
+            const words = document.getElementById('aidPickerSearch').value.toLowerCase().split(/\s+/).filter(Boolean);
+            const current = pickerRow ? pickerRow.querySelector('.adminAidItem').value : '';
+            const takenElsewhere = new Set([...document.querySelectorAll('#multiAidContainer .aid-item-row')]
+                .filter(r => r !== pickerRow).map(r => r.querySelector('.adminAidItem').value).filter(Boolean));
+            const matches = aidInventory.filter(i => {
+                const hay = `${i.item_name} ${i.category}`.toLowerCase();
+                return words.every(w => hay.includes(w));
+            });
+            const cats = [...new Set(matches.map(i => i.category || 'Other'))]
+                .sort((a, b) => (PICKER_CATEGORY_ORDER.indexOf(a) + 1 || 99) - (PICKER_CATEGORY_ORDER.indexOf(b) + 1 || 99) || a.localeCompare(b));
+            if (!matches.length) {
+                list.innerHTML = `<p class="px-4 py-6 text-center text-xs text-gray-400 italic">${t('picker_no_match')}</p>`;
+                pickerActive = -1;
+                return;
+            }
+            list.innerHTML = cats.map(cat => `
+                <p class="px-4 pt-3 pb-1 text-[10px] font-black text-gray-400 uppercase tracking-widest">${escHtml(cat)}</p>
+                ${matches.filter(i => (i.category || 'Other') === cat).sort((a, b) => a.item_name.localeCompare(b.item_name)).map(i => {
+                    const stock = parseFloat(i.current_stock) || 0;
+                    const out = stock <= 0, taken = takenElsewhere.has(String(i.id));
+                    const off = out || taken;
+                    const right = taken ? t('picker_already_added') : out ? t('picker_out_of_stock') : `${Number(stock)} ${escHtml(i.unit)} ${t('picker_left')}`;
+                    return `<button type="button" data-id="${i.id}" ${off ? 'disabled' : ''} onclick="pickAidItem('${i.id}')"
+                        class="aidPickerOpt w-full flex items-center justify-between gap-3 px-4 py-2 text-left text-sm ${off ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-indigo-50'} ${String(i.id) === current ? 'bg-indigo-50 font-bold' : ''}">
+                        <span class="truncate">${String(i.id) === current ? '<i class="fa-solid fa-check text-indigo-600 mr-1.5"></i>' : ''}${escHtml(i.item_name)}</span>
+                        <span class="text-[11px] flex-shrink-0 ${off ? '' : (stock < 10 ? 'text-red-500 font-bold' : 'text-gray-400')}">${right}</span>
+                    </button>`;
+                }).join('')}`).join('');
+            pickerActive = -1;
+        }
+
+        function pickAidItem(id) {
+            if (!pickerRow) return;
+            const select = pickerRow.querySelector('.adminAidItem');
+            select.value = id;
+            select.dispatchEvent(new Event('change'));
+            const qty = pickerRow.querySelector('.adminAidQty');
+            closeAidPicker();
+            if (qty && !qty.value) qty.focus();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const search = document.getElementById('aidPickerSearch');
+            search.addEventListener('input', renderAidPicker);
+            // Arrow keys move through the usable items, Enter picks, Esc closes.
+            search.addEventListener('keydown', e => {
+                const opts = [...document.querySelectorAll('#aidPickerList .aidPickerOpt:not([disabled])')];
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (!opts.length) return;
+                    pickerActive = (pickerActive + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length;
+                    opts.forEach((o, k) => o.classList.toggle('ring-2', k === pickerActive));
+                    opts[pickerActive].scrollIntoView({ block: 'nearest' });
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const pick = opts[pickerActive] || (opts.length === 1 ? opts[0] : null);
+                    if (pick) pickAidItem(pick.dataset.id);
+                }
+            });
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && !document.getElementById('aidPicker').classList.contains('hidden')) {
+                    e.stopPropagation(); closeAidPicker();
+                }
+            }, true);
+            // Click anywhere else closes it; scrolling the window it belongs to does too.
+            document.addEventListener('mousedown', e => {
+                const panel = document.getElementById('aidPicker');
+                if (panel.classList.contains('hidden')) return;
+                if (!panel.contains(e.target) && !e.target.closest('.aidPickerBtn')) closeAidPicker();
+            });
+            // Scrolling the report window moves the row; keep the panel under it.
+            document.getElementById('reviewModal').addEventListener('scroll', () => {
+                if (pickerRow && window.innerWidth >= 640 && !document.getElementById('aidPicker').classList.contains('hidden')) {
+                    positionAidPicker(pickerRow.querySelector('.aidPickerBtn'));
+                }
+            }, true);
+            window.addEventListener('resize', () => { if (!document.getElementById('aidPicker').classList.contains('hidden')) closeAidPicker(); });
+        });
 
         function resetMultiAidForm() {
             const container = document.getElementById('multiAidContainer');
@@ -791,6 +960,7 @@
             const note = document.getElementById('cropSeedNote');
             note.classList.add('hidden');
             note.innerText = '';
+            refreshAidPickers();
         }
 
         // The seed for the farmer's own crop always comes first in the relief
@@ -839,6 +1009,7 @@
             select.disabled = true;
             select.classList.add('bg-green-50', 'cursor-not-allowed');
             lockedSeedItem = seed;
+            refreshAidPickers();
             say('seed_note_found', 'bg-green-50 text-green-800 border border-green-200');
             if (parseFloat(seed.current_stock) < (bags || 1)) {
                 note.innerText += ' ' + t('seed_note_low').replace('{stock}', Number(seed.current_stock)).replace('{unit}', seed.unit).replace('{item}', seed.item_name);
