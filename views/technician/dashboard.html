@@ -166,14 +166,31 @@
                     </div>
 
                     <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4" data-i18n="label_priority_queue">Priority Queue</h4>
-                    <div class="flex flex-wrap items-center gap-3 mb-6">
-                        <div class="relative flex-1 min-w-[160px]">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                        <div class="relative sm:col-span-3">
                             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-300 text-sm"></i>
                             <input type="text" id="assignSearchInput" onkeyup="filterAssignments()" placeholder="Search farmer or crop..." data-i18n-placeholder="search_placeholder"
                                    class="bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 pl-10 pr-4 text-sm w-full focus:ring-2 focus:ring-[#11542e] outline-none">
                         </div>
-                        <select id="assignBarangayFilter" onchange="filterAssignments()" class="w-full sm:w-auto bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                        <select id="assignBarangayFilter" onchange="filterAssignments()" class="w-full min-w-0 truncate bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
                             <option value="ALL" data-i18n="filter_all_barangays">All Barangays</option>
+                        </select>
+                        <!-- Panel revision: filter by when the visit is due, and by severity. -->
+                        <select id="assignScheduleFilter" onchange="filterAssignments()" class="w-full min-w-0 truncate bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                            <option value="ALL" data-i18n="filter_all_schedules">All Visit Dates</option>
+                            <option value="overdue" data-i18n="filter_overdue">Overdue</option>
+                            <option value="today" data-i18n="filter_today">Today</option>
+                            <option value="week" data-i18n="filter_this_week">Next 7 days</option>
+                            <option value="later" data-i18n="filter_later">Later</option>
+                            <option value="none" data-i18n="filter_no_date">No visit date</option>
+                        </select>
+                        <select id="assignSeverityFilter" onchange="filterAssignments()" class="w-full min-w-0 truncate bg-gray-50 border-none ring-1 ring-gray-200 sm:ring-0 rounded-xl py-2.5 px-4 text-sm text-gray-600 font-bold focus:ring-2 focus:ring-[#11542e] outline-none cursor-pointer">
+                            <option value="ALL" data-i18n="filter_all_severities">All Severities</option>
+                            <option value="URGENT" data-i18n="filter_urgent">Urgent (High + Total Loss)</option>
+                            <option value="Low" data-i18n="severity_low">Low</option>
+                            <option value="Moderate" data-i18n="severity_moderate">Moderate</option>
+                            <option value="High" data-i18n="severity_high">High</option>
+                            <option value="Total Loss" data-i18n="severity_total_loss">Total Loss</option>
                         </select>
                     </div>
                     <div id="assignmentList" class="space-y-4"></div>
@@ -422,6 +439,8 @@
             stat_assigned_reports: "Assigned Reports", stat_urgent_tasks: "Urgent Tasks", stat_inspections_done: "Inspections Done",
             label_priority_queue: "Priority Queue", search_placeholder: "Search farmer or crop...",
             filter_all_barangays: "All Barangays", label_no_match_filters: "No results match your filters.",
+            filter_all_schedules: "All Visit Dates", filter_overdue: "Overdue", filter_today: "Today", filter_this_week: "Next 7 days", filter_later: "Later", filter_no_date: "No visit date",
+            filter_all_severities: "All Severities", filter_urgent: "Urgent (High + Total Loss)",
             label_crop_damage_inspection: "Crop Damage Inspection", label_brgy_loading: "Brgy. Loading...", label_location: "Location",
             label_observations: "Observations / Field Findings", placeholder_observations: "Describe the current state of the crop...",
             label_damage_classification: "Damage Classification",
@@ -479,6 +498,8 @@
             stat_assigned_reports: "Itinalagang Ulat", stat_urgent_tasks: "Madaliang Gawain", stat_inspections_done: "Natapos na Inspeksyon",
             label_priority_queue: "Priority Queue", search_placeholder: "Maghanap ng magsasaka o pananim...",
             filter_all_barangays: "Lahat ng Barangay", label_no_match_filters: "Walang resultang tumutugma sa mga filter.",
+            filter_all_schedules: "Lahat ng Petsa ng Pagbisita", filter_overdue: "Lampas na", filter_today: "Ngayong araw", filter_this_week: "Susunod na 7 araw", filter_later: "Sa susunod pa", filter_no_date: "Walang petsa",
+            filter_all_severities: "Lahat ng Kalubhaan", filter_urgent: "Apurahan (Mataas + Kumpletong Pagkalugi)",
             label_crop_damage_inspection: "Inspeksyon ng Pinsala sa Pananim", label_brgy_loading: "Brgy. Nilo-load...", label_location: "Lokasyon",
             label_observations: "Obserbasyon / Natuklasan sa Field", placeholder_observations: "Ilarawan ang kasalukuyang kalagayan ng pananim...",
             label_damage_classification: "Klasipikasyon ng Pinsala",
@@ -632,6 +653,18 @@
         return words.every(w => hay.includes(w));
     }
 
+    // Which "Visit Date" filter a report falls under - same day maths as
+    // visitDateBadge(), so the filter always agrees with the badge on the card.
+    function visitBucket(dateStr) {
+        if (!dateStr) return 'none';
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const diff = Math.round((formatVisitDate(dateStr) - today) / 86400000);
+        if (diff < 0) return 'overdue';
+        if (diff === 0) return 'today';
+        if (diff <= 7) return 'week';
+        return 'later';
+    }
+
     // My Assignments shows 5 reports a page (same pager as the Completed tab).
     const ASSIGN_PAGE_SIZE = 5;
     let assignPage = 1;
@@ -641,11 +674,16 @@
         if (resetPage) assignPage = 1;
         const q = (document.getElementById('assignSearchInput').value || '').toLowerCase();
         const brgy = document.getElementById('assignBarangayFilter').value;
+        const sched = document.getElementById('assignScheduleFilter').value;
+        const sev = document.getElementById('assignSeverityFilter').value;
 
         const filtered = allAssignments.filter(a => {
-            const matchesSearch = matchesAllWords(q, [a.farmer_name, a.crop_name, a.barangay, a.damage_type, `rep-${a.id}`, a.id]);
+            const matchesSearch = matchesAllWords(q, [a.farmer_name, a.crop_name, a.barangay, a.Damage_Type, a.severity, `rep-${a.id}`, a.id]);
             const matchesBarangay = brgy === 'ALL' || a.barangay === brgy;
-            return matchesSearch && matchesBarangay;
+            const matchesSchedule = sched === 'ALL' || visitBucket(a.visit_date) === sched;
+            const matchesSeverity = sev === 'ALL'
+                || (sev === 'URGENT' ? (a.severity === 'High' || a.severity === 'Total Loss') : a.severity === sev);
+            return matchesSearch && matchesBarangay && matchesSchedule && matchesSeverity;
         });
 
         filteredAssignments = filtered;
@@ -663,7 +701,8 @@
         const pagination = document.getElementById('assignPagination');
         const list = filteredAssignments;
         if (!list.length) {
-            container.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_pending_assignments')}</p>`;
+            const msg = allAssignments.length ? t('label_no_match_filters') : t('label_no_pending_assignments');
+            container.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${msg}</p>`;
             pagination.classList.add('hidden');
             return;
         }

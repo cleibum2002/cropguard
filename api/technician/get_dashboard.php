@@ -45,6 +45,7 @@ try {
                     dr.Damage_Report_ID  AS id,
                     c.Crop_Name          AS crop_name,
                     dr.Damage_Type,
+                    dr.Damage_Severity   AS severity,
                     f.Fullname           AS farmer_name,
                     fl.Barangay          AS barangay,
                     dr.Visit_Date        AS visit_date
