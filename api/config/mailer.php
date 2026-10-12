@@ -105,6 +105,19 @@ function sendRegistrationApprovedEmail($toEmail, $toName) {
         </div>");
 }
 
+// Code for changing a password from My Profile (api/profile/send_password_code.php).
+function sendPasswordCodeEmail($toEmail, $toName, $code) {
+    $name = htmlspecialchars($toName, ENT_QUOTES, 'UTF-8');
+    $code = htmlspecialchars($code, ENT_QUOTES, 'UTF-8');
+    return sendBrevoEmail($toEmail, $toName, 'Your CropGuard password change code', "
+        <div style=\"font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;\">
+            <h2 style=\"color: #11542e;\">Hello, $name</h2>
+            <p>Someone asked to change the password of your CropGuard account. To confirm it was you, enter this code:</p>
+            <p style=\"font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #11542e; background:#f6f8f6; padding:12px 14px; border-radius:8px; text-align:center;\">$code</p>
+            <p style=\"font-size: 12px; color: #888;\">This code expires in 5 minutes. If you did not ask for this, ignore this email and your password stays the same.</p>
+        </div>");
+}
+
 function sendRegistrationRejectedEmail($toEmail, $toName, $reason) {
     $name   = htmlspecialchars($toName, ENT_QUOTES, 'UTF-8');
     $reason = htmlspecialchars($reason, ENT_QUOTES, 'UTF-8');

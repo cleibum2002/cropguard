@@ -116,6 +116,28 @@ try {
         }
     }
 
+    // A new password also needs the code emailed to this account's address
+    // (panel revision) - see api/profile/send_password_code.php.
+    if ($changingPassword) {
+        $sent = $_SESSION['pw_change_code'] ?? null;
+        $given = preg_replace('/\D/', '', (string)($input['security_code'] ?? ''));
+        if (!$sent || time() > $sent['expires']) {
+            unset($_SESSION['pw_change_code']);
+            echo json_encode(['status' => 'error', 'code' => 'code_expired', 'message' => 'Your code has expired. Please save again to get a new one.']);
+            exit;
+        }
+        if (!hash_equals($sent['code'], $given)) {
+            $_SESSION['pw_change_code']['tries'] = ++$sent['tries'];
+            if ($sent['tries'] >= 5) {
+                unset($_SESSION['pw_change_code']);
+                echo json_encode(['status' => 'error', 'code' => 'code_expired', 'message' => 'Too many wrong codes. Please save again to get a new one.']);
+                exit;
+            }
+            echo json_encode(['status' => 'error', 'code' => 'code_invalid', 'message' => 'That code is not correct. Please check your email and try again.']);
+            exit;
+        }
+    }
+
     $checkDupeStmt = $conn->prepare("SELECT User_ID FROM users WHERE Email = ? AND User_ID != ?");
     $checkDupeStmt->bind_param("si", $email, $user_id);
     $checkDupeStmt->execute();
@@ -175,6 +197,8 @@ try {
 
     if (!$stmt->execute()) throw new Exception($stmt->error);
     $stmt->close();
+    // A code is good for one password change only.
+    if ($changingPassword) unset($_SESSION['pw_change_code']);
 
     // Update session so sidebar name reflects immediately
     $_SESSION['Fullname'] = $fullname;

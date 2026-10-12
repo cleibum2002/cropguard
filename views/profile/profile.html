@@ -45,6 +45,12 @@
             sw_session_expired_title: "Session Expired", sw_session_expired_text: "You have been logged out due to 30 minutes of inactivity.",
             sw_verify_new_email_title: "Verify Your New Email", sw_verify_new_email_text: "We've sent a 6-digit code to your new email address. Enter it below to confirm the change.",
             ph_enter_code: "Enter 6-digit code", btn_verify: "Verify",
+            btn_change_email: "Change", email_hidden_hint: "Hidden for your privacy.",
+            sw_change_email_title: "Change your email", sw_change_email_text: "Enter your new email address. We will send a code to it - the change only takes effect once you enter that code.",
+            ph_new_email: "New email address", sw_change_email_invalid: "Please enter a valid email address.", sw_change_email_same: "That is already your email address.",
+            sw_pw_code_title: "Check your email", sw_pw_code_text: "We sent a 6-digit code to {email}. Enter it to confirm your new password.",
+            sw_pw_code_wait: "A code was already sent to {email} less than a minute ago.",
+            sw_pw_changed_title: "Password changed", sw_pw_changed_text: "Your new password is saved. Use it the next time you log in.",
             sw_invalid_code_text: "Please enter the 6-digit code.",
             sw_email_verified_title: "Email Verified!", sw_email_verified_text: "Please log in again with your new email."
         },
@@ -77,6 +83,12 @@
             sw_session_expired_title: "Natapos na ang Session", sw_session_expired_text: "Na-log out ka dahil sa 30 minutong hindi paggamit.",
             sw_verify_new_email_title: "I-verify ang Bagong Email", sw_verify_new_email_text: "Nagpadala kami ng 6-digit na code sa iyong bagong email. Ilagay ito para kumpirmahin ang pagbabago.",
             ph_enter_code: "Ilagay ang 6-digit na code", btn_verify: "I-verify",
+            btn_change_email: "Palitan", email_hidden_hint: "Nakatago para sa iyong privacy.",
+            sw_change_email_title: "Palitan ang iyong email", sw_change_email_text: "Ilagay ang bago mong email address. Magpapadala kami ng code doon - magiging epektibo lang ang pagbabago kapag nailagay mo ang code.",
+            ph_new_email: "Bagong email address", sw_change_email_invalid: "Maglagay ng wastong email address.", sw_change_email_same: "Iyan na ang kasalukuyan mong email.",
+            sw_pw_code_title: "Tingnan ang iyong email", sw_pw_code_text: "Nagpadala kami ng 6-digit na code sa {email}. Ilagay ito para kumpirmahin ang bagong password.",
+            sw_pw_code_wait: "May code nang naipadala sa {email} wala pang isang minuto ang nakalipas.",
+            sw_pw_changed_title: "Napalitan ang password", sw_pw_changed_text: "Na-save na ang bago mong password. Gamitin ito sa susunod mong pag-login.",
             sw_invalid_code_text: "Pakilagay ang 6-digit na code.",
             sw_email_verified_title: "Na-verify ang Email!", sw_email_verified_text: "Mangyaring mag-login muli gamit ang iyong bagong email."
         },
@@ -109,6 +121,12 @@
             sw_session_expired_title: "Nahuman na ang Session", sw_session_expired_text: "Na-log out ka tungod sa 30 minutos nga walay kalihukan.",
             sw_verify_new_email_title: "I-verify ang Bag-ong Email", sw_verify_new_email_text: "Nagpadala kami og 6-digit nga code sa imong bag-ong email. Isulod kini para makumpirma ang kausaban.",
             ph_enter_code: "Isulod ang 6-digit nga code", btn_verify: "I-verify",
+            btn_change_email: "Ilisi", email_hidden_hint: "Gitago para sa imong privacy.",
+            sw_change_email_title: "Ilisi ang imong email", sw_change_email_text: "Isulod ang imong bag-ong email address. Magpadala mi og code didto - ang kausaban mahimong epektibo lang kung imong isulod ang code.",
+            ph_new_email: "Bag-ong email address", sw_change_email_invalid: "Palihug isulod ang usa ka saktong email address.", sw_change_email_same: "Mao na kana ang imong email karon.",
+            sw_pw_code_title: "Tan-awa ang imong email", sw_pw_code_text: "Nagpadala mi og 6-digit nga code sa {email}. Isulod kini para makumpirma ang bag-ong password.",
+            sw_pw_code_wait: "Naay code nga gipadala na sa {email} wala pay usa ka minuto ang milabay.",
+            sw_pw_changed_title: "Nailisan ang password", sw_pw_changed_text: "Na-save na ang imong bag-ong password. Gamita kini sa sunod nimong pag-login.",
             sw_invalid_code_text: "Palihug isulod ang 6-digit nga code.",
             sw_email_verified_title: "Na-verify ang Email!", sw_email_verified_text: "Palihug mag-login pag-usab gamit ang imong bag-ong email."
         }
@@ -271,7 +289,13 @@
                                 </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-gray-400 uppercase mb-2" data-i18n="label_email">Email Address</label>
-                                    <input type="email" id="inputEmail" class="input-field" placeholder="your@email.com">
+                                    <!-- Shown masked (a******g@gmail.com); changing it goes through
+                                         changeEmail(), which needs a code sent to the new address. -->
+                                    <div class="flex items-stretch gap-2">
+                                        <input type="text" id="inputEmail" class="input-field flex-1" disabled>
+                                        <button type="button" onclick="changeEmail()" class="px-4 rounded-xl border border-gray-200 bg-white text-xs font-black text-[#11542e] hover:bg-gray-50 flex-shrink-0" data-i18n="btn_change_email">Change</button>
+                                    </div>
+                                    <p class="text-[10px] text-gray-400 mt-1" data-i18n="email_hidden_hint">Hidden for your privacy.</p>
                                     <!-- Shown only when Email_Verified is 0. A farmer who
                                          registered by SMS has never confirmed this address. -->
                                     <div id="emailUnverifiedNotice" class="hidden mt-2 flex flex-wrap items-center gap-2">
@@ -376,7 +400,8 @@
                         : 'bg-red-100 text-red-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full';
 
                     document.getElementById('inputFullname').value = u.Fullname       ?? '';
-                    document.getElementById('inputEmail').value    = u.Email          ?? '';
+                    currentEmail = u.Email ?? '';
+                    document.getElementById('inputEmail').value    = maskEmail(currentEmail);
                     // Existing numbers may be stored as "09xxxxxxxxx", "+639xxxxxxxxx", or "639xxxxxxxxx" -
                     // strip whatever prefix is there and keep just the last 10 digits for the new input box.
                     const rawContact = (u.Contact_Number ?? '').replace(/\D/g, '');
@@ -409,9 +434,9 @@
             } catch (e) { console.error('Load profile failed', e); }
         }
 
-        async function saveProfile() {
+        async function saveProfile(newEmail) {
             const fullname = document.getElementById('inputFullname').value.trim();
-            const email    = document.getElementById('inputEmail').value.trim();
+            const email    = (typeof newEmail === 'string' && newEmail) ? newEmail : currentEmail;
             const contactDigits = document.getElementById('inputContact').value.trim();
             const contact  = contactDigits ? ('+63' + contactDigits) : '';
             const rsba     = document.getElementById('inputRSBA').value.trim();
@@ -444,15 +469,26 @@
                 if (current_password === null) return;   // cancelled - nothing saved
             }
 
+            // A new password also needs the 6-digit code emailed to this
+            // account (panel revision) - api/profile/send_password_code.php.
+            let security_code = '';
+            if (password) {
+                security_code = await getPasswordCode(current_password);
+                if (security_code === null) return;      // cancelled or failed - nothing saved
+            }
+
             try {
                 const res  = await fetch('../../api/profile/update_profile.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fullname, email, contact, rsba, area, password, current_password })
+                    body: JSON.stringify({ fullname, email, contact, rsba, area, password, current_password, security_code })
                 });
                 const data = await res.json();
                 if (data.status === 'success' && data.email_changed) {
                     promptVerifyNewEmail(email, data.verification_code);
+                } else if (data.status === 'success' && password) {
+                    Swal.fire({ icon: 'success', title: t('sw_pw_changed_title'), text: t('sw_pw_changed_text'), confirmButtonColor: '#11542e' })
+                        .then(() => location.reload());
                 } else if (data.status === 'success') {
                     Swal.fire({ icon: 'success', title: t('sw_updated_title'), text: t('sw_updated_text'), confirmButtonColor: '#11542e' })
                         .then(() => location.reload());
@@ -486,6 +522,102 @@
         }
 
         let originalContactDigits = '';
+        // The real address stays here; the box only ever shows maskEmail() of it.
+        let currentEmail = '';
+
+        // a******g@gmail.com - same rule as maskEmail() in send_password_code.php.
+        function maskEmail(email) {
+            const at = (email || '').indexOf('@');
+            if (at < 0) return email || '';
+            const local = email.slice(0, at), domain = email.slice(at + 1);
+            if (local.length <= 2) return local.charAt(0) + '*@' + domain;
+            return local.charAt(0) + '*'.repeat(Math.min(local.length - 2, 8)) + local.slice(-1) + '@' + domain;
+        }
+
+        // Change email: asks for the new address, then the existing flow saves it
+        // as pending and sends a code TO THE NEW ADDRESS; it only replaces the
+        // old one once that code is entered (verify_code.php).
+        async function changeEmail() {
+            const result = await Swal.fire({
+                title: t('sw_change_email_title'),
+                text: t('sw_change_email_text'),
+                input: 'email',
+                inputPlaceholder: t('ph_new_email'),
+                inputAttributes: { autocomplete: 'email' },
+                showCancelButton: true,
+                confirmButtonColor: '#11542e',
+                confirmButtonText: t('btn_confirm'),
+                cancelButtonText: t('btn_cancel'),
+                validationMessage: t('sw_change_email_invalid'),
+                inputValidator: (value) => {
+                    const v = (value || '').trim();
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return t('sw_change_email_invalid');
+                    if (v.toLowerCase() === currentEmail.toLowerCase()) return t('sw_change_email_same');
+                }
+            });
+            if (!result.isConfirmed) return;
+            saveProfile(result.value.trim());
+        }
+
+        // Emails a 6-digit code to the account's address and asks for it.
+        // Returns the code, or null if cancelled / it could not be sent.
+        async function getPasswordCode(current_password) {
+            Swal.fire({ title: t('sw_sending_code'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            let data;
+            try {
+                const res = await fetch('../../api/profile/send_password_code.php', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ current_password })
+                });
+                data = await res.json();
+            } catch (e) {
+                Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error');
+                return null;
+            }
+            if (data.status !== 'success' && data.status !== 'wait') {
+                Swal.fire(t('sw_error_title'), data.message || t('sw_update_failed'), 'error');
+                return null;
+            }
+            const intro = (data.status === 'wait' ? t('sw_pw_code_wait') + ' ' : '') + t('sw_pw_code_text');
+            const result = await Swal.fire({
+                title: t('sw_pw_code_title'),
+                html: `<p style="font-size:0.85rem; color:#555; margin-bottom:18px;">${intro.split('{email}').join('<strong>' + (data.masked_email || '') + '</strong>')}</p>
+                    <div id="pwCodeBoxes" style="display:flex; justify-content:center; gap:10px;">
+                        ${'<input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]">'.repeat(6)}
+                    </div>`,
+                confirmButtonText: t('btn_verify'),
+                confirmButtonColor: '#11542e',
+                showCancelButton: true,
+                cancelButtonText: t('btn_cancel'),
+                allowOutsideClick: false,
+                didOpen: () => {
+                    const boxes = [...document.querySelectorAll('#pwCodeBoxes .code-digit')];
+                    boxes.forEach((box, i) => {
+                        box.addEventListener('input', () => {
+                            box.value = box.value.replace(/\D/g, '').slice(0, 1);
+                            box.classList.toggle('filled', box.value !== '');
+                            if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+                        });
+                        box.addEventListener('keydown', (e) => {
+                            if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+                        });
+                        box.addEventListener('paste', (e) => {
+                            e.preventDefault();
+                            const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
+                            pasted.split('').forEach((d, k) => { if (boxes[k]) { boxes[k].value = d; boxes[k].classList.add('filled'); } });
+                            (boxes.find(b => !b.value) || boxes[boxes.length - 1]).focus();
+                        });
+                    });
+                    boxes[0].focus();
+                },
+                preConfirm: () => {
+                    const code = [...document.querySelectorAll('#pwCodeBoxes .code-digit')].map(b => b.value).join('');
+                    if (code.length !== 6) { Swal.showValidationMessage(t('sw_invalid_code_text')); return false; }
+                    return code;
+                }
+            });
+            return result.isConfirmed ? result.value : null;
+        }
 
         // Asked for only when a change could cost someone their account: a new
         // password (there is no self-service reset, so the real owner would be
@@ -509,7 +641,7 @@
         }
 
         async function startEmailVerification() {
-            const email = document.getElementById('inputEmail').value.trim();
+            const email = currentEmail;
             if (!email) {
                 Swal.fire(t('sw_invalid_email_title'), t('sw_invalid_email_text'), 'warning');
                 return;
