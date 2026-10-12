@@ -34,11 +34,22 @@ if (isset($input['id']) && isset($input['status'])) {
         exit;
     }
 
+    // A rejection must say why - it is shown to the farmer in My Recent Reports.
+    $reason = null;
+    if ($new_status === 'Rejected') {
+        $reason = trim(preg_replace('/\s+/', ' ', strip_tags((string)($input['reason'] ?? ''))));
+        if (mb_strlen($reason) > 300) $reason = mb_substr($reason, 0, 300);
+        if ($reason === '') {
+            echo json_encode(['status' => 'error', 'message' => 'Please give a reason for rejecting this report. The farmer will see it.']);
+            exit;
+        }
+    }
+
     // Only a report that isn't already finalised can be validated or rejected.
     // The status condition stops a finished report being dragged back to
     // Validated (which would strand its already-allocated aid) or re-rejected.
-    $stmt = $conn->prepare("UPDATE damage_report SET Status = ? WHERE Damage_Report_ID = ? AND Status NOT IN ('Approved','Rejected','Archived')");
-    $stmt->bind_param("si", $new_status, $report_id);
+    $stmt = $conn->prepare("UPDATE damage_report SET Status = ?, Rejection_Reason = ? WHERE Damage_Report_ID = ? AND Status NOT IN ('Approved','Rejected','Archived')");
+    $stmt->bind_param("ssi", $new_status, $reason, $report_id);
 
     if (!$stmt->execute()) {
         echo json_encode(['status' => 'error', 'message' => safeErrorMessage(new Exception($conn->error))]);
@@ -62,7 +73,7 @@ if (isset($input['id']) && isset($input['status'])) {
     $user_role = $_SESSION['Role'];
     logAction($conn, $user_id, $user_role,
         'Validate Report',
-        "Report #$report_id status changed to $new_status",
+        "Report #$report_id status changed to $new_status" . ($reason ? ": $reason" : ''),
         'Damage Reports'
     );
     echo json_encode(['status' => 'success', 'message' => 'Status updated to ' . $new_status]);

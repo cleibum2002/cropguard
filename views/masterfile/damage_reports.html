@@ -501,6 +501,7 @@
                 sw_assigned_title: "Assigned!", sw_assigned_text: "Technician and visit date have been set.", sw_server_failed_short: "Server failed.",
                 sw_are_you_sure: "Are you sure?", sw_status_confirm_text: "You are about to {action} this report.",
                 sw_action_reject: "reject", sw_action_validate: "validate", sw_yes: "Yes",
+                sw_reject_reason_label: "Reason - the farmer will see this", sw_reject_reason_placeholder: "e.g. The photos do not show crop damage.", sw_reject_reason_required: "Please give a reason so the farmer knows why.",
                 sw_success_title: "Success!", sw_status_updated_text: "Report updated to {status}", sw_update_failed: "Update failed",
                 sw_archive_title: "Archive?", sw_archive_text: "The report moves to the Archive list (View Archive). You can restore it from there later.",
                 sw_archived_done_text: "The report was moved to the Archive.",
@@ -599,6 +600,7 @@
                 sw_assigned_title: "Naitalaga na!", sw_assigned_text: "Naitakda na ang technician at petsa ng pagbisita.", sw_server_failed_short: "Nabigo ang server.",
                 sw_are_you_sure: "Sigurado ka ba?", sw_status_confirm_text: "Ikaw ay {action} ang ulat na ito.",
                 sw_action_reject: "tatanggihan", sw_action_validate: "pagpapatunayan", sw_yes: "Oo",
+                sw_reject_reason_label: "Dahilan - makikita ito ng magsasaka", sw_reject_reason_placeholder: "hal. Hindi makikita sa mga larawan ang pinsala sa pananim.", sw_reject_reason_required: "Maglagay ng dahilan para malaman ng magsasaka kung bakit.",
                 sw_success_title: "Tagumpay!", sw_status_updated_text: "Na-update ang ulat sa {status}", sw_update_failed: "Nabigo ang pag-update",
                 sw_archive_title: "I-archive?", sw_archive_text: "Malilipat ang ulat sa listahan ng Archive (Tingnan ang Archive). Maaari mo itong ibalik mula roon sa ibang pagkakataon.",
                 sw_archived_done_text: "Nailipat na ang ulat sa Archive.",
@@ -1360,18 +1362,25 @@
 
         async function updateStatus(id, newStatus) {
             const actionWord = newStatus === 'Rejected' ? t('sw_action_reject') : t('sw_action_validate');
+            const rejecting = newStatus === 'Rejected';
             const result = await Swal.fire({
                 title: t('sw_are_you_sure'), text: t('sw_status_confirm_text').replace('{action}', actionWord), icon: 'warning',
-                showCancelButton: true, confirmButtonColor: newStatus === 'Rejected' ? '#dc2626' : '#11542e', confirmButtonText: `${t('sw_yes')}, ${reportStatusLabel(newStatus)}`
+                // A rejection needs a reason - the farmer sees it in My Recent Reports.
+                input: rejecting ? 'textarea' : undefined,
+                inputLabel: rejecting ? t('sw_reject_reason_label') : undefined,
+                inputPlaceholder: rejecting ? t('sw_reject_reason_placeholder') : undefined,
+                inputAttributes: rejecting ? { maxlength: 300 } : undefined,
+                inputValidator: rejecting ? (v => !(v || '').trim() && t('sw_reject_reason_required')) : undefined,
+                showCancelButton: true, confirmButtonColor: rejecting ? '#dc2626' : '#11542e', confirmButtonText: `${t('sw_yes')}, ${reportStatusLabel(newStatus)}`
             });
             if (result.isConfirmed) {
                 try {
                     const r = await fetch('../../api/dashboard/validate.php', {
-                        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: newStatus })
+                        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: newStatus, reason: rejecting ? result.value.trim() : '' })
                     });
                     const resData = await r.json();
                     if (resData.status === 'success') { Swal.fire({ title: t('sw_success_title'), text: t('sw_status_updated_text').replace('{status}', reportStatusLabel(newStatus)), icon: 'success', timer: 1500, showConfirmButton: false }); loadTable(); closeReviewModal(); }
-                    else { Swal.fire(t('sw_error_title'), t('sw_update_failed'), 'error'); }
+                    else { Swal.fire(t('sw_error_title'), resData.message || t('sw_update_failed'), 'error'); }
                 } catch (e) { Swal.fire(t('sw_error_title'), t('sw_server_failed'), 'error'); }
             }
         }

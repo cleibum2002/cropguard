@@ -377,7 +377,7 @@
                         <h3 id="statPending" class="text-lg sm:text-3xl font-black text-amber-600">0</h3>
                     </div>
                     <div class="stat-card bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest mb-1 leading-tight" data-i18n="stat_resolved">Resolved / Approved</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest mb-1 leading-tight" data-i18n="stat_resolved">Approved Reports</p>
                         <h3 id="statResolved" class="text-lg sm:text-3xl font-black text-green-600">0</h3>
                     </div>
                 </div>
@@ -458,7 +458,7 @@
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_date">Date Filed</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_crop">Crop Details</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_incident">Incident</th>
-                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_loss">Est. Loss</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_remarks">Remarks</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest" data-i18n="th_status">Status</th>
                                     <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right" data-i18n="th_actions">Actions</th>
                                 </tr>
@@ -807,7 +807,7 @@
                 welcome_title: "Welcome back!", welcome_sub: "Track your filed reports and monitor their validation status.",
                 btn_manage_farms: "Manage Farms", btn_new_report: "File New Report",
                 alert_title: "Important Alerts", alert_sub: "Recent notifications that need your attention", btn_dismiss_all: "Dismiss All",
-                stat_total: "Total Reports Filed", stat_pending: "Pending Validation", stat_resolved: "Resolved / Approved",
+                stat_total: "Total Reports Filed", stat_pending: "Pending Validation", stat_resolved: "Approved Reports",
                 tracker_title: "Seed Request Tracker", tracker_sub: "Track the real-time status of your seed requests", tracker_viewall: "View All",
                 reports_title: "My Recent Reports",
                 filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
@@ -815,7 +815,7 @@
                 filter_all_statuses: "All Statuses", filter_all_types: "All Types", filter_all_severities: "All Severities",
                 status_inspected: "Inspected",
                 pagination_page: "Page", pagination_of: "of",
-                th_date: "Date Filed", th_crop: "Crop Details", th_incident: "Incident", th_loss: "Est. Loss", th_status: "Status", th_actions: "Actions",
+                th_date: "Date Filed", th_crop: "Crop Details", th_incident: "Incident", th_remarks: "Remarks", th_status: "Status", th_actions: "Actions",
                 modal_report_title: "File Crop Damage Report",
                 label_farm_location: "Farm Location", label_crop_picker: "Which Crop Was Damaged?",
                 label_planting_date: "Planting Date", label_affected_area: "Affected Area (Ha)", area_warning: "Cannot exceed total farm size!",
@@ -866,7 +866,7 @@
                 step_ready_label: "Ready for Pickup", step_ready_sub: "Your seeds are ready — claim at the MAO office",
                 step_claimed_label: "Claimed", step_claimed_sub: "You have received your requested seeds",
                 table_empty: "You have not submitted any reports yet.",
-                label_area_short: "Area:", label_sev_short: "Sev:", label_est_loss: "Est. loss", na_text: "N/A",
+                label_area_short: "Area:", label_sev_short: "Sev:", label_reject_reason: "Reason", no_reason_given: "No reason was given. Please contact the MAO office.", na_text: "N/A",
                 action_edit: "Edit", action_delete: "Delete", action_locked: "Locked",
                 status_pending: "Pending", status_validated: "Validated", status_approved: "Approved", status_completed: "Completed", status_rejected: "Rejected", status_archived: "Archived",
                 opt_select_location: "Select a Location...", opt_no_locations: "No locations found. Add one first.", opt_locations_error: "Could not load locations",
@@ -914,7 +914,7 @@
                 welcome_title: "Maligayang pagbabalik!", welcome_sub: "Subaybayan ang iyong mga isinumiteng ulat at ang katayuan ng pag-validate ng mga ito.",
                 btn_manage_farms: "Pamahalaan ang mga Sakahan", btn_new_report: "Maghain ng Bagong Ulat",
                 alert_title: "Mahahalagang Abiso", alert_sub: "Kamakailang mga abiso na nangangailangan ng iyong pansin", btn_dismiss_all: "Isara Lahat",
-                stat_total: "Kabuuang Isinumiteng Ulat", stat_pending: "Naghihintay ng Validation", stat_resolved: "Naresolba / Naaprubahan",
+                stat_total: "Kabuuang Isinumiteng Ulat", stat_pending: "Naghihintay ng Validation", stat_resolved: "Naaprubahang Ulat",
                 tracker_title: "Tagasubaybay ng Kahilingan sa Binhi", tracker_sub: "Subaybayan ang real-time na katayuan ng iyong mga kahilingan sa binhi", tracker_viewall: "Tingnan Lahat",
                 reports_title: "Ang Aking mga Kamakailang Ulat",
                 filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
@@ -922,7 +922,7 @@
                 filter_all_statuses: "Lahat ng Katayuan", filter_all_types: "Lahat ng Uri", filter_all_severities: "Lahat ng Kalubhaan",
                 status_inspected: "Sinuri na",
                 pagination_page: "Pahina", pagination_of: "ng",
-                th_date: "Petsa ng Pagsumite", th_crop: "Detalye ng Pananim", th_incident: "Insidente", th_loss: "Tinatayang Pagkalugi", th_status: "Katayuan", th_actions: "Aksyon",
+                th_date: "Petsa ng Pagsumite", th_crop: "Detalye ng Pananim", th_incident: "Insidente", th_remarks: "Tala", th_status: "Katayuan", th_actions: "Aksyon",
                 modal_report_title: "Maghain ng Ulat ng Pinsala sa Pananim",
                 label_farm_location: "Lokasyon ng Sakahan", label_crop_picker: "Aling Pananim ang Nasira?",
                 label_planting_date: "Petsa ng Pagtatanim", label_affected_area: "Apektadong Lugar (Ha)", area_warning: "Hindi maaaring lumampas sa kabuuang sukat ng sakahan!",
@@ -973,7 +973,7 @@
                 step_ready_label: "Handa nang Kunin", step_ready_sub: "Handa na ang iyong mga binhi — kunin sa opisina ng MAO",
                 step_claimed_label: "Nakuha na", step_claimed_sub: "Natanggap mo na ang iyong hiniling na binhi",
                 table_empty: "Wala ka pang naisusumiteng ulat.",
-                label_area_short: "Lugar:", label_sev_short: "Lubha:", label_est_loss: "Tinatayang pagkalugi", na_text: "N/A",
+                label_area_short: "Lugar:", label_sev_short: "Lubha:", label_reject_reason: "Dahilan", no_reason_given: "Walang ibinigay na dahilan. Makipag-ugnayan sa tanggapan ng MAO.", na_text: "N/A",
                 action_edit: "I-edit", action_delete: "Burahin", action_locked: "Naka-lock",
                 status_pending: "Naghihintay", status_validated: "Na-validate", status_approved: "Naaprubahan", status_completed: "Nakumpleto", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
                 opt_select_location: "Pumili ng Lokasyon...", opt_no_locations: "Walang nahanap na lokasyon. Magdagdag muna.", opt_locations_error: "Hindi na-load ang mga lokasyon",
@@ -1022,10 +1022,10 @@
                 welcome_title: "Maayong pagbalik!", welcome_sub: "Subaya ang imong gi-file nga mga report ug tan-awa ang status sa validation niini.",
                 btn_manage_farms: "Dumalahi ang mga Uma", btn_new_report: "Pag-file og Bag-ong Report",
                 alert_title: "Importanteng mga Pahibalo", alert_sub: "Bag-ohay nga mga pahibalo nga kinahanglan nimong tan-awon", btn_dismiss_all: "I-dismiss Tanan",
-                stat_total: "Total nga Na-file nga Report", stat_pending: "Naghulat og Validation", stat_resolved: "Na-resolve / Na-aprubahan",
+                stat_total: "Total nga Na-file nga Report", stat_pending: "Naghulat og Validation", stat_resolved: "Na-aprubahan nga Report",
                 tracker_title: "Tigsubay sa Pangayo og Binhi", tracker_sub: "Subaya ang real-time nga status sa imong pangayo og binhi", tracker_viewall: "Tan-awa Tanan",
                 reports_title: "Bag-ohay nga mga Report",
-                th_date: "Petsa sa Pag-file", th_crop: "Detalye sa Tanom", th_incident: "Insidente", th_loss: "Gibanabana nga Kadaot", th_status: "Status", th_actions: "Aksyon",
+                th_date: "Petsa sa Pag-file", th_crop: "Detalye sa Tanom", th_incident: "Insidente", th_remarks: "Pahinumdom", th_status: "Status", th_actions: "Aksyon",
                 modal_report_title: "Pag-file og Report sa Kadaot sa Tanom",
                 label_farm_location: "Lokasyon sa Uma", label_crop_picker: "Unsa nga Tanom ang Naguba?",
                 label_planting_date: "Petsa sa Pagtanom", label_affected_area: "Naapektuhan nga Sukod (Ha)", area_warning: "Dili pwede molapas sa total nga sukod sa uma!",
@@ -1076,7 +1076,7 @@
                 step_ready_label: "Andam na Kuhaon", step_ready_sub: "Andam na ang imong binhi — kuhaa sa opisina sa MAO",
                 step_claimed_label: "Nakuha na", step_claimed_sub: "Nadawat na nimo ang imong gipangayo nga binhi",
                 table_empty: "Wala ka pay na-submit nga report.",
-                label_area_short: "Sukod:", label_sev_short: "Grabe:", label_est_loss: "Gibanabana nga kadaot", na_text: "N/A",
+                label_area_short: "Sukod:", label_sev_short: "Grabe:", label_reject_reason: "Rason", no_reason_given: "Walay gihatag nga rason. Palihug kontaka ang opisina sa MAO.", na_text: "N/A",
                 action_edit: "I-edit", action_delete: "Papasa", action_locked: "Naka-lock",
                 status_pending: "Naghulat", status_validated: "Na-validate", status_approved: "Na-aprubahan", status_completed: "Nahuman", status_rejected: "Gibalibaran", status_archived: "Naka-archive",
                 opt_select_location: "Pilia ang Lokasyon...", opt_no_locations: "Walay nakit-an nga lokasyon. Pagdugang una.", opt_locations_error: "Wala ma-load ang mga lokasyon",
@@ -1823,9 +1823,11 @@
                     actionButtonsMobile = '<span class="text-gray-300 text-xs font-bold flex items-center gap-1"><i class="fa-solid fa-lock"></i> ' + t('action_locked') + '</span>';
                 }
                 const sevColor = (r.severity === 'High' || r.severity === 'Total Loss') ? 'text-red-500' : 'text-amber-500';
-                const costText = r.estimated_loss ? ('\u20b1' + r.estimated_loss) : 'N/A';
+                // Remarks: only a rejected report has something to say - why.
+                const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                const reasonText = r.status === 'Rejected' ? esc(r.rejection_reason || t('no_reason_given')) : '';
 
-                tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4"><p class="text-sm font-black text-red-600">' + costText + '</p><p class="text-[10px] text-gray-400">' + t('label_est_loss') + '</p></td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
+                tbody.innerHTML += '<tr class="hover:bg-gray-50/60 transition-all"><td class="px-6 py-4 font-bold text-gray-400 text-center text-sm">#REP-' + r.id + '</td><td class="px-6 py-4 text-sm text-gray-600">' + (r.date || t('na_text')) + '</td><td class="px-6 py-4"><p class="text-sm font-bold text-gray-700">' + (r.crop_name || t('na_text')) + '</p><p class="text-[10px] text-gray-500">' + t('label_area_short') + ' ' + (r.area || '0.00') + ' Ha</p></td><td class="px-6 py-4"><span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span><p class="text-[10px] mt-1 font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</p></td><td class="px-6 py-4 max-w-[220px]">' + (reasonText ? '<p class="text-[10px] font-black text-red-500 uppercase">' + t('label_reject_reason') + '</p><p class="text-xs text-gray-600 whitespace-normal break-words">' + reasonText + '</p>' : '<span class="text-gray-300">—</span>') + '</td><td class="px-6 py-4"><span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tight ' + statusBadge + '">' + statusLabel(r.status) + '</span></td><td class="px-6 py-4 text-right">' + actionButtons + '</td></tr>';
 
                 cardsList.innerHTML += '<div class="px-4 py-3">' +
                     '<div class="flex justify-between items-start gap-2 mb-1.5">' +
@@ -1838,8 +1840,8 @@
                         '<span class="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold border border-gray-200">' + damageTypeLabel(r.damage_type) + '</span>' +
                         '<span class="text-[11px] font-bold ' + sevColor + '">' + t('label_sev_short') + ' ' + severityLabel(r.severity) + '</span>' +
                     '</div>' +
-                    '<div class="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-50">' +
-                        '<p class="text-sm font-black text-red-600">' + t('label_est_loss') + ': ' + costText + '</p>' +
+                    (reasonText ? '<p class="text-xs text-gray-600 mt-2 bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5"><span class="font-black text-red-500">' + t('label_reject_reason') + ':</span> ' + reasonText + '</p>' : '') +
+                    '<div class="flex items-center justify-end mt-2.5 pt-2.5 border-t border-gray-50">' +
                         actionButtonsMobile +
                     '</div>' +
                 '</div>';

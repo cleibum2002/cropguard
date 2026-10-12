@@ -94,6 +94,28 @@ try {
         $techName->execute();
         $tech = $techName->get_result()->fetch_assoc();
         $techName->close();
+        // Tell the farmer a visit is coming - as a rough window, not the exact
+        // date, so they don't wait at the farm on a day that may shift
+        // (panel revision). The exact date stays with the Admin and technician.
+        $daysAway = (int)floor((strtotime($visitDate) - strtotime('today')) / 86400);
+        if ($daysAway <= 2)      $window = 'in the next few days';
+        elseif ($daysAway <= 7)  $window = 'within the week';
+        elseif ($daysAway <= 14) $window = 'within the next two weeks';
+        else                     $window = 'within the month';
+        $farmerRow = $conn->prepare("SELECT Farmer_ID FROM damage_report WHERE Damage_Report_ID = ?");
+        $farmerRow->bind_param("i", $reportId);
+        $farmerRow->execute();
+        $farmerId = (int)($farmerRow->get_result()->fetch_assoc()['Farmer_ID'] ?? 0);
+        $farmerRow->close();
+        if ($farmerId) {
+            $notifMsg = "A technician will visit your farm {$window} to inspect Report #REP-{$reportId}. The exact day may change depending on weather and schedule.";
+            $notifUrl = 'index.html';
+            $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
+            $notif->bind_param("iss", $farmerId, $notifMsg, $notifUrl);
+            $notif->execute();
+            $notif->close();
+        }
+
         require_once '../../audit/log_action.php';
         logAction($conn, $_SESSION['User_ID'], $_SESSION['Role'],
             'Assign Technician',

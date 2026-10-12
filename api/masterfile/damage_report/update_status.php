@@ -31,6 +31,18 @@ try {
             exit;
         }
 
+        // A rejection must say why - it is shown to the farmer in My Recent
+        // Reports (Rejection_Reason) and sent in their notification.
+        $reason = '';
+        if ($data->status === 'Rejected') {
+            $reason = trim(preg_replace('/\s+/', ' ', strip_tags((string)($data->reason ?? ''))));
+            if (mb_strlen($reason) > 300) $reason = mb_substr($reason, 0, 300);
+            if ($reason === '') {
+                echo json_encode(["status" => "error", "message" => "Please give a reason for rejecting this report. The farmer will see it."]);
+                exit;
+            }
+        }
+
         $conn->begin_transaction();
 
         // 1. Find the farmer
@@ -62,9 +74,9 @@ try {
             $stmt = $conn->prepare($query);
             $stmt->bind_param("sii", $data->status, $_SESSION['User_ID'], $data->id);
         } else { // Rejected
-            $query = "UPDATE damage_report SET Status = ? WHERE Damage_Report_ID = ? AND Status NOT IN ('Approved','Rejected','Archived')";
+            $query = "UPDATE damage_report SET Status = ?, Rejection_Reason = ? WHERE Damage_Report_ID = ? AND Status NOT IN ('Approved','Rejected','Archived')";
             $stmt = $conn->prepare($query);
-            $stmt->bind_param("si", $data->status, $data->id);
+            $stmt->bind_param("ssi", $data->status, $reason, $data->id);
         }
         $stmt->execute();
         $changed = $stmt->affected_rows;
@@ -72,14 +84,6 @@ try {
 
         if ($changed === 0) {
             throw new Exception("This report can no longer be changed to {$data->status} - its status has already moved on. Please refresh.");
-        }
-
-        // Optional reason the MAO typed when rejecting. Plain text only, kept
-        // short; it goes to the farmer's notification and the audit log.
-        $reason = '';
-        if ($data->status === 'Rejected' && isset($data->reason)) {
-            $reason = trim(preg_replace('/\s+/', ' ', strip_tags((string)$data->reason)));
-            if (mb_strlen($reason) > 300) $reason = mb_substr($reason, 0, 300);
         }
 
         // 3. SEND NOTIFICATION

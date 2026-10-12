@@ -31,7 +31,7 @@ try {
     $statQuery = "SELECT 
                     COUNT(*) as total,
                     SUM(CASE WHEN Status = 'Pending' THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN Status IN ('Validated', 'Approved', 'Completed', 'Inspected') THEN 1 ELSE 0 END) as resolved
+                    SUM(CASE WHEN Status = 'Approved' THEN 1 ELSE 0 END) as resolved
                   FROM damage_report 
                   WHERE Farmer_ID = ? AND Status != 'Archived'";
                   
@@ -48,9 +48,8 @@ try {
     $stmt->close();
 
     // --- FIX 3: Report History Query ---
-    // Joins in crop_type's Standard_Production_Cost so the estimated loss can be
-    // computed here directly, instead of the frontend firing one calculate_cost.php
-    // request per report afterward (was causing 15-20+ extra round-trips per load).
+    // No estimated loss here (panel revision): a farmer seeing a peso figure
+    // would expect to receive that amount. Rejected reports carry the reason.
     $histQuery = "SELECT 
                     dr.Damage_Report_ID as id,
                     c.Crop_Name as crop_name,
@@ -59,10 +58,9 @@ try {
                     dr.Damage_Type as damage_type,
                     dr.Damage_Severity as severity,
                     dr.Status as status,
-                    ct.Standard_Production_Cost as cost_per_ha
+                    CASE WHEN dr.Status = 'Rejected' THEN dr.Rejection_Reason END as rejection_reason
                   FROM damage_report dr
                   LEFT JOIN crop c ON dr.Crop_ID = c.Crop_ID
-                  LEFT JOIN crop_type ct ON c.Type_ID = ct.Type_ID
                   WHERE dr.Farmer_ID = ? AND dr.Status != 'Archived'
                   ORDER BY dr.Damage_Report_ID DESC";
                   
@@ -70,24 +68,9 @@ try {
     $stmt2->bind_param("i", $farmer_id);
     $stmt2->execute();
 
-    $severity_multipliers = [
-        'Minimal'    => 0.10,
-        'Light'      => 0.30,
-        'Low'        => 0.30,
-        'Moderate'   => 0.50,
-        'Severe'     => 0.80,
-        'High'       => 0.80,
-        'Total Loss' => 1.00,
-    ];
-    
     $reports = [];
     $result = $stmt2->get_result();
     while ($row = $result->fetch_assoc()) {
-        $multiplier  = $severity_multipliers[$row['severity']] ?? 0.10;
-        $area        = (float)($row['area'] ?? 0);
-        $cost_per_ha = (float)($row['cost_per_ha'] ?? 0);
-        $row['estimated_loss'] = number_format($area * $cost_per_ha * $multiplier, 2);
-        unset($row['cost_per_ha']);
         $reports[] = $row;
     }
     $response['reports'] = $reports;
