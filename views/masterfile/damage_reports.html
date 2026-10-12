@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="../../assets/js/i18n.js?v=2"></script>
     <script src="../../assets/js/session_guard.js?v=9"></script>
+    <script src="../../assets/js/photo_viewer.js?v=1"></script>
 
     <script>
         CropGuardSession.protect({
@@ -967,6 +968,7 @@
 
         function renderGeoGallery(containerId, images, farmLat, farmLng) {
             const gallery = document.getElementById(containerId);
+            gallery.setAttribute('data-photo-group', '');
             gallery.innerHTML = '';
             if (!images || !images.length) {
                 gallery.innerHTML = `<p class="text-sm text-gray-400 italic bg-gray-50 px-4 py-3 rounded-lg border border-gray-100">${t('no_photo_evidence')}</p>`;
@@ -977,7 +979,7 @@
                 const card = document.createElement('div');
                 card.className = 'geo-photo-card';
                 card.innerHTML = `
-                    <a href="${img.path || img}" target="_blank"><img src="${img.path || img}" alt="${t('label_evidence_photo')} ${idx + 1}" loading="lazy"></a>
+                    <a href="${img.path || img}" data-photo="${img.path || img}" data-caption="${proof.text.replace(/"/g, '&quot;')}"><img src="${img.path || img}" alt="${t('label_evidence_photo')} ${idx + 1}" loading="lazy"></a>
                     <div class="geo-info ${proof.cls}">${proof.text}</div>
                 `;
                 gallery.appendChild(card);

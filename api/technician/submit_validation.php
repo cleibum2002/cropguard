@@ -96,6 +96,11 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         $stmtAdminNotif->close();
 
         // 3. PROCESS IMAGE UPLOADS
+        // At most 5 technician photos per report (a report returned for
+        // re-inspection may already have some).
+        require_once '../config/photo_limit.php';
+        $photo_error = cg_photo_limit_error($conn, $report_id, 'Technician', 'evidencePhotos');
+        if ($photo_error) throw new Exception($photo_error);
         $uploadDir = '../../uploads/evidence/'; 
         if (!is_dir($uploadDir)) {
             mkdir($uploadDir, 0777, true);
@@ -157,6 +162,7 @@ if (isset($_POST['id'], $_POST['observations'], $_POST['severity'])) {
         $known = [
             'Report not found or not assigned to you.',
             'This report is no longer awaiting your inspection',
+            'You can attach up to',
         ];
         $isKnown = false;
         foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }

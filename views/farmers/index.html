@@ -849,6 +849,7 @@
                 off_edit_title: "No internet", off_edit_text: "You need a connection to edit a report. Your changes are still here - try again once you have a signal.",
                 sw_bad_format_title: "Unsupported Photo Format", sw_bad_format_text_one: "That file was skipped - only JPG, JPEG, and PNG photos are allowed.",
                 sw_bad_format_text_many: "{n} files were skipped - only JPG, JPEG, and PNG photos are allowed.",
+                sw_photo_limit_title: "Photo limit reached", sw_photo_limit_text: "You can attach up to {max} photos per report. {n} photo(s) were not added.",
                 modal_farm_title: "Add Farm Location", label_farm_address: "Farm Address",
                 label_specific_location: "Specific Location Details", label_street: "Street / Sitio / Purok / House No.",
                 label_zip: "Postal / ZIP Code", zip_hint: "Auto-filled when available",
@@ -955,6 +956,7 @@
                 off_edit_title: "Walang internet", off_edit_text: "Kailangan mo ng koneksyon para mag-edit ng ulat. Nandiyan pa ang mga binago mo - subukan ulit kapag may signal.",
                 sw_bad_format_title: "Hindi Suportadong Format", sw_bad_format_text_one: "Nalaktawan ang file na iyon - JPG, JPEG, at PNG lang ang pinapayagan.",
                 sw_bad_format_text_many: "{n} na file ang nalaktawan - JPG, JPEG, at PNG lang ang pinapayagan.",
+                sw_photo_limit_title: "Naabot na ang limit ng larawan", sw_photo_limit_text: "Hanggang {max} larawan lang bawat ulat. {n} larawan ang hindi naidagdag.",
                 modal_farm_title: "Magdagdag ng Lokasyon ng Sakahan", label_farm_address: "Address ng Sakahan",
                 label_specific_location: "Detalye ng Tiyak na Lokasyon", label_street: "Kalye / Sitio / Purok / Numero ng Bahay",
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatikong nalalagay kapag available",
@@ -1057,6 +1059,7 @@
                 off_edit_title: "Walay internet", off_edit_text: "Kinahanglan og koneksyon aron mag-edit og report. Naa pa ang imong gibag-o - sulayi balik kung naa nay signal.",
                 sw_bad_format_title: "Dili Suportado nga Format", sw_bad_format_text_one: "Gilaktawan ang maong file - JPG, JPEG, ug PNG ra ang gitugotan.",
                 sw_bad_format_text_many: "{n} ka file ang gilaktawan - JPG, JPEG, ug PNG ra ang gitugotan.",
+                sw_photo_limit_title: "Naabot na ang limit sa litrato", sw_photo_limit_text: "Hangtod {max} ka litrato ra matag report. {n} ka litrato ang wala nadugang.",
                 modal_farm_title: "Pagdugang og Lokasyon sa Uma", label_farm_address: "Address sa Uma",
                 label_specific_location: "Detalyado nga Lokasyon", label_street: "Dalan / Sitio / Purok / Numero sa Balay",
                 label_zip: "Postal / ZIP Code", zip_hint: "Awtomatik ma-fill kung naa",
@@ -1327,17 +1330,25 @@
         // ── Per-photo geo state ──────────────────────────────────────────────
         const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png'];
 
+        // At most 5 photos per report, counting ones already saved when editing
+        // (api/config/photo_limit.php checks it too).
+        const MAX_PHOTOS = 5;
+
         function handleImageSelection(event) {
             const newFiles = Array.from(event.target.files);
             if (!newFiles.length) return;
 
-            let rejectedCount = 0;
+            let rejectedCount = 0, overLimit = 0;
             newFiles.forEach(f => {
                 if (!ALLOWED_IMAGE_TYPES.includes(f.type)) {
                     rejectedCount++;
                     return;
                 }
                 const isDupe = selectedFiles.some(s => s.name === f.name && s.size === f.size);
+                if (!isDupe && existingImages.length + selectedFiles.length >= MAX_PHOTOS) {
+                    overLimit++;
+                    return;
+                }
                 if (!isDupe) {
                     selectedFiles.push(f);
                     photoGeo.push({ state: 'loading', lat: null, lng: null, accuracy: null });
@@ -1351,6 +1362,8 @@
                     title: t('sw_bad_format_title'),
                     text: rejectedCount === 1 ? t('sw_bad_format_text_one') : t('sw_bad_format_text_many').replace('{n}', rejectedCount)
                 });
+            } else if (overLimit > 0) {
+                Swal.fire({ icon: 'warning', title: t('sw_photo_limit_title'), text: t('sw_photo_limit_text').replace('{max}', MAX_PHOTOS).replace('{n}', overLimit) });
             }
 
             event.target.value = '';
@@ -1407,7 +1420,7 @@
                 return;
             }
 
-            countLabel.textContent = totalCount + ' photo' + (totalCount > 1 ? 's' : '') + ' — tap × to remove';
+            countLabel.textContent = totalCount + ' / ' + MAX_PHOTOS + ' photo' + (totalCount > 1 ? 's' : '') + ' — tap × to remove';
             countLabel.classList.remove('hidden');
 
             // Already-saved photos (only present when editing) - removing one just marks

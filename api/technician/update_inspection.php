@@ -79,6 +79,10 @@ try {
     $update->close();
 
     // New photos are additive - same validated-upload logic as submit_validation.php.
+    // At most 5 technician photos per report, counting the ones already saved.
+    require_once '../config/photo_limit.php';
+    $photo_error = cg_photo_limit_error($conn, $report_id, 'Technician', 'evidencePhotos');
+    if ($photo_error) throw new Exception($photo_error);
     $uploadDir = '../../uploads/evidence/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0777, true);
@@ -134,6 +138,7 @@ try {
     $known = [
         'Report not found or not assigned to you.',
         'This report has already been decided on by the Admin and can no longer be edited.',
+        'You can attach up to',
     ];
     $isKnown = false;
     foreach ($known as $k) { if (strpos($e->getMessage(), $k) === 0) { $isKnown = true; break; } }
