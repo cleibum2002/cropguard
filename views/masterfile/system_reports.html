@@ -242,7 +242,7 @@
                             <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2" data-i18n="label_status_filter">Status Filter</label>
                             <select id="statusFilter" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e]">
                                 <option value="ALL" data-i18n="filter_all_statuses">All Statuses</option>
-                                <option value="APPROVED" data-i18n="filter_approved_only">Approved Only</option>
+                                <option value="APPROVED" data-i18n="filter_approved_only">Aid Allocated Only</option>
                                 <option value="PENDING" data-i18n="filter_pending_only">Pending Only</option>
                                 <option value="ARCHIVED" data-i18n="filter_archived_only">Archived Only</option>
                             </select>
@@ -382,7 +382,7 @@
             header_title: "System Reports Engine", badge_admin_mode: "Admin Mode", role_admin: "Admin",
             notif_title: "Notifications", notif_loading: "Loading...", notif_none: "No notifications yet.",
             label_report_generator: "Report Generator", label_configure_params: "Configure your data parameters",
-            label_status_filter: "Status Filter", filter_all_statuses: "All Statuses", filter_approved_only: "Approved Only",
+            label_status_filter: "Status Filter", filter_all_statuses: "All Statuses", filter_approved_only: "Aid Allocated Only",
             filter_pending_only: "Pending Only", filter_archived_only: "Archived Only",
             label_timeframe: "Timeframe", filter_all_time: "All Time", filter_today: "Today", filter_last_7_days: "Last 7 Days",
             filter_this_month: "This Month", filter_this_year: "This Year", filter_specific_date: "Specific Date...",
@@ -394,7 +394,7 @@
             th_date_short: "Date", th_area_short: "Area", th_status: "Status",
             label_unknown: "Unknown", label_na: "N/A",
             no_records_match: "No records match your selected timeframe and status.",
-            status_approved: "Approved", status_pending: "Pending", status_archived: "Archived", status_rejected: "Rejected",
+            status_approved: "Aid Allocated", status_validated: "Approved", status_pending: "Pending", status_archived: "Archived", status_rejected: "Rejected",
             sw_generating_title: "Generating Report...", sw_error_title: "Error", sw_failed_pull_data: "Failed to pull data from database.",
             sw_no_data_title: "No Data", sw_no_data_text: "Generate a report first before exporting.",
             sw_date_bounds_title: "Invalid Date", sw_date_bounds_text: "Please pick a date between January 2024 and today.",
@@ -405,7 +405,7 @@
             header_title: "Sistema ng mga Ulat", badge_admin_mode: "Admin Mode", role_admin: "Admin",
             notif_title: "Mga Abiso", notif_loading: "Naglo-load...", notif_none: "Wala pang abiso.",
             label_report_generator: "Tagabuo ng Ulat", label_configure_params: "I-configure ang iyong mga parameter ng datos",
-            label_status_filter: "Filter ng Katayuan", filter_all_statuses: "Lahat ng Katayuan", filter_approved_only: "Naaprubahan Lang",
+            label_status_filter: "Filter ng Katayuan", filter_all_statuses: "Lahat ng Katayuan", filter_approved_only: "Nailaang Tulong Lang",
             filter_pending_only: "Naghihintay Lang", filter_archived_only: "Naka-archive Lang",
             label_timeframe: "Saklaw ng Panahon", filter_all_time: "Lahat ng Panahon", filter_today: "Ngayon", filter_last_7_days: "Huling 7 Araw",
             filter_this_month: "Ngayong Buwan", filter_this_year: "Ngayong Taon", filter_specific_date: "Tiyak na Petsa...",
@@ -417,7 +417,7 @@
             th_date_short: "Petsa", th_area_short: "Sukat", th_status: "Katayuan",
             label_unknown: "Hindi Alam", label_na: "N/A",
             no_records_match: "Walang talaan na tumutugma sa napiling saklaw ng panahon at katayuan.",
-            status_approved: "Naaprubahan", status_pending: "Naghihintay", status_archived: "Naka-archive", status_rejected: "Tinanggihan",
+            status_approved: "Nailaan na ang Tulong", status_validated: "Naaprubahan", status_pending: "Naghihintay", status_archived: "Naka-archive", status_rejected: "Tinanggihan",
             sw_generating_title: "Bumubuo ng Ulat...", sw_error_title: "Error", sw_failed_pull_data: "Nabigong kunin ang datos mula sa database.",
             sw_no_data_title: "Walang Datos", sw_no_data_text: "Bumuo muna ng ulat bago mag-export.",
             sw_date_bounds_title: "Hindi Wastong Petsa", sw_date_bounds_text: "Pumili ng petsa sa pagitan ng Enero 2024 at ngayon.",
@@ -622,7 +622,7 @@
                 'Area (Ha)': parseFloat(item.area || 0).toFixed(2),
                 'Damage Type': item.damage_type || 'N/A',
                 'Severity': item.severity || 'N/A',
-                'Status': item.status || 'N/A',
+                'Status': item.status ? reportStatusLabel(item.status) : 'N/A',
                 'Technician': item.technician_name || 'Unassigned',
                 'Description': item.description || ''
             };

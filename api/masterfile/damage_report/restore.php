@@ -91,7 +91,9 @@ try {
     $stmt->close();
     if ($changed === 0) throw new Exception("This report is not archived. Please refresh.");
 
-    $msg = "Update: Your Damage Report #REP-{$id} has been restored and is now marked as {$previous}.";
+    // Same words the farmer sees in My Recent Reports (panel revision).
+    $shownAs = ['Validated' => 'Approved', 'Approved' => 'Aid Allocated'][$previous] ?? $previous;
+    $msg = "Update: Your Damage Report #REP-{$id} has been restored and is now marked as {$shownAs}.";
     $redirectUrl = 'index.html';
     $notif = $conn->prepare("INSERT INTO notification (Farmer_ID, Message, Redirect_URL, Is_Read) VALUES (?, ?, ?, 0)");
     $notif->bind_param("iss", $report['Farmer_ID'], $msg, $redirectUrl);

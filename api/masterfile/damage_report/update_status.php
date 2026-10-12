@@ -89,8 +89,12 @@ try {
         // 3. SEND NOTIFICATION
         $msg = "Update: Your Damage Report #REP-{$data->id} is now marked as {$data->status}.";
 
-        // Custom message for specific statuses
-        if ($data->status === 'Approved') {
+        // Custom message for specific statuses. The MAO's step is shown to
+        // farmers as "Approved" (panel revision); the Admin's final step is
+        // "Aid Allocated" (approve_with_aid.php).
+        if ($data->status === 'Validated') {
+            $msg = "Good news! Your Damage Report #REP-{$data->id} has been approved by the MAO. A technician will be scheduled to inspect your farm.";
+        } elseif ($data->status === 'Approved') {
             $msg = "Great news! Your Damage Report #REP-{$data->id} has been Approved. Check your assistance ledger for details.";
         } elseif ($data->status === 'Rejected') {
             $msg = $reason !== ''

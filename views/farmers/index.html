@@ -377,7 +377,7 @@
                         <h3 id="statPending" class="text-lg sm:text-3xl font-black text-amber-600">0</h3>
                     </div>
                     <div class="stat-card bg-white p-3 sm:p-5 rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 border-l-4 border-l-green-500">
-                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest mb-1 leading-tight" data-i18n="stat_resolved">Approved Reports</p>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-wide sm:tracking-widest mb-1 leading-tight" data-i18n="stat_resolved">Aid Allocated</p>
                         <h3 id="statResolved" class="text-lg sm:text-3xl font-black text-green-600">0</h3>
                     </div>
                 </div>
@@ -410,9 +410,9 @@
                             <select id="filterStatus" onchange="applyReportFilters()" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 outline-none focus:ring-2 focus:ring-[#11542e] sm:min-w-[130px]">
                                 <option value="" data-i18n="filter_all_statuses">All Statuses</option>
                                 <option value="Pending" data-i18n="status_pending">Pending</option>
-                                <option value="Validated" data-i18n="status_validated">Validated</option>
+                                <option value="Validated" data-i18n="status_validated">Approved</option>
                                 <option value="Inspected" data-i18n="status_inspected">Inspected</option>
-                                <option value="Approved" data-i18n="status_approved">Approved</option>
+                                <option value="Approved" data-i18n="status_approved">Aid Allocated</option>
                                 <option value="Completed" data-i18n="status_completed">Completed</option>
                                 <option value="Rejected" data-i18n="status_rejected">Rejected</option>
                             </select>
@@ -783,7 +783,7 @@
                 welcome_title: "Welcome back!", welcome_sub: "Track your filed reports and monitor their validation status.",
                 btn_manage_farms: "Manage Farms", btn_new_report: "File New Report",
                 alert_title: "Important Alerts", alert_sub: "Recent notifications that need your attention", btn_dismiss_all: "Dismiss All",
-                stat_total: "Total Reports Filed", stat_pending: "Pending Validation", stat_resolved: "Approved Reports",
+                stat_total: "Total Reports Filed", stat_pending: "Pending Validation", stat_resolved: "Aid Allocated",
                 tracker_title: "Seed Request Tracker", tracker_sub: "Track the real-time status of your seed requests", tracker_viewall: "View All",
                 reports_title: "My Recent Reports",
                 filter_status_label: "Status", filter_damage_type_label: "Damage Type", filter_severity_label: "Severity",
@@ -844,7 +844,7 @@
                 table_empty: "You have not submitted any reports yet.",
                 label_area_short: "Area:", label_sev_short: "Sev:", label_reject_reason: "Reason", no_reason_given: "No reason was given. Please contact the MAO office.", na_text: "N/A",
                 action_edit: "Edit", action_delete: "Delete", action_locked: "Locked",
-                status_pending: "Pending", status_validated: "Validated", status_approved: "Approved", status_completed: "Completed", status_rejected: "Rejected", status_archived: "Archived",
+                status_pending: "Pending", status_validated: "Approved", status_approved: "Aid Allocated", status_completed: "Completed", status_rejected: "Rejected", status_archived: "Archived",
                 opt_select_location: "Select a Location...", opt_no_locations: "No locations found. Add one first.", opt_locations_error: "Could not load locations",
                 opt_select_crop: "— Select your crop —", opt_no_crops: "No crops registered yet", crop_type_auto: "Type ID {id} auto-selected",
                 opt_loading_crops: "Loading crops for this farm...", opt_crops_offline: "No internet — open this farm once while online",
@@ -890,7 +890,7 @@
                 welcome_title: "Maligayang pagbabalik!", welcome_sub: "Subaybayan ang iyong mga isinumiteng ulat at ang katayuan ng pag-validate ng mga ito.",
                 btn_manage_farms: "Pamahalaan ang mga Sakahan", btn_new_report: "Maghain ng Bagong Ulat",
                 alert_title: "Mahahalagang Abiso", alert_sub: "Kamakailang mga abiso na nangangailangan ng iyong pansin", btn_dismiss_all: "Isara Lahat",
-                stat_total: "Kabuuang Isinumiteng Ulat", stat_pending: "Naghihintay ng Validation", stat_resolved: "Naaprubahang Ulat",
+                stat_total: "Kabuuang Isinumiteng Ulat", stat_pending: "Naghihintay ng Validation", stat_resolved: "Nailaan na ang Tulong",
                 tracker_title: "Tagasubaybay ng Kahilingan sa Binhi", tracker_sub: "Subaybayan ang real-time na katayuan ng iyong mga kahilingan sa binhi", tracker_viewall: "Tingnan Lahat",
                 reports_title: "Ang Aking mga Kamakailang Ulat",
                 filter_status_label: "Katayuan", filter_damage_type_label: "Uri ng Pinsala", filter_severity_label: "Kalubhaan",
@@ -951,7 +951,7 @@
                 table_empty: "Wala ka pang naisusumiteng ulat.",
                 label_area_short: "Lugar:", label_sev_short: "Lubha:", label_reject_reason: "Dahilan", no_reason_given: "Walang ibinigay na dahilan. Makipag-ugnayan sa tanggapan ng MAO.", na_text: "N/A",
                 action_edit: "I-edit", action_delete: "Burahin", action_locked: "Naka-lock",
-                status_pending: "Naghihintay", status_validated: "Na-validate", status_approved: "Naaprubahan", status_completed: "Nakumpleto", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
+                status_pending: "Naghihintay", status_validated: "Naaprubahan", status_approved: "Nailaan na ang Tulong", status_completed: "Nakumpleto", status_rejected: "Tinanggihan", status_archived: "Naka-archive",
                 opt_select_location: "Pumili ng Lokasyon...", opt_no_locations: "Walang nahanap na lokasyon. Magdagdag muna.", opt_locations_error: "Hindi na-load ang mga lokasyon",
                 opt_select_crop: "— Pumili ng iyong pananim —", opt_no_crops: "Wala pang nakarehistrong pananim", crop_type_auto: "Type ID {id} awtomatikong napili",
                 opt_loading_crops: "Kinukuha ang mga pananim...", opt_crops_offline: "Walang internet — buksan ang bukid na ito habang may signal",
@@ -998,7 +998,7 @@
                 welcome_title: "Maayong pagbalik!", welcome_sub: "Subaya ang imong gi-file nga mga report ug tan-awa ang status sa validation niini.",
                 btn_manage_farms: "Dumalahi ang mga Uma", btn_new_report: "Pag-file og Bag-ong Report",
                 alert_title: "Importanteng mga Pahibalo", alert_sub: "Bag-ohay nga mga pahibalo nga kinahanglan nimong tan-awon", btn_dismiss_all: "I-dismiss Tanan",
-                stat_total: "Total nga Na-file nga Report", stat_pending: "Naghulat og Validation", stat_resolved: "Na-aprubahan nga Report",
+                stat_total: "Total nga Na-file nga Report", stat_pending: "Naghulat og Validation", stat_resolved: "Gigahin na ang Tabang",
                 tracker_title: "Tigsubay sa Pangayo og Binhi", tracker_sub: "Subaya ang real-time nga status sa imong pangayo og binhi", tracker_viewall: "Tan-awa Tanan",
                 reports_title: "Bag-ohay nga mga Report",
                 th_date: "Petsa sa Pag-file", th_crop: "Detalye sa Tanom", th_incident: "Insidente", th_remarks: "Pahinumdom", th_status: "Status", th_actions: "Aksyon",
@@ -1054,7 +1054,7 @@
                 table_empty: "Wala ka pay na-submit nga report.",
                 label_area_short: "Sukod:", label_sev_short: "Grabe:", label_reject_reason: "Rason", no_reason_given: "Walay gihatag nga rason. Palihug kontaka ang opisina sa MAO.", na_text: "N/A",
                 action_edit: "I-edit", action_delete: "Papasa", action_locked: "Naka-lock",
-                status_pending: "Naghulat", status_validated: "Na-validate", status_approved: "Na-aprubahan", status_completed: "Nahuman", status_rejected: "Gibalibaran", status_archived: "Naka-archive",
+                status_pending: "Naghulat", status_validated: "Na-aprubahan", status_approved: "Gigahin na ang Tabang", status_completed: "Nahuman", status_rejected: "Gibalibaran", status_archived: "Naka-archive",
                 opt_select_location: "Pilia ang Lokasyon...", opt_no_locations: "Walay nakit-an nga lokasyon. Pagdugang una.", opt_locations_error: "Wala ma-load ang mga lokasyon",
                 opt_select_crop: "— Pilia ang imong tanom —", opt_no_crops: "Wala pay narehistro nga tanom", crop_type_auto: "Type ID {id} awtomatik napili",
                 opt_loading_crops: "Gikuha ang mga tanom...", opt_crops_offline: "Walay internet — ablihi ni nga uma samtang naa pay signal",
