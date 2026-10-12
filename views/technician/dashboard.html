@@ -177,6 +177,13 @@
                         </select>
                     </div>
                     <div id="assignmentList" class="space-y-4"></div>
+                    <div id="assignPagination" class="hidden mt-6 flex flex-col sm:flex-row items-center sm:justify-between gap-3">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest" id="assignPageInfo"></p>
+                        <div class="flex gap-2">
+                            <button id="assignPrevBtn" onclick="changeAssignPage(-1)" class="px-5 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 transition-all" data-i18n="btn_previous">Previous</button>
+                            <button id="assignNextBtn" onclick="changeAssignPage(1)" class="px-5 py-2 bg-white border border-gray-100 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-50 disabled:opacity-30 transition-all" data-i18n="btn_next">Next</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ── VALIDATION TAB ── -->
@@ -593,7 +600,7 @@
 
                 allAssignments = data.assignments || [];
                 populateBarangayFilter();
-                filterAssignments();
+                filterAssignments(false);
 
                 // Sorted newest-first so a report just re-edited (or freshly inspected)
                 // surfaces on page 1 instead of wherever its report date happened to land.
@@ -625,7 +632,13 @@
         return words.every(w => hay.includes(w));
     }
 
-    function filterAssignments() {
+    // My Assignments shows 5 reports a page (same pager as the Completed tab).
+    const ASSIGN_PAGE_SIZE = 5;
+    let assignPage = 1;
+    let filteredAssignments = [];
+
+    function filterAssignments(resetPage = true) {
+        if (resetPage) assignPage = 1;
         const q = (document.getElementById('assignSearchInput').value || '').toLowerCase();
         const brgy = document.getElementById('assignBarangayFilter').value;
 
@@ -635,16 +648,36 @@
             return matchesSearch && matchesBarangay;
         });
 
-        renderAssignmentList(filtered);
+        filteredAssignments = filtered;
+        renderAssignmentList();
     }
 
-    function renderAssignmentList(list) {
+    function changeAssignPage(delta) {
+        assignPage += delta;
+        renderAssignmentList();
+        document.getElementById('assignmentList').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderAssignmentList() {
         const container = document.getElementById('assignmentList');
+        const pagination = document.getElementById('assignPagination');
+        const list = filteredAssignments;
         if (!list.length) {
             container.innerHTML = `<p class="text-center py-20 text-gray-400 italic bg-white rounded-3xl border border-gray-50">${t('label_no_pending_assignments')}</p>`;
+            pagination.classList.add('hidden');
             return;
         }
-        container.innerHTML = list.map(a => `
+        const totalPages = Math.max(1, Math.ceil(list.length / ASSIGN_PAGE_SIZE));
+        if (assignPage > totalPages) assignPage = totalPages;
+        if (assignPage < 1) assignPage = 1;
+        const start = (assignPage - 1) * ASSIGN_PAGE_SIZE;
+        const rangeEnd = Math.min(start + ASSIGN_PAGE_SIZE, list.length);
+        pagination.classList.toggle('hidden', list.length <= ASSIGN_PAGE_SIZE);
+        document.getElementById('assignPageInfo').innerText =
+            `${t('label_showing')} ${start + 1} ${t('label_to')} ${rangeEnd} ${t('label_of')} ${list.length}`;
+        document.getElementById('assignPrevBtn').disabled = assignPage <= 1;
+        document.getElementById('assignNextBtn').disabled = assignPage >= totalPages;
+        container.innerHTML = list.slice(start, rangeEnd).map(a => `
                         <div class="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] shadow-sm border border-gray-50 hover:shadow-md transition-all">
                             <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                                 <div class="flex-1">
