@@ -1230,9 +1230,9 @@
                     bigAlertIds = unread.map(n => n.Notification_ID);
                     banner.classList.remove('hidden');
                     list.innerHTML = '';
-                    // Phones show the newest 3 with a "Show N more" button, so the
+                    // Show the newest 3 with a "Show N more" button, so the
                     // banner doesn't push the whole dashboard several screens down.
-                    const ALERT_PHONE_LIMIT = window.innerWidth < 640 ? 3 : Infinity;
+                    const ALERT_PHONE_LIMIT = 3;
                     unread.forEach((n, idx) => {
                         const item = document.createElement('div');
                         item.className = 'alert-item rounded-xl px-5 py-4 flex items-start gap-4';
