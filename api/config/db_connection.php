@@ -1,32 +1,32 @@
 <?php
 // api/config/db_connection.php
 
-$host_name = $_SERVER['HTTP_HOST'] ?? '';
+// Database settings come from environment variables, never from this file
+// (the repository is meant to be public). On Railway the web service gets the
+// MySQL service's MYSQLHOST / MYSQLPORT / MYSQLUSER / MYSQLPASSWORD /
+// MYSQLDATABASE as variable references. Locally (XAMPP) none are set, so the
+// XAMPP defaults below are used - they hold no secret.
+function cg_env($name) {
+    $v = getenv($name);
+    if ($v === false || $v === '') $v = $_ENV[$name] ?? $_SERVER[$name] ?? '';
+    return (string)$v;
+}
 
-if (getenv('RAILWAY_ENVIRONMENT')) {
-    // Live deployment on Railway - hardcoded because FrankenPHP/Caddy doesn't
-    // reliably expose container env vars to PHP's getenv()/$_ENV/$_SERVER in
-    // this setup (confirmed known issue, not specific to this project).
-    $host     = "mysql.railway.internal";
-    $username = "root";
-    $password = "REMOVED_DB_PASSWORD";
-    $dbname   = "railway";
-    $port     = 3306;
-    $conn = new mysqli($host, $username, $password, $dbname, $port);
-
-} elseif (strpos($host_name, 'infinityfreeapp.com') !== false) {
-    $host     = "sql107.infinityfree.com";
-    $username = "if0_42694163";
-    $password = "REMOVED_DB_PASSWORD";
-    $dbname   = "if0_42694163_crop_damage";
-    $conn = new mysqli($host, $username, $password, $dbname);
-
+if (cg_env('MYSQLHOST') !== '') {
+    $conn = new mysqli(
+        cg_env('MYSQLHOST'),
+        cg_env('MYSQLUSER'),
+        cg_env('MYSQLPASSWORD'),
+        cg_env('MYSQLDATABASE'),
+        (int)(cg_env('MYSQLPORT') ?: 3306)
+    );
+} elseif (getenv('RAILWAY_ENVIRONMENT')) {
+    // On Railway without the variables: stop with a plain message instead of
+    // quietly trying a local database that does not exist there.
+    error_log('[' . date('Y-m-d H:i:s') . '] MYSQLHOST and the other MYSQL* variables are not set on this Railway service.');
+    die(json_encode(["status" => "error", "message" => "The server's database settings are missing. Please contact the administrator."]));
 } else {
-    $host     = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname   = "crop_damage_system";
-    $conn = new mysqli($host, $username, $password, $dbname);
+    $conn = new mysqli("localhost", "root", "", "crop_damage_system");
 }
 
 if ($conn->connect_error) {
