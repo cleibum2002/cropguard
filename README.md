@@ -133,7 +133,7 @@ docs/diagrams/ Use case, data flow, ER diagram and process flowchart (with the s
 |---|---|
 | **Angel Cleo A. Sumagang** ([@cleibum2002](https://github.com/cleibum2002)) | Lead Developer, Quality Assurance |
 | Jaylyn Rose C. Sta. Rita | Developer |
-| Earl Gian J. Lumansoc | Developer |
+| Earl Gian J. Lumansoc ([@yaboigian](https://github.com/yaboigian)) | Developer |
 | Ruzzyll Jane B. Losanes | Project Manager, Documentation |
 | Argiedan B. Salvo | UI/UX Designer |
 | John Louise A. Zagado | UI/UX Designer |
