@@ -135,8 +135,8 @@ docs/diagrams/ Use case, data flow, ER diagram and process flowchart (with the s
 | Jaylyn Rose C. Sta. Rita | Developer |
 | Earl Gian J. Lumansoc ([@yaboigian](https://github.com/yaboigian)) | Developer |
 | Ruzzyll Jane B. Losanes | Project Manager, Documentation |
-| Argiedan B. Salvo | UI/UX Designer |
-| John Louise A. Zagado | UI/UX Designer |
+| Argiedan B. Salvo ([@arbasalvococ123](https://github.com/arbasalvococ123)) | UI/UX Designer |
+| John Louise A. Zagado ([@Johnzsg](https://github.com/Johnzsg)) | UI/UX Designer |
 
 **Adviser:** Faith Nave Dollera, MIT
 
