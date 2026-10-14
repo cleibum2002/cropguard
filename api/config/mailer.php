@@ -11,7 +11,9 @@
 // own env var set to send real emails - see api/config/mailer.php's history
 // for why a real key must never be hardcoded here as a fallback again.
 define('BREVO_API_KEY', getenv('BREVO_API_KEY') ?: '');
-define('BREVO_SENDER_EMAIL', 'person1@example.com');
+// The sender must be an address verified in Brevo. Set BREVO_SENDER_EMAIL on
+// the server; the address below is only the fallback for this deployment.
+define('BREVO_SENDER_EMAIL', getenv('BREVO_SENDER_EMAIL') ?: 'person1@example.com');
 define('BREVO_SENDER_NAME', 'CropGuard');
 
 function sendVerificationEmail($toEmail, $toName, $code) {

@@ -1,5 +1,7 @@
 vendor/
 *.sql
+# ...except the structure-only schema (no data) people need to run the project.
+!schema/cropguard_schema.sql
 /database/
 
 # Farmer/technician photo uploads. On Railway these live on the attached
